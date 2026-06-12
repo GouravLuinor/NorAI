@@ -1,18 +1,22 @@
 # Virtual Environment
 venv/
-env/
 
-# Python Cache
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
 
-# IDEs
-.vscode/
-
-# Secrets (Never commit API keys!)
+# Environment Variables
 .env
 
-# Project Specifics
+# Generated Outputs
 outputs/
-*.mp4
-*.mp3
+
+# Chroma DB
+chroma/
+.chroma/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
