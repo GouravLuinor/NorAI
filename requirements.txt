@@ -1,0 +1,17 @@
+langchain
+langchain-core
+langchain-google-genai
+langchain-community
+yt-dlp
+ffmpeg-python
+openai-whisper
+langchain
+langchain-community
+sentence-transformers
+opencv-python
+google-generativeai
+pydantic
+python-dotenv
+chromadb
+streamlit
+reportlab

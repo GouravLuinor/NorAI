@@ -1,0 +1,18 @@
+# Virtual Environment
+venv/
+env/
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# IDEs
+.vscode/
+
+# Secrets (Never commit API keys!)
+.env
+
+# Project Specifics
+outputs/
+*.mp4
+*.mp3
