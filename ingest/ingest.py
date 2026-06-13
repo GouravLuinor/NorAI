@@ -98,11 +98,17 @@ def extract_from_gdrive(
 
     file_id = extract_gdrive_file_id(url)
 
-    downloaded_path = gdown.download(
-        id=file_id,
-        output=video_dir,
-        quiet=False
-    )
+    try:
+        downloaded_path = gdown.download(
+            id=file_id,
+            output=video_dir,
+            quiet=False
+        )
+    except Exception as e:
+        logger.error(
+            f"Google Drive download failed: {e}"
+        )
+        raise
 
     if downloaded_path is None:
         raise RuntimeError(
@@ -139,18 +145,27 @@ def extract_from_youtube(url: str, output_dir: str) -> dict:
         "merge_output_format": "mp4",
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(
+                url,
+                download=True
+            )
+    except Exception as e:
+        logger.error(
+            f"YouTube download failed: {e}"
+        )
+        raise
 
-        info = ydl.extract_info(url, download=True)
+    video_id = info["id"]
 
-        video_id = info["id"]
+    video_path = os.path.join(video_dir, f"{video_id}.mp4")
 
-        video_path = os.path.join(video_dir, f"{video_id}.mp4")
+    audio_path = os.path.join(audio_dir, f"{video_id}.mp3")
 
-        audio_path = os.path.join(audio_dir, f"{video_id}.mp3")
+    logger.info("Extracting audio...")
 
-        logger.info("Extracting audio...")
-
+    try :
         (
             ffmpeg
             .input(video_path)
@@ -162,33 +177,38 @@ def extract_from_youtube(url: str, output_dir: str) -> dict:
             .overwrite_output()
             .run(quiet=True)
         )
-
-        metadata = {
-            "video_id": video_id,
-            "title": info.get("title"),
-            "source_type": "youtube",
-            "duration": info.get("duration"),
-            "source_url": info.get("webpage_url"),
-            "uploader": info.get("uploader"),
-            "video_path": video_path,
-            "audio_path": audio_path
-        }
-
-        metadata_path = os.path.join(
-            metadata_dir,
-            f"{video_id}.json"
+    except ffmpeg.Error as e:
+        logger.error(
+            f"FFmpeg extraction failed: {e}"
         )
+        raise
 
-        with open(metadata_path, "w", encoding="utf-8") as f:
-            json.dump(metadata, f, indent=4, ensure_ascii=False)
+    metadata = {
+        "video_id": video_id,
+        "title": info.get("title"),
+        "source_type": "youtube",
+        "duration": info.get("duration"),
+        "source_url": info.get("webpage_url"),
+        "uploader": info.get("uploader"),
+        "video_path": video_path,
+        "audio_path": audio_path
+    }
 
-        return {
-            "source_type": "youtube",
-            "audio_path": audio_path,
-            "video_path": video_path,
-            "metadata_path": metadata_path,
-            "metadata": metadata
-        }
+    metadata_path = os.path.join(
+        metadata_dir,
+        f"{video_id}.json"
+    )
+
+    with open(metadata_path, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=4, ensure_ascii=False)
+
+    return {
+        "source_type": "youtube",
+        "audio_path": audio_path,
+        "video_path": video_path,
+        "metadata_path": metadata_path,
+        "metadata": metadata
+    }
 
 
 # -----------------------------
@@ -198,10 +218,24 @@ def extract_from_local(file_path: str, output_dir: str) -> dict:
     """
     Extract audio from local video file.
     """
+    SUPPORTED_VIDEO_EXTENSIONS = {
+        ".mp4",
+        ".mkv",
+        ".avi",
+        ".mov",
+        ".webm"
+    }
 
     if not os.path.exists(file_path):
         raise FileNotFoundError(
             f"File not found: {file_path}"
+        )
+    
+    extension = Path(file_path).suffix.lower()
+
+    if extension not in SUPPORTED_VIDEO_EXTENSIONS:
+        raise ValueError(
+            f"Unsupported file type: {extension}"
         )
 
     logger.info(f"Processing local file: {file_path}")
@@ -231,19 +265,26 @@ def extract_from_local(file_path: str, output_dir: str) -> dict:
 
     logger.info("Extracting audio...")
 
-    (
-        ffmpeg
-        .input(copied_video_path)
-        .output(
-            audio_path,
-            acodec="libmp3lame",
-            audio_bitrate="192k"
+    try : 
+        (
+            ffmpeg
+            .input(copied_video_path)
+            .output(
+                audio_path,
+                acodec="libmp3lame",
+                audio_bitrate="192k"
+            )
+            .overwrite_output()
+            .run(quiet=True)
         )
-        .overwrite_output()
-        .run(quiet=True)
-    )
+    except ffmpeg.Error as e:
+        logger.error(
+            f"FFmpeg extraction failed: {e}"
+        )
+        raise
 
     probe = ffmpeg.probe(copied_video_path)
+
 
     duration = float(
         probe["format"]["duration"]
