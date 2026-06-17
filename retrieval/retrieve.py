@@ -78,6 +78,27 @@ def get_query_embedding(
     ).tolist()
 
 
+# retrieval confidence
+
+
+def get_retrieval_confidence(
+    retrieved_chunks
+):
+    """
+    Lower distance = better retrieval.
+    Returns average distance of top chunks.
+    """
+
+    if not retrieved_chunks:
+        return float("inf")
+
+    distances = [
+        chunk["distance"]
+        for chunk in retrieved_chunks
+    ]
+
+    return sum(distances) / len(distances)
+
 
 # Retrieval
 
@@ -221,3 +242,5 @@ if __name__ == "__main__":
     )
 
     print_results(chunks)
+
+    
