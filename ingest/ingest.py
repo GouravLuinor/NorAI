@@ -123,52 +123,157 @@ def extract_from_gdrive(
 # -----------------------------
 # YouTube Processing
 # -----------------------------
-def extract_from_youtube(url: str, output_dir: str) -> dict:
+
+
+def convert_to_h264(
+    input_video_path,
+    output_video_path
+):
     """
-    Download YouTube video + extract audio.
-
-    Returns:
-        dict containing paths and metadata.
+    Convert video to H.264 MP4.
     """
 
-    logger.info(f"Downloading YouTube video: {url}")
+    logger.info(
+        "Converting video to H.264..."
+    )
 
-    video_dir = os.path.join(output_dir, "videos")
-    audio_dir = os.path.join(output_dir, "audio")
-    metadata_dir = os.path.join(output_dir, "metadata")
+    try:
+
+        (
+            ffmpeg
+            .input(input_video_path)
+            .output(
+                output_video_path,
+                vcodec="libx264",
+                acodec="copy",
+                preset="fast",
+                crf=23
+            )
+            .overwrite_output()
+            .run(quiet=True)
+        )
+
+    except ffmpeg.Error as e:
+
+        logger.error(
+            f"H.264 conversion failed: {e}"
+        )
+
+        raise
+
+    logger.info(
+        f"Converted video saved: "
+        f"{output_video_path}"
+    )
+
+
+def extract_from_youtube(
+    url: str,
+    output_dir: str
+) -> dict:
+    """
+    Download YouTube video,
+    convert to H.264,
+    extract audio.
+    """
+
+    logger.info(
+        f"Downloading YouTube video: {url}"
+    )
+
+    video_dir = os.path.join(
+        output_dir,
+        "videos"
+    )
+
+    audio_dir = os.path.join(
+        output_dir,
+        "audio"
+    )
+
+    metadata_dir = os.path.join(
+        output_dir,
+        "metadata"
+    )
 
     ydl_opts = {
-"format": "bestvideo[height<=720]+bestaudio/best[height<=720]",
-        "outtmpl": os.path.join(video_dir, "%(id)s.%(ext)s"),
+        "format":
+            "bestvideo[height<=720]"
+            "+bestaudio/"
+            "best[height<=720]",
+
+        "outtmpl":
+            os.path.join(
+                video_dir,
+                "%(id)s.%(ext)s"
+            ),
+
         "quiet": False,
         "no_warnings": True,
-        "merge_output_format": "mp4",
+
+        "merge_output_format":
+            "mp4",
     }
 
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+
+        with yt_dlp.YoutubeDL(
+            ydl_opts
+        ) as ydl:
+
             info = ydl.extract_info(
                 url,
                 download=True
             )
+
     except Exception as e:
+
         logger.error(
             f"YouTube download failed: {e}"
         )
+
         raise
 
     video_id = info["id"]
 
-    video_path = os.path.join(video_dir, f"{video_id}.mp4")
+    original_video_path = os.path.join(
+        video_dir,
+        f"{video_id}.mp4"
+    )
 
-    audio_path = os.path.join(audio_dir, f"{video_id}.mp3")
+    h264_video_path = os.path.join(
+        video_dir,
+        f"{video_id}_h264.mp4"
+    )
 
-    logger.info("Extracting audio...")
+    convert_to_h264(
+        original_video_path,
+        h264_video_path
+    )
 
-    try :
+    if os.path.exists(
+        original_video_path
+    ):
+        os.remove(
+            original_video_path
+        )
+
+    audio_path = os.path.join(
+        audio_dir,
+        f"{video_id}.mp3"
+    )
+
+    logger.info(
+        "Extracting audio..."
+    )
+
+    try:
+
         (
             ffmpeg
-            .input(video_path)
+            .input(
+                h264_video_path
+            )
             .output(
                 audio_path,
                 acodec="libmp3lame",
@@ -177,21 +282,43 @@ def extract_from_youtube(url: str, output_dir: str) -> dict:
             .overwrite_output()
             .run(quiet=True)
         )
+
     except ffmpeg.Error as e:
+
         logger.error(
             f"FFmpeg extraction failed: {e}"
         )
+
         raise
 
     metadata = {
-        "video_id": video_id,
-        "title": info.get("title"),
-        "source_type": "youtube",
-        "duration": info.get("duration"),
-        "source_url": info.get("webpage_url"),
-        "uploader": info.get("uploader"),
-        "video_path": video_path,
-        "audio_path": audio_path
+        "video_id":
+            video_id,
+
+        "title":
+            info.get("title"),
+
+        "source_type":
+            "youtube",
+
+        "duration":
+            info.get("duration"),
+
+        "source_url":
+            info.get(
+                "webpage_url"
+            ),
+
+        "uploader":
+            info.get(
+                "uploader"
+            ),
+
+        "video_path":
+            h264_video_path,
+
+        "audio_path":
+            audio_path
     }
 
     metadata_path = os.path.join(
@@ -199,15 +326,34 @@ def extract_from_youtube(url: str, output_dir: str) -> dict:
         f"{video_id}.json"
     )
 
-    with open(metadata_path, "w", encoding="utf-8") as f:
-        json.dump(metadata, f, indent=4, ensure_ascii=False)
+    with open(
+        metadata_path,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            metadata,
+            f,
+            indent=4,
+            ensure_ascii=False
+        )
 
     return {
-        "source_type": "youtube",
-        "audio_path": audio_path,
-        "video_path": video_path,
-        "metadata_path": metadata_path,
-        "metadata": metadata
+        "source_type":
+            "youtube",
+
+        "audio_path":
+            audio_path,
+
+        "video_path":
+            h264_video_path,
+
+        "metadata_path":
+            metadata_path,
+
+        "metadata":
+            metadata
     }
 
 
