@@ -501,29 +501,472 @@ All stages through Week 7 are complete.
 
 ---
 
-# Upcoming Work
+# Week 8 - Educational Content Generation Pipeline ✅
 
-## Week 8 - Notes Generation
+## 8.1 Lecture Outline Generation ✅
 
 Goal:
 
-Merged Objects
+Merged Knowledge Objects
 ↓
-Lecture Notes
+Lecture Outline
 
-Features:
+Completed:
 
-* Structured chapter generation
-* Topic grouping
-* Educational note synthesis
-* Screenshot insertion
-* Markdown export
-* PDF generation
+* Lecture outline generation using Gemini
+* Automatic chapter title generation
+* Chapter boundary prediction
+* Focus concept extraction
+* Lecture structure planning
+
+Output Schema:
+
+```json
+{
+  "lecture_title": "...",
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "title": "...",
+      "start_chunk": 0,
+      "end_chunk": 5,
+      "focus_concepts": [...]
+    }
+  ]
+}
+```
+
+Results:
+
+* Entire lecture organized into semantic chapters
+* Global understanding created before note generation
+* Reduced chapter ambiguity
 
 Output:
 
-* Lecture Notes PDF
-* Lecture Notes Markdown
+```text
+outputs/notes/
+└── lecture_outline.json
+```
+
+---
+
+## 8.2 Chapter Builder ✅
+
+Goal:
+
+Lecture Outline
++
+Merged Objects
+↓
+Chapter Objects
+
+Completed:
+
+* Automatic chapter construction
+* Chunk aggregation
+* Concept deduplication
+* Topic merging
+* Screenshot association
+* Unified chapter schema generation
+
+Chapter Schema:
+
+```json
+{
+  "chapter_id": 1,
+  "title": "...",
+  "chunk_ids": [...],
+  "focus_concepts": [...],
+  "topics": [...],
+  "concepts": [...],
+  "lecture_notes": [...],
+  "visual_notes": [...],
+  "important_information": [...],
+  "inferred_knowledge": [...],
+  "screenshots": [...]
+}
+```
+
+Results:
+
+* Structured chapter objects created
+* Complete educational context preserved
+
+Output:
+
+```text
+outputs/chapters/
+├── chapter_1.json
+├── chapter_2.json
+...
+```
+
+---
+
+## 8.3 Study Notes Generation ✅
+
+Goal:
+
+Chapter Objects
+↓
+Professional Study Notes
+
+Completed:
+
+* Chapter-aware note generation
+* Lecture-wide context awareness
+* Duplicate reduction across chapters
+* Educational content synthesis
+* Markdown generation
+
+Features:
+
+* Core Concepts
+* Detailed Explanations
+* Important Observations
+* Applications
+* Key Takeaways
+* Technical formatting
+* Tables and lists
+
+Results:
+
+* High-quality structured study notes
+* Minimal cross-chapter repetition
+* Textbook-style educational content
+
+Output:
+
+```text
+outputs/notes/
+├── chapter_1.md
+├── chapter_2.md
+...
+└── study_notes.md
+```
+
+---
+
+## 8.4 Intelligent Screenshot Selection ✅
+
+Goal:
+
+Chapter
++
+Candidate Screenshots
+↓
+Important Educational Screenshots
+
+Completed:
+
+* Vision-based screenshot analysis
+* Automatic educational value estimation
+* Screenshot ranking
+* Context-aware placement metadata
+* Importance scoring
+
+Screenshot Schema:
+
+```json
+{
+  "chapter_id": 1,
+  "screenshots": [
+    {
+      "path": "...",
+      "reason": "...",
+      "section": "...",
+      "importance": 10
+    }
+  ]
+}
+```
+
+Results:
+
+* Only meaningful screenshots selected
+* Reduced visual clutter
+* Educational diagrams prioritized
+
+Output:
+
+```text
+outputs/screenshots/selected/
+├── chapter_1_screenshots.json
+├── chapter_2_screenshots.json
+...
+```
+
+---
+
+## 8.5 Study Notes PDF Generation ✅
+
+Goal:
+
+Study Notes
++
+Selected Screenshots
+↓
+Professional Study Guide PDF
+
+Completed:
+
+* Markdown rendering
+* Professional PDF layout
+* Chapter formatting
+* Table rendering
+* Mathematical notation support
+* Screenshot integration
+* Automatic pagination
+
+Results:
+
+* High-quality printable study guide
+* Rich multimodal educational content
+* Consistent formatting across chapters
+
+Output:
+
+```text
+outputs/notes/
+├── study_notes.md
+└── study_notes.pdf
+```
+
+---
+
+## 8.6 Revision Notes Generation ✅
+
+Goal:
+
+Study Notes
+↓
+Concise Revision Notes
+
+Completed:
+
+* Chapter compression
+* Redundant information removal
+* Revision-focused restructuring
+* Formula preservation
+* Complexity preservation
+* Markdown generation
+
+Features:
+
+* Core Idea
+* Key Concepts
+* Operations
+* Complexity
+* Important Observations
+
+Results:
+
+* High information density
+* Exam-oriented revision material
+* Significantly reduced reading time
+
+Output:
+
+```text
+outputs/revision/
+├── revision_chapter_1.md
+├── revision_chapter_2.md
+...
+└── revision_notes.md
+```
+
+---
+
+## 8.7 Revision PDF Generation ✅
+
+Goal:
+
+Revision Notes
+↓
+Compact Revision Sheet
+
+Completed:
+
+* Professional revision layout
+* Dense formatting
+* Tables
+* Clean typography
+* Printable revision PDF
+
+Results:
+
+* Quick-review document
+* Ideal for last-minute revision
+* Compact yet comprehensive
+
+Output:
+
+```text
+outputs/revision/
+├── revision_notes.md
+└── revision_notes.pdf
+```
+
+---
+
+## 8.8 Assessment Generation ✅
+
+Goal:
+
+Study Notes
+↓
+Comprehensive Assessment
+
+Completed:
+
+* Automatic question generation
+* Multi-format assessments
+* Difficulty balancing
+* Concept coverage
+* Answer generation
+* Explanation generation
+
+Supported Question Types:
+
+* Multiple Choice
+* True / False
+* Fill in the Blank
+* Short Answer
+* Conceptual Questions
+* Scenario-based Questions
+* Complexity Questions
+
+Assessment Schema:
+
+```json
+{
+  "question_id": 1,
+  "chapter_id": 1,
+  "type": "MCQ",
+  "difficulty": "Easy",
+  "concepts": [...],
+  "question": "...",
+  "options": [...],
+  "answer": "...",
+  "explanation": "..."
+}
+```
+
+Results:
+
+* Diverse educational assessments
+* Balanced question difficulty
+* Concept-focused evaluation
+
+Output:
+
+```text
+outputs/assessment/
+├── assessment.json
+└── assessment.pdf
+```
+
+---
+
+# Current Project Status
+
+Current Pipeline:
+
+Video
+
+↓
+
+Ingestion
+
+↓
+
+Transcription
+
+↓
+
+Chunking
+
+↓
+
+Knowledge Extraction
+
+↓
+
+Frame Extraction
+
+↓
+
+Scene Detection
+
+↓
+
+Visual Knowledge Extraction
+
+↓
+
+Knowledge Merging
+
+↓
+
+Lecture Outline Generation
+
+↓
+
+Chapter Builder
+
+↓
+
+Study Notes Generation
+
+↓
+
+Screenshot Selection
+
+↓
+
+Study Notes PDF
+
+↓
+
+Revision Notes Generation
+
+↓
+
+Revision PDF
+
+↓
+
+Assessment Generation
+
+↓
+
+Assessment PDF
+
+NorAI can now automatically transform a lecture into a complete educational package consisting of study notes, revision material, assessments, and professionally formatted PDFs.
+
+---
+
+# Upcoming Work
+
+## Week 9 - Interactive Learning Assistant
+
+Goal:
+
+Educational Content
+
+↓
+
+Personalized Learning Experience
+
+Planned Features:
+
+* Retrieval-Augmented Question Answering (RAG)
+* Context-aware AI tutor
+* Screenshot-grounded explanations
+* Flashcard generation
+* Interactive quizzes
+* Learning progress tracking
 
 ---
 
@@ -531,32 +974,35 @@ Output:
 
 Planned Features:
 
-* Quiz generation
+* AI Tutor
 * Flashcard generation
-* Revision mode
-* Multi-video retrieval
+* Interactive quiz engine
+* Multi-video knowledge base
 * Lecture comparison
-* Interactive learning assistant
-* Web UI
+* Cross-lecture retrieval
+* Web application
 * User authentication
 * Personal knowledge base
 * Learning analytics
+* Adaptive learning recommendations
 
 ---
 
 # Lessons Learned
 
-* Preserve timestamps everywhere.
-* Transcript-only understanding is insufficient.
-* Visual information contains substantial educational value.
-* Knowledge extraction should be separated from retrieval.
-* Structured educational objects scale better than raw transcripts.
-* Retry mechanisms are essential for large-scale AI pipelines.
-* Merged multimodal knowledge creates significantly richer lecture understanding.
+* Global lecture structure significantly improves note quality.
+* Chapter ownership greatly reduces cross-chapter duplication.
+* Educational content generation benefits from a multi-stage pipeline rather than a single LLM prompt.
+* Vision models are highly effective for selecting educational screenshots.
+* Separating study notes, revision notes, and assessments produces better specialized learning resources.
+* Structured intermediate artifacts make the pipeline easier to debug, improve, and extend.
+* Modular pipeline design enables independent optimization of each educational component.
 
 ---
 
 Last Updated:
 
-Week 7 Complete
-NorAI v0.7
+**Week 8 Complete**
+
+**NorAI v0.8 — Educational Content Generation Pipeline Complete**
+
