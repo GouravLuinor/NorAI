@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'Fira Code', monospace;
+
+  --color-nb: #0F0F0E;
+  --color-ns: #181817;
+  --color-ns2: #212120;
+  --color-ns3: #2A2A28;
+  --color-ns4: #333330;
+
+  --color-nt: #E8E6E0;
+  --color-nt2: #8C8A82;
+  --color-nt3: #5A5852;
+  --color-nt4: #3A3A37;
+
+  --color-np: #7C6FD4;
+  --color-npb: rgba(124, 111, 212, 0.13);
+  --color-npbr: rgba(124, 111, 212, 0.28);
+
+  --color-na: #C88C14;
+  --color-nab: rgba(200, 140, 20, 0.11);
+  --color-nabr: rgba(200, 140, 20, 0.26);
+
+  --color-ng: #289650;
+  --color-ngb: rgba(40, 150, 80, 0.11);
+  --color-ngbr: rgba(40, 150, 80, 0.28);
+
+  --color-nr: #BE3C3C;
+  --color-nrb: rgba(190, 60, 60, 0.11);
+  --color-nrbr: rgba(190, 60, 60, 0.26);
+
+  --color-nbl: #3782C8;
+  --color-nblb: rgba(55, 130, 200, 0.11);
+  --color-nblbr: rgba(55, 130, 200, 0.26);
+
+  --color-bdr: rgba(255, 255, 255, 0.07);
+  --color-bdr2: rgba(255, 255, 255, 0.11);
+
+  --radius: 0.5rem;
+}
+
+/* Subtle custom scrollbar for all scrollable areas */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 5px;
+}
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+.overflow-y-auto:hover::-webkit-scrollbar-thumb {
+  background: rgba(124, 111, 212, 0.25);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes scrollpulse {
+  0% { background: var(--color-npb); box-shadow: 0 0 0 2px rgba(124,111,212,0.4); }
+  100% { background: transparent; box-shadow: 0 0 0 0 transparent; }
+}
+
+.scroll-highlight {
+  animation: scrollpulse 1.5s cubic-bezier(0.4,0,0.2,1) forwards;
+  border-radius: 10px;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}

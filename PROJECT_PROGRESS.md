@@ -947,26 +947,384 @@ NorAI can now automatically transform a lecture into a complete educational pack
 
 ---
 
-# Upcoming Work
+# Week 9 - Interactive AI Tutor ✅
 
-## Week 9 - Interactive Learning Assistant
+## 9.1 LangGraph Tutor Architecture ✅
 
 Goal:
 
-Educational Content
+Educational Knowledge Base
 
 ↓
 
-Personalized Learning Experience
+State-driven AI Tutor
+
+Completed:
+
+* LangGraph workflow
+* Persistent conversation state
+* Modular node architecture
+* Conditional graph routing
+* Multi-phase tutor pipeline
+
+Features:
+
+* Stateful conversations
+* Extensible graph design
+* Modular retrieval pipeline
+* Independent tool execution
+
+Output:
+
+```text
+tutor/
+    __init__.py
+    build_index.py              – build Chroma index from study notes
+    build_screenshot_index.py   – build screenshot caption index
+    chunker.py                  – Markdown → heading-hierarchy chunks
+    cli.py                      – interactive CLI for tutor testing
+    config.py                   – model, API key, checkpoint configuration
+    embedding.py                – Gemini embedding wrapper for Chroma
+    graph.py                    – LangGraph workflow and routing
+    memory.py                   – SQLite checkpoint persistence
+    nodes.py                    – core tutor nodes (memory, answer generation)
+    nodes_retrieval.py          – query rewrite, chapter routing, text/image retrieval
+    prompts.py                  – tutor prompts and context builders
+    quiz_nodes.py               – interactive quiz state machine
+    retrieval_config.py         – retrieval and screenshot constants
+    retriever.py                – Chroma retrieval utilities
+    state.py                    – ChatState definition
+    test_chunker.py             – unit tests for Markdown chunking
+    tools.py                    – tool implementations (quiz, summary, flashcards)
+
+---
+
+## 9.2 Persistent Memory & Multi-Thread Conversations ✅
+
+Goal:
+
+User Conversations
+
+↓
+
+Persistent Learning Sessions
+
+Completed:
+
+* SQLite checkpointing
+* Conversation persistence
+* Multi-thread support
+* Memory restoration
+* Conversation window management
+
+Results:
+
+* Multiple independent conversations
+* Memory preserved across sessions
+* Long-running tutoring supported
+
+---
+
+## 9.3 Intelligent Retrieval Pipeline ✅
+
+Goal:
+
+Student Question
+
+↓
+
+Relevant Educational Context
+
+Completed:
+
+* Gemini embedding generation
+* ChromaDB vector search
+* Heading-aware Markdown chunking
+* Query rewriting
+* Chapter-aware retrieval
+* Parallel retrieval pipeline
+
+Features:
+
+* Semantic retrieval
+* Chapter-specific search
+* Automatic query refinement
+* Efficient vector indexing
+
+Data Sources:
+
+```text
+outputs/notes/chapter_*.md
+```
+
+---
+
+## 9.4 Screenshot-Grounded Learning ✅
+
+Goal:
+
+Question
+
+*
+
+Relevant Slides
+
+↓
+
+Visual Explanation
+
+Completed:
+
+* Screenshot caption indexing
+* Screenshot vector retrieval
+* Parallel image retrieval
+* Screenshot-grounded responses
+* Educational citation support
+
+Results:
+
+* Relevant lecture slides retrieved alongside text
+* Visual explanations integrated naturally
+* Better conceptual understanding
+
+Data Sources:
+
+```text
+outputs/screenshots/selected/
+```
+
+---
+
+## 9.5 Conversation Intelligence ✅
+
+Goal:
+
+Natural Multi-turn Tutoring
+
+Completed:
+
+* Conversation summarization
+* Context window compression
+* Chapter routing
+* Confidence estimation
+* Progressive response prompting
+
+Features:
+
+* Windowed memory
+* Low-confidence signaling
+* Automatic conversation summaries
+* Natural follow-up handling
+
+Results:
+
+* Stable long conversations
+* Reduced token usage
+* Better conversational continuity
+
+---
+
+## 9.6 Interactive Quiz Engine ✅
+
+Goal:
+
+Tutor
+
+↓
+
+Active Learning
+
+Completed:
+
+* Interactive quiz sessions
+* Question tracking
+* Answer collection
+* Automatic grading
+* LLM-based evaluation
+* Session scoring
+
+Supported Questions:
+
+* Multiple Choice
+* True / False
+* Fill in the Blank
+* Short Answer
+* Conceptual
+* Scenario-based
+* Complexity
+
+Results:
+
+* Interactive assessment directly inside the tutor
+* Immediate educational feedback
+
+---
+
+## 9.7 Tool Calling Infrastructure ✅
+
+Goal:
+
+AI Tutor
+
+↓
+
+Educational Agent
+
+Completed:
+
+* LLM tool selection
+* Generic tool execution
+* ToolNode integration
+* Agent loop
+* Extensible tool framework
+
+Current Tools:
+
+* Start Quiz
+* Chapter Summary
+* Flashcards
+
+Results:
+
+* Tutor automatically selects appropriate tools
+* Easily extensible architecture for future capabilities
+
+---
+
+## 9.8 Flashcard Generation ✅
+
+Goal:
+
+Assessment Bank
+
+↓
+
+Revision Flashcards
+
+Completed:
+
+* Flashcard generation
+* Random concept selection
+* Question-answer format
+* Interactive review
+
+Results:
+
+* Lightweight revision mode
+* Rapid concept recall
+* Reuse of assessment knowledge base
+
+---
+
+# Current Project Status
+
+Current Pipeline:
+
+Video
+
+↓
+
+Ingestion
+
+↓
+
+Transcription
+
+↓
+
+Chunking
+
+↓
+
+Knowledge Extraction
+
+↓
+
+Visual Knowledge Extraction
+
+↓
+
+Knowledge Merging
+
+↓
+
+Lecture Outline Generation
+
+↓
+
+Chapter Builder
+
+↓
+
+Study Notes
+
+↓
+
+Study PDF
+
+↓
+
+Revision Notes
+
+↓
+
+Revision PDF
+
+↓
+
+Assessment Generation
+
+↓
+
+Assessment PDF
+
+↓
+
+LangGraph AI Tutor
+
+↓
+
+Screenshot Retrieval
+
+↓
+
+Interactive Quiz
+
+↓
+
+Flashcards
+
+↓
+
+Tool Calling
+
+NorAI has evolved from a lecture-processing pipeline into a complete AI-powered educational platform capable of generating learning resources and providing interactive tutoring.
+
+---
+
+# Upcoming Work
+
+## Week 10 - Web Platform
+
+Goal:
+
+Educational Platform
+
+↓
+
+Complete Learning Experience
 
 Planned Features:
 
-* Retrieval-Augmented Question Answering (RAG)
-* Context-aware AI tutor
-* Screenshot-grounded explanations
-* Flashcard generation
+* Modern web interface
+* Lecture upload workflow
+* Processing dashboard
+* Study notes viewer
+* Revision mode
+* AI Tutor interface
 * Interactive quizzes
-* Learning progress tracking
+* Flashcard interface
+* User progress dashboard
 
 ---
 
@@ -974,35 +1332,34 @@ Planned Features:
 
 Planned Features:
 
-* AI Tutor
-* Flashcard generation
-* Interactive quiz engine
-* Multi-video knowledge base
-* Lecture comparison
-* Cross-lecture retrieval
 * Web application
 * User authentication
 * Personal knowledge base
+* Multi-video knowledge base
+* Cross-lecture retrieval
+* Lecture comparison
+* Adaptive expertise tracking
 * Learning analytics
-* Adaptive learning recommendations
+* Personalized learning recommendations
+* Async backend infrastructure
+* Multi-user deployment
 
 ---
 
 # Lessons Learned
 
-* Global lecture structure significantly improves note quality.
-* Chapter ownership greatly reduces cross-chapter duplication.
-* Educational content generation benefits from a multi-stage pipeline rather than a single LLM prompt.
-* Vision models are highly effective for selecting educational screenshots.
-* Separating study notes, revision notes, and assessments produces better specialized learning resources.
-* Structured intermediate artifacts make the pipeline easier to debug, improve, and extend.
-* Modular pipeline design enables independent optimization of each educational component.
+* Graph-based orchestration scales significantly better than traditional RAG pipelines.
+* Separating retrieval, reasoning, and tool execution greatly improves maintainability.
+* Persistent memory enables more natural educational conversations.
+* Screenshot-grounded explanations provide richer learning than text-only retrieval.
+* Tool calling creates a flexible foundation for future educational capabilities.
+* Structured educational artifacts (study notes, revision notes, assessments) form a strong retrieval knowledge base.
+* Modular architecture allows independent improvement of each subsystem without redesigning the overall pipeline.
 
 ---
 
 Last Updated:
 
-**Week 8 Complete**
+**Week 9 Complete**
 
-**NorAI v0.8 — Educational Content Generation Pipeline Complete**
-
+**NorAI v0.9 — Interactive AI Tutor & Learning Platform Backend Complete**

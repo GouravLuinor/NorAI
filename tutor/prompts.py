@@ -89,6 +89,12 @@ _NO_CONTEXT_NOTE = (
     "[No relevant passages were found in the study notes for this question.]"
 )
 
+_LOW_CONFIDENCE_NOTE = (
+    "[These passages are loosely related to the question but may not contain "
+    "the exact answer. If the notes don't fully address the question, say so "
+    "clearly and distinguish what's from the notes vs. general knowledge.]"
+)
+
 _CONTEXT_HEADER = (
     "The following passages from the lecture study notes are relevant to the "
     "user's question. Use ONLY the parts that directly answer their specific "
@@ -98,11 +104,14 @@ _CONTEXT_HEADER = (
 )
 
 
-def build_context_block(chunks: list[dict]) -> str:
-    """Format retrieved_chunks into a CONTEXT block for prompt injection.
+def build_context_block(chunks: list[dict], low_confidence: bool = False) -> str:
+    """
+    Format retrieved_chunks into a CONTEXT block for prompt injection.
 
     Args:
         chunks: list of RetrievedChunk dicts from retriever.retrieve().
+        low_confidence: If True, use a disclaimer that tells the model the
+                       passages may not contain the exact answer.
 
     Returns:
         A formatted string with context passages, or a no-context note if empty.
@@ -110,7 +119,9 @@ def build_context_block(chunks: list[dict]) -> str:
     if not chunks:
         return f"--- CONTEXT ---\n{_NO_CONTEXT_NOTE}\n--- END CONTEXT ---"
 
-    lines = ["--- CONTEXT ---", _CONTEXT_HEADER, ""]
+    header = _LOW_CONFIDENCE_NOTE if low_confidence else _CONTEXT_HEADER
+
+    lines = ["--- CONTEXT ---", header, ""]
     for i, chunk in enumerate(chunks, 1):
         path = chunk.get("heading_path") or chunk.get("heading") or "Unknown section"
         text = chunk.get("text", "").strip()

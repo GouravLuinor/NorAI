@@ -56,42 +56,28 @@ from langgraph.graph.message import add_messages
 
 
 class ChatState(TypedDict):
-
-    # Identity — which conversation this is. Used as the checkpointer's
-    # thread_id key, so memory for "Conversation A" never bleeds into
-    # "Conversation B" even though both share the same SQLite file.
     thread_id: str
-
-    # The full conversation transcript. Append-only via add_messages.
-    # HumanMessage for the student's turns, AIMessage for the tutor's.
     messages: Annotated[list[BaseMessage], add_messages]
-
-    # Which lecture this thread is scoped to. Set once when the thread
-    # is created; read by prompts.py to ground the tutor's system
-    # prompt ("you are tutoring the student on {lecture_title}").
     lecture_title: str
+    chapter_id: int | None
+    context_messages: list[BaseMessage]
 
-    # --- Current-turn scratch space (plain replace — see module
-    # docstring for why these are NOT add_messages-style accumulators) ---
+    # ── Phase 6: tool calling ────────────────────────────────────────────
+    is_command: bool                # set by detect_chapter when user asks for quiz/summary/flashcards
+    command_type: str              # "quiz", "summary", or "flashcards"
+    
+    # ── Quiz mode (still used by the existing quiz loop) ─────────────────
+    quiz_active: bool
+    quiz_awaiting_answer: bool
+    quiz_chapter_id: int | None
+    quiz_questions: list[dict]
+    quiz_answers: list[dict]
+    quiz_index: int
+    quiz_score: int
+    quiz_total: int
 
-    # The student's question for THIS turn, as raw text. Mirrors the
-    # latest HumanMessage in `messages` but kept as a plain string too
-    # since several Phase 3+ nodes (query rewrite, retrieval) want to
-    # read/transform it without unpacking a BaseMessage each time.
+    # ── Current-turn scratch space ───────────────────────────────────────
     user_question: str
-
-    # Phase 3+: chunks pulled from the knowledge base for this turn's
-    # question. Empty list in Phase 1/2, where there's no retrieval yet.
     retrieved_chunks: list
-
-    # Phase 4+: screenshot references retrieved for this turn's
-    # question (see outputs/screenshots/keyframes metadata — path,
-    # reason, section, importance). Empty list until Phase 4.
     retrieved_images: list
-
-    # This turn's generated answer, as plain text. Also gets wrapped
-    # into an AIMessage and appended to `messages` by generate_answer
-    # node — kept as a separate plain-text field too since it's
-    # convenient for the CLI harness (and later, any API layer) to
-    # read the latest answer directly without unpacking messages.
     answer: str

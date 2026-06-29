@@ -40,3 +40,9 @@ TOP_K = 5  # chunks returned per query
 # gemini-embedding-2 free tier: varies; add a small sleep between batch calls
 # during indexing to stay safely under limits.
 EMBED_BATCH_SLEEP_SEC = 0.5  # seconds between batches during build_index
+
+# ── Phase 5: confidence signaling ─────────────────────────────────────────────
+# Maximum cosine distance for a chunk to be considered a "strong" match.
+# Chunks above this threshold trigger a low-confidence disclaimer in the answer.
+# Based on observed distances: good matches 0.20-0.26, weak matches 0.35+.
+CONFIDENCE_THRESHOLD = 0.30

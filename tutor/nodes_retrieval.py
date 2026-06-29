@@ -29,7 +29,7 @@ Why keep it as a separate node (not inline in retrieve)?
 """
 
 from __future__ import annotations
-
+import re
 import logging
 from typing import Any
 
@@ -57,6 +57,70 @@ Rules:
 - Maximum 1 sentence.
 """
 
+# ── Chapter detection (Phase 5) ───────────────────────────────────────────────
+
+# Word-to-number mapping for spelled-out ordinals
+_WORD_TO_NUM = {
+    "first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5,
+    "sixth": 6, "seventh": 7, "eighth": 8, "ninth": 9, "tenth": 10,
+}
+
+_QUIZ_KEYWORDS = ["quiz", "quizzes", "test me", "ask me questions", "give me a quiz",
+                  "start a quiz", "question me", "pop quiz"]
+_SUMMARY_KEYWORDS = ["summarize", "summarise", "summary", "overview", "recap"]
+_FLASHCARD_KEYWORDS = ["flashcard", "flashcards", "flash card", "show me cards", "study cards"]
+
+_QUIZ_PATTERN = re.compile(r"\b(" + "|".join(_QUIZ_KEYWORDS) + r")\b", re.IGNORECASE)
+_SUMMARY_PATTERN = re.compile(r"\b(" + "|".join(_SUMMARY_KEYWORDS) + r")\b", re.IGNORECASE)
+_FLASHCARD_PATTERN = re.compile(r"\b(" + "|".join(_FLASHCARD_KEYWORDS) + r")\b", re.IGNORECASE)
+
+# Regex patterns: ordered most-specific-first. First match wins.
+_CHAPTER_REGEXES = [
+    (re.compile(r"\bchapter\s+(\d+)\b", re.IGNORECASE), lambda m: int(m.group(1))),
+    (re.compile(r"\bch(?:apter|apte|apt|ap)[.\s]*(\d+)\b", re.IGNORECASE), lambda m: int(m.group(1))),
+    (re.compile(r"\b(?:in|from)\s+the\s+(\w+)\s+chapter\b", re.IGNORECASE),
+     lambda m: _WORD_TO_NUM.get(m.group(1).lower())),
+]
+
+
+def _extract_chapter_id(text: str) -> int | None:
+    """Return chapter number if the text contains an explicit chapter reference."""
+    for pattern, extractor in _CHAPTER_REGEXES:
+        match = pattern.search(text)
+        if match:
+            num = extractor(match)
+            if num is not None:
+                return num
+    return None
+
+
+def detect_chapter_node(state: dict, config: RunnableConfig) -> dict:
+    question = state.get("user_question", "")
+    result = {
+        "chapter_id": None,
+        "is_command": False,
+        "command_type": "",          # "quiz", "summary", or "flashcards"
+    }
+
+    chapter_id = _extract_chapter_id(question)
+    if chapter_id is not None:
+        result["chapter_id"] = chapter_id
+
+    if _QUIZ_PATTERN.search(question):
+        result["is_command"] = True
+        result["command_type"] = "quiz"
+        logger.info(f"Quiz command detected (chapter {chapter_id})")
+    elif _SUMMARY_PATTERN.search(question):
+        result["is_command"] = True
+        result["command_type"] = "summary"
+        logger.info(f"Summary command detected (chapter {chapter_id})")
+    elif _FLASHCARD_PATTERN.search(question):
+        result["is_command"] = True
+        result["command_type"] = "flashcards"
+        logger.info(f"Flashcard command detected (chapter {chapter_id})")
+
+    return result
+
 # Add to existing nodes_retrieval.py
 
 def retrieve_images_node(state: dict, config: RunnableConfig) -> dict:
@@ -79,9 +143,15 @@ def retrieve_images_node(state: dict, config: RunnableConfig) -> dict:
             name=SCREENSHOT_COLLECTION_NAME,
             embedding_function=embedding_fn,
         )
+        chapter_id = state.get("chapter_id")  # Phase 5: chapter routing
+        where_filter = None
+        if chapter_id is not None:
+            where_filter = {"chapter_id": chapter_id}
+
         results = collection.query(
             query_texts=[query],
             n_results=TOP_K_IMAGES,
+            where=where_filter,
             include=["metadatas", "distances"],
         )
         
@@ -200,7 +270,8 @@ def retrieve_node(state: dict, config: RunnableConfig) -> dict:
         return {"retrieved_chunks": []}
 
     try:
-        chunks = retrieve(query=question, chapter_id=None, k=TOP_K)
+        chapter_id = state.get("chapter_id")  # Phase 5: chapter routing
+        chunks = retrieve(query=question, chapter_id=chapter_id, k=TOP_K)
         logger.debug(f"retrieve_node: {len(chunks)} chunks for query {question!r}")
         return {"retrieved_chunks": chunks}
     except IndexNotBuiltError as exc:

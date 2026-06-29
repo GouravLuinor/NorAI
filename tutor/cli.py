@@ -92,6 +92,17 @@ def run_cli():
             }
             if is_new_thread:
                 input_state["lecture_title"] = lecture_title
+                input_state["context_messages"] = []
+                input_state["command_type"] = ""
+                input_state["quiz_active"] = False
+                input_state["quiz_awaiting_answer"] = False
+                input_state["quiz_questions"] = []
+                input_state["quiz_answers"] = []
+                input_state["quiz_index"] = 0
+                input_state["quiz_score"] = 0
+                input_state["quiz_total"] = 0
+                input_state["quiz_chapter_id"] = None
+                input_state["is_command"] = False
 
             try:
                 result = graph.invoke(input_state, config)
@@ -100,8 +111,21 @@ def run_cli():
                 print(f"(error: {e})\n")
                 continue
 
-            print(f"[{thread_id}] Tutor: {result['answer']}\n")
-
+            # Phase 5: quiz mode may not set 'answer'
+            if result.get("quiz_active"):
+                # During a quiz, the last message is the question or feedback
+                last_msg = result.get("messages", [])[-1] if result.get("messages") else None
+                if last_msg:
+                    print(f"[{thread_id}] Tutor: {last_msg.content}\n")
+            else:
+                answer = result.get("answer", "")
+                if answer:
+                    print(f"[{thread_id}] Tutor: {answer}\n")
+                else:
+                    # Fallback: print the last AI message
+                    last_msg = result.get("messages", [])[-1] if result.get("messages") else None
+                    if last_msg:
+                        print(f"[{thread_id}] Tutor: {last_msg.content}\n")
 
 if __name__ == "__main__":
     run_cli()
