@@ -107,7 +107,7 @@ export function ChatArea() {
             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-np to-nbl flex items-center justify-center text-[9px] font-medium text-white shrink-0 mt-0.5 shadow-sm">
               N
             </div>
-            <div className="max-w-[210px] text-[12px] leading-relaxed text-nt2 py-0.5">
+            <div className="max-w-full text-[12px] leading-relaxed text-nt2 py-0.5">
               {streamingText}
             </div>
           </div>

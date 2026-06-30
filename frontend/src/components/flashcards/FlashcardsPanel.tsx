@@ -62,7 +62,7 @@ export function FlashcardsPanel() {
 
       {/* Card – constrained to AI panel width */}
       <div className="flex-1 flex flex-col items-center px-4 pb-4 overflow-y-auto doc-content">
-        <div className="w-full max-w-[220px] aspect-[4/3] cursor-pointer perspective-1000 mx-auto"
+        <div className="w-full max-w-full aspect-[4/3] cursor-pointer perspective-1000 mx-auto"
           onClick={() => setFlipped(!flipped)}>
           <div className={`absolute inset-0 transition-transform duration-500 transform-style-3d ${flipped ? 'rotate-y-180' : ''}`}
             style={{ position: 'relative', width: '100%', height: '100%' }}>

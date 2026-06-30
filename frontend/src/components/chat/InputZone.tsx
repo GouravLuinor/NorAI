@@ -52,7 +52,8 @@ export function InputZone({ onSend }: InputZoneProps) {
         <button
           aria-label="Send message"
           onClick={handleSend}
-          className="w-6.5 h-6.5 rounded-md bg-np flex items-center justify-center text-white hover:bg-[#8E82E0] transition active:scale-93 shrink-0"
+          /* Added "ripple" class here */
+          className="ripple w-6.5 h-6.5 rounded-md bg-np flex items-center justify-center text-white hover:bg-[#8E82E0] transition active:scale-93 shrink-0"
         >
           <ArrowUp size={13} />
         </button>

@@ -94,3 +94,34 @@ html, body, #root {
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
+
+
+/* CSS-only Material Ripple Effect */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 50px);
+  aspect-ratio: 1 / 1;
+  background-color: var(--color-np);
+  border-radius: 50%;
+  pointer-events: none;
+  
+  /* The "end" state of the animation */
+  transform: translate(-50%, -50%) scale(2.5);
+  opacity: 0;
+  transition: transform 400ms ease-out, opacity 400ms ease-out;
+}
+
+.ripple:active::after {
+  /* Instantly shrink and become visible on click down */
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0.3;
+  transition: 0s;
+}

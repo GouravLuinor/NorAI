@@ -9,7 +9,7 @@ export function MessageBubble({ message }: { message: Message }) {
       }`}
     >
       <div
-        className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-medium text-white flex-shrink-0 mt-0.5 ${
+        className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-medium text-white shrink-0 mt-0.5 ${
           isUser
             ? 'bg-ns3 text-nt2'
             : 'bg-gradient-to-br from-np to-nbl shadow-sm'
@@ -19,10 +19,10 @@ export function MessageBubble({ message }: { message: Message }) {
       </div>
       <div className={`${isUser ? 'items-end' : ''}`}>
         <div
-          className={`max-w-[210px] text-[12px] leading-relaxed text-nt2 ${
+          className={`text-[12px] leading-relaxed text-nt2 ${
             isUser
-              ? 'bg-ns3 border border-bdr2 rounded-xl px-2.5 py-2 text-nt'
-              : 'py-0.5'
+              ? 'bg-ns3 border border-bdr2 rounded-xl px-2.5 py-2 text-nt max-w-[85%]'
+              : 'py-0.5 max-w-full'
           }`}
         >
           <p className="whitespace-pre-wrap">{message.content}</p>

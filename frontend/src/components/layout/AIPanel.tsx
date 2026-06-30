@@ -4,6 +4,7 @@ import { ChatArea } from '../chat/ChatArea'
 import { QuizPanel } from '../quiz/QuizPanel'
 import { FlashcardsPanel } from '../flashcards/FlashcardsPanel'
 import { mockQuizQuestions } from '../../mocks/quizData'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export function AIPanel() {
   const { activeChapterId } = useChapterStore()
@@ -19,7 +20,7 @@ export function AIPanel() {
   }
 
   return (
-    <div className="flex flex-col min-h-0 bg-ns overflow-hidden">
+    <div className="flex flex-col min-h-0 bg-ns overflow-hidden h-full">
       {/* Header */}
       <div className="px-3.5 py-2.5 border-b border-bdr flex items-center gap-2 shrink-0">
         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-np to-nbl flex items-center justify-center text-[11px] font-medium text-white shadow-sm relative">
@@ -60,8 +61,21 @@ export function AIPanel() {
         </div>
       </div>
 
-      {/* Panel content */}
-      <div className="flex-1 overflow-hidden">{ActivePanel}</div>
+      {/* Panel content with Framer Motion transitions */}
+      <div className="flex-1 overflow-hidden relative">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={aiMode}
+            initial={{ opacity: 0, x: 15 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -15 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="h-full w-full"
+          >
+            {ActivePanel}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
