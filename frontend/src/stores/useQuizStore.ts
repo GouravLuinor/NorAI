@@ -1,8 +1,14 @@
 import { create } from 'zustand'
 
+export interface QuestionFeedback {
+  question_number: number
+  remark: string
+}
+
 export interface Question {
   id: number
   type: 'MCQ' | 'True/False' | 'ShortAnswer'
+  difficulty?: string
   question: string
   options?: string[]
   answer: string
@@ -17,13 +23,23 @@ interface QuizState {
   questions: Question[]
   currentIndex: number
   answers: string[]
+  confidences: string[]
   score: number
-  evaluation: string | null
+  evaluation: {
+    final_score: number | null
+    total_questions: number
+    per_question_feedback: QuestionFeedback[]
+    overall_insights: string
+  } | null
+  quizStartTime: number | null
+  quizChapterId: number | null
 
-  startQuiz: (questions: Question[]) => void
+  startQuiz: (questions: Question[], chapterId?: number | null) => void
   submitAnswer: (answer: string) => void
+  setConfidence: (confidence: string) => void
   nextQuestion: () => void
-  endQuiz: (evaluation: string) => void
+  endQuiz: (evaluation: QuizState['evaluation']) => void
+  retakeQuiz: () => Promise<void>
   reset: () => void
 }
 
@@ -35,50 +51,75 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   questions: [],
   currentIndex: 0,
   answers: [],
+  confidences: [],
   score: 0,
   evaluation: null,
+  quizStartTime: null,
+  quizChapterId: null,
 
-  startQuiz: (questions) =>
+  startQuiz: (questions, chapterId = null) =>
     set({
       aiMode: 'quiz',
       isActive: true,
       questions,
       currentIndex: 0,
       answers: [],
+      confidences: new Array(questions.length).fill(''),
       score: 0,
       evaluation: null,
+      quizStartTime: Date.now(),
+      quizChapterId: chapterId ?? null,
     }),
 
-  // Record answer, update score, DO NOT advance index
   submitAnswer: (answer) => {
-    const { questions, currentIndex, answers, score } = get()
-    const currentQ = questions[currentIndex]
-    const isCorrect = answer.trim().toLowerCase() === currentQ.answer.trim().toLowerCase()
+    const { questions, currentIndex, score } = get()
+    const q = questions[currentIndex]
+    const isAutoGraded = q.type === 'MCQ' || q.type === 'True/False'
+    const isCorrect = isAutoGraded
+      ? answer.trim().toLowerCase() === q.answer.trim().toLowerCase()
+      : false
     const newScore = isCorrect ? score + 1 : score
     set({
-      answers: [...answers, answer],
+      answers: [...get().answers, answer],
       score: newScore,
     })
   },
 
-  // Move to next question or trigger evaluation if last
+  setConfidence: (confidence) => {
+    const { currentIndex, confidences } = get()
+    const updated = [...confidences]
+    updated[currentIndex] = confidence
+    set({ confidences: updated })
+  },
+
   nextQuestion: () => {
-    const { currentIndex, questions, score, answers, endQuiz } = get()
+    const { currentIndex, questions } = get()
     const nextIndex = currentIndex + 1
-    if (nextIndex >= questions.length) {
-      // Last question – trigger evaluation
-      const msg = `You scored ${score}/${questions.length}. ${
-        score === questions.length
-          ? "Perfect! You've mastered these concepts."
-          : 'Review the questions you missed to strengthen your understanding.'
-      }`
-      endQuiz(msg)
-    } else {
+    if (nextIndex < questions.length) {
       set({ currentIndex: nextIndex })
     }
   },
 
-  endQuiz: (evaluation) => set({ evaluation }),
+  endQuiz: (evaluation) => {
+    set({ evaluation })
+  },
+
+  retakeQuiz: async () => {
+    const { quizChapterId } = get()
+    const questions = await fetchQuizQuestions(quizChapterId ?? undefined)
+    if (questions.length > 0) {
+      set({
+        questions,
+        currentIndex: 0,
+        answers: [],
+        confidences: new Array(questions.length).fill(''),
+        score: 0,
+        evaluation: null,
+        quizStartTime: Date.now(),
+        isActive: true,
+      })
+    }
+  },
 
   reset: () =>
     set({
@@ -86,8 +127,40 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       questions: [],
       currentIndex: 0,
       answers: [],
+      confidences: [],
       score: 0,
       evaluation: null,
+      quizStartTime: null,
       aiMode: 'tutor',
     }),
 }))
+
+// ── API helpers ──────────────────────────────────────────────────────────────
+
+export async function fetchQuizQuestions(chapterId?: number): Promise<Question[]> {
+  const params = chapterId !== undefined ? `?chapter_id=${chapterId}` : ''
+  const res = await fetch(`/quiz/questions${params}`)
+  if (!res.ok) throw new Error('Failed to load quiz questions')
+  return res.json()
+}
+
+export async function evaluateQuiz(
+  questions: any[],
+  startTime: number,
+  confidences: string[]
+): Promise<QuizState['evaluation']> {
+  const elapsed = Math.round((Date.now() - startTime) / 1000)
+  const payload = {
+    questions,
+    elapsed_seconds: elapsed,
+    confidences,
+  }
+  const res = await fetch('/quiz/evaluate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error('Evaluation failed')
+  const data = await res.json()
+  return data.evaluation
+}

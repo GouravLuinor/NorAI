@@ -2,6 +2,7 @@ import type { Message } from '../../stores/useThreadStore'
 
 export function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user'
+  const displayContent = message.content
   return (
     <div
       className={`flex gap-2 items-start ${
@@ -25,7 +26,7 @@ export function MessageBubble({ message }: { message: Message }) {
               : 'py-0.5 max-w-full'
           }`}
         >
-          <p className="whitespace-pre-wrap">{message.content}</p>
+          <p className="whitespace-pre-wrap">{displayContent}</p>
         </div>
         <div
           className={`text-[9px] text-nt4 mt-1 ${isUser ? 'text-right' : ''}`}

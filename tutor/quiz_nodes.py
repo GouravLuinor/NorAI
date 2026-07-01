@@ -174,7 +174,17 @@ def quiz_store_answer(state: dict, config: RunnableConfig) -> dict:
 def quiz_llm_evaluate(state: dict, config: RunnableConfig) -> dict:
     """
     Final LLM evaluation: send all questions + user answers to the LLM,
-    get back a score breakdown and insights.
+    get back a structured evaluation with a final score, per‑question
+    remarks, and overall insights.
+
+    The prompt requires the LLM to output:
+        FINAL SCORE: X out of Y
+        Q1: remark
+        Q2: remark
+        ...
+        Overall Insights: ...
+    The score is parsed and stored in state['quiz_score'].
+    The evaluation text (without the score line) is returned as a message.
     """
     quiz_answers = state.get("quiz_answers", [])
     total = len(quiz_answers)
@@ -186,21 +196,34 @@ def quiz_llm_evaluate(state: dict, config: RunnableConfig) -> dict:
     prompt_lines = [
         "You are a tutor evaluating a student's quiz. Below are the questions, the student's answers, and the correct answers.",
         "For each question, decide if the student's answer is essentially correct. Be lenient with wording, spelling, and minor variations.",
-        "Then provide:",
-        "- A total score (X out of Y).",
-        "- A brief remark for each question (what they got right/wrong, and why).",
-        "- Overall insights: what concepts they understand well, what needs review.",
+        "Then provide a final score and detailed feedback.",
         "",
-        "Format your response naturally, like a tutor giving feedback. Do NOT use JSON.",
+        "Your response MUST follow this exact structure:",
+        "1. A line with the final score in the format 'FINAL SCORE: X out of Y' (e.g., 'FINAL SCORE: 3 out of 5').",
+        "2. For each question, a line starting with 'Q1:', 'Q2:', etc. followed by your remark.",
+        "   Example: 'Q1: Correct. You clearly understand…'",
+        "3. After all questions, a short paragraph (2-3 lines) starting with 'Overall Insights:' for a brief summary.",
         "",
+        "Do NOT include any introduction. Start directly with the first question.",
     ]
+
+    # Add time and confidence if available
+    if state.get("quiz_start_time"):
+        elapsed = (time.time() - state["quiz_start_time"]) if isinstance(state["quiz_start_time"], (int, float)) else 0
+        mins, secs = divmod(int(elapsed), 60)
+        prompt_lines.append(f"Time taken: {mins}m {secs}s.")
+    if state.get("confidences"):
+        prompt_lines.append("Confidence ratings per question: " + ", ".join(state["confidences"]))
+
+    prompt_lines.append("")
+
     for i, a in enumerate(quiz_answers, 1):
-        prompt_lines.append(f"Q{i} ({a['type']}): {a['question']}")
-        if a["options"]:
+        prompt_lines.append(f"Q{i} ({a.get('type', '')}): {a['question']}")
+        if a.get("options"):
             prompt_lines.append(f"Options: {', '.join(a['options'])}")
-        prompt_lines.append(f"Your answer: {a['user_answer']}")
-        prompt_lines.append(f"Correct answer: {a['correct_answer']}")
-        if a["explanation"]:
+        prompt_lines.append(f"Your answer: {a.get('user_answer', '')}")
+        prompt_lines.append(f"Correct answer: {a['answer']}")
+        if a.get("explanation"):
             prompt_lines.append(f"Explanation: {a['explanation']}")
         prompt_lines.append("")
 
@@ -214,7 +237,7 @@ def quiz_llm_evaluate(state: dict, config: RunnableConfig) -> dict:
 
         llm = ChatGoogleGenerativeAI(
             model=MODEL_NAME,
-            temperature=0.2,  # slight variability for natural feedback
+            temperature=0.2,
             google_api_key=get_api_key(),
         )
         response = llm.invoke([HumanMessage(content=evaluation_prompt)])
@@ -227,21 +250,38 @@ def quiz_llm_evaluate(state: dict, config: RunnableConfig) -> dict:
     except Exception as exc:
         logger.error(f"quiz_llm_evaluate: LLM call failed ({exc})")
         feedback = "Sorry, I couldn't evaluate your quiz. Please try again."
+        return {
+            "messages": [AIMessage(content=feedback)],
+            "quiz_active": False,
+            "quiz_answers": [],
+        }
 
-    logger.info(f"quiz_llm_evaluate: generated feedback ({len(feedback)} chars)")
+    # Extract the final score from the LLM response
+    import re
+    score_match = re.search(r'FINAL SCORE:\s*(\d+)\s*out of\s*(\d+)', feedback, re.IGNORECASE)
+    llm_score = None
+    if score_match:
+        llm_score = int(score_match.group(1))
+        # Remove the score line from the text so it's not displayed twice
+        feedback = re.sub(r'FINAL SCORE:\s*\d+\s*out of\s*\d+\s*\n?', '', feedback, flags=re.IGNORECASE).strip()
 
-    # Reset quiz state
-    return {
+    logger.info(f"quiz_llm_evaluate: generated feedback ({len(feedback)} chars), score={llm_score}")
+
+    # Return the evaluation message and update the score if we got a valid one
+    result = {
         "messages": [AIMessage(content=feedback)],
         "quiz_active": False,
         "quiz_awaiting_answer": False,
         "quiz_questions": [],
         "quiz_answers": [],
         "quiz_index": 0,
-        "quiz_score": 0,
         "quiz_total": 0,
         "quiz_chapter_id": None,
     }
+    if llm_score is not None:
+        result["quiz_score"] = llm_score
+
+    return result
 
 
 def quiz_end(state: dict, config: RunnableConfig) -> dict:

@@ -1,9 +1,8 @@
 import { useChapterStore } from '../../stores/useChapterStore'
-import { useQuizStore } from '../../stores/useQuizStore'
+import { useQuizStore, fetchQuizQuestions } from '../../stores/useQuizStore'
 import { ChatArea } from '../chat/ChatArea'
 import { QuizPanel } from '../quiz/QuizPanel'
 import { FlashcardsPanel } from '../flashcards/FlashcardsPanel'
-import { mockQuizQuestions } from '../../mocks/quizData'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export function AIPanel() {
@@ -39,7 +38,7 @@ export function AIPanel() {
               key={mode}
               onClick={() => {
                 if (mode === 'quiz') {
-                  startQuiz(mockQuizQuestions)
+                  fetchQuizQuestions(activeChapterId).then((qs) => startQuiz(qs, activeChapterId))
                 } else if (mode === 'cards') {
                   setMode('cards')
                 } else {
