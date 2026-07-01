@@ -45,7 +45,7 @@ export function ChatArea() {
       let i = 0
       const interval = setInterval(() => {
         if (i < fullAnswer.length) {
-          setStreamingText(fullAnswer.slice(0, i + 1))
+          setStreamingText(cleanAnswer.slice(0, i + 1))
           i++
         } else {
           clearInterval(interval)
@@ -53,7 +53,7 @@ export function ChatArea() {
           const assistantMsg: Message = {
             id: genId(),
             role: 'assistant',
-            content: fullAnswer,
+            content: cleanAnswer,         // ← FIX
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           }
           addMessage(assistantMsg)
