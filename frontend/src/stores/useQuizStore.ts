@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+
 export interface QuestionFeedback {
   question_number: number
   remark: string
@@ -135,11 +137,9 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     }),
 }))
 
-// ── API helpers ──────────────────────────────────────────────────────────────
-
 export async function fetchQuizQuestions(chapterId?: number): Promise<Question[]> {
   const params = chapterId !== undefined ? `?chapter_id=${chapterId}` : ''
-  const res = await fetch(`/quiz/questions${params}`)
+  const res = await fetch(`${API_BASE}/quiz/questions${params}`)
   if (!res.ok) throw new Error('Failed to load quiz questions')
   return res.json()
 }
@@ -155,7 +155,7 @@ export async function evaluateQuiz(
     elapsed_seconds: elapsed,
     confidences,
   }
-  const res = await fetch('/quiz/evaluate', {
+  const res = await fetch(`${API_BASE}/quiz/evaluate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -168,14 +168,13 @@ export async function evaluateQuiz(
 export async function fetchGeneratedFlashcards(chapterId?: number): Promise<any[]> {
   const params = new URLSearchParams()
   if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
-  // No 'n' → server returns all cards
-  const res = await fetch(`/flashcards?${params}`)
+  const res = await fetch(`${API_BASE}/flashcards?${params}`)
   if (!res.ok) throw new Error('Failed to load flashcards')
   return res.json()
 }
 
 export async function fetchSummary(chapterId: number): Promise<string> {
-  const res = await fetch(`/summary?chapter_id=${chapterId}`)
+  const res = await fetch(`${API_BASE}/summary?chapter_id=${chapterId}`)
   if (!res.ok) throw new Error('Summary not available')
   return res.text()
 }

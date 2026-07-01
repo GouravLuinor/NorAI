@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
-import { useThreadStore, type Message, sendChatMessage } from '../../stores/useThreadStore'
+import { useRef, useEffect } from 'react'
+import { useThreadStore, sendChatMessageStream } from '../../stores/useThreadStore'
 import { MessageBubble } from './MessageBubble'
 import { ReferencesPanel } from './ReferencesPanel'
 import { InputZone } from './InputZone'
@@ -8,68 +8,57 @@ import { ShimmerLoader } from './ShimmerLoader'
 let idCounter = 0
 const genId = () => `msg-${++idCounter}`
 
+// 🚨 FIX: Stable reference to prevent infinite getSnapshot loops
+const EMPTY_MESSAGES: any[] = []
+
 export function ChatArea() {
-  const { messages, addMessage, setLoading, threadId } = useThreadStore()
-  const [streamingText, setStreamingText] = useState('')
-  const [isStreaming, setIsStreaming] = useState(false)
-  const [liveReferences, setLiveReferences] = useState<any[]>([])
+  const threadId = useThreadStore((s) => s.threadId)
+  
+  // 🚨 FIX: Use nullish coalescing to the stable empty array
+  const messages = useThreadStore((s) => s.messagesByThread[threadId] ?? EMPTY_MESSAGES)
+  const isLoading = useThreadStore((s) => s.loadingByThread[threadId] || false)
+  const streamingText = useThreadStore((s) => s.streamingByThread[threadId] || '')
+  
+  const { addMessage, setLoading, setStreamingText } = useThreadStore()
   const chatEndRef = useRef<HTMLDivElement>(null)
-
-
-
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamingText])
 
   const handleSend = async (text: string) => {
-    // 1. Add user message
-    const userMsg: Message = {
+    const targetThreadId = threadId 
+
+    const userMsg = {
       id: genId(),
-      role: 'user',
+      role: 'user' as const,
       content: text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }
-    addMessage(userMsg)
-
-    // 2. Show shimmer
-    setIsStreaming(true)
-    setStreamingText('')
-    setLoading(true)
+    addMessage(targetThreadId, userMsg)
+    setLoading(targetThreadId, true)
+    setStreamingText(targetThreadId, '')
 
     try {
-      const data = await sendChatMessage(threadId, text)
-      const fullAnswer = data.answer
-      const cleanAnswer = fullAnswer.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
-      let i = 0
-      const interval = setInterval(() => {
-        if (i < fullAnswer.length) {
-          setStreamingText(cleanAnswer.slice(0, i + 1))
-          i++
-        } else {
-          clearInterval(interval)
+      const generator = sendChatMessageStream(targetThreadId, text)
+      let fullAnswer = ''
 
-          const assistantMsg: Message = {
-            id: genId(),
-            role: 'assistant',
-            content: cleanAnswer,         // ← FIX
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          }
-          addMessage(assistantMsg)
-          setStreamingText('')
-          setIsStreaming(false)
-          setLoading(false)
-
-          // Populate references with real data
+      for await (const chunk of generator) {
+        if (typeof chunk === 'string') {
+          fullAnswer += chunk
+          setStreamingText(targetThreadId, fullAnswer)
+        } else if (chunk.type === 'final') {
+          const cleanAnswer = fullAnswer.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
+          
           const refs = [
-            ...data.retrieved_chunks.map((c: any) => ({
+            ...(chunk.data.retrieved_chunks || []).map((c: any) => ({
               id: c.heading_path,
               title: c.heading_path,
               section: `Ch ${c.chapter_id}`,
               sectionId: '',
               type: 'note' as const,
             })),
-            ...data.retrieved_images.map((img: any) => ({
+            ...(chunk.data.retrieved_images || []).map((img: any) => ({
               id: img.path,
               title: img.section,
               section: img.path,
@@ -77,19 +66,29 @@ export function ChatArea() {
               type: 'screenshot' as const,
             })),
           ]
-          setLiveReferences(refs)
+
+          addMessage(targetThreadId, {
+            id: genId(),
+            role: 'assistant',
+            content: cleanAnswer,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            references: refs
+          })
+          
+          setStreamingText(targetThreadId, '')
+          setLoading(targetThreadId, false)
         }
-      }, 20)
+      }
     } catch (err) {
       console.error('Chat error:', err)
-      addMessage({
+      addMessage(targetThreadId, {
         id: genId(),
         role: 'assistant',
         content: 'Sorry, something went wrong. Please try again.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       })
-      setIsStreaming(false)
-      setLoading(false)
+      setStreamingText(targetThreadId, '')
+      setLoading(targetThreadId, false)
     }
   }
 
@@ -107,11 +106,16 @@ export function ChatArea() {
     }
   }
 
+  const reversedMessages = [...messages].reverse()
+  const lastMsgWithRefs = reversedMessages.find(m => m.role === 'assistant' && m.references && m.references.length > 0)
+  const displayReferences = lastMsgWithRefs?.references || []
+
+  const isStreaming = isLoading || streamingText.length > 0
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth doc-content">
         {messages.length === 0 && !isStreaming ? (
-          /* ── Welcome screen ── */
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-np to-nbl flex items-center justify-center mb-4 shadow-lg">
               <span className="text-lg font-semibold text-white">N</span>
@@ -133,19 +137,18 @@ export function ChatArea() {
               <MessageBubble key={msg.id} message={msg} />
             ))}
 
-            {/* streaming & shimmer sections unchanged */}
             {isStreaming && streamingText && (
               <div className="flex gap-2 items-start">
                 <div className="w-5 h-5 rounded-full bg-gradient-to-br from-np to-nbl flex items-center justify-center text-[9px] font-medium text-white shrink-0 mt-0.5 shadow-sm">
                   N
                 </div>
-                <div className="max-w-full text-[12px] leading-relaxed text-nt2 py-0.5">
+                <div className="max-w-full text-[12px] leading-relaxed text-nt2 py-0.5 whitespace-pre-wrap">
                   {streamingText}
                 </div>
               </div>
             )}
 
-            {isStreaming && !streamingText && (
+            {isLoading && !streamingText && (
               <div className="flex gap-2 items-start">
                 <div className="w-5 h-5 rounded-full bg-gradient-to-br from-np to-nbl flex items-center justify-center text-[9px] font-medium text-white shrink-0 mt-0.5 shadow-sm">
                   N
@@ -159,7 +162,7 @@ export function ChatArea() {
         <div ref={chatEndRef} />
       </div>
 
-      <ReferencesPanel references={liveReferences} onReferenceClick={handleReferenceClick} />
+      <ReferencesPanel references={displayReferences} onReferenceClick={handleReferenceClick} />
       <InputZone onSend={handleSend} />
     </div>
   )

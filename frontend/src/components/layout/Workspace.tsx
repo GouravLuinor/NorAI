@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Sidebar } from './Sidebar'
 import { DocPanel } from './DocPanel'
 import { AIPanel } from './AIPanel'
@@ -6,7 +6,6 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { PanelLeftOpen } from 'lucide-react'
 
-// ── Panel size constants ─────────────────────────────────────────────────────
 const SIDEBAR_MIN = 160
 const SIDEBAR_MAX = 400
 const AI_MIN_TUTOR = 250
@@ -15,17 +14,16 @@ const AI_MAX = 550
 
 export function Workspace() {
   const { sidebarCollapsed, toggleSidebar } = useChapterStore()
-  const { aiMode } = useQuizStore()   // ← read current mode
+  const { aiMode } = useQuizStore()
 
   const [sidebarWidth, setSidebarWidth] = useState(220)
   const [aiPanelWidth, setAiPanelWidth] = useState(268)
-  const [tutorAiWidth, setTutorAiWidth] = useState(268)   // remembered tutor width
+  const [tutorAiWidth, setTutorAiWidth] = useState(268) 
   const [isDragging, setIsDragging] = useState(false)
 
   const workspaceRef = useRef<HTMLDivElement>(null)
   const draggingRef = useRef<'left' | 'right' | null>(null)
 
-  // ── Keyboard shortcuts ─────────────────────────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !sidebarCollapsed) {
@@ -36,33 +34,25 @@ export function Workspace() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [sidebarCollapsed, toggleSidebar])
 
-  // ── Auto‑expand / restore AI panel ────────────────────────────────────────
   const minAiWidth = aiMode === 'tutor' ? AI_MIN_TUTOR : AI_MIN_QUIZ_CARDS
 
-  // Remember the current width whenever the user is in tutor mode and not dragging
   useEffect(() => {
     if (aiMode === 'tutor' && !isDragging) {
       setTutorAiWidth(aiPanelWidth)
     }
   }, [aiPanelWidth, aiMode, isDragging])
 
-  // Expand or restore on mode change
   useEffect(() => {
     if (aiMode !== 'tutor') {
-      // Entering quiz/cards – expand if currently too small
       if (aiPanelWidth < AI_MIN_QUIZ_CARDS) {
         setAiPanelWidth(AI_MIN_QUIZ_CARDS)
       }
     } else {
-      // Returning to tutor – restore the last tutor width (clamped)
       const restored = Math.max(AI_MIN_TUTOR, Math.min(tutorAiWidth, AI_MAX))
       setAiPanelWidth(restored)
     }
-    // We only want to react to mode changes, not width changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aiMode])
 
-  // ── Mouse drag resizing ────────────────────────────────────────────────────
   const handleMouseDown = (side: 'left' | 'right') => (e: React.MouseEvent) => {
     e.preventDefault()
     draggingRef.current = side
@@ -102,14 +92,12 @@ export function Workspace() {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [minAiWidth])   // rebind when the minimum changes
+  }, [minAiWidth])
 
-  // ── Collapse button logic ──────────────────────────────────────────────────
   const handleSidebarToggle = () => {
     toggleSidebar()
   }
 
-  // ── Grid template ───────────────────────────────────────────────────────────
   const gridColumns = sidebarCollapsed
     ? `48px 1fr ${aiPanelWidth}px`
     : `${sidebarWidth}px 1fr ${aiPanelWidth}px`
@@ -133,11 +121,10 @@ export function Workspace() {
         </button>
       )}
 
-      <Sidebar />
+      <Sidebar onToggleCollapse={handleSidebarToggle} />
       <DocPanel />
       <AIPanel />
 
-      {/* Resize handle – sidebar (hidden when collapsed) */}
       {!sidebarCollapsed && (
         <div
           className="absolute top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-[rgba(128,128,128,0.2)] transition-colors"
@@ -147,7 +134,6 @@ export function Workspace() {
         />
       )}
 
-      {/* Resize handle – AI panel */}
       <div
         className="absolute top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-[rgba(128,128,128,0.2)] transition-colors"
         style={{ right: `calc(${aiPanelWidth}px - 4px)` }}

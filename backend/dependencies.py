@@ -13,11 +13,9 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from tutor.config import CHECKPOINT_DB_PATH
 from tutor.graph import build_graph
 
-
 # -- Global graph instance (compiled once) --
 _graph = None
 _lock = threading.Lock()
-
 
 def _init_graph():
     global _graph
@@ -29,13 +27,12 @@ def _init_graph():
         str(CHECKPOINT_DB_PATH),
         check_same_thread=False,   # we serialize access with a lock
     )
+    
     checkpointer = SqliteSaver(conn)
     _graph = build_graph(checkpointer)
     return checkpointer
 
-
 _checkpointer = _init_graph()
-
 
 def invoke_tutor(thread_id: str, user_question: str, lecture_title: str = "") -> dict:
     """Invoke the tutor graph for a single turn and return the results."""
