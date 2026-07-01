@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import { mockMessages } from '../../mocks/messages'
 import { useThreadStore, type Message, sendChatMessage } from '../../stores/useThreadStore'
 import { MessageBubble } from './MessageBubble'
 import { ReferencesPanel } from './ReferencesPanel'
@@ -15,7 +14,7 @@ export function ChatArea() {
   const [isStreaming, setIsStreaming] = useState(false)
   const [liveReferences, setLiveReferences] = useState<any[]>([])
   const chatEndRef = useRef<HTMLDivElement>(null)
-  const initialized = useRef(false)
+
 
 
 

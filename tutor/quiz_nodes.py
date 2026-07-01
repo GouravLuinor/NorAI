@@ -11,7 +11,7 @@ Quiz flow:
 """
 
 from __future__ import annotations
-
+import time
 import json
 import logging
 import random

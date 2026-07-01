@@ -116,20 +116,23 @@ async def chat_stream(req: ChatRequest):
 
 def _load_quiz_questions(chapter_id: int | None) -> list[dict]:
     """Load questions for a chapter, or all chapters if chapter_id is None."""
+    questions = []
+
     if chapter_id is not None:
         path = Path(f"outputs/assessment/assessment_chapter_{chapter_id}.json")
         if path.exists():
-            with open(path) as f:
-                return json_lib.load(f)
-    # Fallback to combined file
-    combined = Path("outputs/assessment/assessment.json")
-    if combined.exists():
-        with open(combined) as f:
-            all_qs = json_lib.load(f)
-        if chapter_id is not None:
-            return [q for q in all_qs if q.get("chapter_id") == chapter_id]
-        return all_qs
-    return []
+            with open(path, encoding="utf-8") as f:
+                data = json_lib.load(f)
+                questions = data if isinstance(data, list) else []
+    else:
+        combined = Path("outputs/assessment/assessment.json")
+        if combined.exists():
+            with open(combined, encoding="utf-8") as f:
+                data = json_lib.load(f)
+                questions = data if isinstance(data, list) else []
+
+    # Ensure every item is a dict
+    return [q for q in questions if isinstance(q, dict)]
 
 
 @app.get("/quiz/questions")
@@ -257,3 +260,37 @@ async def quiz_evaluate(req: QuizEvaluateRequest):
                 "overall_insights": text,
             }
         }
+    
+
+# ── Flashcards ────────────────────────────────────────────────────────────────
+
+@app.get("/flashcards")
+async def flashcards(chapter_id: int | None = None, n: int | None = None):
+    """Return pre‑generated flashcards from the static store. If n is omitted, return all cards."""
+    if chapter_id is not None:
+        path = Path(f"outputs/flashcards/flashcards_chapter_{chapter_id}.json")
+    else:
+        path = Path("outputs/flashcards/flashcards.json")
+    
+    if not path.exists():
+        return []
+    
+    cards = json_lib.loads(path.read_text(encoding="utf-8"))
+    if n is not None and len(cards) > n:
+        import random
+        cards = random.sample(cards, n)
+    
+    return cards
+
+
+# ── Chapter Summary ───────────────────────────────────────────────────────────
+
+@app.get("/summary")
+async def chapter_summary(chapter_id: int):
+    """Return the pre‑made revision Markdown for a chapter as plain text."""
+    if chapter_id is None:
+        raise HTTPException(status_code=400, detail="chapter_id is required")
+    path = Path(f"outputs/revision/revision_chapter_{chapter_id}.md")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Summary not found for this chapter")
+    return path.read_text(encoding="utf-8")

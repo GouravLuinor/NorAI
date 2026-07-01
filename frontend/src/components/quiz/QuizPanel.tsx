@@ -7,7 +7,6 @@ export function QuizPanel() {
   const {
     questions,
     currentIndex,
-    answers,
     confidences,
     score,
     evaluation,

@@ -164,3 +164,18 @@ export async function evaluateQuiz(
   const data = await res.json()
   return data.evaluation
 }
+
+export async function fetchGeneratedFlashcards(chapterId?: number): Promise<any[]> {
+  const params = new URLSearchParams()
+  if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
+  // No 'n' → server returns all cards
+  const res = await fetch(`/flashcards?${params}`)
+  if (!res.ok) throw new Error('Failed to load flashcards')
+  return res.json()
+}
+
+export async function fetchSummary(chapterId: number): Promise<string> {
+  const res = await fetch(`/summary?chapter_id=${chapterId}`)
+  if (!res.ok) throw new Error('Summary not available')
+  return res.text()
+}
