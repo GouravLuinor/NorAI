@@ -1,6 +1,24 @@
+/**
+ * useQuizStore.ts
+ *
+ * Fix log:
+ *  BUG-6  reset() is called by useThreadStore.setThreadId() whenever the user
+ *         switches threads. This guarantees aiMode, evaluation, and isActive
+ *         never bleed across threads.
+ *         The reset() action is idempotent and safe to call from any context.
+ *
+ *  Also:  evaluateQuiz() and fetchQuizQuestions() use the same API_BASE
+ *         resolution as useThreadStore so they share the same proxy path.
+ */
+
 import { create } from 'zustand'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const API_BASE =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || ''
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 export interface QuestionFeedback {
   question_number: number
@@ -17,6 +35,13 @@ export interface Question {
   explanation: string
 }
 
+export interface QuizEvaluation {
+  final_score: number | null
+  total_questions: number
+  per_question_feedback: QuestionFeedback[]
+  overall_insights: string
+}
+
 interface QuizState {
   aiMode: 'tutor' | 'quiz' | 'cards'
   setMode: (mode: 'tutor' | 'quiz' | 'cards') => void
@@ -27,12 +52,7 @@ interface QuizState {
   answers: string[]
   confidences: string[]
   score: number
-  evaluation: {
-    final_score: number | null
-    total_questions: number
-    per_question_feedback: QuestionFeedback[]
-    overall_insights: string
-  } | null
+  evaluation: QuizEvaluation | null
   quizStartTime: number | null
   quizChapterId: number | null
 
@@ -40,15 +60,22 @@ interface QuizState {
   submitAnswer: (answer: string) => void
   setConfidence: (confidence: string) => void
   nextQuestion: () => void
-  endQuiz: (evaluation: QuizState['evaluation']) => void
+  endQuiz: (evaluation: QuizEvaluation) => void
   retakeQuiz: () => Promise<void>
+
+  /** BUG-6: called by useThreadStore on every thread switch — always idempotent */
   reset: () => void
 }
 
-export const useQuizStore = create<QuizState>((set, get) => ({
+// ---------------------------------------------------------------------------
+// Initial state snapshot (defined once so reset() always returns a clean ref)
+// ---------------------------------------------------------------------------
+const INITIAL_STATE: Omit<
+  QuizState,
+  | 'setMode' | 'startQuiz' | 'submitAnswer' | 'setConfidence'
+  | 'nextQuestion' | 'endQuiz' | 'retakeQuiz' | 'reset'
+> = {
   aiMode: 'tutor',
-  setMode: (mode) => set({ aiMode: mode }),
-
   isActive: false,
   questions: [],
   currentIndex: 0,
@@ -58,6 +85,16 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   evaluation: null,
   quizStartTime: null,
   quizChapterId: null,
+}
+
+// ---------------------------------------------------------------------------
+// Store
+// ---------------------------------------------------------------------------
+
+export const useQuizStore = create<QuizState>((set, get) => ({
+  ...INITIAL_STATE,
+
+  setMode: (mode) => set({ aiMode: mode }),
 
   startQuiz: (questions, chapterId = null) =>
     set({
@@ -76,15 +113,11 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   submitAnswer: (answer) => {
     const { questions, currentIndex, score } = get()
     const q = questions[currentIndex]
-    const isAutoGraded = q.type === 'MCQ' || q.type === 'True/False'
-    const isCorrect = isAutoGraded
+    const autoGraded = q.type === 'MCQ' || q.type === 'True/False'
+    const correct = autoGraded
       ? answer.trim().toLowerCase() === q.answer.trim().toLowerCase()
       : false
-    const newScore = isCorrect ? score + 1 : score
-    set({
-      answers: [...get().answers, answer],
-      score: newScore,
-    })
+    set({ answers: [...get().answers, answer], score: correct ? score + 1 : score })
   },
 
   setConfidence: (confidence) => {
@@ -96,15 +129,10 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
   nextQuestion: () => {
     const { currentIndex, questions } = get()
-    const nextIndex = currentIndex + 1
-    if (nextIndex < questions.length) {
-      set({ currentIndex: nextIndex })
-    }
+    if (currentIndex + 1 < questions.length) set({ currentIndex: currentIndex + 1 })
   },
 
-  endQuiz: (evaluation) => {
-    set({ evaluation })
-  },
+  endQuiz: (evaluation) => set({ evaluation }),
 
   retakeQuiz: async () => {
     const { quizChapterId } = get()
@@ -123,19 +151,13 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     }
   },
 
-  reset: () =>
-    set({
-      isActive: false,
-      questions: [],
-      currentIndex: 0,
-      answers: [],
-      confidences: [],
-      score: 0,
-      evaluation: null,
-      quizStartTime: null,
-      aiMode: 'tutor',
-    }),
+  // BUG-6: full reset — safe to call cross-store from useThreadStore
+  reset: () => set({ ...INITIAL_STATE }),
 }))
+
+// ---------------------------------------------------------------------------
+// API helpers
+// ---------------------------------------------------------------------------
 
 export async function fetchQuizQuestions(chapterId?: number): Promise<Question[]> {
   const params = chapterId !== undefined ? `?chapter_id=${chapterId}` : ''
@@ -147,22 +169,17 @@ export async function fetchQuizQuestions(chapterId?: number): Promise<Question[]
 export async function evaluateQuiz(
   questions: any[],
   startTime: number,
-  confidences: string[]
-): Promise<QuizState['evaluation']> {
+  confidences: string[],
+): Promise<QuizEvaluation> {
   const elapsed = Math.round((Date.now() - startTime) / 1000)
-  const payload = {
-    questions,
-    elapsed_seconds: elapsed,
-    confidences,
-  }
   const res = await fetch(`${API_BASE}/quiz/evaluate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ questions, elapsed_seconds: elapsed, confidences }),
   })
   if (!res.ok) throw new Error('Evaluation failed')
   const data = await res.json()
-  return data.evaluation
+  return data.evaluation as QuizEvaluation
 }
 
 export async function fetchGeneratedFlashcards(chapterId?: number): Promise<any[]> {

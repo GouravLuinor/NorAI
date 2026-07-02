@@ -1,178 +1,403 @@
-import { chapter1Revision, type RevisionCard } from '../../mocks/revisionData'
-import { Bookmark, GitBranch, FlaskConical, Clock, Lightbulb, AlertTriangle, Image } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeHighlight from 'rehype-highlight'
+import { Bookmark, GitBranch, Clock, Lightbulb, AlertTriangle, Code, List, FileText, FlaskConical } from 'lucide-react'
+import type { Components } from 'react-markdown'
 
-function DocCard({ card }: { card: RevisionCard }) {
-  // Definition card — purple icon accent
-  if (card.type === 'definition') {
-    return (
-      <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-[0_1px_2px_rgba(0,0,0,0.28)]">
-        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <Bookmark size={13} className="text-np" />
-          {card.title || 'Definition'}
-        </div>
-        <div className="text-[13px] font-medium text-nt mb-1">{card.term}</div>
-        <div
-          className="text-xs text-nt2 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: card.description?.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') || '' }}
-        />
-      </div>
-    )
-  }
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-  // Algorithm card — blue icon accent, numbered steps
-  if (card.type === 'algorithm') {
-    return (
-      <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-[0_1px_2px_rgba(0,0,0,0.28)]">
-        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <GitBranch size={13} className="text-nbl" />
-          {card.title || 'Algorithm'}
-        </div>
-        <div className="text-[13px] font-medium text-nt mb-2">{card.term}</div>
-        <ol className="list-none space-y-1 mt-2">
-          {card.steps?.map((step, i) => (
-            <li key={i} className="flex gap-2.5 text-xs text-nt2 leading-relaxed py-1">
-              <span className="shrink-0 w-[18px] h-[18px] bg-ns2 rounded flex items-center justify-center text-[9px] font-semibold text-nt3 mt-0.5">
-                {i + 1}
-              </span>
-              <span dangerouslySetInnerHTML={{ __html: step.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<code class="font-mono text-[10px] bg-ns2 px-1 py-0.5 rounded text-nt border border-bdr">$1</code>').replace(/⌊/g, '⌊').replace(/⌋/g, '⌋') }} />
-            </li>
-          ))}
-        </ol>
-      </div>
-    )
-  }
-
-  // Worked example card — amber icon accent
-  if (card.type === 'example') {
-    return (
-      <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-[0_1px_2px_rgba(0,0,0,0.28)]">
-        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <FlaskConical size={13} className="text-na" />
-          {card.title || 'Worked Example'}
-        </div>
-        <div
-          className="text-xs text-nt2 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: card.description?.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') || '' }}
-        />
-      </div>
-    )
-  }
-
-  // Complexity card — green icon accent, data rows
-  if (card.type === 'complexity') {
-    return (
-      <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-[0_1px_2px_rgba(0,0,0,0.28)]">
-        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <Clock size={13} className="text-ng" />
-          {card.title || 'Analysis'}
-        </div>
-        <div className="text-[13px] font-medium text-nt mb-1">{card.term}</div>
-        <div className="mt-2">
-          {card.rows?.map((row, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between py-1.5 text-xs text-nt2 border-b border-bdr last:border-none last:pb-0"
-            >
-              <span>{row.label}</span>
-              <span className="font-mono text-[11px] text-nt bg-ns2 px-1.5 py-0.5 rounded">
-                {row.value}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  // Hint callout — blue, compact
-  if (card.type === 'hint') {
-    return (
-      <div className="flex gap-2.5 bg-ns2 rounded-lg p-3 mb-4 border border-bdr2">
-        <Lightbulb size={14} className="text-nbl mt-0.5 shrink-0" />
-        <div
-          className="text-xs text-nt2 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: card.description?.replace(/\*\*(.*?)\*\*/g, '<strong class="text-nt font-medium">$1</strong>') || '' }}
-        />
-      </div>
-    )
-  }
-
-  // Mistake callout — red, compact
-  if (card.type === 'mistake') {
-    return (
-      <div className="flex gap-2.5 bg-ns2 rounded-lg p-3 mb-4 border border-bdr2">
-        <AlertTriangle size={14} className="text-nr mt-0.5 shrink-0" />
-        <div
-          className="text-xs text-nt2 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: card.description?.replace(/\*\*(.*?)\*\*/g, '<strong class="text-nt font-medium">$1</strong>') || '' }}
-        />
-      </div>
-    )
-  }
-
-  // Figure — screenshot placeholder
-  if (card.type === 'figure') {
-    return (
-      <div className="my-5 rounded-lg overflow-hidden bg-ns border border-bdr2 cursor-zoom-in transition-colors hover:border-bdr">
-        <div className="w-full aspect-video bg-gradient-to-br from-ns2 to-ns3 flex items-center justify-center text-nt4 text-2xl">
-          <Image size={40} />
-        </div>
-        <div className="flex items-center justify-between px-3.5 py-2.5 text-[10px] text-nt3 border-t border-bdr">
-          <span className="flex items-center gap-1">
-            <Image size={12} /> {card.caption || 'Lecture slide'}
-          </span>
-        </div>
-      </div>
-    )
-  }
-
-  return null
+function headingToId(heading: string): string {
+  return 'sec-' + heading
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
 }
 
-export function RevisionView() {
-  const chapter = chapter1Revision
+function splitByH2(md: string): { heading: string; body: string }[] {
+  const sections: { heading: string; body: string }[] = []
+  const parts = md.split(/^[ \t]*## /gm)
+  if (parts[0]?.trim()) sections.push({ heading: '', body: parts[0].trim() })
+  for (let i = 1; i < parts.length; i++) {
+    const lines = parts[i].split('\n')
+    const heading = lines[0]?.trim() || ''
+    const body = lines.slice(1).join('\n').trim()
+    sections.push({ heading, body })
+  }
+  return sections
+}
+
+type CardType = 'definition' | 'algorithm' | 'complexity' | 'example' | 'tips' | 'mistake' | 'summary' | 'list' | 'code' | 'formula' | 'prose'
+
+const DEFINITION_KEYWORDS = ['definition', 'core concept', 'key concept', 'what is', 'overview', 'introduction']
+const ALGORITHM_KEYWORDS = ['algorithm', 'steps', 'how to', 'procedure', 'method', 'forward pass', 'build', 'construction', 'query', 'update']
+const COMPLEXITY_KEYWORDS = ['complexity', 'time', 'space', 'o(log n)', 'o(n)', 'efficiency', 'performance']
+const EXAMPLE_KEYWORDS = ['example', 'worked', 'demonstration', 'illustration']
+const TIPS_KEYWORDS = ['tip', 'hint', 'note', 'remember', 'pro tip']
+const MISTAKE_KEYWORDS = ['mistake', 'common error', 'pitfall', 'watch out', 'caution', 'warning']
+const SUMMARY_KEYWORDS = ['summary', 'key takeaway', 'conclusion', 'recap', 'important']
+const FORMULA_KEYWORDS = ['formula', 'equation', 'expression', 'math']
+
+function headingMatches(heading: string, keywords: string[]): boolean {
+  const h = heading.toLowerCase()
+  return keywords.some(kw => h.includes(kw))
+}
+
+function getCardType(heading: string, body: string): CardType {
+  const h = heading.toLowerCase()
+
+  if (body.includes('```')) return 'code'
+  if (body.includes('|')) return 'complexity'
+
+  if (headingMatches(h, DEFINITION_KEYWORDS)) return 'definition'
+  if (headingMatches(h, ALGORITHM_KEYWORDS)) return 'algorithm'
+  if (headingMatches(h, COMPLEXITY_KEYWORDS)) return 'complexity'
+  if (headingMatches(h, EXAMPLE_KEYWORDS)) return 'example'
+  if (headingMatches(h, TIPS_KEYWORDS)) return 'tips'
+  if (headingMatches(h, MISTAKE_KEYWORDS)) return 'mistake'
+  if (headingMatches(h, SUMMARY_KEYWORDS)) return 'summary'
+  if (headingMatches(h, FORMULA_KEYWORDS)) return 'formula'
+
+  const lines = body.split('\n').filter(l => l.trim())
+  if (lines.filter(l => /^\s*[-*•]\s/.test(l)).length / lines.length > 0.5) return 'list'
+
+  return 'prose'
+}
+
+// ── Card Wrappers ────────────────────────────────────────────────────────────
+
+function DefinitionCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-sm border-l-2 border-l-np">
+      <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-np uppercase tracking-wider mb-2">
+        <Bookmark size={13} />
+        {heading}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function AlgorithmCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-sm">
+      <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nbl uppercase tracking-wider mb-2">
+        <GitBranch size={13} />
+        {heading}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function ComplexityCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-sm">
+      <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-ng uppercase tracking-wider mb-2">
+        <Clock size={13} />
+        {heading}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function ExampleCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-sm">
+      <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-na uppercase tracking-wider mb-2">
+        <FlaskConical size={13} />
+        {heading}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function TipsCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-2.5 bg-nab border border-nabr rounded-lg p-3 mb-4">
+      <Lightbulb size={14} className="text-na mt-0.5 shrink-0" />
+      <div>
+        <div className="text-[9.5px] font-semibold text-na uppercase tracking-wider mb-1">{heading}</div>
+        <div className="text-xs text-nt2 leading-relaxed">{children}</div>
+      </div>
+    </div>
+  )
+}
+
+function MistakeCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-2.5 bg-nrb border border-nrbr rounded-lg p-3 mb-4">
+      <AlertTriangle size={14} className="text-nr mt-0.5 shrink-0" />
+      <div>
+        <div className="text-[9.5px] font-semibold text-nr uppercase tracking-wider mb-1">{heading}</div>
+        <div className="text-xs text-nt2 leading-relaxed">{children}</div>
+      </div>
+    </div>
+  )
+}
+
+function SummaryCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-2.5 bg-ngb border border-ngbr rounded-lg p-3 mb-4">
+      <div className="w-2 h-2 rounded-full bg-ng mt-2 shrink-0" />
+      <div>
+        <div className="text-[9.5px] font-semibold text-ng uppercase tracking-wider mb-1">{heading}</div>
+        <div className="text-xs text-nt2 leading-relaxed">{children}</div>
+      </div>
+    </div>
+  )
+}
+
+function ListCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-5">
+      <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+        <List size={13} className="text-np" />
+        {heading}
+      </div>
+      <ul className="list-none pl-1.5 space-y-2.5">{children}</ul>
+    </div>
+  )
+}
+
+function FormulaCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-sm border-l-2 border-l-np">
+      <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-np uppercase tracking-wider mb-2">
+        <FileText size={13} />
+        {heading}
+      </div>
+      <div className="font-mono text-[13px] text-nt2">{children}</div>
+    </div>
+  )
+}
+
+function CodeCard({ heading, children, lang }: { heading: string; children: React.ReactNode; lang?: string }) {
+  return (
+    <div className="mb-6">
+      {heading && (
+        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+          <Code size={13} className="text-nbl" />
+          {heading}
+        </div>
+      )}
+      <div className="bg-nb border border-bdr2 rounded-lg overflow-hidden shadow-sm">
+        {lang && (
+          <div className="flex justify-between items-center bg-ns px-4 py-2 border-b border-bdr font-mono text-[10px] text-nt3">
+            <span>{lang}</span>
+            <button className="flex items-center gap-1 bg-transparent border-none text-nt3 hover:text-nt cursor-pointer font-inherit">Copy</button>
+          </div>
+        )}
+        <pre className="p-4 m-0 overflow-x-auto font-mono text-[13px] text-nt2 leading-relaxed">{children}</pre>
+      </div>
+    </div>
+  )
+}
+
+function ProseCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-sm">
+      <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+        <FileText size={13} className="text-nt3" />
+        {heading}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+// ── Custom renderers ─────────────────────────────────────────────────────────
+
+const baseComponents: Components = {
+  p: ({ children }) => <p className="text-[13px] text-nt2 leading-relaxed mb-2 last:mb-0">{children}</p>,
+  strong: ({ children }) => <strong className="text-nt font-medium">{children}</strong>,
+  ul: ({ children }) => <ul className="list-none pl-0 space-y-2">{children}</ul>,
+  li: ({ children }) => (
+    <li className="relative pl-5 text-[13px] text-nt2 leading-relaxed">
+      <span className="absolute left-0 top-2 w-1.5 h-1.5 rounded-full bg-ns3 border border-bdr2" />
+      {children}
+    </li>
+  ),
+  code: ({ children, className }) => {
+    if (!className) {
+      return <code className="font-mono text-[10px] bg-ns2 px-1.5 py-0.5 rounded text-nt border border-bdr">{children}</code>
+    }
+    return <code className={className}>{children}</code>
+  },
+  table: ({ children }) => <table className="w-full text-xs text-nt2">{children}</table>,
+  thead: ({ children }) => <thead className="text-[10px] font-semibold text-nt uppercase tracking-wider border-b border-bdr2">{children}</thead>,
+  th: ({ children }) => <th className="p-2 text-left">{children}</th>,
+  td: ({ children }) => <td className="p-2 border-b border-bdr last:border-none">{children}</td>,
+}
+
+// ── Main Component ───────────────────────────────────────────────────────────
+
+export function RevisionView({ chapterId }: { chapterId: number | null }) {
+  const [sections, setSections] = useState<{ heading: string; body: string }[]>([])
+  const [title, setTitle] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  const chapterIdStr = chapterId != null ? String(chapterId) : null
+
+  useEffect(() => {
+    if (!chapterIdStr) {
+      setTitle('')
+      setSections([{ heading: '', body: 'Select a chapter from the sidebar to see its revision notes.' }])
+      setLoading(false)
+      return
+    }
+
+    const controller = new AbortController()
+    setLoading(true)
+
+    fetch(`/summary?chapter_id=${chapterIdStr}`, { signal: controller.signal })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Not found')
+        const rawText = await res.text()
+        try {
+          return rawText.startsWith('"') ? JSON.parse(rawText) : rawText
+        } catch {
+          return rawText
+        }
+      })
+      .then((text) => {
+        const lines = text.split('\n')
+        let mdTitle = ''
+        if (lines[0]?.startsWith('# ')) {
+          mdTitle = lines[0].replace(/^# /, '').trim()
+          text = lines.slice(1).join('\n').trim()
+        }
+        const secs = splitByH2(text)
+        setTitle(mdTitle)
+        setSections(secs)
+        setLoading(false)
+      })
+      .catch((err) => {
+        if (err.name === 'AbortError') return
+        setTitle(`Chapter ${chapterIdStr}`)
+        setSections([{ heading: '', body: 'Revision notes have not been generated for this chapter yet.' }])
+        setLoading(false)
+      })
+
+    return () => controller.abort()
+  }, [chapterIdStr])
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-nt3 text-sm">
+        Loading revision notes…
+      </div>
+    )
+  }
 
   return (
-    <div className="flex-1 overflow-y-auto px-8 py-7 pb-15 scroll-smooth doc-content">
-      {/* Badge */}
-      <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-ns2 border border-bdr2 text-[10px] text-nt3 mb-3.5">
-        <span className="text-xs">📹</span> {chapter.lectureInfo}
-      </div>
+    <div className="flex-1 overflow-y-auto doc-content px-8 py-7 pb-15 scroll-smooth">
+      {title && (
+        <h1 className="text-[21px] font-semibold text-nt tracking-tight mb-6 leading-tight">
+          {title}
+        </h1>
+      )}
 
-      {/* Title */}
-      <h1 className="text-[21px] font-semibold text-nt tracking-tight mb-1 leading-tight">
-        Ch {String(chapter.chapterId).padStart(2, '0')} — {chapter.title}
-      </h1>
+      {sections.map((section, idx) => {
+        const { heading, body } = section
+        if (!body) return null
 
-      {/* Meta */}
-      <div className="text-[10.5px] text-nt3 mb-7 flex items-center gap-1.5">
-        {chapter.lastEdited} <span className="w-0.5 h-0.5 rounded-full bg-nt4" /> {chapter.readTime}
-      </div>
+        const innerContent = (
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeHighlight]}
+            components={baseComponents}
+          >
+            {body}
+          </ReactMarkdown>
+        )
 
-      {/* Sections */}
-      {chapter.sections.map((section) => (
-        <div key={section.anchor} id={section.anchor}>
-          {/* Section heading */}
-          <h2 className="text-[9.5px] font-semibold text-nt3 mb-3 mt-8 uppercase tracking-wider flex items-center gap-2 first:mt-0">
-            {section.heading}
-            <span className="flex-1 h-px bg-bdr" />
-          </h2>
+        const sectionId = heading ? headingToId(heading) : `sec-preamble-${idx}`
 
-          {/* Paragraphs */}
-          {section.paragraphs?.map((p, i) => (
-            <p
-              key={i}
-              className="text-[12.5px] text-nt2 leading-relaxed mb-4 max-w-[560px]"
-              dangerouslySetInnerHTML={{ __html: p.replace(/\*\*(.*?)\*\*/g, '<strong class="text-nt font-medium">$1</strong>').replace(/`(.*?)`/g, '<code class="font-mono text-[10px] bg-ns2 px-1.5 py-0.5 rounded text-nt border border-bdr">$1</code>') }}
-            />
-          ))}
+        if (!heading) {
+          return (
+            <div key={idx} id={sectionId} className="text-center text-nt3 text-[13px] py-12">
+              {innerContent}
+            </div>
+          )
+        }
 
-          {/* Cards */}
-          {section.cards?.map((card, i) => (
-            <DocCard key={i} card={card} />
-          ))}
-        </div>
-      ))}
+        const cardType = getCardType(heading, body)
+
+        switch (cardType) {
+          case 'definition':
+            return (
+              <div key={idx} id={sectionId}>
+                <DefinitionCard heading={heading}>{innerContent}</DefinitionCard>
+              </div>
+            )
+          case 'algorithm':
+            return (
+              <div key={idx} id={sectionId}>
+                <AlgorithmCard heading={heading}>{innerContent}</AlgorithmCard>
+              </div>
+            )
+          case 'complexity':
+            return (
+              <div key={idx} id={sectionId}>
+                <ComplexityCard heading={heading}>{innerContent}</ComplexityCard>
+              </div>
+            )
+          case 'example':
+            return (
+              <div key={idx} id={sectionId}>
+                <ExampleCard heading={heading}>{innerContent}</ExampleCard>
+              </div>
+            )
+          case 'tips':
+            return (
+              <div key={idx} id={sectionId}>
+                <TipsCard heading={heading}>{innerContent}</TipsCard>
+              </div>
+            )
+          case 'mistake':
+            return (
+              <div key={idx} id={sectionId}>
+                <MistakeCard heading={heading}>{innerContent}</MistakeCard>
+              </div>
+            )
+          case 'summary':
+            return (
+              <div key={idx} id={sectionId}>
+                <SummaryCard heading={heading}>{innerContent}</SummaryCard>
+              </div>
+            )
+          case 'list':
+            return (
+              <div key={idx} id={sectionId}>
+                <ListCard heading={heading}>{innerContent}</ListCard>
+              </div>
+            )
+          case 'formula':
+            return (
+              <div key={idx} id={sectionId}>
+                <FormulaCard heading={heading}>{innerContent}</FormulaCard>
+              </div>
+            )
+          case 'code':
+            const langMatch = body.match(/```(\w+)/)
+            return (
+              <div key={idx} id={sectionId}>
+                <CodeCard heading={heading} lang={langMatch?.[1]}>{innerContent}</CodeCard>
+              </div>
+            )
+          default:
+            return (
+              <div key={idx} id={sectionId}>
+                <ProseCard heading={heading}>{innerContent}</ProseCard>
+              </div>
+            )
+        }
+      })}
     </div>
   )
 }

@@ -5,8 +5,8 @@ import { NotesView } from '../doc/NotesView'
 import { AssessmentView } from '../doc/AssessmentView'
 
 export function DocPanel() {
-  const { activeDocTab, setDocTab } = useChapterStore()
-
+  const { activeDocTab, setDocTab, activeChapterId } = useChapterStore()
+console.log('DocPanel — activeChapterId:', activeChapterId)
   return (
     <div className="flex flex-col min-w-0 min-h-0 border-r border-bdr bg-nb">
       {/* Top bar */}
@@ -40,11 +40,11 @@ export function DocPanel() {
 
       {/* Content */}
       {activeDocTab === 'revision' ? (
-        <RevisionView />
+        <RevisionView key={`rev-${activeChapterId}`} chapterId={activeChapterId} />
       ) : activeDocTab === 'notes' ? (
-        <NotesView />
+        <NotesView key={`notes-${activeChapterId}`} chapterId={activeChapterId} />
       ) : (
-        <AssessmentView />
+        <AssessmentView key={`assess-${activeChapterId}`} />
       )}
     </div>
   )
