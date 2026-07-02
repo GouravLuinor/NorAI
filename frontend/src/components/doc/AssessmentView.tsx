@@ -94,7 +94,7 @@ function QuestionCard({ question, index }: { question: Question; index: number }
       {question.type === 'MCQ' && <MCQOptions options={question.options ?? []} />}
       {question.type === 'True/False' && <TrueFalseOptions />}
       {!['MCQ', 'True/False'].includes(question.type) && (
-       <FreeResponseLines count={question.type?.toLowerCase().includes('short') ? 3 : 4} />
+       <FreeResponseLines count={question.type?.toLowerCase().includes('short') ?  3 : 4} />
       )}
     </div>
   )
