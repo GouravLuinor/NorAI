@@ -72,9 +72,12 @@ export function ChatArea() {
     }
   }, [])
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, streamingText])
+useEffect(() => {
+    const container = chatEndRef.current?.closest('.doc-content') as HTMLElement | null
+    if (container) {
+        container.scrollTop = container.scrollHeight
+    }
+}, [messages, streamingText])
 
   // -------------------------------------------------------------------------
   // handleSend

@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "react-resizable-panels": "^3.0.6"
+    "katex": "^0.17.0",
+    "react-resizable-panels": "^3.0.6",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
   }
 }

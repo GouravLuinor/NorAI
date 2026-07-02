@@ -6,7 +6,8 @@ import { Bookmark, Clock, Lightbulb, Code, List, FileText } from 'lucide-react'
 import type { Components } from 'react-markdown'
 import { ChapterScreenshots } from './ChapterScreenshots'
 import React from 'react'
-
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function headingToId(heading: string): string {
@@ -18,12 +19,16 @@ function headingToId(heading: string): string {
     .replace(/-+/g, '-')
 }
 
-// Recursively extracts raw string text from React children (needed for markdown headings)
+
+
 function extractText(node: React.ReactNode): string {
   if (typeof node === 'string') return node
   if (typeof node === 'number') return String(node)
   if (Array.isArray(node)) return node.map(extractText).join('')
-  if (React.isValidElement(node)) return extractText(node.props.children)
+  if (React.isValidElement(node)) {
+    const element = node as React.ReactElement<{ children?: React.ReactNode }>
+    return extractText(element.props.children)
+  }
   return ''
 }
 
@@ -316,9 +321,9 @@ export function NotesView({ chapterId }: { chapterId: number | null }) {
 
         const innerContent = (
           <ReactMarkdown
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeHighlight, rehypeKatex]}
             components={baseComponents}
-            rehypePlugins={[rehypeHighlight]}
-            remarkPlugins={[remarkGfm]}
           >
             {body}
           </ReactMarkdown>

@@ -4,7 +4,8 @@ import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 import { Bookmark, GitBranch, Clock, Lightbulb, AlertTriangle, Code, List, FileText, FlaskConical } from 'lucide-react'
 import type { Components } from 'react-markdown'
-
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function headingToId(heading: string): string {
@@ -308,8 +309,8 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
 
         const innerContent = (
           <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeHighlight]}
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeHighlight, rehypeKatex]}
             components={baseComponents}
           >
             {body}

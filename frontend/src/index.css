@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@import "katex/dist/katex.min.css";
 html, body, #root {
   height: 100%;
   margin: 0;
@@ -124,4 +124,13 @@ html, body, #root {
   transform: translate(-50%, -50%) scale(0);
   opacity: 0.3;
   transition: 0s;
+}
+
+/* KaTeX dark‑theme overrides */
+.katex {
+  color: var(--color-nt);
+}
+.katex .mathnormal,
+.katex .mord {
+  color: var(--color-nt);
 }
