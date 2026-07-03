@@ -4,11 +4,13 @@ import { ChatArea } from '../chat/ChatArea'
 import { QuizPanel } from '../quiz/QuizPanel'
 import { FlashcardsPanel } from '../flashcards/FlashcardsPanel'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useToastStore } from '../../stores/useToastStore'
+
 
 export function AIPanel() {
   const { activeChapterId } = useChapterStore()
   const { aiMode, setMode, startQuiz, reset } = useQuizStore()
-
+  const addToast = useToastStore(s => s.addToast)
   let ActivePanel: React.ReactNode
   if (aiMode === 'quiz') {
     ActivePanel = <QuizPanel />
@@ -39,8 +41,11 @@ export function AIPanel() {
               onClick={() => {
                 if (mode === 'quiz') {
                   fetchQuizQuestions(activeChapterId).then((qs) => startQuiz(qs, activeChapterId))
-                } else if (mode === 'cards') {
+                  addToast('Quiz started', 'success')
+                }
+                 else if (mode === 'cards') {
                   setMode('cards')
+                  addToast('Flashcards mode activated', 'info')
                 } else {
                   setMode('tutor')
                   reset()

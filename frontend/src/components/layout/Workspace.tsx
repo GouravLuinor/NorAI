@@ -4,7 +4,8 @@ import { DocPanel } from './DocPanel'
 import { AIPanel } from './AIPanel'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore } from '../../stores/useQuizStore'
-import { PanelLeftOpen } from 'lucide-react'
+import { PanelLeftOpen, HelpCircle } from 'lucide-react'
+import { ShortcutsModal } from '../ui/ShortcutsModal'
 
 const SIDEBAR_MIN = 160
 const SIDEBAR_MAX = 400
@@ -15,7 +16,7 @@ const AI_MAX = 550
 export function Workspace() {
   const { sidebarCollapsed, toggleSidebar } = useChapterStore()
   const { aiMode } = useQuizStore()
-
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(220)
   const [aiPanelWidth, setAiPanelWidth] = useState(268)
   const [tutorAiWidth, setTutorAiWidth] = useState(268) 
@@ -140,6 +141,18 @@ export function Workspace() {
         onMouseDown={handleMouseDown('right')}
         title="Resize AI panel"
       />
+
+      {/* Keyboard shortcuts help button */}
+      <button
+        onClick={() => setShortcutsOpen(true)}
+        className="absolute bottom-4 left-4 z-50 w-7 h-7 rounded-md bg-ns2 border border-bdr2 text-nt3 hover:text-nt hover:bg-ns3 transition flex items-center justify-center shadow-md"
+        aria-label="Keyboard shortcuts"
+      >
+        <HelpCircle size={13} />
+      </button>
+
+      {/* Keyboard shortcuts modal */}
+      <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </div>
   )
 }

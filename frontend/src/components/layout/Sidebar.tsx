@@ -3,6 +3,7 @@ import { chapters } from '../../mocks/chapters'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useThreadStore, getOrCreateLabel } from '../../stores/useThreadStore'
 import { PanelLeftClose, PanelLeftOpen, Trash2 } from 'lucide-react'
+import { useToastStore } from '../../stores/useToastStore'
 
 interface SidebarProps {
   onToggleCollapse: () => void
@@ -12,6 +13,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
   const activeChapterId  = useChapterStore(s => s.activeChapterId)
   const sidebarCollapsed = useChapterStore(s => s.sidebarCollapsed)
   const setChapter       = useChapterStore(s => s.setChapter)
+  const addToast = useToastStore(s => s.addToast)
 
   const threads             = useThreadStore(s => s.threads)
   const threadId            = useThreadStore(s => s.threadId)
@@ -44,6 +46,16 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
   const handleCollapse = useCallback(() => {
     onToggleCollapse()
   }, [onToggleCollapse])
+
+  const handleCreateThread = useCallback(async () => {
+    await createThread()
+    addToast('Thread created', 'success')
+  }, [createThread, addToast])
+
+  const handleDeleteThread = useCallback((t: string) => {
+    deleteThread(t)
+    addToast('Thread deleted', 'info')
+  }, [deleteThread, addToast])
 
   return (
     <div className="bg-ns border-r border-bdr relative overflow-hidden flex flex-col h-full">
@@ -143,7 +155,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  deleteThread(t)
+                  handleDeleteThread(t)
                 }}
                 className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-ns4"
                 aria-label="Delete thread"
@@ -159,7 +171,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
         {/* New thread */}
         <div className="p-3.5 pt-2.5">
           <button
-            onClick={createThread}
+            onClick={handleCreateThread}
             className="w-full py-1.5 rounded-lg border border-bdr2 bg-transparent text-nt3 text-[11px] flex items-center justify-center gap-1.5 hover:bg-ns2 hover:text-nt2 hover:border-bdr2 transition active:scale-98"
           >
             <span className="text-xs">+</span> New thread

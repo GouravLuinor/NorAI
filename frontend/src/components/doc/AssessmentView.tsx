@@ -4,11 +4,13 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore, fetchQuizQuestions } from '../../stores/useQuizStore'
 import { QuestionCard, AnswerKey } from './assessment-cards'
 import type { Question } from '../../stores/useQuizStore'
+import { useToastStore } from '../../stores/useToastStore'
+
 
 export function AssessmentView() {
   const activeChapterId = useChapterStore(s => s.activeChapterId)
   const { startQuiz } = useQuizStore()
-
+  const addToast = useToastStore(s => s.addToast)
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(false)
   const [showAnswers, setShowAnswers] = useState(false)
@@ -26,7 +28,10 @@ export function AssessmentView() {
 
   const handleStartQuiz = async () => {
     const qs = await fetchQuizQuestions(activeChapterId)
-    if (qs.length > 0) startQuiz(qs, activeChapterId)
+    if (qs.length > 0) {
+      startQuiz(qs, activeChapterId)
+      addToast('Quiz started', 'success')
+    }
   }
 
   if (loading) return <div className="flex-1 flex items-center justify-center text-nt3 text-sm">Loading assessment…</div>
