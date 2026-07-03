@@ -125,11 +125,14 @@ interface ThreadState {
 
   // RC-D: cache so switching back to a thread shows messages instantly
   _messagesCache: Record<string, Message[]>
-
+  liveReferences: any[]
+  setLiveReferences: (refs: any[]) => void
   setThreadId: (id: string) => void
   addMessage: (msg: Message) => void
   setMessages: (msgs: Message[]) => void
   setLoading: (loading: boolean) => void
+  streamingText: string
+  setStreamingText: (text: string) => void
   setThreads: (threads: string[]) => void
 
   loadThreads: () => Promise<void>
@@ -139,8 +142,7 @@ interface ThreadState {
   getThreadLabel: (threadId: string) => string
 }
 
-let _msgIdCounter = 0
-const genId = () => `msg-${++_msgIdCounter}`
+const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
 // ---------------------------------------------------------------------------
 // Initial seed
@@ -161,8 +163,9 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
   threads:  _seedThreads.length > 0 ? _seedThreads : ['default'],
   messages: [],
   isLoading: false,
+  streamingText: '',
   _messagesCache: {},
-
+  liveReferences: [],
   // -------------------------------------------------------------------------
   // RC-A: setThreadId is now a PURE STATE MUTATION.
   // It does NOT call loadThreadMessages — the caller does that explicitly.
@@ -195,6 +198,8 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
     })),
 
   setLoading: (loading) => set({ isLoading: loading }),
+  setLiveReferences: (refs) => set({ liveReferences: refs }),   // ← add this line
+  setStreamingText: (text) => set({ streamingText: text }),
 
   setThreads: (threads) => {
     persistThreads(threads)

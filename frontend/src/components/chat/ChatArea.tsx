@@ -1,13 +1,3 @@
-/**
- * ChatArea.tsx — v3
- *
- * RC-A fix: ChatArea no longer calls loadThreadMessages on thread switch.
- * Sidebar owns that responsibility. ChatArea only handles its own local
- * streaming state cleanup when threadId changes.
- *
- * Added lightbox support for screenshot references.
- */
-
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useThreadStore, type Message, sendChatMessage } from '../../stores/useThreadStore'
 import { useChapterStore } from '../../stores/useChapterStore'
@@ -17,6 +7,7 @@ import { InputZone } from './InputZone'
 import { ShimmerLoader } from './ShimmerLoader'
 import { Lightbox } from '../ui/Lightbox'
 
+// ── Stable, collision‑free ID generator ────────────────────────────────────
 const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
 export function ChatArea() {
@@ -26,37 +17,22 @@ export function ChatArea() {
   const threadId   = useThreadStore(s => s.threadId)
   const isLoading  = useThreadStore(s => s.isLoading)
 
-  const [streamingText, setStreamingText]    = useState('')
-  const [isStreaming, setIsStreaming]        = useState(false)
-  const [liveReferences, setLiveReferences] = useState<any[]>([])
+  const liveReferences    = useThreadStore(s => s.liveReferences)
+  const setLiveReferences = useThreadStore(s => s.setLiveReferences)
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
-
   const chatEndRef = useRef<HTMLDivElement>(null)
 
-  // synchronous in‑flight guard — immune to React batching delays
+  // synchronous in‑flight guard
   const inFlightRef = useRef(false)
 
   // per‑request abort + stable thread tracker
   const activeThreadRef    = useRef(threadId)
-  const streamIntervalRef  = useRef<ReturnType<typeof setInterval> | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  // -------------------------------------------------------------------------
-  // Thread‑switch cleanup: cancel streaming only.
-  // RC‑A: do NOT call loadThreadMessages here — Sidebar owns that.
-  // -------------------------------------------------------------------------
+  // ── Thread‑switch cleanup ─────────────────────────────────────────────────
   useEffect(() => {
     if (activeThreadRef.current !== threadId) {
       abortControllerRef.current?.abort()
-
-      if (streamIntervalRef.current != null) {
-        clearInterval(streamIntervalRef.current)
-        streamIntervalRef.current = null
-      }
-
-      // Reset local streaming state only — messages come from the store
-      setIsStreaming(false)
-      setStreamingText('')
       setLiveReferences([])
       setLoading(false)
       inFlightRef.current = false
@@ -64,31 +40,24 @@ export function ChatArea() {
     activeThreadRef.current = threadId
   }, [threadId, setLoading])
 
-  // Unmount cleanup
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort()
-      if (streamIntervalRef.current != null) clearInterval(streamIntervalRef.current)
     }
   }, [])
 
-useEffect(() => {
-    const container = chatEndRef.current?.closest('.doc-content') as HTMLElement | null
-    if (container) {
-        container.scrollTop = container.scrollHeight
-    }
-}, [messages, streamingText])
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
-  // -------------------------------------------------------------------------
-  // handleSend
-  // -------------------------------------------------------------------------
+  // ── handleSend (no streaming) ─────────────────────────────────────────────
   const handleSend = useCallback(async (text: string) => {
-    // synchronous guard set BEFORE any await
     if (inFlightRef.current) return
     inFlightRef.current = true
 
     const targetThreadId = threadId
 
+    // 1. Add user message immediately
     addMessage({
       id: genId(),
       role: 'user',
@@ -96,84 +65,55 @@ useEffect(() => {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     })
 
-    setIsStreaming(true)
-    setStreamingText('')
     setLoading(true)
 
     const controller = new AbortController()
     abortControllerRef.current = controller
 
     try {
+      // 2. Get the full answer
       const data = await sendChatMessage(targetThreadId, text)
 
       if (activeThreadRef.current !== targetThreadId || controller.signal.aborted) return
 
-      const fullAnswer  = data.answer ?? ''
-      const cleanAnswer = fullAnswer.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
-      let charIndex = 0
+      const cleanAnswer = (data.answer ?? '').replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
 
-      if (streamIntervalRef.current != null) clearInterval(streamIntervalRef.current)
+      // 3. Add assistant message
+      addMessage({
+        id: genId(),
+        role: 'assistant',
+        content: cleanAnswer,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      })
 
-      streamIntervalRef.current = setInterval(() => {
-        if (activeThreadRef.current !== targetThreadId) {
-          clearInterval(streamIntervalRef.current!)
-          streamIntervalRef.current = null
-          return
-        }
-
-        if (charIndex < cleanAnswer.length) {
-          setStreamingText(cleanAnswer.slice(0, charIndex + 1))
-          charIndex++
-        } else {
-          clearInterval(streamIntervalRef.current!)
-          streamIntervalRef.current = null
-
-          addMessage({
-            id: genId(),
-            role: 'assistant',
-            content: cleanAnswer,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          })
-
-          setStreamingText('')
-          setIsStreaming(false)
-          setLoading(false)
-          inFlightRef.current = false
-
-          setLiveReferences([
-            ...(data.retrieved_chunks ?? []).map((c: any) => {
-              // Extract only the leaf heading after the last '>'
-              const headingParts = (c.heading_path || '').split('>')
-              const leafHeading = headingParts[headingParts.length - 1].trim()
-              
-              // Normalise heading to match NotesView ID exactly
-              const sectionId = 'sec-' + leafHeading
-                .toLowerCase()
-                .replace(/[^a-z0-9\s-]/g, '')
-                .trim()
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                
-              return {
-                id: c.heading_path,
-                title: c.heading_path,
-                section: `Ch ${c.chapter_id}`,
-                sectionId,
-                chapterId: c.chapter_id,
-                type: 'note' as const,
-              }
-            }),
-            ...(data.retrieved_images ?? []).map((img: any) => ({
-              id: img.path,
-              title: img.section,
-              section: img.path,
-              sectionId: '',
-              type: 'screenshot' as const,
-            })),
-          ])
-        }
-      }, 20)
-
+      // 4. Build references
+      setLiveReferences([
+        ...(data.retrieved_chunks ?? []).map((c: any) => {
+          const headingParts = (c.heading_path || '').split('>')
+          const leafHeading  = headingParts[headingParts.length - 1].trim()
+          const sectionId    = 'sec-' + leafHeading
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+          return {
+            id: c.heading_path,
+            title: c.heading_path,
+            section: `Ch ${c.chapter_id}`,
+            sectionId,
+            chapterId: c.chapter_id,
+            type: 'note' as const,
+          }
+        }),
+        ...(data.retrieved_images ?? []).map((img: any) => ({
+          id: img.path,
+          title: img.section,
+          section: img.path,
+          sectionId: '',
+          type: 'screenshot' as const,
+        })),
+      ])
     } catch (err: any) {
       if (err?.name === 'AbortError') return
       console.error('Chat error:', err)
@@ -186,35 +126,31 @@ useEffect(() => {
         })
       }
     } finally {
-      if (activeThreadRef.current === targetThreadId && streamIntervalRef.current == null) {
-        setIsStreaming(false)
+      if (activeThreadRef.current === targetThreadId) {
         setLoading(false)
         inFlightRef.current = false
       }
     }
   }, [threadId, addMessage, setLoading])
 
-  // -------------------------------------------------------------------------
-  // Reference handlers
-  // -------------------------------------------------------------------------
+  // ── Reference handlers ────────────────────────────────────────────────────
   const handleReferenceClick = useCallback((sectionId: string) => {
     const ref = liveReferences.find(r => r.sectionId === sectionId)
     if (!ref) return
-    
+
     const targetChapterId = ref.chapterId
     const store = useChapterStore.getState()
     const currentChapterId = store.activeChapterId
 
     const attemptScroll = () => {
       let attempts = 0
-      // Poll every 100ms for up to 2 seconds to wait for DOM updates
       const interval = setInterval(() => {
         const el = document.getElementById(sectionId)
         if (el) {
           clearInterval(interval)
           el.scrollIntoView({ behavior: 'smooth', block: 'center' })
           el.classList.remove('scroll-highlight')
-          void el.offsetWidth // trigger reflow
+          void el.offsetWidth
           el.classList.add('scroll-highlight')
           el.addEventListener('animationend', function h() {
             el.classList.remove('scroll-highlight')
@@ -229,25 +165,20 @@ useEffect(() => {
     }
 
     if (targetChapterId && targetChapterId !== currentChapterId) {
-      // Trigger store updates to mount the new chapter and set active tab to Notes
       store.setChapter(targetChapterId)
       store.setDocTab('notes')
     }
-
     attemptScroll()
   }, [liveReferences])
 
   const handleScreenshotClick = useCallback((ref: any) => {
-    // ref is the reference object from liveReferences (type 'screenshot')
-    // Clean the path: remove "outputs/" prefix if present, then prepend "/static/"
     const cleanPath = (ref.section || '').replace(/^outputs\//, '')
-    const src = `/static/${cleanPath}`
-    const caption = ref.title || ''
-    setLightbox({ src, caption })
+    setLightbox({ src: `/static/${cleanPath}`, caption: ref.title || '' })
   }, [])
 
-  const isEmpty = messages.length === 0 && !isStreaming && !isLoading
+  const isEmpty = messages.length === 0 && !isLoading
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth doc-content">
@@ -273,25 +204,14 @@ useEffect(() => {
               <MessageBubble key={msg.id} message={msg} />
             ))}
 
-            {isStreaming && streamingText && (
-              <div className="flex gap-2 items-start">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-np to-nbl flex items-center justify-center text-[9px] font-medium text-white shrink-0 mt-0.5 shadow-sm">
-                  N
-                </div>
-                <div className="max-w-full text-[12px] leading-relaxed text-nt2 py-0.5 whitespace-pre-wrap">
-                  {streamingText}
-                </div>
-              </div>
-            )}
-
-            {(isStreaming && !streamingText) || isLoading ? (
+            {isLoading && (
               <div className="flex gap-2 items-start">
                 <div className="w-5 h-5 rounded-full bg-gradient-to-br from-np to-nbl flex items-center justify-center text-[9px] font-medium text-white shrink-0 mt-0.5 shadow-sm">
                   N
                 </div>
                 <ShimmerLoader />
               </div>
-            ) : null}
+            )}
           </>
         )}
 
@@ -305,7 +225,6 @@ useEffect(() => {
       />
       <InputZone onSend={handleSend} />
 
-      {/* Lightbox overlay */}
       {lightbox && (
         <Lightbox
           src={lightbox.src}

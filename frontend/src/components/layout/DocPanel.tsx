@@ -6,6 +6,8 @@ import { NotesView } from '../doc/NotesView'
 import { AssessmentView } from '../doc/AssessmentView'
 import { SearchBar } from '../doc/SearchBar'
 import { useToastStore } from '../../stores/useToastStore'
+import { HighlightAsk } from '../doc/HighlightAsk'
+
 
 export function DocPanel() {
   const [searchOpen, setSearchOpen] = useState(false)
@@ -78,6 +80,8 @@ export function DocPanel() {
       ) : (
         <AssessmentView key={`assess-${activeChapterId}`} />
       )}
+      {/* Highlight & Ask — floating button for text selection */}
+      <HighlightAsk />
     </div>
   )
 }

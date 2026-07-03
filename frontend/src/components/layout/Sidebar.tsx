@@ -4,6 +4,7 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { useThreadStore, getOrCreateLabel } from '../../stores/useThreadStore'
 import { PanelLeftClose, PanelLeftOpen, Trash2 } from 'lucide-react'
 import { useToastStore } from '../../stores/useToastStore'
+import { ThemeToggle } from '../ui/ThemeToggle'
 
 interface SidebarProps {
   onToggleCollapse: () => void
@@ -167,6 +168,11 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
         </div>
 
         <div className="h-px bg-bdr mx-3.5" />
+
+        {/* Theme toggle */}
+        <div className="px-3.5 pb-1.5">
+          <ThemeToggle />
+        </div>
 
         {/* New thread */}
         <div className="p-3.5 pt-2.5">

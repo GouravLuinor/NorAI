@@ -171,3 +171,60 @@ html, body, #root {
 .animate-slide-in {
   animation: slide-in 0.2s ease-out;
 }
+
+/* Light theme overrides */
+[data-theme="light"] {
+  --color-nb: #FAFAF8;
+  --color-ns: #FFFFFF;
+  --color-ns2: #F5F5F3;
+  --color-ns3: #EBEBE8;
+  --color-ns4: #DEDEDB;
+
+  --color-nt: #1E1E1C;
+  --color-nt2: #5A5854;
+  --color-nt3: #8C8A84;
+  --color-nt4: #B5B3AD;
+
+  --color-np: #6458C4;
+  --color-npb: rgba(100, 88, 196, 0.08);
+  --color-npbr: rgba(100, 88, 196, 0.18);
+
+  --color-na: #B87C14;
+  --color-nab: rgba(184, 124, 20, 0.08);
+  --color-nabr: rgba(184, 124, 20, 0.18);
+
+  --color-ng: #208840;
+  --color-ngb: rgba(32, 136, 64, 0.08);
+  --color-ngbr: rgba(32, 136, 64, 0.18);
+
+  --color-nr: #B83030;
+  --color-nrb: rgba(184, 48, 48, 0.08);
+  --color-nrbr: rgba(184, 48, 48, 0.18);
+
+  --color-nbl: #2B6CB0;
+  --color-nblb: rgba(43, 108, 176, 0.08);
+  --color-nblbr: rgba(43, 108, 176, 0.18);
+
+  --color-bdr: rgba(0, 0, 0, 0.08);
+  --color-bdr2: rgba(0, 0, 0, 0.12);
+
+  /* Softer shadows for light mode */
+  --ev1: 0 1px 2px rgba(0,0,0,0.06);
+  --ev2: 0 4px 14px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --ev3: 0 10px 30px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06);
+}
+
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.15s ease-out;
+}
