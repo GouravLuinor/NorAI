@@ -48,9 +48,6 @@ export function AssessmentView() {
             {showAnswers ? <EyeOff size={13} /> : <Eye size={13} />}
             {showAnswers ? 'Hide Key' : 'Reveal Key'}
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-bdr2 bg-transparent text-nt2 text-[10px] hover:bg-ns2 hover:text-nt transition active:scale-98">
-            <Download size={13} /> PDF
-          </button>
           <button onClick={handleStartQuiz} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-np text-white text-[10px] font-medium shadow-[0_2px_10px_rgba(124,111,212,0.3)] hover:bg-[#8E82E0] hover:shadow-[0_4px_14px_rgba(124,111,212,0.4)] active:scale-98 transition">
             <Play size={13} /> Start Quiz
           </button>
