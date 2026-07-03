@@ -24,7 +24,7 @@ from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -412,5 +412,14 @@ async def chapter_screenshots(chapter_id: int):
 app.mount("/static", StaticFiles(directory="outputs"), name="static")
 
 
+@app.get("/download/{doc_type}")
+async def download_pdf(doc_type: str):
+    """Return the pre‑generated PDF for the given document type."""
+    allowed = {"study_notes", "revision", "assessment"}
+    if doc_type not in allowed:
+        raise HTTPException(status_code=400, detail="Invalid document type")
 
-
+    pdf_path = f"outputs/{doc_type}.pdf"
+    if not Path(pdf_path).exists():
+        raise HTTPException(status_code=404, detail="PDF not found. Run python backend/generate_pdfs.py first.")
+    return FileResponse(pdf_path, media_type="application/pdf", filename=f"{doc_type}.pdf")

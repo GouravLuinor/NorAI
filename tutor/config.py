@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 # Constants
 
-MODEL_NAME = "gemma-4-26b-a4b-it"
+MODEL_NAME = "gemini-3.1-flash-lite-preview"
 
 # Temperature for tutor responses. Slightly above 0 since conversational
 # answers benefit from a little natural variation, but still fairly

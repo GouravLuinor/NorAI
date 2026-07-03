@@ -249,7 +249,7 @@ const baseComponents: Components = {
 
 // ── Main Component ───────────────────────────────────────────────────────────
 
-export function NotesView({ chapterId }: { chapterId: number | null }) {
+export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterId: number | null; screenshotsExpanded?: boolean }) {
   const [sections, setSections] = useState<{ heading: string; body: string }[]>([])
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(true)
@@ -383,7 +383,7 @@ export function NotesView({ chapterId }: { chapterId: number | null }) {
         }
       })}
 
-      <ChapterScreenshots chapterId={chapterId} />
+      <ChapterScreenshots chapterId={chapterId} startExpanded={screenshotsExpanded} />
     </div>
   )
 }

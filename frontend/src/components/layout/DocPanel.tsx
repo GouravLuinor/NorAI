@@ -6,7 +6,18 @@ import { AssessmentView } from '../doc/AssessmentView'
 
 export function DocPanel() {
   const { activeDocTab, setDocTab, activeChapterId } = useChapterStore()
-console.log('DocPanel — activeChapterId:', activeChapterId)
+  console.log('DocPanel — activeChapterId:', activeChapterId)
+
+const handleDownloadPDF = () => {
+    const pdfMap: Record<string, string> = {
+        notes: 'study_notes',
+        revision: 'revision',
+        assessment: 'assessment',
+    }
+    const type = pdfMap[activeDocTab]
+    if (type) window.open(`/download/${type}`, '_blank')
+}
+
   return (
     <div className="flex flex-col min-w-0 min-h-0 border-r border-bdr bg-nb">
       {/* Top bar */}
@@ -32,7 +43,10 @@ console.log('DocPanel — activeChapterId:', activeChapterId)
           <button className="flex items-center gap-1 px-2 py-1 rounded-md border border-bdr2 bg-transparent text-nt3 text-[10px] hover:bg-ns2 hover:text-nt2 transition active:scale-98">
             <Search size={11} /> Search
           </button>
-          <button className="flex items-center gap-1 px-2 py-1 rounded-md border border-bdr2 bg-transparent text-nt3 text-[10px] hover:bg-ns2 hover:text-nt2 transition active:scale-98">
+          <button
+            onClick={handleDownloadPDF}
+            className="flex items-center gap-1 px-2 py-1 rounded-md border border-bdr2 bg-transparent text-nt3 text-[10px] hover:bg-ns2 hover:text-nt2 transition active:scale-98"
+          >
             <Download size={11} /> PDF
           </button>
         </div>

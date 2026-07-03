@@ -134,3 +134,25 @@ html, body, #root {
 .katex .mord {
   color: var(--color-nt);
 }
+
+@media print {
+  .print-document {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: var(--color-nb) !important;
+    color: var(--color-nt) !important;
+  }
+  .print-chapter {
+    break-before: page;
+    page-break-before: always;
+  }
+  .doc-content {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  .workspace, .sidebar, .ai-panel, .doc-panel {
+    display: block !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+}

@@ -9,9 +9,17 @@ interface Screenshot {
   importance: number
 }
 
-export function ChapterScreenshots({ chapterId }: { chapterId: number | null }) {
+export function ChapterScreenshots({
+  chapterId,
+  startExpanded = false,
+  lazyLoad = true,
+}: {
+  chapterId: number | null
+  startExpanded?: boolean
+  lazyLoad?: boolean
+}) {
+  const [open, setOpen] = useState(startExpanded)
   const [screenshots, setScreenshots] = useState<Screenshot[]>([])
-  const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
 
@@ -59,7 +67,7 @@ export function ChapterScreenshots({ chapterId }: { chapterId: number | null }) 
                     src={imgUrl}
                     alt={shot.reason}
                     className="w-full object-cover"
-                    loading="lazy"
+                    loading={lazyLoad ? "lazy" : "eager"}
                     onError={(e) => {
                       const target = e.currentTarget
                       target.style.display = 'none'
