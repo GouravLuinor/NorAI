@@ -32,6 +32,7 @@ import difflib
 import json
 import logging
 import os
+import random
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -52,6 +53,9 @@ from assessment.assessment_models import (
 
 load_dotenv()
 
+from backend.ratelimit import RPMRateLimiter
+_limiter = RPMRateLimiter(max_calls=12)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -62,11 +66,11 @@ logger = logging.getLogger(__name__)
 # Config
 # ---------------------------------------------------------------------------
 
-MAX_RETRIES = 5
-MODEL_NAME = "gemma-4-26b-a4b-it"
+MAX_RETRIES = 8
+MODEL_NAME = "gemini-3.1-flash-lite-preview"
 NOTES_DIR = Path("outputs/notes")
 ASSESSMENT_DIR = Path("outputs/assessment")
-MAX_WORKERS = 7
+MAX_WORKERS = 4
 MINUTES_PER_QUESTION = 1.5
 
 # ---------------------------------------------------------------------------
@@ -397,6 +401,7 @@ def generate_chapter_questions(
         )
 
         try:
+            _limiter.wait()
             response = client.models.generate_content(
                 model=MODEL_NAME,
                 contents=[prompt],
@@ -413,7 +418,7 @@ def generate_chapter_questions(
 
         except (ValueError, json.JSONDecodeError) as e:
             last_error = str(e)
-            wait = 5 * (attempt + 1)
+            wait = 5 * (attempt + 1) + random.uniform(0.5, 3.0)
             logger.warning(
                 f"Chapter {chapter_id} attempt {attempt + 1} invalid output "
                 f"(retrying in {wait}s): {e}"
@@ -422,7 +427,7 @@ def generate_chapter_questions(
 
         except Exception as e:
             last_error = str(e)
-            wait = 5 * (attempt + 1)
+            wait = 5 * (attempt + 1) + random.uniform(0.5, 3.0)
             logger.warning(
                 f"Chapter {chapter_id} attempt {attempt + 1} API error "
                 f"(retrying in {wait}s): {e}"
@@ -539,6 +544,70 @@ def main(lecture_title: str | None = None):
         assessment_path="outputs/assessment/assessment.json",
         output_path="outputs/assessment/assessment.pdf",
     )
+
+def generate_assessment_for_lecture(
+    notes_dir: str,
+    output_dir: str,
+    lecture_title: str | None = None,
+    max_workers: int = 7,
+) -> dict:
+    """
+    Generate assessment questions for all chapters, scoped to a lecture.
+
+    Args:
+        notes_dir:      directory containing chapter_*.md study notes.
+        output_dir:     base lecture directory.
+        lecture_title:  optional override for the lecture title.
+        max_workers:    number of parallel LLM calls.
+
+    Returns:
+        { "assessment_dir": str, "total_questions": int, "num_chapters": int }
+    """
+    import assessment.assessment_generator as _ag
+
+    # Override module globals for lecture‑scoped paths
+    _ag.NOTES_DIR = Path(notes_dir)
+    assessment_dir = Path(output_dir) / "assessment"
+    assessment_dir.mkdir(parents=True, exist_ok=True)
+    _ag.ASSESSMENT_DIR = assessment_dir
+
+    # Resolve lecture title if not provided
+    if lecture_title is None:
+        outline_path = Path(notes_dir) / "lecture_outline.json"
+        if outline_path.exists():
+            with open(outline_path, "r", encoding="utf-8") as f:
+                outline = json.load(f)
+            lecture_title = outline.get("lecture_title", "Untitled Lecture")
+        else:
+            lecture_title = "Untitled Lecture"
+            logger.warning("No lecture_title provided and outline not found.")
+
+    chapters = load_chapter_notes(notes_dir)
+    if not chapters:
+        raise RuntimeError(
+            f"No chapter_*.md files found in {notes_dir}. "
+            "Run notes_generator.py first."
+        )
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(process_chapter, ch) for ch in chapters]
+        completed, total = 0, len(futures)
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                logger.error(f"Chapter failed: {e}")
+            completed += 1
+            logger.info(f"Assessment progress: {completed}/{total}")
+
+    assessment = combine_assessment(lecture_title)
+
+    # Do NOT generate PDF here — the orchestrator does that via Playwright
+    return {
+        "assessment_dir": str(assessment_dir),
+        "total_questions": len(assessment.questions),
+        "num_chapters": len(chapters),
+    }
 
 
 if __name__ == "__main__":

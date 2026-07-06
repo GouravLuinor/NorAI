@@ -10,6 +10,9 @@ from notes.outline_prompts import OUTLINE_PROMPT
 
 load_dotenv()
 
+from backend.ratelimit import RPMRateLimiter
+_limiter = RPMRateLimiter(max_calls=12)
+
 logging.basicConfig(
     level=logging.INFO,
     format=
@@ -19,7 +22,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-MODEL_NAME = "gemma-4-26b-a4b-it"
+MODEL_NAME = "gemini-3.1-flash-lite-preview"
 
 
 def load_llm():
@@ -172,6 +175,7 @@ def generate_outline(
         )
     )
 
+    _limiter.wait()
     response = (
         client.models.generate_content(
             model=
@@ -262,6 +266,72 @@ def main():
     logger.info(
         "Outline generation complete."
     )      
+
+def generate_lecture_outline(
+    merged_objects_dir: str,
+    output_dir: str,
+) -> dict:
+    """
+    Generate the lecture outline from merged knowledge objects.
+    Chunk ranges (start_chunk / end_chunk) are automatically assigned
+    by dividing the available merged objects equally among chapters.
+    """
+    merged_dir = Path(merged_objects_dir)
+    objects = []
+    for f in sorted(merged_dir.glob("chunk_*.json")):
+        with open(f, "r", encoding="utf-8") as fh:
+            objects.append(json.load(fh))
+    total_chunks = len(objects)
+
+    # Build proto‑chapters so the LLM has something to work with
+    proto_chapters = []
+    for obj in objects:
+        proto_chapters.append({
+            "chapter_id": obj.get("chunk_id", 0),
+            "topics": [obj.get("topic", "")] if obj.get("topic") else [],
+            "concepts": obj.get("concepts", [])[:10],
+            "lecture_notes": obj.get("lecture_notes", [])[:5],
+        })
+
+    outline_text = generate_outline(proto_chapters)
+    outline = parse_outline(outline_text)
+
+    chapters = outline.get("chapters", [])
+    num_chapters = len(chapters)
+    if num_chapters == 0:
+        raise ValueError("Outline generation produced zero chapters.")
+
+    # Assign chunk ranges evenly across the total merged objects
+    per_chapter = max(1, total_chunks // num_chapters)
+    
+    for i, ch in enumerate(chapters):
+        start = i * per_chapter
+        end   = min((i + 1) * per_chapter - 1, total_chunks - 1)
+        if i == num_chapters - 1:
+            end = total_chunks - 1
+
+        ch["chapter_id"]   = i + 1               # renumber 1…N
+        ch["start_chunk"]  = start
+        ch["end_chunk"]    = end
+        ch["chunk_ids"]    = list(range(start, end + 1))   # list of ints
+
+    outline_path = Path(output_dir) / "notes" / "lecture_outline.json"
+    outline_path.parent.mkdir(parents=True, exist_ok=True)
+    save_outline(outline, outline_path)
+
+    return {
+        "outline_path": str(outline_path),
+        "num_chapters": num_chapters,
+    }
+
+
+def main():
+    result = generate_lecture_outline(
+        merged_objects_dir="outputs/merged_objects",
+        output_dir="outputs",
+    )
+    logger.info(f"Outline generated: {result}")
+
 
 if __name__ == "__main__":
     main()

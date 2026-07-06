@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Eye, EyeOff, Download, Play } from 'lucide-react'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore, fetchQuizQuestions } from '../../stores/useQuizStore'
+import { useLectureStore } from '../../stores/useLectureStore' 
 import { QuestionCard, AnswerKey } from './assessment-cards'
 import type { Question } from '../../stores/useQuizStore'
 import { useToastStore } from '../../stores/useToastStore'
@@ -11,28 +12,31 @@ export function AssessmentView() {
   const activeChapterId = useChapterStore(s => s.activeChapterId)
   const { startQuiz } = useQuizStore()
   const addToast = useToastStore(s => s.addToast)
+  const lectureId = useLectureStore(s => s.activeLectureId) 
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(false)
   const [showAnswers, setShowAnswers] = useState(false)
 
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    fetchQuizQuestions(activeChapterId)
-      .then((data) => {
-        if (!cancelled) { setQuestions(data); setShowAnswers(false); setLoading(false) }
-      })
-      .catch(() => { if (!cancelled) { setQuestions([]); setLoading(false) } })
-    return () => { cancelled = true }
-  }, [activeChapterId])
+useEffect(() => {
+  if (!lectureId) return  // wait for Workspace to set it
+  let cancelled = false
+  setLoading(true)
+  fetchQuizQuestions(activeChapterId, lectureId)
+    .then((data) => {
+      if (!cancelled) { setQuestions(data); setShowAnswers(false); setLoading(false) }
+    })
+    .catch(() => { if (!cancelled) { setQuestions([]); setLoading(false) } })
+  return () => { cancelled = true }
+}, [activeChapterId, lectureId])
 
-  const handleStartQuiz = async () => {
-    const qs = await fetchQuizQuestions(activeChapterId)
-    if (qs.length > 0) {
-      startQuiz(qs, activeChapterId)
-      addToast('Quiz started', 'success')
-    }
+const handleStartQuiz = async () => {
+  if (!lectureId) return
+  const qs = await fetchQuizQuestions(activeChapterId, lectureId)
+  if (qs.length > 0) {
+    startQuiz(qs, activeChapterId)
+    addToast('Quiz started', 'success')
   }
+}
 
   if (loading) return <div className="flex-1 flex items-center justify-center text-nt3 text-sm">Loading assessment…</div>
   if (questions.length === 0) return <div className="flex-1 flex items-center justify-center text-nt3 text-sm">Assessment not available for this chapter.</div>

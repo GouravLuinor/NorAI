@@ -32,7 +32,7 @@ RetrievedImage schema (screenshots):
 """
 
 from __future__ import annotations
-
+from pathlib import Path
 from functools import lru_cache
 from typing import Optional
 
@@ -103,6 +103,7 @@ def retrieve(
     query: str,
     chapter_id: Optional[int] = None,
     k: int = TOP_K,
+    output_dir: Optional[str] = None,
 ) -> list[dict]:
     """
     Query the study-notes index and return the top-k most relevant chunks.
@@ -111,6 +112,7 @@ def retrieve(
         query:      The user's question (or rewritten query).
         chapter_id: If set, restrict results to this chapter.
         k:          Number of results to return.
+        output_dir: If set, use this directory's Chroma index instead of default.
 
     Returns:
         List of RetrievedChunk dicts, ordered by ascending cosine distance.
@@ -118,7 +120,16 @@ def retrieve(
     Raises:
         IndexNotBuiltError: if the notes index hasn't been built yet.
     """
-    collection = _get_notes_collection()
+    if output_dir:
+        chroma_dir = Path(output_dir) / "tutor" / "chroma"
+        client = chromadb.PersistentClient(path=str(chroma_dir))
+        collection = client.get_collection(
+            name=NOTES_COLLECTION,
+            embedding_function=GeminiEmbeddingFunction(role="query"),
+        )
+    else:
+        collection = _get_notes_collection()
+    # ... rest of the function (where filter, query, return chunks) stays the same
 
     where: dict | None = None
     if chapter_id is not None:

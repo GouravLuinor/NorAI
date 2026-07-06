@@ -86,7 +86,7 @@ def load_merged_objects(
     return objects
 
 
-MODEL_NAME = "gemini-3.5-flash"
+MODEL_NAME = "gemini-3.1-flash-lite-preview"
 
 
 

@@ -35,7 +35,7 @@ def analyze_images(
     image_paths,
     prompt,
     model_name=
-    "gemma-4-26b-a4b-it"
+    "gemini-3.1-flash-lite-preview"
 ):
     """
     Analyze one or more images

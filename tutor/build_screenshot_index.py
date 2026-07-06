@@ -122,20 +122,23 @@ def smoke_test(query: str):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Index screenshot captions into Chroma for Phase 4 retrieval."
-    )
-    parser.add_argument(
-        "--reset", action="store_true",
-        help="Delete the existing collection and rebuild from scratch."
-    )
-    parser.add_argument(
-        "--smoke-test", type=str, default=None, metavar="QUERY",
-        help="Run a test query after indexing to verify retrieval works."
-    )
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-dir", type=str, default=None)
+    parser.add_argument("--reset", action="store_true")
+    parser.add_argument("--smoke-test", type=str, default=None)
     args = parser.parse_args()
 
-    index_screenshots(reset=args.reset)
+    if args.output_dir:
+        from pathlib import Path
+        chroma_dir = Path(args.output_dir) / "tutor" / "chroma"
+        chroma_dir.mkdir(parents=True, exist_ok=True)
+        import tutor.retrieval_config as cfg
+        cfg.CHROMA_DIR = chroma_dir
+        cfg.SCREENSHOT_JSON_GLOB = str(
+            chroma_dir.parent.parent / "screenshots" / "selected" / "chapter_*_screenshots.json"
+        )
 
+    index_screenshots(reset=args.reset)
     if args.smoke_test:
         smoke_test(args.smoke_test)

@@ -6,20 +6,25 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { PanelLeftOpen, HelpCircle } from 'lucide-react'
 import { ShortcutsModal } from '../ui/ShortcutsModal'
+import { useParams } from 'react-router-dom'
+import { useLectureStore } from '../../stores/useLectureStore'
 
 const SIDEBAR_MIN = 160
 const SIDEBAR_MAX = 400
 const AI_MIN_TUTOR = 250
-const AI_MIN_QUIZ_CARDS = 360
+const AI_MIN_QUIZ_CARDS = 400
 const AI_MAX = 550
 
 export function Workspace() {
   const { sidebarCollapsed, toggleSidebar } = useChapterStore()
+  const { lectureId } = useParams<{ lectureId: string }>()
+  const { setActiveLecture, loadLectures } = useLectureStore()
+  const { loadChapters } = useChapterStore()
   const { aiMode } = useQuizStore()
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(220)
   const [aiPanelWidth, setAiPanelWidth] = useState(268)
-  const [tutorAiWidth, setTutorAiWidth] = useState(268) 
+  const [tutorAiWidth, setTutorAiWidth] = useState(268)
   const [isDragging, setIsDragging] = useState(false)
 
   const workspaceRef = useRef<HTMLDivElement>(null)
@@ -34,6 +39,14 @@ export function Workspace() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [sidebarCollapsed, toggleSidebar])
+
+  useEffect(() => {
+    if (lectureId) {
+      setActiveLecture(lectureId)
+      loadChapters(lectureId)
+    }
+    loadLectures()
+  }, [lectureId, setActiveLecture, loadLectures, loadChapters])
 
   const minAiWidth = aiMode === 'tutor' ? AI_MIN_TUTOR : AI_MIN_QUIZ_CARDS
 

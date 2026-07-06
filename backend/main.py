@@ -12,27 +12,30 @@ Fix log:
          when the thread exists in user_threads but has no LangGraph checkpoint
          yet (brand new thread that hasn't received a message).
 """
-
+from fastapi import Form, UploadFile
 import asyncio
 import json as json_lib
 import random
-import sqlite3
-import time
+import uuid
+from backend.orchestrator import run_pipeline, get_or_create_task_sync
 from contextlib import contextmanager
 from pathlib import Path
-from typing import List, Optional
-
+from typing import List
+from backend.dependencies import get_lecture_db_path, _get_or_create_lecture_graph
+import sqlite3
+import time
+import threading
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
-
+from backend.lecture_registry import list_lectures, get_lecture
 from tutor.config import MODEL_NAME, get_api_key, CHECKPOINT_DB_PATH
-from backend.dependencies import invoke_tutor, _graph
-
+from backend.dependencies import invoke_tutor
+from backend.lecture_registry import get_lecture
 # ---------------------------------------------------------------------------
 # App setup
 # ---------------------------------------------------------------------------
@@ -117,6 +120,7 @@ class ChatRequest(BaseModel):
     thread_id: str
     user_question: str
     lecture_title: str = ""
+    lecture_id: str | None = None   # ← new field
 
 class ChatResponse(BaseModel):
     answer: str
@@ -144,17 +148,20 @@ class QuizEvaluateRequest(BaseModel):
 # Chat endpoints
 # ---------------------------------------------------------------------------
 
-@app.post("/chat", response_model=ChatResponse)
+@app.post("/chat")
 async def chat(req: ChatRequest):
     try:
         result = invoke_tutor(
             thread_id=req.thread_id,
             user_question=req.user_question,
             lecture_title=req.lecture_title,
+            lecture_id=req.lecture_id,
         )
-        return ChatResponse(**result)
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 
 @app.post("/chat/stream")
@@ -165,6 +172,7 @@ async def chat_stream(req: ChatRequest):
                 thread_id=req.thread_id,
                 user_question=req.user_question,
                 lecture_title=req.lecture_title,
+                lecture_id=req.lecture_id,        # ← added
             )
             answer = result.get("answer", "")
             for ch in answer:
@@ -192,45 +200,62 @@ async def chat_stream(req: ChatRequest):
 # Thread endpoints
 # ---------------------------------------------------------------------------
 
-@app.post("/threads")
-async def create_thread_endpoint(id: Optional[str] = None):
-    """
-    BUG-7: Write ONLY to user_threads — never touch the checkpoints table.
-    LangGraph manages checkpoints with its own schema; injecting rows directly
-    can corrupt its internal state or fail silently on schema mismatches.
-    """
-    thread_id = id if id else f"thread-{int(time.time() * 1000)}"
+@app.get("/threads")
+async def list_threads(lecture_id: str = "default"):
+    """Return all thread IDs for a lecture."""
+    db_path = get_lecture_db_path(lecture_id)
+    if not db_path.exists():
+        return {"threads": []}
+
+    threads = set()
     try:
-        with _db() as conn:
-            _ensure_user_threads_table(conn)
-            conn.execute(
-                "INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)",
-                (thread_id,),
-            )
-    except Exception as exc:
-        # Log but don't crash — the frontend has already updated optimistically
-        print(f"[create_thread] DB error: {exc}")
+        conn = sqlite3.connect(str(db_path))
+        # 1) user_threads table (explicitly created threads)
+        try:
+            conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
+            for row in conn.execute("SELECT thread_id FROM user_threads"):
+                if row[0]:
+                    threads.add(row[0])
+        except Exception:
+            pass
+        # 2) LangGraph checkpoints
+        try:
+            for row in conn.execute("SELECT DISTINCT thread_id FROM checkpoints"):
+                if row[0]:
+                    threads.add(row[0])
+        except Exception:
+            pass
+        conn.close()
+    except Exception:
+        pass
+
+    return {"threads": sorted(threads)}
+
+
+@app.post("/threads")
+async def create_thread_endpoint(lecture_id: str = "default"):
+    """Create a new conversation thread in a lecture."""
+    thread_id = f"thread-{int(time.time() * 1000)}"
+    db_path = get_lecture_db_path(lecture_id)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        conn = sqlite3.connect(str(db_path))
+        conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
+        conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (thread_id,))
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
     return {"thread_id": thread_id}
 
 
-@app.get("/threads")
-async def list_threads():
-    return {"threads": _get_all_thread_ids()}
-
-
 @app.get("/threads/{thread_id}")
-async def get_thread(thread_id: str):
-    """
-    BUG-4: Return an empty message list for brand-new threads (not 404).
-    A thread exists as soon as the frontend creates it; LangGraph only writes
-    a checkpoint after the first message, so snapshot.values can legitimately
-    be empty without being an error.
-    """
+async def get_thread(thread_id: str, lecture_id: str = "default"):
+    """Return the full message history for a thread in a specific lecture."""
     try:
+        graph, _ = _get_or_create_lecture_graph(lecture_id)
         config = {"configurable": {"thread_id": thread_id}}
-        snapshot = _graph.get_state(config)
-
-        # Empty snapshot = valid new thread, not an error
+        snapshot = graph.get_state(config)
         if not snapshot or not snapshot.values:
             return {"thread_id": thread_id, "messages": []}
 
@@ -241,25 +266,27 @@ async def get_thread(thread_id: str):
                 "content": msg.content,
             })
         return {"thread_id": thread_id, "messages": result}
-
-    except Exception as exc:
-        # LangGraph may throw if it can't find the thread at all — treat as empty
-        print(f"[get_thread] {thread_id}: {exc}")
-        return {"thread_id": thread_id, "messages": []}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/threads/{thread_id}")
-async def delete_thread(thread_id: str):
-    try:
-        with _db() as conn:
+async def delete_thread(thread_id: str, lecture_id: str = "default"):
+    """Delete a thread from a lecture."""
+    db_path = get_lecture_db_path(lecture_id)
+    if db_path.exists():
+        try:
+            conn = sqlite3.connect(str(db_path))
             for table in ["checkpoints", "checkpoint_blobs", "checkpoint_writes", "user_threads"]:
                 try:
                     conn.execute(f"DELETE FROM {table} WHERE thread_id = ?", (thread_id,))
                 except sqlite3.OperationalError:
-                    pass  # table doesn't exist yet
-        return {"deleted": thread_id}
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+                    pass
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+    return {"deleted": thread_id}
 
 # ---------------------------------------------------------------------------
 # Quiz, Summary, Flashcards
@@ -279,8 +306,16 @@ def _load_quiz_questions(chapter_id: int | None) -> list[dict]:
 
 
 @app.get("/quiz/questions")
-async def quiz_questions(chapter_id: int | None = None, n: int = 5):
-    questions = _load_quiz_questions(chapter_id)
+async def quiz_questions(chapter_id: int | None = None, n: int = 5, lecture_id: str = "default"):
+    info = get_lecture(lecture_id)
+    base = Path(info["output_dir"]) if info else Path("outputs")
+    path = base / "assessment" / f"assessment_chapter_{chapter_id}.json" if chapter_id else base / "assessment" / "assessment.json"
+    if not path.exists():
+        return []
+    questions = json_lib.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(questions, list):
+        questions = []
+    questions = [q for q in questions if isinstance(q, dict)]
     if len(questions) > n:
         questions = random.sample(questions, n)
     return questions
@@ -369,12 +404,10 @@ async def quiz_evaluate(req: QuizEvaluateRequest):
 
 
 @app.get("/flashcards")
-async def flashcards(chapter_id: int | None = None, n: int | None = None):
-    path = (
-        Path(f"outputs/flashcards/flashcards_chapter_{chapter_id}.json")
-        if chapter_id is not None
-        else Path("outputs/flashcards/flashcards.json")
-    )
+async def flashcards(chapter_id: int | None = None, n: int | None = None, lecture_id: str = "default"):
+    info = get_lecture(lecture_id)
+    base = Path(info["output_dir"]) if info else Path("outputs")
+    path = base / "flashcards" / f"flashcards_chapter_{chapter_id}.json" if chapter_id else base / "flashcards" / "flashcards.json"
     if not path.exists():
         return []
     cards = json_lib.loads(path.read_text(encoding="utf-8"))
@@ -384,25 +417,29 @@ async def flashcards(chapter_id: int | None = None, n: int | None = None):
 
 
 @app.get("/summary")
-async def chapter_summary(chapter_id: int):
-    path = Path(f"outputs/revision/revision_chapter_{chapter_id}.md")
+async def chapter_summary(chapter_id: int, lecture_id: str = "default"):
+    info = get_lecture(lecture_id)
+    base = Path(info["output_dir"]) if info else Path("outputs")
+    path = base / "revision" / f"revision_chapter_{chapter_id}.md"
     if not path.exists():
         raise HTTPException(status_code=404, detail="Summary not found for this chapter")
     return path.read_text(encoding="utf-8")
 
 
 @app.get("/notes/{chapter_id}")
-async def study_notes(chapter_id: int):
-    """Return the study notes Markdown for a chapter."""
-    path = Path(f"outputs/notes/chapter_{chapter_id}.md")
+async def study_notes(chapter_id: int, lecture_id: str = "default"):
+    info = get_lecture(lecture_id)
+    base = Path(info["output_dir"]) if info else Path("outputs")
+    path = base / "notes" / f"chapter_{chapter_id}.md"
     if not path.exists():
-        raise HTTPException(status_code=404, detail="Study notes not found for this chapter")
+        raise HTTPException(status_code=404, detail="Study notes not found")
     return path.read_text(encoding="utf-8")
 
 @app.get("/screenshots/{chapter_id}")
-async def chapter_screenshots(chapter_id: int):
-    """Return the list of selected screenshots for a chapter."""
-    path = Path(f"outputs/screenshots/selected/chapter_{chapter_id}_screenshots.json")
+async def chapter_screenshots(chapter_id: int, lecture_id: str = "default"):
+    info = get_lecture(lecture_id)
+    base = Path(info["output_dir"]) if info else Path("outputs")
+    path = base / "screenshots" / "selected" / f"chapter_{chapter_id}_screenshots.json"
     if not path.exists():
         return []
     with open(path, encoding="utf-8") as f:
@@ -412,14 +449,68 @@ async def chapter_screenshots(chapter_id: int):
 app.mount("/static", StaticFiles(directory="outputs"), name="static")
 
 
-@app.get("/download/{doc_type}")
-async def download_pdf(doc_type: str):
-    """Return the pre‑generated PDF for the given document type."""
-    allowed = {"study_notes", "revision", "assessment"}
-    if doc_type not in allowed:
-        raise HTTPException(status_code=400, detail="Invalid document type")
 
-    pdf_path = f"outputs/{doc_type}.pdf"
-    if not Path(pdf_path).exists():
-        raise HTTPException(status_code=404, detail="PDF not found. Run python backend/generate_pdfs.py first.")
-    return FileResponse(pdf_path, media_type="application/pdf", filename=f"{doc_type}.pdf")
+# ── Upload & Processing ──────────────────────────────────────────────────────
+
+@app.post("/process")
+async def start_processing(
+    source_type: str = Form(...),
+    url: str | None = Form(None),
+    file: UploadFile | None = None,
+):
+    task_id = str(uuid.uuid4())
+
+    file_path = None
+    if file:
+        upload_dir = Path("outputs/uploads")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        file_path = upload_dir / f"{task_id}_{file.filename}"
+        with open(file_path, "wb") as f:
+            content = await file.read()
+            f.write(content)
+
+    # Run pipeline in a background thread — keeps the event loop free
+    thread = threading.Thread(
+        target=run_pipeline,
+        args=(task_id, source_type, url, str(file_path) if file_path else None),
+        daemon=True,
+    )
+    thread.start()
+
+    return {"task_id": task_id}
+
+@app.get("/lectures")
+async def get_lectures():
+    return list_lectures()
+
+
+@app.get("/lectures/{lecture_id}")
+async def get_lecture_info(lecture_id: str):
+    info = get_lecture(lecture_id)
+    if not info:
+        raise HTTPException(status_code=404, detail="Lecture not found")
+    return info
+
+
+@app.get("/outline")
+async def get_outline(lecture_id: str = "default"):
+    """Return the lecture outline as JSON (for the sidebar chapter list)."""
+    info = get_lecture(lecture_id)
+    base = Path(info["output_dir"]) if info else Path("outputs")
+    path = base / "notes" / "lecture_outline.json"
+    if not path.exists():
+        return {"chapters": []}
+    with open(path, encoding="utf-8") as f:
+        return json_lib.load(f)
+
+
+
+@app.get("/process/{task_id}/status")
+async def get_task_status(task_id: str):
+    """Return current progress as a single JSON object."""
+    tp = get_or_create_task_sync(task_id)
+    return {
+        "stage": "complete" if tp.finished and not tp.error else tp.stage,
+        "message": tp.error or tp.message,
+        "progress": tp.percent,
+    }

@@ -18,6 +18,7 @@ from concurrent.futures import (
 )
 import json
 import logging
+from random import random
 import re
 from pathlib import Path
 import os
@@ -27,6 +28,8 @@ from dotenv import load_dotenv
 from notes.notes_prompt import NOTES_PROMPT
 load_dotenv()
 
+from backend.ratelimit import RPMRateLimiter
+_limiter = RPMRateLimiter(max_calls=12)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,15 +41,15 @@ logger = logging.getLogger(__name__)
 
 #constants
 
-MAX_RETRIES = 5
-MODEL_NAME = "gemma-4-26b-a4b-it"
+MAX_RETRIES = 8
+MODEL_NAME = "gemini-3.1-flash-lite-preview"
 NOTES_DIR = Path(
         "outputs/notes"
 )
 CHAPTER_DIR = Path(
         "outputs/chapters"
 )
-MAX_WORKERS = 7
+MAX_WORKERS = 4
 # LLM Setup
 
 
@@ -420,7 +423,7 @@ def generate_chapter_notes(
             f"{len(prompt)} chars"
         )
         try:
-
+            _limiter.wait()
             response = (
                 client.models.generate_content(
                     model=MODEL_NAME,
@@ -455,11 +458,7 @@ def generate_chapter_notes(
                 f"failed: {e}"
             )
 
-            time.sleep(
-                5 * (
-                    attempt + 1
-                )
-            )
+        time.sleep(5 * (attempt + 1) + random.uniform(0.5, 3.0))
 
     raise RuntimeError(
         f"Failed chapter "
@@ -518,6 +517,14 @@ def process_chapter(
     )
 
     chapter_id = chapter["chapter_id"]
+
+    # ── Guard: skip if the chapter JSON was never built ────────────────────
+    chapter_file = CHAPTER_DIR / f"chapter_{chapter_id}.json"
+    if not chapter_file.exists():
+        logger.warning(
+            f"Skipping chapter {chapter_id}: chapter JSON not found"
+        )
+        return
 
     previous_outline = None
     next_outline = None
@@ -723,6 +730,57 @@ def main():
     logger.info(
         "Notes generation complete."
     )
+
+def generate_study_notes(
+    chapters_dir: str,
+    outline_path: str,
+    output_dir: str,
+    max_workers: int = 7,
+) -> dict:
+    """
+    Generate study notes for all chapters.
+
+    Args:
+        chapters_dir: directory containing chapter_*.json files.
+        outline_path: path to lecture_outline.json.
+        output_dir:   directory where chapter_*.md and notes.md will be saved.
+        max_workers:  number of parallel LLM calls.
+
+    Returns:
+        { "notes_dir": str, "num_chapters": int }
+    """
+    notes_dir = Path(output_dir) / "notes"
+    notes_dir.mkdir(parents=True, exist_ok=True)
+
+    # Point the global NOTES_DIR to the lecture‑scoped directory
+    import notes.notes_generator as _nsg
+    _nsg.NOTES_DIR = notes_dir
+    _nsg.CHAPTER_DIR = Path(chapters_dir)
+
+    chapters = load_chapters(chapters_dir)
+    outline = load_outline(outline_path)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [
+            executor.submit(process_chapter, ch, outline, outline)
+            for ch in chapters
+        ]
+        completed = 0
+        total = len(futures)
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                logger.error(f"Chapter worker failed: {e}")
+            completed += 1
+            logger.info(f"Progress: {completed}/{total}")
+
+    combine_notes()   # still writes to NOTES_DIR (now lecture‑scoped)
+
+    return {
+        "notes_dir": str(notes_dir),
+        "num_chapters": len(chapters),
+    }
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, Component, ErrorInfo, ReactNode } from 'react'
+import React, { useState, useEffect, Component } from 'react'
+import type { ErrorInfo, ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -9,9 +10,32 @@ import { ChapterScreenshots } from '../components/doc/ChapterScreenshots'
 import { fetchQuizQuestions, type Question } from '../stores/useQuizStore'
 import type { Components } from 'react-markdown'
 import { Bookmark, Clock, Lightbulb, Code, List, FileText } from 'lucide-react'
+import { useLectureStore } from '../stores/useLectureStore'
+// ── Types ──────────────────────────────────────────────────────────────────
+/**
+ * Shape of window.__PRINT_DATA__ injected by generate_pdfs.py via
+ * page.evaluate().  When present the component skips all fetch calls and
+ * reads directly from this object, eliminating every possible network
+ * failure inside Playwright's headless browser.
+ */
+interface PrintDataNotes    { type: 'notes' | 'revision'; chapters: string[] }
+interface PrintDataAssessment {
+  type: 'assessment'
+  assessmentChapters: { ch: number; questions: Question[] }[]
+}
+type PrintData = PrintDataNotes | PrintDataAssessment
+
+declare global {
+  interface Window {
+    __PRINT_DATA__?: PrintData
+  }
+}
 
 // ── Error Boundary ─────────────────────────────────────────────────────────
-class PrintErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: Error | null }> {
+class PrintErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
   constructor(props: { children: ReactNode }) {
     super(props)
     this.state = { hasError: false, error: null }
@@ -59,26 +83,79 @@ function getCardType(h: string, body: string): string {
 
 // ── Custom Markdown renderers ──────────────────────────────────────────────
 const baseComponents: Components = {
-  p: ({ children }) => <p className="text-[13px] text-nt2 leading-relaxed mb-2">{children}</p>,
+  p:      ({ children }) => <p className="text-[13px] text-nt2 leading-relaxed mb-2">{children}</p>,
   strong: ({ children }) => <strong className="text-nt font-medium">{children}</strong>,
-  ul: ({ children }) => <ul className="list-none pl-0 space-y-2">{children}</ul>,
-  li: ({ children }) => <li className="relative pl-5 text-[13px] text-nt2 leading-relaxed"><span className="absolute left-0 top-2 w-1.5 h-1.5 rounded-full bg-ns3 border border-bdr2" />{children}</li>,
-  code: ({ children, className }: any) => !className ? <code className="font-mono text-[10px] bg-ns2 px-1.5 py-0.5 rounded text-nt border border-bdr">{children}</code> : <code className={className}>{children}</code>,
-  table: ({ children }) => <table className="w-full text-xs text-nt2">{children}</table>,
-  thead: ({ children }) => <thead className="text-[10px] font-semibold text-nt uppercase tracking-wider border-b border-bdr2">{children}</thead>,
-  th: ({ children }) => <th className="p-2 text-left">{children}</th>,
-  td: ({ children }) => <td className="p-2 border-b border-bdr last:border-none">{children}</td>,
+  ul:     ({ children }) => <ul className="list-none pl-0 space-y-2">{children}</ul>,
+  li:     ({ children }) => (
+    <li className="relative pl-5 text-[13px] text-nt2 leading-relaxed">
+      <span className="absolute left-0 top-2 w-1.5 h-1.5 rounded-full bg-ns3 border border-bdr2" />
+      {children}
+    </li>
+  ),
+  code:   ({ children, className }: any) =>
+    !className
+      ? <code className="font-mono text-[10px] bg-ns2 px-1.5 py-0.5 rounded text-nt border border-bdr">{children}</code>
+      : <code className={className}>{children}</code>,
+  table:  ({ children }) => <table className="w-full text-xs text-nt2">{children}</table>,
+  thead:  ({ children }) => <thead className="text-[10px] font-semibold text-nt uppercase tracking-wider border-b border-bdr2">{children}</thead>,
+  th:     ({ children }) => <th className="p-2 text-left">{children}</th>,
+  td:     ({ children }) => <td className="p-2 border-b border-bdr last:border-none">{children}</td>,
 }
 
 // ── Card wrappers ──────────────────────────────────────────────────────────
 const Wrapper = ({ type, heading, children }: { type: string; heading: string; children: React.ReactNode }) => {
   switch (type) {
-    case 'definition': return <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-sm"><div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2"><Bookmark size={13} className="text-np" />{heading}</div>{children}</div>
-    case 'table': return <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-sm"><div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2"><Clock size={13} className="text-ng" />{heading}</div>{children}</div>
-    case 'callout': return <div className="flex gap-2.5 bg-nblb border border-nblbr rounded-lg p-3 mb-4"><Lightbulb size={14} className="text-nbl mt-0.5 shrink-0" /><div><div className="text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-1">{heading}</div><div className="text-xs text-nt2 leading-relaxed">{children}</div></div></div>
-    case 'list': return <div className="mb-5"><div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2"><List size={13} className="text-np" />{heading}</div><ul className="list-none pl-1.5 space-y-2.5">{children}</ul></div>
-    case 'code': return <div className="mb-6"><div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2"><Code size={13} className="text-nbl" />{heading}</div><div className="bg-nb border border-bdr2 rounded-lg overflow-hidden shadow-sm"><pre className="p-4 m-0 overflow-x-auto font-mono text-[13px] text-nt2 leading-relaxed">{children}</pre></div></div>
-    default: return <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-sm"><div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2"><FileText size={13} className="text-nt3" />{heading}</div>{children}</div>
+    case 'definition': return (
+      <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-sm">
+        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+          <Bookmark size={13} className="text-np" />{heading}
+        </div>
+        {children}
+      </div>
+    )
+    case 'table': return (
+      <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-sm">
+        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+          <Clock size={13} className="text-ng" />{heading}
+        </div>
+        {children}
+      </div>
+    )
+    case 'callout': return (
+      <div className="flex gap-2.5 bg-nblb border border-nblbr rounded-lg p-3 mb-4">
+        <Lightbulb size={14} className="text-nbl mt-0.5 shrink-0" />
+        <div>
+          <div className="text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-1">{heading}</div>
+          <div className="text-xs text-nt2 leading-relaxed">{children}</div>
+        </div>
+      </div>
+    )
+    case 'list': return (
+      <div className="mb-5">
+        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+          <List size={13} className="text-np" />{heading}
+        </div>
+        <ul className="list-none pl-1.5 space-y-2.5">{children}</ul>
+      </div>
+    )
+    case 'code': return (
+      <div className="mb-6">
+        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+          <Code size={13} className="text-nbl" />{heading}
+        </div>
+        <div className="bg-nb border border-bdr2 rounded-lg overflow-hidden shadow-sm">
+          <pre className="p-4 m-0 overflow-x-auto font-mono text-[13px] text-nt2 leading-relaxed">{children}</pre>
+        </div>
+      </div>
+    )
+    default: return (
+      <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-sm">
+        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+          <FileText size={13} className="text-nt3" />{heading}
+        </div>
+        {children}
+      </div>
+    )
   }
 }
 
@@ -86,36 +163,97 @@ const Wrapper = ({ type, heading, children }: { type: string; heading: string; c
 function PrintPageContent() {
   const search = typeof window !== 'undefined' ? window.location.search : ''
   const params = new URLSearchParams(search)
-  const rawType = params.get('type') || 'notes'
+  const rawType   = params.get('type') || 'notes'
+  const lectureId = params.get('lecture_id') || 'default'
 
-  // Normalize automated script variables to our internal layout states
+  // Normalize rawType → internal layout key (mirrors generate_pdfs.py logic)
   let type = 'notes'
-  if (rawType.includes('assessment')) type = 'assessment'
+  if (rawType.includes('assessment'))              type = 'assessment'
   else if (rawType.includes('revision') || rawType.includes('summary')) type = 'revision'
 
-  const [chapters, setChapters] = useState<string[]>([])
+  const [chapters,           setChapters]           = useState<string[]>([])
   const [assessmentChapters, setAssessmentChapters] = useState<{ ch: number; questions: Question[] }[]>([])
-  const [loading, setLoading] = useState(true)
-  const [globalError, setGlobalError] = useState<string | null>(null)
+  const [loading,            setLoading]            = useState(true)
+
+
+  const [globalError,        setGlobalError]        = useState<string | null>(null)
+
+  // ── ADD BELOW THIS LINE ──
+  const setActiveLecture = useLectureStore(s => s.setActiveLecture)
 
   useEffect(() => {
+    setActiveLecture(lectureId)
+  }, [lectureId])
+  // ── END ADD ──
+
+  const [numChapters, setNumChapters] = useState(6)
+
+  // Fetch actual chapter count from outline
+  useEffect(() => {
+    fetch(`/outline?lecture_id=${lectureId}`)
+      .then(r => r.json())
+      .then(data => {
+        const count = data.chapters?.length || 6
+        setNumChapters(count)
+      })
+      .catch(() => setNumChapters(6))
+  }, [lectureId])
+
+  useEffect(() => {
+    /**
+     * Load strategy:
+     *   1. If window.__PRINT_DATA__ is already set (injected by Playwright),
+     *      use it immediately — zero network calls.
+     *   2. If it's not set yet, wait for the 'printDataReady' event (Playwright
+     *      injects data then dispatches the event).
+     *   3. If no injection arrives within 500 ms, fall back to fetching from
+     *      the API (normal browser usage).
+     */
+
     let cancelled = false
-    ;(async () => {
+
+    const applyData = (data: PrintData) => {
+      if (cancelled) return
+      if (data.type === 'assessment') {
+        setAssessmentChapters(data.assessmentChapters)
+      } else {
+        setChapters(data.chapters)
+      }
+      setLoading(false)
+    }
+
+    // ── Path 1 & 2: Playwright injection ────────────────────────────────
+    if (window.__PRINT_DATA__) {
+      applyData(window.__PRINT_DATA__)
+      return
+    }
+
+    // Listen for injection event (data arrives just after domcontentloaded)
+    const onReady = () => {
+      if (window.__PRINT_DATA__) applyData(window.__PRINT_DATA__)
+    }
+    window.addEventListener('printDataReady', onReady)
+
+    // ── Path 3: Normal browser — fall back to fetching after 500 ms ──────
+    const fallbackTimer = setTimeout(async () => {
+      if (cancelled || window.__PRINT_DATA__) return
       try {
         if (type === 'assessment') {
-          const promises = Array.from({ length: 6 }, async (_, i) => {
+          const promises = Array.from({ length: numChapters }, async (_, i) => {
             const ch = i + 1
-            const questions = await fetchQuizQuestions(ch).catch(() => [] as Question[])
+            const questions = await fetchQuizQuestions(ch, lectureId).catch(() => [] as Question[])
             return { ch, questions }
           })
           const all = await Promise.all(promises)
           if (!cancelled) setAssessmentChapters(all)
         } else {
           const endpoint = type === 'revision' ? '/summary' : '/notes'
-          const promises = Array.from({ length: 6 }, async (_, i) => {
+          const promises = Array.from({ length: numChapters }, async (_, i) => {
             const ch = i + 1
             try {
-              const url = type === 'revision' ? `${endpoint}?chapter_id=${ch}` : `${endpoint}/${ch}`
+              const url = type === 'revision'
+                ? `${endpoint}?chapter_id=${ch}&lecture_id=${lectureId}`
+                : `${endpoint}/${ch}?lecture_id=${lectureId}`
               const res = await fetch(url)
               if (!res.ok) throw new Error(`HTTP ${res.status}`)
               const raw = await res.text()
@@ -128,16 +266,30 @@ function PrintPageContent() {
           if (!cancelled) setChapters(texts)
         }
       } catch (err: any) {
-        if (!cancelled) setGlobalError(err.message || 'An unexpected error occurred while fetching print data.')
+        if (!cancelled) setGlobalError(err.message || 'An unexpected error occurred.')
       } finally {
         if (!cancelled) setLoading(false)
       }
-    })()
-    return () => { cancelled = true }
-  }, [type])
+    }, 500)
 
+    return () => {
+      cancelled = true
+      window.removeEventListener('printDataReady', onReady)
+      clearTimeout(fallbackTimer)
+    }
+  }, [type, lectureId, numChapters])
+
+    // Auto-trigger browser print dialog when content is ready
+  useEffect(() => {
+    if (!loading && !globalError) {
+      const timer = setTimeout(() => window.print(), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [loading, globalError])
+
+  // ── Loading / error states ───────────────────────────────────────────────
   if (loading) {
-    return <div className="bg-nb text-nt p-8 font-mono text-sm">Generating PDF…</div>
+    return <div className="bg-nb text-nt p-8 font-mono text-sm">Preparing your PDF…</div>
   }
 
   if (globalError) {
@@ -153,9 +305,11 @@ function PrintPageContent() {
     )
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="print-document bg-nb text-nt">
+
+      {/* Assessment */}
       {type === 'assessment' && assessmentChapters.map(({ ch, questions }) => (
         <div key={ch} className="print-chapter px-8 py-6">
           <h1 className="text-[21px] font-semibold text-nt tracking-tight mb-6">Chapter {ch} — Assessment</h1>
@@ -174,6 +328,7 @@ function PrintPageContent() {
         </div>
       ))}
 
+      {/* Notes / revision */}
       {(type === 'notes' || type === 'revision') && chapters.map((md, idx) => {
         const ch = idx + 1
         const lines = md.split('\n')
@@ -220,7 +375,9 @@ function PrintPageContent() {
               return <Wrapper key={i} type={cardType} heading={sec.heading}>{inner}</Wrapper>
             })}
 
-            {type === 'notes' && <ChapterScreenshots chapterId={ch} startExpanded={true} lazyLoad={false} />}
+            {type === 'notes' && (
+              <ChapterScreenshots chapterId={ch} startExpanded={true} lazyLoad={false} />
+            )}
           </div>
         )
       })}

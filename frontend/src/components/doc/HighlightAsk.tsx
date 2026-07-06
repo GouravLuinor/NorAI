@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useThreadStore, sendChatMessage } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
+import { useLectureStore } from '../../stores/useLectureStore'   // ← added
 import { Sparkles } from 'lucide-react'
 
 export function HighlightAsk() {
@@ -10,6 +11,9 @@ export function HighlightAsk() {
 
   const addMessage = useThreadStore((s) => s.addMessage)
   const setMode = useQuizStore((s) => s.setMode)
+
+  // ── Lecture‑aware ───────────────────────────────────────────────────────
+  const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
 
   const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -86,9 +90,16 @@ export function HighlightAsk() {
 
     setLoading(true)
     try {
-      const data = await sendChatMessage(useThreadStore.getState().threadId, question)
+      // Lecture‑scoped request
+      console.log('HighlightAsk sending with lectureId:', lectureId)
+      const data = await sendChatMessage(
+        useThreadStore.getState().threadId,
+        question,
+        '',
+        { lectureId }
+      )
 
-     // ── Build references from the response ──────────────────────────────
+      // ── Build references from the response ──────────────────────────────
       const refs = [
         ...(data.retrieved_chunks ?? []).map((c: any) => {
           const leaf = (c.heading_path ?? '').split('>').pop()!.trim()
@@ -113,7 +124,7 @@ export function HighlightAsk() {
         })),
       ]
       useThreadStore.getState().setLiveReferences(refs)
-      
+
       const cleanAnswer = data.answer.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
       addMessage({
         id: genId(),
@@ -131,7 +142,7 @@ export function HighlightAsk() {
     } finally {
       setLoading(false)
     }
-  }, [selection, loading, clearSelection, addMessage, setMode])
+  }, [selection, loading, clearSelection, addMessage, setMode, lectureId])
 
   if (!selection) return null
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { fetchGeneratedFlashcards } from '../../stores/useQuizStore'
 import { useChapterStore } from '../../stores/useChapterStore'
+import { useLectureStore } from '../../stores/useLectureStore'   // ← added
 
 interface Flashcard {
   front: string
@@ -13,15 +14,19 @@ type Rating = 'Again' | 'Hard' | 'Good' | 'Easy'
 
 export function FlashcardsPanel() {
   const { activeChapterId } = useChapterStore()
+  const lectureId = useLectureStore(s => s.activeLectureId) || 'default'   // ← added
+
   const [cards, setCards] = useState<Flashcard[]>([])
   const [current, setCurrent] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [rating, setRating] = useState<Rating | ''>('')
-  const [ratings, setRatings] = useState<Record<number, Rating>>({})   // card index → rating
+  const [ratings, setRatings] = useState<Record<number, Rating>>({})
 
   useEffect(() => {
-    fetchGeneratedFlashcards(activeChapterId).then(setCards).catch(() => setCards([]))
-  }, [activeChapterId])
+    fetchGeneratedFlashcards(activeChapterId, lectureId)   // ← lectureId passed
+      .then(setCards)
+      .catch(() => setCards([]))
+  }, [activeChapterId, lectureId])   // ← added to deps
 
   const total = cards.length
   const reviewed = Object.keys(ratings).length

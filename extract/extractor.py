@@ -5,7 +5,7 @@ from pathlib import Path
 import time
 from dotenv import load_dotenv
 from google import genai
-
+import random
 from extract.models import (
     KnowledgeObject
 )
@@ -19,6 +19,8 @@ from concurrent.futures import (
     ThreadPoolExecutor,
     as_completed
 )
+from backend.ratelimit import RPMRateLimiter
+_limiter = RPMRateLimiter(max_calls=12)
 
 load_dotenv()
 
@@ -87,11 +89,11 @@ def extract_knowledge_object(
     prompt = build_prompt(
         chunk["text"]
     )
-
+    _limiter.wait()
     response = (
         client.models.generate_content(
             model=
-            "gemma-4-26b-a4b-it",
+            "gemini-3.1-flash-lite-preview",
 
             contents=
             f"{EXTRACTION_SYSTEM_PROMPT}\n\n{prompt}"
@@ -130,11 +132,13 @@ def extract_knowledge_object(
         **data
     )
 
-#create a retry wrapper
+
+# Retry wrapper
 
 def process_chunk_with_retry(
     chunk,
-    max_retries=3
+    max_retries=8,
+    output_dir="outputs/objects"
 ):
     """
     Process chunk with retry logic.
@@ -147,13 +151,14 @@ def process_chunk_with_retry(
         try:
 
             return process_chunk(
-                chunk
+                chunk,
+                output_dir
             )
 
         except Exception as e:
 
             wait_time = (
-                2 ** attempt
+                5 * (attempt + 1) + random.uniform(0.5, 3.0)
             )
 
             logger.warning(
@@ -178,15 +183,15 @@ def process_chunk_with_retry(
         f"{max_retries} retries."
     )
 
+
 # Save
 
 def save_knowledge_object(
     knowledge_object,
-    output_dir=
-    "outputs/objects"
+    output_dir="outputs/objects"
 ):
     """
-    Save object as JSON.
+    Save object as JSON to the given output directory.
     """
 
     output_dir = Path(
@@ -223,13 +228,14 @@ def save_knowledge_object(
     )
 
 
-# Public API
+# Public API – single chunk
 
 def process_chunk(
-    chunk
+    chunk,
+    output_dir="outputs/objects"
 ):
     """
-    Extract and save.
+    Extract and save a single chunk.
     """
 
     logger.info(
@@ -244,10 +250,70 @@ def process_chunk(
     )
 
     save_knowledge_object(
-        knowledge_object
+        knowledge_object,
+        output_dir
     )
 
     return knowledge_object
+
+
+# Public API – all chunks (for orchestrator)
+
+def extract_all_chunks(
+    chunks_path: str,
+    output_dir: str,
+    max_workers: int = 4,
+) -> dict:
+    """
+    Process all chunks from a chunks JSON file and save knowledge objects
+    into {output_dir}/objects/.
+
+    Returns { "objects_dir": str, "num_chunks": int }
+    """
+
+    with open(chunks_path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    chunks = data["chunks"]
+    total = len(chunks)
+    logger.info(
+        f"Extracting knowledge from {total} chunks (workers={max_workers})"
+    )
+
+    objects_dir = Path(output_dir) / "objects"
+    objects_dir.mkdir(parents=True, exist_ok=True)
+
+    completed = 0
+
+    with ThreadPoolExecutor(
+        max_workers=max_workers
+    ) as executor:
+
+        futures = [
+            executor.submit(
+                process_chunk_with_retry,
+                ch,
+                3,
+                str(objects_dir)
+            )
+            for ch in chunks
+        ]
+
+        for future in as_completed(futures):
+            try:
+                future.result()
+                completed += 1
+                if completed % 5 == 0 or completed == total:
+                    logger.info(
+                        f"  Knowledge extraction: {completed}/{total}"
+                    )
+            except Exception as e:
+                logger.error(f"  Chunk worker failed: {e}")
+
+    return {
+        "objects_dir": str(objects_dir),
+        "num_chunks": total
+    }
 
 
 if __name__ == "__main__":
@@ -257,70 +323,9 @@ if __name__ == "__main__":
         "ciHThtTVNto_chunks.json"
     )
 
-    MAX_WORKERS = 7
-
-    with open(
+    result = extract_all_chunks(
         CHUNKS_FILE,
-        "r",
-        encoding="utf-8"
-    ) as f:
-
-        data = json.load(f)
-
-    chunks = data["chunks"]
-
-    total_chunks = len(
-        chunks
+        output_dir="outputs"
     )
 
-    completed = 0
-
-    logger.info(
-        f"Loaded "
-        f"{total_chunks} chunks."
-    )
-
-    with ThreadPoolExecutor(
-        max_workers=
-        MAX_WORKERS
-    ) as executor:
-
-        futures = []
-
-        for chunk in chunks:
-
-            futures.append(
-                executor.submit(
-                    process_chunk_with_retry,
-                    chunk
-                )
-            )
-
-        for future in as_completed(
-            futures
-        ):
-
-            try:
-
-                result = (
-                    future.result()
-                )
-
-                completed += 1
-
-                logger.info(
-                    f"Progress: "
-                    f"{completed}/"
-                    f"{total_chunks}"
-                )
-
-            except Exception as e:
-
-                logger.error(
-                    f"Worker failed: "
-                    f"{e}"
-                )
-
-    logger.info(
-        "Knowledge extraction complete."
-    )
+    print(json.dumps(result, indent=4))

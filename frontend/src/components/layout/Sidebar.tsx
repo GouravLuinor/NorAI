@@ -1,10 +1,12 @@
 import { useEffect, useCallback, useRef } from 'react'
-import { chapters } from '../../mocks/chapters'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useThreadStore, getOrCreateLabel } from '../../stores/useThreadStore'
+import { useLectureStore } from '../../stores/useLectureStore'
 import { PanelLeftClose, PanelLeftOpen, Trash2 } from 'lucide-react'
 import { useToastStore } from '../../stores/useToastStore'
 import { ThemeToggle } from '../ui/ThemeToggle'
+import { useNavigate } from 'react-router-dom'
+
 
 interface SidebarProps {
   onToggleCollapse: () => void
@@ -24,19 +26,27 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
   const createThread        = useThreadStore(s => s.createThread)
   const deleteThread        = useThreadStore(s => s.deleteThread)
 
+  // Lecture selection
+  const lectures            = useLectureStore(s => s.lectures)
+  const activeLectureId     = useLectureStore(s => s.activeLectureId)
+  const chapters         = useChapterStore(s => s.chapters)           // ← add
+  const loadChapters     = useChapterStore(s => s.loadChapters) 
+  const setActiveLecture    = useLectureStore(s => s.setActiveLecture)
+  const loadLectures        = useLectureStore(s => s.loadLectures)
+  const navigate = useNavigate()
+
   const initialLoadDone = useRef(false)
 
   useEffect(() => {
-    if (initialLoadDone.current) return
-    initialLoadDone.current = true
-
+    if (!activeLectureId || activeLectureId === 'default') return 
     loadThreads().then(() => {
       const active = useThreadStore.getState().threadId
       if (active && active !== 'default') {
         loadThreadMessages(active)
       }
     })
-  }, [])
+    loadLectures()
+  }, [activeLectureId])
 
   const handleThreadClick = useCallback((id: string) => {
     setThreadId(id)
@@ -105,6 +115,30 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
               {chapters.find((c) => c.id === activeChapterId)?.title}
             </strong>
           </div>
+
+          {/* ── Lecture selector ──────────────────────────────── */}
+          <div className="mb-3">
+            <div className="text-[9px] font-medium text-nt4 uppercase tracking-wider mb-1.5">
+              Lecture
+            </div>
+            <select
+              value={activeLectureId || ''}
+              onChange={(e) => {
+                const newId = e.target.value
+                setActiveLecture(newId)
+                navigate(`/workspace/${newId}`)   // ← add this
+              }}
+
+              className="w-full bg-nb border border-bdr2 rounded-md px-2 py-1 text-[11px] text-nt2 outline-none focus:border-np transition"
+            >
+              {lectures.map((l) => (
+                <option key={l.lecture_id} value={l.lecture_id}>
+                  {l.title}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* ──────────────────────────────────────────────────── */}
 
           {/* Chapter list */}
           <div className="text-[9px] font-medium text-nt4 uppercase tracking-wider mb-1.5">

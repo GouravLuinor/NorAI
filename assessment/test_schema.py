@@ -21,7 +21,7 @@ load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 response = client.models.generate_content(
-    model="gemma-4-26b-a4b-it",
+    model="gemini-3.1-flash-lite-preview",
     contents=["Generate 3 short questions (mix of MCQ and Short Answer) "
               "about photosynthesis, matching the required schema exactly."],
     config=types.GenerateContentConfig(

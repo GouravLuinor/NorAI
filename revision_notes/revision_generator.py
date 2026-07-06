@@ -22,6 +22,7 @@ import json
 import logging
 from pathlib import Path
 import os
+import random
 import time
 from datetime import datetime, timezone
 from google import genai
@@ -34,6 +35,8 @@ from revision_notes.revision_models import (
 )
 load_dotenv()
 
+from backend.ratelimit import RPMRateLimiter
+_limiter = RPMRateLimiter(max_calls=12)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,8 +48,8 @@ logger = logging.getLogger(__name__)
 
 # Constants
 
-MAX_RETRIES = 5
-MODEL_NAME = "gemma-4-26b-a4b-it"
+MAX_RETRIES = 8
+MODEL_NAME = "gemini-3.1-flash-lite-preview"
 NOTES_DIR = Path(
     "outputs/notes"
 )
@@ -57,7 +60,7 @@ OUTLINE_PATH = (
     NOTES_DIR
     / "lecture_outline.json"
 )
-MAX_WORKERS = 7
+MAX_WORKERS = 4
 
 # LLM Setup
 
@@ -190,7 +193,7 @@ def generate_revision(
             f"{len(prompt)} chars"
         )
         try:
-
+            _limiter.wait()
             response = (
                 client.models.generate_content(
                     model=MODEL_NAME,
@@ -225,11 +228,7 @@ def generate_revision(
                 f"failed: {e}"
             )
 
-            time.sleep(
-                5 * (
-                    attempt + 1
-                )
-            )
+        time.sleep(5 * (attempt + 1) + random.uniform(0.5, 3.0))
 
     raise RuntimeError(
         f"Failed chapter "
@@ -273,17 +272,23 @@ def save_revision(
 def process_chapter(
     chapter,
 ):
-    """
-    Load notes → generate revision → save.
-    """
-
     chapter_id = chapter["chapter_id"]
     chapter_title = chapter["title"]
+
+    # ── Guard: skip if the source study notes don't exist ──────────────────
+    chapter_notes_path = NOTES_DIR / f"chapter_{chapter_id}.md"
+    if not chapter_notes_path.exists():
+        logger.warning(
+            f"Skipping revision chapter {chapter_id}: "
+            f"study notes not found"
+        )
+        return
 
     output_path = (
         REVISION_DIR
         / f"revision_chapter_{chapter_id}.md"
     )
+    # … rest unchanged
 
     if output_path.exists():
 
@@ -591,6 +596,71 @@ def main():
         REVISION_DIR / "revision_notes.md",
         REVISION_DIR / "revision_notes.pdf"
     )
+
+def generate_revision_notes_for_lecture(
+    notes_dir: str,
+    outline_path: str,
+    output_dir: str,
+    max_workers: int = 7,
+) -> dict:
+    """
+    Generate revision notes for all chapters, scoped to a lecture.
+
+    Args:
+        notes_dir:    directory containing chapter_*.md study notes.
+        outline_path: path to lecture_outline.json.
+        output_dir:   base lecture directory.
+        max_workers:  number of parallel LLM calls.
+
+    Returns:
+        { "revision_dir": str, "num_chapters": int }
+    """
+    import revision_notes.revision_generator as _rng
+
+    # Override module globals so all internal functions use lecture paths
+    _rng.NOTES_DIR     = Path(notes_dir)
+    _rng.OUTLINE_PATH  = Path(outline_path)
+    revision_dir       = Path(output_dir) / "revision"
+    revision_dir.mkdir(parents=True, exist_ok=True)
+    _rng.REVISION_DIR  = revision_dir
+
+    outline = load_outline(outline_path)
+    chapters = outline["chapters"]
+    logger.info(f"Generating revision notes for {len(chapters)} chapters")
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(process_chapter, ch) for ch in chapters]
+        completed = 0
+        total = len(futures)
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                logger.error(f"Chapter worker failed: {e}")
+            completed += 1
+            logger.info(f"Revision progress: {completed}/{total}")
+
+    combined = combine_revision_notes()
+    build_metadata(outline, combined)
+
+    # Do NOT generate PDF here — that's done by the Playwright pipeline
+    return {
+        "revision_dir": str(revision_dir),
+        "num_chapters": len(chapters),
+    }
+
+
+# Update main() so it still works standalone
+def main():
+    logger.info(f"Using model: {MODEL_NAME}")
+
+    result = generate_revision_notes_for_lecture(
+        notes_dir=str(NOTES_DIR),
+        outline_path=str(OUTLINE_PATH),
+        output_dir="outputs",
+        max_workers=MAX_WORKERS,
+    )
+    logger.info("Revision generation complete.")
 
 
 if __name__ == "__main__":

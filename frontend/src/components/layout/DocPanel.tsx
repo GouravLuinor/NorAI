@@ -7,27 +7,27 @@ import { AssessmentView } from '../doc/AssessmentView'
 import { SearchBar } from '../doc/SearchBar'
 import { useToastStore } from '../../stores/useToastStore'
 import { HighlightAsk } from '../doc/HighlightAsk'
-
+import { useLectureStore } from '../../stores/useLectureStore'
 
 export function DocPanel() {
   const [searchOpen, setSearchOpen] = useState(false)
   const { activeDocTab, setDocTab, activeChapterId } = useChapterStore()
   const addToast = useToastStore((s) => s.addToast)
-
+  const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
   console.log('DocPanel — activeChapterId:', activeChapterId)
 
   const handleDownloadPDF = () => {
-    const pdfMap: Record<string, string> = {
-      notes: 'study_notes',
-      revision: 'revision',
-      assessment: 'assessment',
-    }
-    const type = pdfMap[activeDocTab]
-    if (type) {
-      addToast('Downloading PDF…', 'info')
-      window.open(`/download/${type}`, '_blank')
-    }
+  const pdfMap: Record<string, string> = {
+    notes: 'study_notes',
+    revision: 'revision',
+    assessment: 'assessment',
   }
+  const type = pdfMap[activeDocTab]
+  if (type) {
+    addToast('Opening print dialog…', 'info')
+    window.open(`/print?type=${type}&lecture_id=${lectureId}`, '_blank')
+  }
+}
 
   return (
     <div className="flex flex-col min-w-0 min-h-0 border-r border-bdr bg-nb">

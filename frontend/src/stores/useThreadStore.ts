@@ -28,7 +28,7 @@
 
 import { create } from 'zustand'
 import { useQuizStore } from './useQuizStore'
-
+import { useLectureStore } from './useLectureStore'
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -43,26 +43,63 @@ const LABELS_KEY  = 'norai-thread-labels'
 const COUNTER_KEY = 'norai-thread-counter'
 const THREADS_KEY = 'norai-threads'
 
+// One-time migration: move old global keys to default lecture scope
+try {
+  const oldLabels = localStorage.getItem('norai-thread-labels')
+  const oldCounter = localStorage.getItem('norai-thread-counter')
+  const oldThreads = localStorage.getItem('norai-threads')
+  
+  if (oldLabels) {
+    localStorage.setItem('norai-thread-labels-default', oldLabels)
+    localStorage.removeItem('norai-thread-labels')
+  }
+  if (oldCounter) {
+    localStorage.setItem('norai-thread-counter-default', oldCounter)
+    localStorage.removeItem('norai-thread-counter')
+  }
+  if (oldThreads) {
+    localStorage.setItem('norai-threads-default', oldThreads)
+    localStorage.removeItem('norai-threads')
+  }
+} catch (e) {
+  // ignore — migration is best-effort
+}
+
+// ---------------------------------------------------------------------------
+// localStorage helpers
+// ---------------------------------------------------------------------------
+
+
+
 // ---------------------------------------------------------------------------
 // localStorage helpers
 // ---------------------------------------------------------------------------
 
 function getLabels(): Record<string, string> {
-  try { return JSON.parse(localStorage.getItem(LABELS_KEY) || '{}') } catch { return {} }
+  const lectureId = useLectureStore.getState().activeLectureId || 'default'
+  try { return JSON.parse(localStorage.getItem(`${LABELS_KEY}-${lectureId}`) || '{}') } catch { return {} }
+}
+function getLectureId(): string {
+  return useLectureStore.getState().activeLectureId || 'default'
 }
 function saveLabels(labels: Record<string, string>) {
-  localStorage.setItem(LABELS_KEY, JSON.stringify(labels))
+  const lectureId = useLectureStore.getState().activeLectureId || 'default'
+  localStorage.setItem(`${LABELS_KEY}-${lectureId}`, JSON.stringify(labels))
 }
 function getNextCounter(): number {
-  const next = parseInt(localStorage.getItem(COUNTER_KEY) || '0', 10) + 1
-  localStorage.setItem(COUNTER_KEY, String(next))
+  const lectureId = useLectureStore.getState().activeLectureId || 'default'
+  const key = `${COUNTER_KEY}-${lectureId}`
+  const next = parseInt(localStorage.getItem(key) || '0', 10) + 1
+  localStorage.setItem(key, String(next))
   return next
 }
 function getPersistedThreads(): string[] {
-  try { return JSON.parse(localStorage.getItem(THREADS_KEY) || '[]') } catch { return [] }
+  const lectureId = useLectureStore.getState().activeLectureId || 'default'
+  try { return JSON.parse(localStorage.getItem(`${THREADS_KEY}-${lectureId}`) || '[]') } catch { return [] }
 }
 function persistThreads(threads: string[]) {
-  localStorage.setItem(THREADS_KEY, JSON.stringify(threads))
+  const lectureId = useLectureStore.getState().activeLectureId || 'default'
+  localStorage.setItem(`${THREADS_KEY}-${lectureId}`, JSON.stringify(threads))
 }
 
 export function getOrCreateLabel(threadId: string): string {
@@ -105,7 +142,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T | nul
 
 let _loadAbortController: AbortController | null = null
 let _loadGeneration = 0   // incremented on every call; stale responses are dropped
-
+let _loadThreadsInFlight = false
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -192,10 +229,16 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
     }),
 
   setMessages: (msgs) =>
-    set((s) => ({
-      messages: msgs,
-      _messagesCache: { ...s._messagesCache, [s.threadId]: msgs },
-    })),
+    set((s) => {
+      // Deduplicate by content — never add the same message twice
+      const existingContents = new Set(s.messages.map(m => m.content))
+      const unique = msgs.filter(m => !existingContents.has(m.content))
+      const all = [...s.messages, ...unique]
+      return {
+        messages: all,
+        _messagesCache: { ...s._messagesCache, [s.threadId]: all },
+      }
+    }),
 
   setLoading: (loading) => set({ isLoading: loading }),
   setLiveReferences: (refs) => set({ liveReferences: refs }),   // ← add this line
@@ -210,19 +253,36 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
   // loadThreads — fetches the sidebar list only; never loads any messages.
   // Falls back to localStorage if the backend is unreachable.
   // -------------------------------------------------------------------------
-  loadThreads: async () => {
-    const data = await apiFetch<{ threads: string[] }>('/threads')
-    let threads: string[] = data?.threads ?? []
 
-    if (threads.length === 0) {
-      const local = getPersistedThreads()
-      threads = local.length > 0 ? local : ['default']
-    }
 
-    threads.forEach((id) => getOrCreateLabel(id))
-    persistThreads(threads)
-    set({ threads })
-  },
+loadThreads: async () => {
+    if (_loadThreadsInFlight) return
+    _loadThreadsInFlight = true
+    
+    try {
+      console.log('🔍 lecture_id being sent:', getLectureId())
+      const data = await apiFetch<{ threads: string[] }>(`/threads?lecture_id=${getLectureId()}`)
+
+      let threads: string[] = data?.threads ?? []
+
+      console.log('🔍 loadThreads called. Backend returned:', threads)
+
+      if (threads.length === 0) {
+        const local = getPersistedThreads()
+        console.log('🔍 localStorage fallback:', local)
+        threads = local.length > 0 ? local : ['default']
+      }
+
+      console.log('🔍 Final threads to set:', threads)
+      // ... rest unchanged
+
+        threads.forEach((id) => getOrCreateLabel(id))
+        persistThreads(threads)
+        set({ threads })
+      } finally {
+        _loadThreadsInFlight = false
+      }
+    },
 
   // -------------------------------------------------------------------------
   // RC-B: AbortController + generation counter.
@@ -241,7 +301,7 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
     set({ isLoading: true })
 
     const data = await apiFetch<{ messages: { role: string; content: string }[] }>(
-      `/threads/${threadId}`,
+      `/threads/${threadId}?lecture_id=${getLectureId()}`,
       { signal: controller.signal },
     )
 
@@ -278,7 +338,7 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
     // RC-A: don't call loadThreadMessages here — new thread has no messages
     set({ threads: next, threadId, messages: [], isLoading: false })
 
-    apiFetch(`/threads?id=${threadId}`, { method: 'POST' }).catch(() => {})
+    apiFetch(`/threads?lecture_id=${getLectureId()}`, { method: 'POST' }).catch(() => {})
 
     return threadId
   },
@@ -317,7 +377,7 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
       set({ threads: remaining, _messagesCache: newCache })
     }
 
-    apiFetch(`/threads/${threadId}`, { method: 'DELETE' }).catch(() => {})
+    apiFetch(`/threads/${threadId}?lecture_id=${getLectureId()}`, { method: 'DELETE' }).catch(() => {})
   },
 
   getThreadLabel: (id) => getOrCreateLabel(id),
@@ -331,6 +391,7 @@ export async function sendChatMessage(
   threadId: string,
   userQuestion: string,
   lectureTitle = '',
+  opts?: { lectureId?: string },
 ): Promise<{ answer: string; retrieved_chunks: any[]; retrieved_images: any[] }> {
   const res = await fetch(`${API_BASE}/chat`, {
     method: 'POST',
@@ -339,6 +400,7 @@ export async function sendChatMessage(
       thread_id: threadId,
       user_question: userQuestion,
       lecture_title: lectureTitle,
+      lecture_id: opts?.lectureId || 'default',
     }),
   })
   const ct = res.headers.get('content-type') || ''
@@ -364,6 +426,7 @@ export async function* sendChatMessageStream(
       thread_id: threadId,
       user_question: userQuestion,
       lecture_title: lectureTitle,
+      lecture_id: useLectureStore.getState().activeLectureId || 'default',
     }),
     signal,
   })

@@ -27,8 +27,8 @@ SCREENSHOTS_DIR = "outputs/screenshots/keyframes"  # base path for image files
 SCREENSHOT_JSON_GLOB = "outputs/screenshots/selected/chapter_*_screenshots.json"
 
 # ── Chroma persistent store ───────────────────────────────────────────────────
-CHROMA_DIR = Path("outputs/tutor/chroma")
-NOTES_COLLECTION = "study_notes"
+CHROMA_DIR = Path(os.environ.get("NORAI_CHROMA_DIR", "outputs/tutor/chroma"))
+NOTES_COLLECTION = "norai_notes"
 
 # ── Source notes glob ─────────────────────────────────────────────────────────
 NOTES_GLOB = "outputs/notes/chapter_*.md"

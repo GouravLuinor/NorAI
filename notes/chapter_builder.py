@@ -404,6 +404,31 @@ def main():
         "Chapter building complete."
     )
 
+def build_chapters_pipeline(
+    outline_path: str,
+    merged_dir: str,
+    output_dir: str,
+) -> dict:
+    """
+    Load outline + merged objects, build chapters, save them.
+
+    Args:
+        outline_path: path to lecture_outline.json
+        merged_dir:   directory containing chunk_*.json merged objects
+        output_dir:   directory where chapter_*.json files will be written
+
+    Returns:
+        { "chapters_dir": str, "num_chapters": int }
+    """
+    outline = load_outline(outline_path)
+    merged_objects = load_merged_objects(merged_dir)
+    chapters = build_chapters(outline, merged_objects)
+    save_chapters(chapters, output_dir)
+    return {
+        "chapters_dir": str(output_dir),
+        "num_chapters": len(chapters),
+    }
+
 
 if __name__ == "__main__":
     main()

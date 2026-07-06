@@ -8,15 +8,17 @@ from tutor.quiz_nodes import quiz_ask, quiz_store_answer, quiz_llm_evaluate
 from tutor.commands import execute_command
 
 
-def build_graph(checkpointer):
+def build_graph(checkpointer, output_dir=None):
     builder = StateGraph(ChatState)
 
     # Nodes
     builder.add_node("load_memory", load_memory_node)
     builder.add_node("detect_chapter", detect_chapter_node)
     builder.add_node("rewrite_query", rewrite_query_node)
-    builder.add_node("retrieve_images", retrieve_images_node)
-    builder.add_node("retrieve", retrieve_node)
+    builder.add_node("retrieve_images", 
+        lambda state, config: retrieve_images_node(state, config, output_dir))
+    builder.add_node("retrieve", 
+        lambda state, config: retrieve_node(state, config, output_dir))
     builder.add_node("generate_answer", generate_answer_node)
     builder.add_node("save_memory", save_memory_node)
     builder.add_node("execute_command", execute_command)

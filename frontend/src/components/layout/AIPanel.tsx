@@ -5,12 +5,26 @@ import { QuizPanel } from '../quiz/QuizPanel'
 import { FlashcardsPanel } from '../flashcards/FlashcardsPanel'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToastStore } from '../../stores/useToastStore'
-
+import { useEffect } from 'react'
+import { useLectureStore } from '../../stores/useLectureStore'
 
 export function AIPanel() {
   const { activeChapterId } = useChapterStore()
+  const activeLectureId = useLectureStore(s => s.activeLectureId)
   const { aiMode, setMode, startQuiz, reset } = useQuizStore()
   const addToast = useToastStore(s => s.addToast)
+
+useEffect(() => {
+  if (aiMode === 'quiz') {
+    const lectureId = useLectureStore.getState().activeLectureId || undefined
+    fetchQuizQuestions(activeChapterId, lectureId).then((qs) => {
+      if (qs.length > 0) {
+        useQuizStore.getState().startQuiz(qs, activeChapterId)
+      }
+    })
+  }
+}, [activeChapterId])  // intentionally only on chapter change — NOT on aiMode
+
   let ActivePanel: React.ReactNode
   if (aiMode === 'quiz') {
     ActivePanel = <QuizPanel />
@@ -40,7 +54,8 @@ export function AIPanel() {
               key={mode}
               onClick={() => {
                 if (mode === 'quiz') {
-                  fetchQuizQuestions(activeChapterId).then((qs) => startQuiz(qs, activeChapterId))
+                  fetchQuizQuestions(activeChapterId, activeLectureId || undefined)
+                    .then((qs) => startQuiz(qs, activeChapterId))
                   addToast('Quiz started', 'success')
                 }
                  else if (mode === 'cards') {
@@ -48,7 +63,6 @@ export function AIPanel() {
                   addToast('Flashcards mode activated', 'info')
                 } else {
                   setMode('tutor')
-                  reset()
                 }
               }}
               className={`px-2 py-1 rounded-md text-[10px] transition ${

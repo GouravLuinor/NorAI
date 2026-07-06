@@ -5,6 +5,7 @@ from concurrent.futures import (
 import json
 import logging
 import os
+from random import random
 import time
 from pathlib import Path
 
@@ -16,6 +17,8 @@ from pydantic import BaseModel
 
 load_dotenv()
 
+from backend.ratelimit import RPMRateLimiter
+_limiter = RPMRateLimiter(max_calls=12)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -27,9 +30,9 @@ logger = logging.getLogger(__name__)
 
 # constants
 
-MAX_RETRIES = 5
+MAX_RETRIES = 8
 
-MODEL_NAME = "gemma-4-26b-a4b-it"
+MODEL_NAME = "gemini-3.1-flash-lite-preview"
 
 CHAPTER_DIR = Path(
         "outputs/chapters"
@@ -39,7 +42,7 @@ SCREENSHOTS_OUT_DIR = Path(
         "outputs/screenshots/selected"
 )
 
-MAX_WORKERS = 7
+MAX_WORKERS = 4
 
 LECTURE_NOTES_PREVIEW_COUNT = 5
 
@@ -493,7 +496,7 @@ def score_frames_batch(
     ):
 
         try:
-
+            _limiter.wait()
             response = (
 
                 client.models.generate_content(
@@ -1197,7 +1200,7 @@ def generate_selection(
     ):
 
         try:
-
+            _limiter.wait()
             response = (
 
                 client.models.generate_content(
@@ -1225,11 +1228,7 @@ def generate_selection(
                 f"{e}"
             )
 
-            time.sleep(
-
-                2 ** attempt
-
-            )
+            time.sleep(5 * (attempt + 1) + random.uniform(0.5, 3.0))
 
     raise RuntimeError(
 
@@ -1484,6 +1483,51 @@ def main():
 
         "Screenshot selection complete."
     )
+
+def select_screenshots_for_lecture(
+    chapters_dir: str,
+    output_dir: str,
+    max_workers: int = 7,
+) -> dict:
+    """
+    Run the full screenshot selection pipeline for every chapter,
+    writing results into {output_dir}/screenshots/selected/.
+
+    Args:
+        chapters_dir: directory containing chapter_*.json files.
+        output_dir:   base lecture directory.
+        max_workers:  number of parallel chapter workers.
+
+    Returns:
+        { "selections_dir": str, "num_chapters": int }
+    """
+    import notes.screenshot_selector as _sel
+    _sel.CHAPTER_DIR = Path(chapters_dir)
+    selections_dir = Path(output_dir) / "screenshots" / "selected"
+    selections_dir.mkdir(parents=True, exist_ok=True)
+    _sel.SCREENSHOTS_OUT_DIR = selections_dir
+
+    chapters = _sel.load_chapters(_sel.CHAPTER_DIR)
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(_sel.process_chapter, ch, idx + 1): idx + 1
+            for idx, ch in enumerate(chapters)
+        }
+        completed = 0
+        total = len(futures)
+        for future in as_completed(futures):
+            chapter_id = futures[future]
+            try:
+                future.result()
+            except Exception as e:
+                logger.error(f"Chapter {chapter_id} failed: {e}")
+            completed += 1
+            logger.info(f"Screenshot selection progress: {completed}/{total}")
+
+    return {
+        "selections_dir": str(selections_dir),
+        "num_chapters": len(chapters),
+    }
 
 
 if __name__ == "__main__":

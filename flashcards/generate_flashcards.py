@@ -115,17 +115,9 @@ def generate_flashcards_batch(batch: Tuple[int, int, List[Dict[str, Any]]]) -> T
     return (chapter_id, batch_idx, [{"front": "Error", "back": "Could not generate flashcards", "explanation": text}])
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Generate flashcards from assessment data.")
-    parser.add_argument("--chapter", type=int, default=None, help="Process a single chapter.")
-    parser.add_argument("--max-cards", type=int, default=DEFAULT_MAX_CARDS,
-                        help=f"Max cards per chapter (0 = all, default: {DEFAULT_MAX_CARDS}).")
-    parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS,
-                        help=f"Parallel API calls (default: {DEFAULT_WORKERS}).")
-    args = parser.parse_args()
-
-    if args.chapter is not None:
-        chapters = [args.chapter]
+def main(chapter=None, max_cards=DEFAULT_MAX_CARDS, workers=DEFAULT_WORKERS):
+    if chapter is not None:
+        chapters = [chapter]
     else:
         chapters = sorted({
             int(f.stem.split('_')[-1])
@@ -142,7 +134,6 @@ def main():
             print(f"  No assessment data for chapter {ch}, skipping.")
             continue
 
-        max_cards = args.max_cards
         if max_cards > 0 and len(questions) > max_cards:
             import random
             questions = random.sample(questions, max_cards)
@@ -154,12 +145,13 @@ def main():
 
     total_batches = len(all_batches)
     print(f"\nTotal batches across all chapters: {total_batches}")
-    print(f"Using {args.workers} workers.\n")
+    print(f"Using {workers} workers.\n")
 
     # Process all batches concurrently with a single pool
     all_cards_by_chapter: Dict[int, List[Dict[str, str]]] = {ch: [] for ch in chapters}
 
-    with ThreadPoolExecutor(max_workers=args.workers) as executor:
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        # ... rest unchanged
         futures = {executor.submit(generate_flashcards_batch, b): b for b in all_batches}
         for future in as_completed(futures):
             ch, batch_idx, cards = future.result()
@@ -182,4 +174,18 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-dir", type=str, default="outputs")
+    parser.add_argument("--chapter", type=int, default=None)
+    parser.add_argument("--max-cards", type=int, default=DEFAULT_MAX_CARDS)
+    parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
+    args = parser.parse_args()
+
+    from pathlib import Path
+    import flashcards.generate_flashcards as fg
+    fg.ASSESSMENT_DIR = Path(args.output_dir) / "assessment"
+    fg.FLASHCARDS_DIR = Path(args.output_dir) / "flashcards"
+    fg.FLASHCARDS_DIR.mkdir(parents=True, exist_ok=True)
+
+    main(chapter=args.chapter, max_cards=args.max_cards, workers=args.workers)

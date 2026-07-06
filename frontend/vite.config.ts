@@ -12,6 +12,7 @@ export default defineConfig({
       ],
     },
     proxy: {
+      '/process': 'http://localhost:8000',
       '/chat': 'http://localhost:8000',
       '/chat/stream': 'http://localhost:8000',
       '/quiz': 'http://localhost:8000',
@@ -21,7 +22,9 @@ export default defineConfig({
       '/screenshots': 'http://localhost:8000',
       '/threads': 'http://localhost:8000',
       '/download': 'http://localhost:8000',
+      '/lectures': 'http://localhost:8000',
       '/static': 'http://localhost:8000',
+      '/outline': 'http://localhost:8000',
     },
   },
 })

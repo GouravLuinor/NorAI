@@ -290,72 +290,97 @@ def save_merged_object(
     )
 
 
-
+def merge_objects_without_visual(knowledge_object: dict) -> dict:
+    """
+    Build a merged object from a knowledge object when no visual
+    object is available.  Every field that the chapter builder expects
+    is present, so downstream stages never see empty chapters.
+    """
+    return {
+        "object_type":          "merged_object",
+        "chunk_id":             knowledge_object.get("chunk_id", 0),
+        "topic":                knowledge_object.get("topic", ""),
+        "transcript":           knowledge_object.get("transcript", ""),
+        "lecture_notes":        knowledge_object.get("lecture_notes", []),
+        "visual_notes":         [],            # no visual = no visual notes
+        "key_points":           knowledge_object.get("key_points", []),
+        "concepts":             knowledge_object.get("concepts", []),
+        "important_information": knowledge_object.get("key_points", []),
+        "inferred_knowledge":   knowledge_object.get("inferred_knowledge", []),
+        "external_knowledge":   knowledge_object.get("external_knowledge", {}),
+        "visual_information":   [],
+        "ocr_text":             "",
+        "visual_summary":       "",
+        "visual_type":          "none",
+        "teaching_stage":       "",
+        "importance_score":     0,
+        "include_in_notes":     False,
+        "screenshots":          [],
+        "selected_screenshots": [],
+        "start":                knowledge_object.get("start", 0),
+        "end":                  knowledge_object.get("end", 0),
+    }
 # Process One Chunk
 
 
 
-def process_chunk(
-    knowledge_path
-):
-    """
-    Process one chunk.
-    """
+def process_chunk(knowledge_path):
+    chunk_id = int(knowledge_path.stem.split("_")[1])
 
-    chunk_name = (
-        knowledge_path.stem
-    )
+    visual_path = VISUAL_OBJECTS_DIR / f"chunk_{chunk_id}_visual.json"
+    knowledge_object = load_json(knowledge_path)
 
-    chunk_id = (
-        chunk_name
-        .replace(
-            "chunk_",
-            ""
-        )
-    )
+    if visual_path.exists():
+        visual_object = load_json(visual_path)
+        merged = merge_objects(knowledge_object, visual_object)
+    else:
+        logger.warning(f"Missing visual object for chunk {chunk_id} — merging knowledge object only")
+        merged = merge_objects_without_visual(knowledge_object)
 
-    visual_path = (
-        VISUAL_OBJECTS_DIR
-        /
-        f"chunk_{chunk_id}_visual.json"
-    )
-
-    if not visual_path.exists():
-
-        logger.warning(
-            f"Missing visual object "
-            f"for chunk "
-            f"{chunk_id}"
-        )
-
-        return
-
-    knowledge_object = (
-        load_json(
-            knowledge_path
-        )
-    )
-
-    visual_object = (
-        load_json(
-            visual_path
-        )
-    )
-
-    merged_object = (
-        merge_objects(
-            knowledge_object,
-            visual_object
-        )
-    )
-
-    save_merged_object(
-        merged_object,
-        MERGED_OBJECTS_DIR
-    )
+    save_merged_object(merged, MERGED_OBJECTS_DIR)
 
 
 # Process All Chunks
+def merge_all_chunks(
+    objects_dir: str,
+    visual_objects_dir: str,
+    merged_objects_dir: str,
+) -> dict:
+    """
+    Merge transcript knowledge objects with visual knowledge objects,
+    writing the results into merged_objects_dir.
+
+    Args:
+        objects_dir:          path to the directory containing chunk_*.json
+                              knowledge objects.
+        visual_objects_dir:   path to the directory containing
+                              chunk_*_visual.json files.
+        merged_objects_dir:   path where merged chunk_*.json files will
+                              be saved.
+
+    Returns:
+        { "merged_dir": str, "num_chunks": int }
+    """
+    import extract.merger as _merger
+
+    # Override module globals so the existing functions use lecture‑scoped paths
+    _merger.OBJECTS_DIR         = Path(objects_dir)
+    _merger.VISUAL_OBJECTS_DIR  = Path(visual_objects_dir)
+    out                         = Path(merged_objects_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    _merger.MERGED_OBJECTS_DIR  = out
+
+    knowledge_files = sorted(Path(objects_dir).glob("chunk_*.json"))
+    if not knowledge_files:
+        logger.warning("No knowledge objects found to merge.")
+        return {"merged_dir": str(out), "num_chunks": 0}
+
+    logger.info(f"Merging {len(knowledge_files)} chunks…")
+    for kf in knowledge_files:
+        process_chunk(kf)
+
+    logger.info("Merge complete.")
+    return {"merged_dir": str(out), "num_chunks": len(knowledge_files)}
 
 
 def process_all_chunks():

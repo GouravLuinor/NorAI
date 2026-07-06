@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useThreadStore, type Message, sendChatMessage } from '../../stores/useThreadStore'
+import { useThreadStore, sendChatMessage } from '../../stores/useThreadStore'
 import { useChapterStore } from '../../stores/useChapterStore'
+import { useLectureStore } from '../../stores/useLectureStore'   // ← added
 import { MessageBubble } from './MessageBubble'
 import { ReferencesPanel } from './ReferencesPanel'
 import { InputZone } from './InputZone'
@@ -19,6 +20,10 @@ export function ChatArea() {
 
   const liveReferences    = useThreadStore(s => s.liveReferences)
   const setLiveReferences = useThreadStore(s => s.setLiveReferences)
+
+  // ── Lecture‑aware ───────────────────────────────────────────────────────
+  const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
+
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
@@ -29,41 +34,20 @@ export function ChatArea() {
   const activeThreadRef    = useRef(threadId)
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  // ── Thread‑switch cleanup ─────────────────────────────────────────────────
-  useEffect(() => {
-    if (activeThreadRef.current !== threadId) {
-      abortControllerRef.current?.abort()
-      setLiveReferences([])
-      setLoading(false)
-      inFlightRef.current = false
-    }
-    activeThreadRef.current = threadId
-  }, [threadId, setLoading])
-
-  useEffect(() => {
-    return () => {
-      abortControllerRef.current?.abort()
-    }
-  }, [])
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  // ── handleSend (no streaming) ─────────────────────────────────────────────
-  const handleSend = useCallback(async (text: string) => {
+const handleSend = useCallback(async (text: string) => {
     if (inFlightRef.current) return
     inFlightRef.current = true
 
     const targetThreadId = threadId
 
     // 1. Add user message immediately
-    addMessage({
+    const userMsg = {
       id: genId(),
-      role: 'user',
+      role: 'user' as const,
       content: text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    })
+    }
+    addMessage(userMsg)
 
     setLoading(true)
 
@@ -71,49 +55,62 @@ export function ChatArea() {
     abortControllerRef.current = controller
 
     try {
-      // 2. Get the full answer
-      const data = await sendChatMessage(targetThreadId, text)
+      // 2. Get the full answer — lecture‑scoped
+      const data = await sendChatMessage(targetThreadId, text, '', { lectureId })
 
-      if (activeThreadRef.current !== targetThreadId || controller.signal.aborted) return
+      if (controller.signal.aborted) return
 
       const cleanAnswer = (data.answer ?? '').replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
 
-      // 3. Add assistant message
-      addMessage({
+      // 3. Store assistant message under the ORIGINAL thread (targetThreadId),
+      //    even if the user navigated away while waiting.
+      const assistantMsg = {
         id: genId(),
-        role: 'assistant',
+        role: 'assistant' as const,
         content: cleanAnswer,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      })
+      }
 
-      // 4. Build references
-      setLiveReferences([
-        ...(data.retrieved_chunks ?? []).map((c: any) => {
-          const headingParts = (c.heading_path || '').split('>')
-          const leafHeading  = headingParts[headingParts.length - 1].trim()
-          const sectionId    = 'sec-' + leafHeading
-            .toLowerCase()
-            .replace(/[^a-z0-9\s-]/g, '')
-            .trim()
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-          return {
-            id: c.heading_path,
-            title: c.heading_path,
-            section: `Ch ${c.chapter_id}`,
-            sectionId,
-            chapterId: c.chapter_id,
-            type: 'note' as const,
-          }
-        }),
-        ...(data.retrieved_images ?? []).map((img: any) => ({
-          id: img.path,
-          title: img.section,
-          section: img.path,
-          sectionId: '',
-          type: 'screenshot' as const,
-        })),
-      ])
+      const store = useThreadStore.getState()
+      const threadCache = store._messagesCache[targetThreadId] ?? []
+      const updatedCache = [...threadCache, userMsg, assistantMsg]
+
+      // Update cache and, if user is still on this thread, visible messages
+      useThreadStore.setState((s) => ({
+        _messagesCache: { ...s._messagesCache, [targetThreadId]: updatedCache },
+        ...(s.threadId === targetThreadId ? { messages: updatedCache } : {}),
+      }))
+
+      // 4. Build references (only show if still on the target thread)
+      if (activeThreadRef.current === targetThreadId) {
+        setLiveReferences([
+          ...(data.retrieved_chunks ?? []).map((c: any) => {
+            const headingParts = (c.heading_path || '').split('>')
+            const leafHeading  = headingParts[headingParts.length - 1].trim()
+            const sectionId    = 'sec-' + leafHeading
+              .toLowerCase()
+              .replace(/[^a-z0-9\s-]/g, '')
+              .trim()
+              .replace(/\s+/g, '-')
+              .replace(/-+/g, '-')
+            return {
+              id: c.heading_path,
+              title: c.heading_path,
+              section: `Ch ${c.chapter_id}`,
+              sectionId,
+              chapterId: c.chapter_id,
+              type: 'note' as const,
+            }
+          }),
+          ...(data.retrieved_images ?? []).map((img: any) => ({
+            id: img.path,
+            title: img.section,
+            section: img.path,
+            sectionId: '',
+            type: 'screenshot' as const,
+          })),
+        ])
+      }
     } catch (err: any) {
       if (err?.name === 'AbortError') return
       console.error('Chat error:', err)
@@ -131,7 +128,7 @@ export function ChatArea() {
         inFlightRef.current = false
       }
     }
-  }, [threadId, addMessage, setLoading])
+  }, [threadId, addMessage, setLoading, lectureId])
 
   // ── Reference handlers ────────────────────────────────────────────────────
   const handleReferenceClick = useCallback((sectionId: string) => {

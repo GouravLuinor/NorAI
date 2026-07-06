@@ -8,6 +8,7 @@ import { ChapterScreenshots } from './ChapterScreenshots'
 import React from 'react'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { useLectureStore } from '../../stores/useLectureStore' 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function headingToId(heading: string): string {
@@ -255,6 +256,7 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
   const [loading, setLoading] = useState(true)
 
   const chapterIdStr = chapterId != null ? String(chapterId) : null
+  const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
 
   useEffect(() => {
     if (!chapterIdStr) {
@@ -267,7 +269,7 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
     const controller = new AbortController()
     setLoading(true)
 
-    fetch(`/notes/${chapterIdStr}`, { signal: controller.signal })
+    fetch(`/notes/${chapterIdStr}?lecture_id=${lectureId}`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) throw new Error('Not found')
         const rawText = await res.text()
@@ -297,7 +299,7 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
       })
 
     return () => controller.abort()
-  }, [chapterIdStr])
+  }, [chapterIdStr, lectureId])
 
   if (loading) {
     return (

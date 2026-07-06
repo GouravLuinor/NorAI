@@ -1444,28 +1444,694 @@ The frontend has been fully developed using realistic mock data and is ready for
 
 # Upcoming Work
 
-## Week 11 - Full Stack Integration
+# Week 11 - Full-Stack Platform Integration & Automated Pipeline ✅
 
 Goal:
 
-Interactive Frontend
+Raw Lecture Video
 
 ↓
 
-Production-Ready Learning Platform
+Automated Educational Processing
+
+↓
+
+Complete Interactive Learning Platform
+
+Week 11 transformed NorAI from separate educational, tutor, and frontend systems into a single end-to-end application.
+
+A user can now submit a lecture and move through the complete workflow:
+
+```text
+Lecture Upload
+↓
+Automated Processing
+↓
+Educational Content Generation
+↓
+Tutor Indexing
+↓
+Interactive Workspace
+```
+
+---
+
+## 11.1 Full-Stack Integration ✅
+
+Goal:
+
+React Frontend
+
++
+
+FastAPI Backend
+
++
+
+LangGraph Tutor
+
+↓
+
+Unified Application
+
+Completed:
+
+* React ↔ FastAPI integration
+* FastAPI ↔ LangGraph integration
+* Removal of frontend mock data
+* Live educational content loading
+* Real tutor responses
+* Persistent conversation threads
+* Real quiz integration
+* Real flashcard integration
+* Real revision summary integration
+* Study notes API integration
+
+Architecture:
+
+```text
+React Frontend
+      ↓
+FastAPI Backend
+      ↓
+LangGraph Tutor
+      ↓
+Educational Knowledge Base
+```
+
+---
+
+## 11.2 Automated Lecture Processing Pipeline ✅
+
+Goal:
+
+Lecture Source
+
+↓
+
+Complete NorAI Educational Workspace
+
+Completed:
+
+* Unified pipeline orchestrator
+* Background processing
+* Sequential stage execution
+* Live progress tracking
+* SSE progress updates
+* Polling fallback
+* Failure isolation
+* Outline fallback generation
+
+Pipeline:
+
+```text
+Video Source
+↓
+Ingestion
+↓
+Transcription
+↓
+Chunking
+↓
+Knowledge Extraction
+↓
+Frame Extraction
+↓
+Scene Detection
+↓
+Chunk-to-Screenshot Mapping
+↓
+Visual Knowledge Extraction
+↓
+Knowledge Merging
+↓
+Outline Generation
+↓
+Chapter Building
+↓
+Study Notes Generation
+↓
+Screenshot Selection
+↓
+Revision Notes Generation
+↓
+Assessment Generation
+↓
+PDF Generation
+↓
+Tutor Index Generation
+↓
+Screenshot Index Generation
+```
+
+The complete educational pipeline can now run automatically from a single user submission.
+
+---
+
+## 11.3 Lecture Upload Workflow ✅
+
+Goal:
+
+User Input
+
+↓
+
+Automated Processing
+
+Completed:
+
+* YouTube URL input
+* Local video upload
+* Google Drive link input
+* Upload landing page
+* Processing page
+* Task-based background execution
+* Live processing timeline
+* Progress bar
+* Workspace navigation after completion
+
+Frontend Pages:
+
+```text
+/
+↓
+UploadPage
+
+/process/:taskId
+↓
+ProcessingPage
+
+/workspace/:lectureId
+↓
+Learning Workspace
+```
+
+---
+
+## 11.4 Multi-Lecture Architecture ✅
+
+Goal:
+
+Multiple Lectures
+
+↓
+
+Independent Learning Environments
+
+Completed:
+
+* Lecture registry
+* Unique lecture IDs
+* Lecture-scoped output directories
+* Lecture selector
+* Lecture-specific notes
+* Lecture-specific revision material
+* Lecture-specific assessments
+* Lecture-specific flashcards
+* Lecture-specific tutor indexes
+* Lecture-specific screenshot indexes
+* Lecture-specific conversation memory
+
+Output Structure:
+
+```text
+outputs/
+
+├── lecture_1/
+│   ├── notes/
+│   ├── revision/
+│   ├── assessment/
+│   ├── screenshots/
+│   ├── flashcards/
+│   ├── pdfs/
+│   └── tutor/
+│
+├── lecture_2/
+│   └── ...
+│
+└── lectures.json
+```
+
+Switching lectures now loads the corresponding educational workspace and tutor context.
+
+---
+
+## 11.5 Per-Lecture AI Tutor Isolation ✅
+
+Goal:
+
+Lecture
+
+↓
+
+Dedicated Tutor Knowledge Space
+
+Completed:
+
+* Per-lecture LangGraph graphs
+* Per-lecture SQLite checkpoints
+* Per-lecture Chroma indexes
+* Per-lecture thread history
+* Graph caching
+* Dedicated graph locks
+* Backward-compatible default tutor mode
+
+Architecture:
+
+```text
+Lecture A
+├── Tutor Graph
+├── Checkpointer
+├── Text Index
+└── Screenshot Index
+
+Lecture B
+├── Tutor Graph
+├── Checkpointer
+├── Text Index
+└── Screenshot Index
+```
+
+Tutor conversations and retrieval are now isolated between lectures.
+
+---
+
+## 11.6 Live Tutor Integration ✅
+
+Goal:
+
+Student Question
+
+↓
+
+Grounded Interactive Explanation
+
+Completed:
+
+* Real LangGraph tutor responses
+* Persistent multi-thread conversations
+* Study note retrieval
+* Screenshot retrieval
+* Chapter-aware routing
+* Query rewriting
+* Confidence-aware answers
+* Tool calling
+* Quiz workflows
+* Flashcards
+* Chapter summaries
+* Retrieved references
+* Screenshot previews
+
+Tutor Flow:
+
+```text
+User Message
+↓
+FastAPI
+↓
+Lecture-Scoped LangGraph
+↓
+Memory
+↓
+Query Understanding
+↓
+Parallel Retrieval
+├── Study Notes
+└── Screenshot Knowledge
+↓
+Tool Calling / Answer Generation
+↓
+Persistent Response
+```
+
+---
+
+## 11.7 Educational Resource APIs ✅
+
+Completed APIs for:
+
+* Study notes
+* Revision summaries
+* Assessments
+* Quiz evaluation
+* Flashcards
+* Screenshots
+* PDF downloads
+* Threads
+* Lectures
+* Processing status
+* Tutor chat
+
+Educational artifacts are now exposed through a unified backend rather than accessed directly by the frontend.
+
+---
+
+## 11.8 Interactive Workspace Improvements ✅
+
+Completed:
+
+* Resizable workspace panels
+* Study Notes viewer
+* Revision Notes viewer
+* Assessment viewer
+* Tutor panel
+* Quiz panel
+* Flashcards panel
+* Lecture selector
+* Persistent thread sidebar
+* Search
+* Highlight & Ask
+* Screenshot lightbox
+* KaTeX math rendering
+* Reference-to-notes navigation
+* Cross-chapter reference navigation
+* Keyboard shortcut modal
+* Toast notifications
+* Dark/Light theme
+
+Workspace:
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│ Sidebar │ Educational Document │ AI Learning Assistant    │
+│         │                      │                          │
+│ Lectures│ Study Notes          │ Tutor                    │
+│ Threads │ Revision             │ Quiz                     │
+│ Chapters│ Assessment           │ Flashcards               │
+│         │                      │ References               │
+└────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 11.9 Highlight & Ask ✅
+
+Goal:
+
+Selected Learning Material
+
+↓
+
+Immediate Tutor Explanation
+
+Completed:
+
+* Text selection detection
+* Floating "Ask Nora" action
+* Automatic tutor query creation
+* Active lecture context preservation
+* Direct answer in tutor panel
+
+Flow:
+
+```text
+Select Text
+↓
+Ask Nora
+↓
+Lecture-Scoped Tutor
+↓
+Contextual Explanation
+```
+
+This creates direct interaction between static educational content and the AI tutor.
+
+---
+
+## 11.10 Cross-Panel Reference Linking ✅
+
+Goal:
+
+Tutor Evidence
+
+↓
+
+Exact Learning Material
+
+Completed:
+
+* Clickable tutor references
+* Automatic chapter switching
+* Automatic Notes tab switching
+* Exact section scrolling
+* Heading ID generation
+* Temporary pulse highlighting
+* Deep sub-heading support
+
+Flow:
+
+```text
+Tutor Answer
+↓
+Reference Click
+↓
+Correct Chapter
+↓
+Correct Section
+↓
+Visual Highlight
+```
+
+This tightly connects AI explanations with source educational material.
+
+---
+
+## 11.11 Search & Navigation ✅
+
+Completed:
+
+* Inline document search
+* Match highlighting
+* Next/previous result navigation
+* Cross-chapter reference navigation
+* Lecture switching
+* Chapter switching
+* Persistent active workspace state
+
+---
+
+## 11.12 Mathematical Rendering ✅
+
+Completed:
+
+* Inline LaTeX
+* Block LaTeX
+* KaTeX rendering
+* Math support in study notes
+* Math support in revision notes
+* Math support in tutor responses
+
+Technology:
+
+```text
+remark-math
++
+rehype-katex
+```
+
+Examples:
+
+```text
+$O(\log n)$
+
+$$
+\frac{a}{b}
+$$
+```
+
+---
+
+## 11.13 PDF Generation Pipeline ✅
+
+Goal:
+
+Interactive Educational Content
+
+↓
+
+Downloadable Learning Documents
+
+Completed:
+
+* Playwright-based PDF generation
+* Study Notes PDF
+* Revision Notes PDF
+* Assessment PDF
+* Dedicated print route
+* Important Visuals expansion
+* Visible assessment answer keys
+* Lecture-scoped PDF storage
+* Frontend download buttons
+
+Pipeline:
+
+```text
+React Print Page
+↓
+Headless Chromium
+↓
+Rendered Educational Layout
+↓
+PDF
+```
+
+Output:
+
+```text
+outputs/{lecture_id}/pdfs/
+
+├── notes.pdf
+├── revision.pdf
+└── assessment.pdf
+```
+
+---
+
+## 11.14 Pipeline Reliability Improvements ✅
+
+Completed:
+
+* Shared Gemini API rate limiter
+* Thread-safe request limiting
+* Retry count increased
+* Random retry jitter
+* Reduced worker concurrency
+* Balanced model usage
+* LLM-stage failure isolation
+* SSE keep-alive
+* Polling fallback
+* Missing visual fallback
+* Outline fallback
+* Missing chapter guards
+
+Model Strategy:
+
+```text
+High-Volume Stages
+↓
+Gemini Flash-Lite
+
+Quality-Critical Stages
+↓
+Gemma 4
+```
+
+Flash-Lite is used for:
+
+* Knowledge extraction
+* Outline generation
+* Screenshot scoring
+* Screenshot ranking
+
+Gemma 4 is used for:
+
+* Visual understanding
+* Study notes
+* Revision notes
+* Assessments
+
+---
+
+## 11.15 Major Stability Fixes ✅
+
+Resolved:
+
+* CORS development issues
+* Infinite React render loops
+* Thread persistence failures
+* Message duplication
+* Shimmer state leakage
+* Stale quiz state
+* Hard-refresh thread loss
+* Double chat submissions
+* JSON-wrapped Markdown rendering
+* Reference ID mismatches
+* Deep heading navigation
+* Cross-chapter reference navigation
+* Outline-to-chapter range errors
+* Missing visual object handling
+* Non-sequential chapter numbering
+* Missing chapter crashes
+* SSE connection drops
+* Empty lecture dropdown
+* Chapter switching issues
+* Per-lecture flashcard storage
+* Per-lecture Chroma indexing
+
+---
+
+# Current Project Status
+
+Current End-to-End Pipeline:
+
+```text
+Lecture Upload
+↓
+Ingestion
+↓
+Transcription
+↓
+Chunking
+↓
+Knowledge Extraction
+↓
+Visual Understanding
+↓
+Knowledge Merging
+↓
+Outline Generation
+↓
+Chapter Building
+↓
+Study Notes
+↓
+Screenshot Selection
+↓
+Revision Notes
+↓
+Assessments
+↓
+Flashcards
+↓
+PDF Generation
+↓
+Tutor Indexing
+↓
+Interactive Workspace
+↓
+Persistent AI Tutor
+```
+
+NorAI now supports the complete journey from raw lecture video to an interactive multimodal learning environment.
+
+---
+
+# Upcoming Work
+
+## Week 12 - Production Readiness & Advanced Learning
+
+Goal:
+
+Functional Full-Stack Platform
+
+↓
+
+Production-Ready Personalized Learning System
 
 Planned Features:
 
-* FastAPI backend
-* LangGraph API integration
-* Streaming tutor responses
-* Real thread persistence
-* Dynamic study note loading
-* Revision PDF integration
-* Assessment integration
-* Screenshot serving
-* Static asset management
-* Frontend ↔ Backend communication
+* Thread system edge-case fixes
+* Async migration
+* User authentication
+* User profiles
+* Mobile responsive layout
+* Full-text cross-chapter search
+* Adaptive expertise tracking
+* Learning analytics
+* Personalized recommendations
+* Docker deployment
+* Production configuration
+* Production database strategy
 
 ---
 
@@ -1473,35 +2139,41 @@ Planned Features:
 
 Planned Features:
 
-* User authentication
 * Personal knowledge base
-* Multi-video knowledge base
+* Multi-video knowledge spaces
 * Cross-lecture retrieval
 * Lecture comparison
 * Adaptive expertise tracking
+* Weak-concept detection
+* Personalized revision plans
 * Learning analytics
-* Personalized learning recommendations
-* Async backend infrastructure
+* Spaced repetition
 * Multi-user deployment
-* Universal search
-* AI ↔ Document synchronization
+* Cloud object storage
+* Background job queue
+* Production observability
 
 ---
 
 # Lessons Learned
 
-* Designing educational interfaces requires different priorities than traditional chat applications.
-* Separating study notes, revision notes, and assessments produces a significantly better learning experience.
-* Mock-first frontend development enables rapid UI iteration without blocking on backend progress.
-* Zustand provides a lightweight and scalable solution for educational application state management.
-* A modular component architecture makes future backend integration straightforward.
-* Educational UX—typography, hierarchy, and interaction—is as important as the quality of the AI models.
-* Building reusable educational components creates a consistent and extensible learning platform.
+* A multimodal educational pipeline becomes significantly more useful when connected directly to an interactive workspace.
+* Per-lecture isolation is essential for scaling from a single demo lecture to a real learning platform.
+* Graph-based tutoring and structured educational artifacts complement each other better than raw transcript RAG.
+* Visual lecture knowledge should remain a first-class retrieval source throughout the entire platform.
+* Background orchestration requires failure isolation because one LLM stage should never destroy an entire processing run.
+* Rate limiting and controlled concurrency are essential for reliable multi-stage AI pipelines.
+* Pre-generated educational artifacts reduce runtime latency and API cost.
+* Cross-panel linking significantly improves trust by connecting tutor explanations directly to source material.
+* Highlight & Ask creates a natural bridge between reading and conversational learning.
+* A lecture-scoped architecture provides a strong foundation for future multi-user and multi-course systems.
+* Full-stack integration exposed edge cases that isolated frontend and backend development could not reveal.
+* Modular architecture allowed the original NorAI pipeline to evolve into a complete platform without requiring a fundamental rewrite.
 
 ---
 
 Last Updated:
 
-**Week 10 Complete**
+**Week 11 Complete**
 
-**NorAI v1.0 — Interactive Learning Platform**
+**NorAI v1.1 — End-to-End Multimodal Learning Platform Complete**

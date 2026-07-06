@@ -123,21 +123,25 @@ def detect_chapter_node(state: dict, config: RunnableConfig) -> dict:
 
 # Add to existing nodes_retrieval.py
 
-def retrieve_images_node(state: dict, config: RunnableConfig) -> dict:
+def retrieve_images_node(state: dict, config: RunnableConfig, output_dir=None) -> dict:
     """
     Retrieve relevant screenshots using the original user question.
     Uses a direct Chroma connection to avoid cache conflicts with
     parallel text retrieval.
     """
     import chromadb
+    from pathlib import Path
     from tutor.retrieval_config import CHROMA_DIR, SCREENSHOT_COLLECTION_NAME, TOP_K_IMAGES
     from tutor.embedding import GeminiEmbeddingFunction
     
     query = state.get("user_question", "")
     
+    # Use lecture-specific chroma dir if available
+    chroma_dir = Path(output_dir) / "tutor" / "chroma" if output_dir else CHROMA_DIR
+    
     retrieved_images: list = []
     try:
-        client = chromadb.PersistentClient(path=str(CHROMA_DIR))
+        client = chromadb.PersistentClient(path=str(chroma_dir))
         embedding_fn = GeminiEmbeddingFunction(role="query")
         collection = client.get_collection(
             name=SCREENSHOT_COLLECTION_NAME,
@@ -248,7 +252,7 @@ def _get_model_from_config() -> str:
     return MODEL_NAME
 
 
-def retrieve_node(state: dict, config: RunnableConfig) -> dict:
+def retrieve_node(state: dict, config: RunnableConfig, output_dir=None) -> dict:
     """
     LangGraph node: query Chroma with the (rewritten) user_question, populate
     retrieved_chunks.
@@ -271,7 +275,7 @@ def retrieve_node(state: dict, config: RunnableConfig) -> dict:
 
     try:
         chapter_id = state.get("chapter_id")  # Phase 5: chapter routing
-        chunks = retrieve(query=question, chapter_id=chapter_id, k=TOP_K)
+        chunks = retrieve(query=question, chapter_id=chapter_id, k=TOP_K, output_dir=output_dir)
         logger.debug(f"retrieve_node: {len(chunks)} chunks for query {question!r}")
         return {"retrieved_chunks": chunks}
     except IndexNotBuiltError as exc:

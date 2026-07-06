@@ -6,6 +6,8 @@ import { Bookmark, GitBranch, Clock, Lightbulb, AlertTriangle, Code, List, FileT
 import type { Components } from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { useLectureStore } from '../../stores/useLectureStore' 
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function headingToId(heading: string): string {
@@ -243,6 +245,7 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
   const [loading, setLoading] = useState(true)
 
   const chapterIdStr = chapterId != null ? String(chapterId) : null
+  const lectureId = useLectureStore(s => s.activeLectureId) || 'default'  
 
   useEffect(() => {
     if (!chapterIdStr) {
@@ -255,7 +258,7 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
     const controller = new AbortController()
     setLoading(true)
 
-    fetch(`/summary?chapter_id=${chapterIdStr}`, { signal: controller.signal })
+    fetch(`/summary?chapter_id=${chapterIdStr}&lecture_id=${lectureId}`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) throw new Error('Not found')
         const rawText = await res.text()
@@ -285,7 +288,7 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
       })
 
     return () => controller.abort()
-  }, [chapterIdStr])
+  }, [chapterIdStr, lectureId])
 
   if (loading) {
     return (

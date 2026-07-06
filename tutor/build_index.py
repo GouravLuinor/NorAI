@@ -38,6 +38,7 @@ from tutor.retrieval_config import (
     NOTES_GLOB,
     TOP_K,
 )
+from tutor.retrieval_config import CHROMA_DIR as DEFAULT_CHROMA_DIR
 
 BATCH_SIZE = 20  # chunks per embed call; keeps us under free-tier rate limits
 
@@ -134,23 +135,16 @@ def _smoke_test(query: str = "What is a binary search tree?") -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Build NorAI study-notes Chroma index")
-    parser.add_argument(
-        "--reset",
-        action="store_true",
-        help="Drop and rebuild the collection from scratch",
-    )
-    parser.add_argument(
-        "--smoke-test",
-        dest="smoke",
-        metavar="QUERY",
-        nargs="?",
-        const="What is the main topic of the notes?",
-        help="After building, run a smoke-test query",
-    )
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-dir", type=str, default=None)
+    parser.add_argument("--reset", action="store_true")
     args = parser.parse_args()
 
-    build_index(reset=args.reset)
-
-    if args.smoke is not None:
-        _smoke_test(args.smoke)
+    if args.output_dir:
+        from pathlib import Path
+        chroma_dir = Path(args.output_dir) / "tutor" / "chroma"
+        chroma_dir.mkdir(parents=True, exist_ok=True)
+        import tutor.retrieval_config as cfg
+        cfg.CHROMA_DIR = chroma_dir  # redirect for this run
+        cfg.NOTES_GLOB = str(chroma_dir.parent.parent / "notes" / "chapter_*.md")

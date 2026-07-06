@@ -18,6 +18,8 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
+from backend.ratelimit import RPMRateLimiter
+_limiter = RPMRateLimiter(max_calls=12)
 
 logger = logging.getLogger(__name__)
 
@@ -133,11 +135,11 @@ def analyze_chunk_images(
     for attempt in range(3):
 
         try:
-
+            _limiter.wait()
             response = (
                 client.models.generate_content(
                     model=
-                    "gemma-4-26b-a4b-it",
+                    "gemini-3.1-flash-lite-preview",
 
                     contents=[
                         *uploaded_files,
@@ -455,7 +457,7 @@ def extract_visual_object(
     visual_object[
         "generated_by"
     ] = (
-        "gemma-4-26b-a4b-it"
+        "gemini-3.1-flash-lite-preview"
     )
 
     return visual_object

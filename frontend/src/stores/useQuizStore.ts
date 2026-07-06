@@ -1,16 +1,3 @@
-/**
- * useQuizStore.ts
- *
- * Fix log:
- *  BUG-6  reset() is called by useThreadStore.setThreadId() whenever the user
- *         switches threads. This guarantees aiMode, evaluation, and isActive
- *         never bleed across threads.
- *         The reset() action is idempotent and safe to call from any context.
- *
- *  Also:  evaluateQuiz() and fetchQuizQuestions() use the same API_BASE
- *         resolution as useThreadStore so they share the same proxy path.
- */
-
 import { create } from 'zustand'
 
 const API_BASE =
@@ -68,7 +55,7 @@ interface QuizState {
 }
 
 // ---------------------------------------------------------------------------
-// Initial state snapshot (defined once so reset() always returns a clean ref)
+// Initial state
 // ---------------------------------------------------------------------------
 const INITIAL_STATE: Omit<
   QuizState,
@@ -151,17 +138,21 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     }
   },
 
-  // BUG-6: full reset — safe to call cross-store from useThreadStore
   reset: () => set({ ...INITIAL_STATE }),
 }))
 
 // ---------------------------------------------------------------------------
-// API helpers
+// API helpers — now lecture‑aware
 // ---------------------------------------------------------------------------
 
-export async function fetchQuizQuestions(chapterId?: number): Promise<Question[]> {
-  const params = chapterId !== undefined ? `?chapter_id=${chapterId}` : ''
-  const res = await fetch(`${API_BASE}/quiz/questions${params}`)
+export async function fetchQuizQuestions(
+  chapterId?: number,
+  lectureId?: string,
+): Promise<Question[]> {
+  const params = new URLSearchParams()
+  if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
+  if (lectureId) params.set('lecture_id', lectureId)
+  const res = await fetch(`${API_BASE}/quiz/questions?${params}`)
   if (!res.ok) throw new Error('Failed to load quiz questions')
   return res.json()
 }
@@ -182,9 +173,13 @@ export async function evaluateQuiz(
   return data.evaluation as QuizEvaluation
 }
 
-export async function fetchGeneratedFlashcards(chapterId?: number): Promise<any[]> {
+export async function fetchGeneratedFlashcards(
+  chapterId?: number,
+  lectureId?: string,
+): Promise<any[]> {
   const params = new URLSearchParams()
   if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
+  if (lectureId) params.set('lecture_id', lectureId)
   const res = await fetch(`${API_BASE}/flashcards?${params}`)
   if (!res.ok) throw new Error('Failed to load flashcards')
   return res.json()

@@ -1,70 +1,104 @@
 """
 backend/dependencies.py
 
-Fix log:
-  BUG-4  invoke_tutor() now handles the case where get_state() returns an empty
-         snapshot for a brand-new thread (no checkpoint yet). Previously this
-         could raise inside the `not snapshot.values` branch if LangGraph
-         returned a None-like object rather than raising.
-  BUG-7  The SQLite connection uses check_same_thread=False and all access is
-         serialised through _lock, which is correct. Added a comment to make
-         the contract explicit so future contributors don't remove the lock.
-
-No logic changes from the original — this file was the most stable of the six.
+Provides the NorAI tutor graph, one instance per lecture.
+Each lecture owns its own SQLite checkpointer (stored under
+outputs/{lecture_id}/tutor/) and a dedicated lock, so conversations
+from different lectures are completely isolated.
 """
 
 import sqlite3
 import threading
 from pathlib import Path
+from typing import Dict
 
 from langgraph.checkpoint.sqlite import SqliteSaver
-from tutor.config import CHECKPOINT_DB_PATH
+from tutor.config import CHECKPOINT_DB_PATH   # fallback for the default lecture
 from tutor.graph import build_graph
 
+
 # ---------------------------------------------------------------------------
-# Global graph instance — compiled exactly once at startup.
-# Access is serialised by _lock so the SQLite connection is never used from
-# two threads simultaneously (check_same_thread=False relies on this).
+# Per‑lecture graph cache
 # ---------------------------------------------------------------------------
 
-_graph = None
-_lock  = threading.Lock()
+# Global default graph (used when no lecture_id is supplied)
+_default_graph = None
+_default_lock = threading.Lock()
+
+# Cache: lecture_id -> { "graph": ..., "lock": ... }
+_lecture_graphs: Dict[str, dict] = {}
+_cache_lock = threading.Lock()
 
 
-def _init_graph():
-    global _graph
-    CHECKPOINT_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+def _init_graph_for_lecture(lecture_id: str):
+    lecture_dir = Path("outputs") / lecture_id
+    db_path = lecture_dir / "tutor" / "checkpoints.sqlite"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Use a persistent connection so the checkpointer can cache prepared
-    # statements across invocations. check_same_thread=False is safe because
-    # every call to invoke_tutor() holds _lock for the full duration.
-    conn = sqlite3.connect(
-        str(CHECKPOINT_DB_PATH),
-        check_same_thread=False,
-    )
+    conn = sqlite3.connect(str(db_path), check_same_thread=False)
     checkpointer = SqliteSaver(conn)
-    _graph = build_graph(checkpointer)
-    return checkpointer
+    graph = build_graph(checkpointer, output_dir=str(lecture_dir))
+    return graph
 
 
-_checkpointer = _init_graph()
+def _init_default_graph():
+    """Build the global default graph (keeps backward compatibility)."""
+    global _default_graph
+    CHECKPOINT_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(CHECKPOINT_DB_PATH), check_same_thread=False)
+    checkpointer = SqliteSaver(conn)
+    _default_graph = build_graph(checkpointer)
 
 
-def invoke_tutor(thread_id: str, user_question: str, lecture_title: str = "") -> dict:
+# Initialise the default graph once at startup
+_init_default_graph()
+
+
+def _get_or_create_lecture_graph(lecture_id: str):
     """
-    Invoke the tutor graph for a single turn and return the output dict.
-
-    BUG-4: get_state() is wrapped in try/except independently from the invoke
-    so a missing checkpoint (brand-new thread) doesn't abort the whole call.
+    Return (graph, lock) for the given lecture.
+    Caches each graph so it's built only once per lecture.
     """
-    with _lock:
+    with _cache_lock:
+        if lecture_id not in _lecture_graphs:
+            graph = _init_graph_for_lecture(lecture_id)
+            lock = threading.Lock()
+            _lecture_graphs[lecture_id] = {"graph": graph, "lock": lock}
+        entry = _lecture_graphs[lecture_id]
+        return entry["graph"], entry["lock"]
+
+def get_lecture_db_path(lecture_id: str) -> Path:
+    """Return the path to the SQLite checkpoints DB for a lecture."""
+    return Path("outputs") / lecture_id / "tutor" / "checkpoints.sqlite"
+# ---------------------------------------------------------------------------
+# Public API — invoke the tutor for a specific lecture
+# ---------------------------------------------------------------------------
+
+def invoke_tutor(
+    thread_id: str,
+    user_question: str,
+    lecture_title: str = "",
+    lecture_id: str | None = None,
+) -> dict:
+    """
+    Invoke the tutor graph for a single turn.
+
+    If `lecture_id` is provided, the lecture‑specific graph and checkpointer
+    are used. Otherwise, the global default graph is used (backward compatible).
+    """
+    if lecture_id:
+        graph, lock = _get_or_create_lecture_graph(lecture_id)
+    else:
+        graph = _default_graph
+        lock = _default_lock
+
+    with lock:
         config = {"configurable": {"thread_id": thread_id}}
 
         # Determine whether this is the first message in the thread.
         is_new = True
         try:
-            snapshot = _graph.get_state(config)
-            # snapshot.values is {} or None for a thread with no messages yet
+            snapshot = graph.get_state(config)
             is_new = not snapshot or not snapshot.values
         except Exception:
             is_new = True
@@ -73,12 +107,10 @@ def invoke_tutor(thread_id: str, user_question: str, lecture_title: str = "") ->
             "thread_id": thread_id,
             "user_question": user_question,
         }
-        # Only pass lecture_title on the very first turn so it doesn't
-        # override subsequent context.
         if is_new and lecture_title:
             input_state["lecture_title"] = lecture_title
 
-        result = _graph.invoke(input_state, config)
+        result = graph.invoke(input_state, config)
 
         return {
             "answer":            result.get("answer", ""),

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronDown, ChevronUp, Image as ImageIcon } from 'lucide-react'
 import { Lightbox } from '../ui/Lightbox'
+import { useLectureStore } from '../../stores/useLectureStore'  
 
 interface Screenshot {
   path: string
@@ -23,15 +24,17 @@ export function ChapterScreenshots({
   const [loading, setLoading] = useState(false)
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
 
+  const lectureId = useLectureStore(s => s.activeLectureId) || 'default' 
+
   useEffect(() => {
     if (!chapterId) return
     setLoading(true)
-    fetch(`/screenshots/${chapterId}`)
+    fetch(`/screenshots/${chapterId}?lecture_id=${lectureId}`) 
       .then((res) => res.json())
       .then((data) => setScreenshots(data))
       .catch(() => setScreenshots([]))
       .finally(() => setLoading(false))
-  }, [chapterId])
+  }, [chapterId, lectureId])  
 
   if (!screenshots.length) return null
 

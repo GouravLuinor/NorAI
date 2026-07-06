@@ -157,7 +157,7 @@ def generate_answer(
         response = (
             client.models.generate_content(
                 model=
-                "gemma-4-26b-a4b-it",
+                "gemini-3.1-flash-lite-preview",
 
                 contents=
                 f"{SYSTEM_PROMPT}\n\n{prompt}"
@@ -171,7 +171,7 @@ def generate_answer(
         response = (
             client.models.generate_content(
                 model=
-                "gemma-4-26b-a4b-it",
+                "gemini-3.1-flash-lite-preview",
 
                 contents=
                 f"""

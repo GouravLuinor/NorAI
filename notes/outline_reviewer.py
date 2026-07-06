@@ -10,6 +10,8 @@ from pydantic import BaseModel
 
 load_dotenv()
 
+from backend.ratelimit import RPMRateLimiter
+_limiter = RPMRateLimiter(max_calls=12)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -268,7 +270,7 @@ def generate_review(
     ):
 
         try:
-
+            _limiter.wait()
             response = (
 
                 client.models.generate_content(

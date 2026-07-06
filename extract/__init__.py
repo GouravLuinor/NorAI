@@ -15,6 +15,9 @@ from extract.prompts import (
     OUTPUT_SCHEMA
 )
 
+from backend.ratelimit import RPMRateLimiter
+_limiter = RPMRateLimiter(max_calls=12)
+
 load_dotenv()
 
 
@@ -82,7 +85,7 @@ def extract_knowledge_object(
     prompt = build_prompt(
         chunk["text"]
     )
-
+    _limiter.wait()
     response = (
         client.models.generate_content(
             model=
