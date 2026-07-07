@@ -2172,8 +2172,1096 @@ Planned Features:
 
 ---
 
-Last Updated:
+# Week 12 — Full-Stack Integration, Multi-Lecture Architecture & Pipeline Stabilization
 
-**Week 11 Complete**
+## Objective
 
-**NorAI v1.1 — End-to-End Multimodal Learning Platform Complete**
+The primary goal of Week 12 was to transform NorAI from a collection of independently working AI pipelines and frontend components into a fully integrated, end-to-end learning platform.
+
+Until this stage, most major systems already existed independently:
+
+- Video ingestion
+- Transcription
+- Transcript chunking
+- Knowledge extraction
+- Visual understanding
+- Chapter generation
+- Study notes
+- Revision notes
+- Assessments
+- Flashcards
+- RAG-based tutoring
+- React frontend
+
+The focus of Week 12 was therefore not simply to add another isolated feature.
+
+The real objective was to connect the complete system:
+
+> Video Input → Automated Processing Pipeline → Lecture-Specific Artifacts → Interactive Workspace → AI Tutor
+
+This required major architectural work across the FastAPI backend, React frontend, processing orchestration, lecture storage, tutor state management, PDF generation, progress tracking, and multi-lecture isolation.
+
+---
+
+# 1. FastAPI Backend Integration
+
+A FastAPI backend was introduced as the central application layer connecting the AI pipeline with the React frontend.
+
+The backend now acts as the bridge between:
+
+- video ingestion
+- long-running lecture processing
+- generated study materials
+- assessments
+- flashcards
+- screenshots
+- lecture metadata
+- tutor conversations
+- PDF downloads
+- progress tracking
+
+The frontend no longer depends on mock data for the primary learning workflow.
+
+Major API capabilities include:
+
+- lecture processing
+- lecture registry access
+- lecture outline retrieval
+- study notes retrieval
+- revision notes retrieval
+- assessment retrieval
+- flashcard retrieval
+- screenshot retrieval
+- tutor chat
+- conversation threads
+- processing progress
+- generated document access
+
+This converted NorAI from a local pipeline prototype into an actual full-stack application.
+
+---
+
+# 2. Complete Automated Lecture Processing Pipeline
+
+A centralized orchestration layer was created in:
+
+`backend/orchestrator.py`
+
+The orchestrator coordinates the complete NorAI pipeline for each lecture.
+
+The final processing flow became:
+
+1. Ingestion
+2. Transcription
+3. Chunking
+4. Knowledge Extraction
+5. Frame Extraction
+6. Scene Detection
+7. Chunk-to-Screenshot Mapping
+8. Visual Knowledge Extraction
+9. Knowledge Merging
+10. Lecture Outline Generation
+11. Chapter Building
+12. Study Notes Generation
+13. Screenshot Selection
+14. Revision Notes Generation
+15. Assessment Generation
+16. Flashcard Generation
+17. Tutor Index Construction
+18. Screenshot Index Construction
+
+This was one of the most important architectural milestones in the project.
+
+Previously, many stages had to be executed manually.
+
+After Week 11, a single lecture submission could trigger the complete workflow automatically.
+
+---
+
+# 3. Real-Time Processing Progress System
+
+A processing progress system was implemented so the frontend could display the current pipeline stage.
+
+Each task tracks:
+
+- task ID
+- current stage
+- status message
+- percentage complete
+- completion state
+- error state
+
+Example pipeline updates:
+
+- Downloading video
+- Transcribing lecture
+- Chunking transcript
+- Extracting knowledge
+- Understanding visuals
+- Generating outline
+- Writing study notes
+- Creating assessment
+- Generating flashcards
+- Indexing tutor knowledge
+- Indexing screenshots
+
+The frontend ProcessingPage displays these stages as a visual timeline.
+
+Initially, Server-Sent Events were used for real-time updates.
+
+However, several reliability problems appeared:
+
+- dropped connections
+- pending stream requests
+- frontend stuck on "Preparing…"
+- reconnect complexity
+- interaction with long-running blocking pipeline stages
+
+The progress architecture was eventually simplified to:
+
+> Frontend polling `/process/{task_id}/status` every 1.5 seconds
+
+This provided a much more predictable development experience.
+
+---
+
+# 4. Critical Async Event Loop Bug
+
+One of the most significant bugs discovered during Week 12 was that the frontend remained stuck on:
+
+`Preparing…`
+
+even though the backend pipeline continued successfully.
+
+The browser Network panel showed repeated status requests remaining:
+
+`(pending)`
+
+The root cause was architectural.
+
+The pipeline function was declared asynchronous, but most internal operations were synchronous and blocking:
+
+- FFmpeg
+- Faster-Whisper
+- file processing
+- scene detection
+- synchronous LLM calls
+- ChromaDB operations
+- subprocess execution
+
+An `async def` function does not automatically make synchronous operations non-blocking.
+
+The long-running pipeline occupied the FastAPI execution path and prevented lightweight progress requests from being served reliably.
+
+The final architecture moved pipeline execution into a background thread.
+
+This allowed:
+
+- FastAPI to continue serving HTTP requests
+- `/status` polling to respond immediately
+- the processing page to update continuously
+- long-running pipeline stages to execute independently
+
+This became one of the most important backend engineering lessons from the project:
+
+> Async syntax alone does not make blocking workloads asynchronous.
+
+---
+
+# 5. Multi-Lecture Architecture
+
+NorAI was upgraded from a single-lecture prototype into a multi-lecture platform.
+
+Every lecture now receives a unique lecture ID.
+
+Example:
+
+`a0a493e7-34e0-4c64-b423-2958f3e4a2f1`
+
+Each lecture receives its own isolated directory:
+
+`outputs/{lecture_id}/`
+
+The structure contains lecture-specific artifacts such as:
+
+- metadata
+- transcripts
+- chunks
+- extracted knowledge
+- screenshots
+- mappings
+- visual objects
+- merged objects
+- chapters
+- notes
+- revision notes
+- assessments
+- flashcards
+- tutor indexes
+- checkpoint databases
+
+Conceptually:
+
+`outputs/{lecture_id}/notes/`
+
+`outputs/{lecture_id}/assessment/`
+
+`outputs/{lecture_id}/flashcards/`
+
+`outputs/{lecture_id}/screenshots/`
+
+`outputs/{lecture_id}/tutor/`
+
+This eliminated accidental data sharing between lectures.
+
+---
+
+# 6. Lecture Registry
+
+A lecture registry was introduced to track processed lectures.
+
+Each lecture stores information such as:
+
+- lecture ID
+- title
+- creation metadata
+- processing information
+
+Initially, every lecture appeared as:
+
+`New Lecture`
+
+because the registry entry was created before outline generation.
+
+The pipeline was updated so that after the lecture outline is generated, the real AI-generated lecture title is written back into the registry.
+
+This allowed the frontend lecture switcher to display meaningful titles.
+
+---
+
+# 7. Dynamic Workspace Routing
+
+The workspace routing system was updated to include the lecture ID.
+
+Old behavior:
+
+`/workspace`
+
+New behavior:
+
+`/workspace/{lectureId}`
+
+Example:
+
+`/workspace/a0a493e7-34e0-4c64-b423-2958f3e4a2f1`
+
+This ensured that:
+
+- page refreshes preserve lecture context
+- lecture switching updates the URL
+- shared workspace links remain lecture-specific
+- frontend state can be restored from routing information
+
+A bug was also fixed where lecture switching updated only the Zustand store but not the route.
+
+The final solution updates both:
+
+- active lecture state
+- browser URL
+
+---
+
+# 8. Dynamic Chapter Sidebar
+
+The chapter sidebar originally relied on static mock data.
+
+This caused a major inconsistency:
+
+- notes changed correctly
+- revision notes changed correctly
+- assessments changed correctly
+- screenshots changed correctly
+- chapter names remained from the previous lecture
+
+The root cause was:
+
+`mocks/chapters.ts`
+
+The sidebar was migrated to dynamic chapter loading through the lecture outline API.
+
+The frontend now requests:
+
+`/outline?lecture_id={lectureId}`
+
+and builds the chapter list from:
+
+`data.chapters`
+
+This allows every lecture to display its own:
+
+- chapter IDs
+- chapter titles
+- chapter count
+
+The `/outline` endpoint was also added to the Vite proxy configuration.
+
+---
+
+# 9. Lecture-Aware Study Materials
+
+All educational resources were updated to use the active lecture ID.
+
+This included:
+
+- Study Notes
+- Revision Notes
+- Assessment
+- Flashcards
+- Screenshots
+
+A recurring class of bugs involved frontend functions silently using:
+
+`lecture_id=default`
+
+This caused content from the original Segment Tree lecture to appear inside unrelated lectures.
+
+The fix was to consistently retrieve:
+
+`activeLectureId`
+
+from the lecture store and pass it into every relevant API request.
+
+---
+
+# 10. Assessment Integration
+
+The assessment system was connected to the live backend.
+
+Generated chapter assessments now support:
+
+- multiple-choice questions
+- true/false questions
+- short-answer questions
+- chapter-aware loading
+- answer keys
+
+A major bug occurred because quiz requests continued using the default lecture.
+
+The fix was to pass the active lecture ID explicitly into:
+
+`fetchQuizQuestions(chapterId, lectureId)`
+
+This prevented assessment data from leaking between lectures.
+
+---
+
+# 11. Flashcard Pipeline Integration
+
+Flashcards were integrated as a generated educational artifact derived from assessment questions.
+
+The generation flow became:
+
+> Assessment Questions → Batch Processing → Gemini → Flashcards
+
+Each flashcard contains:
+
+- front
+- back
+- explanation
+
+Flashcards are stored per chapter:
+
+`flashcards_chapter_1.json`
+
+`flashcards_chapter_2.json`
+
+`flashcards_chapter_3.json`
+
+and also as a combined file:
+
+`flashcards.json`
+
+The frontend flashcard panel supports:
+
+- card flipping
+- previous/next navigation
+- Again
+- Hard
+- Good
+- Easy
+- reviewed count
+- mastery statistics
+
+Several major bugs were discovered.
+
+### Bug 1 — Flashcard Stage Indentation
+
+The flashcard generation stage had accidentally been placed inside the assessment exception path.
+
+This meant flashcards could run only when assessment generation failed.
+
+The indentation was corrected so flashcards execute after assessment generation.
+
+### Bug 2 — Wrong Output Directory
+
+The flashcard script originally relied on global paths:
+
+`outputs/assessment`
+
+`outputs/flashcards`
+
+This caused it to read assessment data from the default lecture.
+
+The result was especially visible when a four-chapter lecture generated flashcards for six chapters from an old Segment Tree lecture.
+
+The fix introduced lecture-specific output directory handling.
+
+The flashcard generator now uses:
+
+`outputs/{lecture_id}/assessment`
+
+and writes to:
+
+`outputs/{lecture_id}/flashcards`
+
+### Bug 3 — Fragile Subprocess Execution
+
+Subprocess execution introduced additional problems:
+
+- output directory propagation
+- hidden stderr
+- hidden stdout
+- ignored non-zero exit codes
+- interpreter ambiguity
+
+The architecture was changed toward direct inline execution with explicit lecture-specific module paths.
+
+This made flashcard generation significantly more predictable.
+
+---
+
+# 12. Per-Lecture AI Tutor
+
+The AI Tutor was upgraded for multi-lecture isolation.
+
+Each lecture now receives its own retrieval environment.
+
+Tutor data is stored under:
+
+`outputs/{lecture_id}/tutor/`
+
+This includes lecture-specific ChromaDB collections and conversation state.
+
+The tutor can retrieve from:
+
+- study notes
+- chapter content
+- screenshot explanations
+
+This prevents questions about one lecture from retrieving knowledge from another.
+
+---
+
+# 13. Tutor Index Generation
+
+Tutor indexing was moved directly into the orchestrator.
+
+The pipeline reads generated study notes and creates retrieval chunks.
+
+Each chunk contains metadata such as:
+
+- heading
+- heading path
+- chapter ID
+- source
+
+The chunks are embedded and stored in a persistent ChromaDB collection.
+
+Collection:
+
+`norai_notes`
+
+This allows the tutor to retrieve semantically relevant lecture material.
+
+---
+
+# 14. Screenshot Retrieval Index
+
+A separate screenshot caption index was introduced.
+
+Selected screenshots contain metadata such as:
+
+- image path
+- section
+- reason
+- importance
+- chapter ID
+
+These screenshot descriptions are embedded into ChromaDB.
+
+Collection:
+
+`screenshot_captions`
+
+This allows the tutor to retrieve visual lecture evidence when answering questions.
+
+The result is a more multimodal tutoring system where screenshots remain first-class knowledge sources.
+
+---
+
+# 15. Per-Lecture Conversation Threads
+
+Conversation threads were isolated by lecture.
+
+Previously, thread state could leak between lectures because localStorage keys were global.
+
+The frontend was updated to scope thread keys using the lecture ID.
+
+Conceptually:
+
+`threads-{lectureId}`
+
+instead of:
+
+`threads`
+
+This prevents:
+
+- old conversations appearing in new lectures
+- thread duplication
+- cross-lecture state leakage
+
+Additional guards were added to avoid loading threads before the active lecture ID was initialized.
+
+---
+
+# 16. Highlight & Ask
+
+A cross-panel interaction feature was integrated.
+
+Users can:
+
+1. select text inside study material
+2. activate Highlight & Ask
+3. send the selected context to the AI Tutor
+4. receive an explanation grounded in the selected material
+
+This improved the relationship between static generated content and interactive tutoring.
+
+Instead of manually copying text into chat, the user can directly ask questions about highlighted material.
+
+---
+
+# 17. Search and Navigation
+
+Search functionality was integrated into the document panel.
+
+Users can search within generated educational content while switching between:
+
+- Study Notes
+- Revision
+- Assessment
+
+This improved navigation across long generated lectures.
+
+---
+
+# 18. Screenshot Rendering and PDF Fixes
+
+The PDF system went through several architectural changes.
+
+Initially, PDFs were generated server-side using Playwright.
+
+The flow was:
+
+> Python → Playwright → Vite Print Page → PDF
+
+This created several reliability issues:
+
+- Vite connection failures
+- Playwright timeout
+- duplicated API requests
+- screenshot loading races
+- dynamic chapter count problems
+
+The system was changed to on-demand browser-native printing.
+
+The PrintPage renders the same React educational layouts and automatically triggers:
+
+`window.print()`
+
+This reduced dependency on headless browser infrastructure.
+
+---
+
+# 19. Dynamic PDF Chapter Count
+
+The print page originally assumed every lecture had six chapters:
+
+`Array.from({ length: 6 })`
+
+This caused four-chapter lectures to display:
+
+- Chapter 5
+- Chapter 6
+
+even when those chapters did not exist.
+
+The fix introduced dynamic chapter count retrieval from:
+
+`/outline?lecture_id={lectureId}`
+
+The actual chapter count is now derived from:
+
+`data.chapters.length`
+
+This ensures the generated print document matches the real lecture structure.
+
+---
+
+# 20. Screenshot Loading in Print Mode
+
+Another PDF bug occurred where:
+
+- screenshot captions appeared
+- screenshot cards appeared
+- some actual images were missing
+
+The screenshots existed correctly in the backend.
+
+The problem involved lecture context and image loading behavior.
+
+The PrintPage was updated to synchronize the lecture ID with the lecture store:
+
+`setActiveLecture(lectureId)`
+
+The screenshot component was also configured for print rendering with:
+
+- expanded screenshot sections
+- eager image loading
+
+This allowed all chapter screenshots to appear correctly in the final printed document.
+
+---
+
+# 21. Visual Knowledge JSON Reliability
+
+During visual understanding, Gemini occasionally returned malformed JSON.
+
+Example failures included:
+
+`Expecting ',' delimiter`
+
+The model response often contained valid-looking structured data but invalid escaping inside fields such as:
+
+- OCR text
+- code snippets
+- quoted strings
+
+The visual extraction pipeline already included retry logic.
+
+Example:
+
+- attempt 1
+- attempt 2
+- attempt 3
+- attempt 4
+- attempt 5
+
+This allowed transient malformed outputs to be retried instead of immediately destroying the pipeline.
+
+The issue highlighted the importance of defensive parsing when LLM-generated JSON contains:
+
+- source code
+- escaped quotes
+- multiline OCR
+- backslashes
+
+---
+
+# 22. Pipeline Failure Isolation
+
+One of the major reliability improvements was wrapping later pipeline stages in independent error handling.
+
+Examples include:
+
+- visual understanding
+- knowledge merging
+- outline generation
+- chapter building
+- study notes
+- screenshot selection
+- revision notes
+- assessment
+- flashcards
+- tutor indexing
+- screenshot indexing
+
+Instead of one failure terminating the entire lecture processing run, recoverable stages can log the failure and continue.
+
+This was essential because a multimodal AI pipeline contains many external failure points:
+
+- model API instability
+- malformed JSON
+- rate limits
+- missing screenshots
+- incomplete generated artifacts
+- file-system inconsistencies
+
+---
+
+# 23. Missing Visual Object Fallback
+
+The knowledge merger originally assumed every chunk had visual knowledge.
+
+This was incorrect.
+
+Some transcript chunks naturally have:
+
+- no relevant screenshot
+- no selected frame
+- no visual object
+
+The merger was updated with a fallback path for chunks without visual information.
+
+This ensures textual knowledge is still preserved and merged even when no screenshot exists.
+
+---
+
+# 24. Chapter ID Normalization
+
+The outline generation model occasionally returned non-sequential chapter IDs such as:
+
+`0, 2, 5, 7, 9, 10`
+
+This broke downstream assumptions.
+
+After outline generation, chapters are now normalized to:
+
+`1, 2, 3, ..., N`
+
+This provides stable chapter identifiers across:
+
+- notes
+- revision
+- assessment
+- flashcards
+- screenshots
+- frontend navigation
+- tutor metadata
+
+---
+
+# 25. Missing Chapter Guards
+
+Several content generators originally assumed all expected chapter files existed.
+
+This caused crashes when a chapter was missing.
+
+Guards were added to:
+
+- notes generation
+- revision generation
+- assessment generation
+
+The pipeline now checks for file existence before processing.
+
+This significantly improved resilience when an earlier stage produces incomplete output.
+
+---
+
+# 26. Model Stability Changes
+
+Gemma 4 produced repeated server-side failures during several pipeline stages.
+
+Frequent errors included HTTP 500 responses.
+
+To improve stability, high-volume pipeline stages were migrated toward:
+
+`gemini-3.1-flash-lite-preview`
+
+This reduced repeated failures and improved pipeline completion reliability.
+
+The project also adopted controlled model selection based on workload characteristics.
+
+---
+
+# 27. Rate Limiting Improvements
+
+Parallel AI calls occasionally produced rate-limit failures.
+
+The pipeline uses controlled concurrency and shared rate limiters.
+
+The maximum call threshold was reduced:
+
+`13 → 12`
+
+This created a small safety margin below provider limits.
+
+The change improved reliability across:
+
+- extraction
+- visual processing
+- content generation
+- assessment
+- flashcards
+
+---
+
+# 28. Frontend Toast Fix
+
+Toast notifications were not consistently visible.
+
+The root cause was component placement.
+
+`<ToastContainer />`
+
+had been rendered inside routing structure where it was not guaranteed to exist on every page.
+
+It was moved outside `<Routes>`.
+
+This ensured global toast availability.
+
+---
+
+# 29. Thread Duplication Guards
+
+The conversation system occasionally produced:
+
+- duplicate threads
+- ghost threads
+- old lecture threads
+- repeated thread loading
+
+One root cause was thread loading occurring before the lecture store had initialized.
+
+Additional guards were introduced:
+
+- skip loading when `activeLectureId` is missing
+- prevent duplicate in-flight thread requests
+- scope localStorage by lecture ID
+
+This improved thread isolation, although some thread-system issues remain for future work.
+
+---
+
+# 30. Final Week 12 Architecture
+
+By the end of Week 12, NorAI had evolved into a complete full-stack multimodal learning platform.
+
+Final flow:
+
+> User submits lecture  
+> ↓  
+> Backend creates unique lecture ID  
+> ↓  
+> Pipeline runs in background  
+> ↓  
+> Frontend polls live progress  
+> ↓  
+> Video is transcribed  
+> ↓  
+> Transcript is chunked  
+> ↓  
+> Knowledge is extracted  
+> ↓  
+> Frames and scenes are analyzed  
+> ↓  
+> Visual and textual knowledge are merged  
+> ↓  
+> Lecture outline is generated  
+> ↓  
+> Chapters are built  
+> ↓  
+> Study notes are generated  
+> ↓  
+> Screenshots are selected  
+> ↓  
+> Revision notes are generated  
+> ↓  
+> Assessment is created  
+> ↓  
+> Flashcards are generated  
+> ↓  
+> Tutor retrieval index is built  
+> ↓  
+> Screenshot retrieval index is built  
+> ↓  
+> Workspace becomes available  
+> ↓  
+> User studies with notes, revision, quiz, flashcards, screenshots, and AI Tutor
+
+---
+
+# Key Technical Achievements
+
+- Built complete FastAPI integration layer
+- Automated the full 18-stage lecture pipeline
+- Added background processing for long-running workloads
+- Implemented live progress tracking
+- Migrated from SSE to polling for reliability
+- Added multi-lecture architecture
+- Added per-lecture filesystem isolation
+- Added lecture registry
+- Added dynamic workspace routing
+- Replaced static chapter mocks with live outline data
+- Added lecture-aware notes and revision views
+- Added lecture-aware assessments
+- Added lecture-aware flashcards
+- Added per-lecture ChromaDB indexes
+- Added per-lecture LangGraph state
+- Added screenshot retrieval index
+- Added cross-panel Highlight & Ask
+- Added dynamic print layouts
+- Added browser-native PDF generation
+- Fixed dynamic chapter counts
+- Fixed screenshot rendering in PDFs
+- Added pipeline failure isolation
+- Added malformed LLM JSON retry handling
+- Added chapter ID normalization
+- Added missing chapter guards
+- Improved API rate limiting
+- Improved thread isolation
+- Fixed global toast rendering
+
+---
+
+# Major Engineering Lessons
+
+## 1. Async Does Not Mean Non-Blocking
+
+Declaring a function with:
+
+`async def`
+
+does not make synchronous operations asynchronous.
+
+Blocking workloads such as:
+
+- FFmpeg
+- Whisper
+- synchronous model clients
+- CPU-heavy processing
+
+must be isolated from the FastAPI request loop.
+
+---
+
+## 2. Per-Lecture Isolation Must Exist Everywhere
+
+It is not enough to isolate only files.
+
+Lecture identity must propagate through:
+
+- URLs
+- API requests
+- Zustand stores
+- localStorage
+- ChromaDB
+- SQLite
+- screenshots
+- assessments
+- flashcards
+- tutor threads
+
+A single forgotten `default` value can cause cross-lecture data leakage.
+
+---
+
+## 3. Long AI Pipelines Need Failure Isolation
+
+A multimodal pipeline should not fail completely because one optional stage fails.
+
+Each recoverable stage should:
+
+- catch errors
+- log failures
+- preserve previous artifacts
+- continue when safe
+
+---
+
+## 4. Subprocesses Add Hidden Complexity
+
+`subprocess.run()` can introduce:
+
+- interpreter mismatches
+- ignored exit codes
+- hidden stderr
+- hidden stdout
+- environment differences
+- path propagation bugs
+
+Direct Python integration is often safer for internal pipeline stages.
+
+---
+
+## 5. LLM JSON Must Never Be Trusted Blindly
+
+Even when explicitly instructed to return JSON, models can produce:
+
+- invalid escaping
+- malformed code strings
+- missing commas
+- truncated objects
+
+Retries, validation, and defensive parsing are necessary.
+
+---
+
+## 6. Frontend State Must Follow Routing State
+
+Changing only a global store is insufficient for multi-lecture navigation.
+
+The route itself should encode lecture identity:
+
+`/workspace/{lectureId}`
+
+This improves:
+
+- refresh behavior
+- deep linking
+- navigation consistency
+- debugging
+
+---
+
+# Week 12 Result
+
+Week 12 transformed NorAI from a collection of powerful AI modules into a cohesive, lecture-aware, full-stack learning platform.
+
+The system now supports:
+
+- automated lecture ingestion
+- multimodal knowledge extraction
+- dynamic chapter generation
+- rich study notes
+- revision notes
+- assessments
+- flashcards
+- screenshot-grounded learning
+- persistent AI tutoring
+- multi-lecture switching
+- live processing progress
+- lecture-specific retrieval
+- on-demand printable documents
+
+The most important achievement was not a single feature.
+
+It was the architectural transition from:
+
+> Independent AI scripts and frontend prototypes
+
+to:
+
+> A unified end-to-end multimodal educational platform.
+
+---
+
+## Status
+
+**Week 12: Completed**
+
+**Current Version:** NorAI v1.2
+
+**Platform State:** Stable end-to-end multimodal learning workflow with remaining improvements focused on thread UX, dynamic quiz refresh, mobile responsiveness, authentication, and production deployment.
