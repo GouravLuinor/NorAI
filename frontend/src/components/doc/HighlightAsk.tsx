@@ -78,8 +78,9 @@ export function HighlightAsk() {
     clearSelection()
 
     // Add user message
+    const userMsgId = genId()
     addMessage({
-      id: genId(),
+      id: userMsgId,
       role: 'user',
       content: question,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -96,7 +97,7 @@ export function HighlightAsk() {
         useThreadStore.getState().threadId,
         question,
         '',
-        { lectureId }
+        { lectureId, messageId: userMsgId }
       )
 
       // ── Build references from the response ──────────────────────────────
@@ -126,11 +127,25 @@ export function HighlightAsk() {
       useThreadStore.getState().setLiveReferences(refs)
 
       const cleanAnswer = data.answer.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
-      addMessage({
-        id: genId(),
-        role: 'assistant',
-        content: cleanAnswer,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+
+      // RC-FIX2: Atomic dedup — same guard as ChatArea.
+      // If loadThreadMessages already injected this response from the backend
+      // checkpoint, skip the append to avoid duplicates.
+      useThreadStore.setState((s) => {
+        if (s.messages.some(m => m.role === 'assistant' && m.content === cleanAnswer)) {
+          return {}
+        }
+        const assistantMsg = {
+          id: data.assistant_message_id || genId(),
+          role: 'assistant' as const,
+          content: cleanAnswer,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        }
+        const messages = [...s.messages, assistantMsg]
+        return {
+          messages,
+          _messagesCache: { ...s._messagesCache, [s.threadId]: messages },
+        }
       })
     } catch {
       addMessage({

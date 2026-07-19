@@ -21,19 +21,16 @@ export function ChapterScreenshots({
 }) {
   const [open, setOpen] = useState(startExpanded)
   const [screenshots, setScreenshots] = useState<Screenshot[]>([])
-  const [loading, setLoading] = useState(false)
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
 
   const lectureId = useLectureStore(s => s.activeLectureId) || 'default' 
 
   useEffect(() => {
     if (!chapterId) return
-    setLoading(true)
     fetch(`/screenshots/${chapterId}?lecture_id=${lectureId}`) 
       .then((res) => res.json())
       .then((data) => setScreenshots(data))
       .catch(() => setScreenshots([]))
-      .finally(() => setLoading(false))
   }, [chapterId, lectureId])  
 
   if (!screenshots.length) return null

@@ -79,6 +79,7 @@ def invoke_tutor(
     user_question: str,
     lecture_title: str = "",
     lecture_id: str | None = None,
+    message_id: str | None = None,
 ) -> dict:
     """
     Invoke the tutor graph for a single turn.
@@ -106,14 +107,57 @@ def invoke_tutor(
         input_state: dict = {
             "thread_id": thread_id,
             "user_question": user_question,
+            "message_id": message_id,
         }
         if is_new and lecture_title:
             input_state["lecture_title"] = lecture_title
 
+        # Deduplication check: if the last human message is identical to the current 
+        # question, and an AI response follows it, skip the graph and return the cached answer.
+        from langchain_core.messages import HumanMessage, AIMessage
+        if not is_new and snapshot and snapshot.values:
+            messages = snapshot.values.get("messages", [])
+            # Find the last human message
+            last_human = next((m for m in reversed(messages) if isinstance(m, HumanMessage)), None)
+            if last_human and last_human.content.strip() == user_question.strip():
+                # Check if there is an AI response after it
+                last_ai = next((m for m in reversed(messages) if isinstance(m, AIMessage)), None)
+                if last_ai and messages.index(last_ai) > messages.index(last_human):
+                    return {
+                        "answer":            last_ai.content,
+                        "assistant_message_id": last_ai.id,
+                        "retrieved_chunks":  snapshot.values.get("retrieved_chunks", []),
+                        "retrieved_images":  snapshot.values.get("retrieved_images", []),
+                        "chapter_id":        snapshot.values.get("chapter_id"),
+                        "thread_id":         thread_id,
+                    }
+
+        # Phase 3: Prevent Zombie Thread Resurrections
+        # Verify the thread hasn't been deleted while we were waiting in the queue.
+        db_path = get_lecture_db_path(lecture_id) if lecture_id else CHECKPOINT_DB_PATH
+        try:
+            conn = sqlite3.connect(str(db_path), timeout=5.0)
+            if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user_threads'").fetchone():
+                if not conn.execute("SELECT 1 FROM user_threads WHERE thread_id = ?", (thread_id,)).fetchone():
+                    conn.close()
+                    raise ValueError(f"Thread {thread_id} was deleted.")
+            conn.close()
+        except sqlite3.OperationalError:
+            pass  # If DB is locked, we'll let LangGraph handle it
+
         result = graph.invoke(input_state, config)
+
+        messages = result.get("messages", [])
+        assistant_message_id = None
+        if messages:
+            from langchain_core.messages import AIMessage
+            last_ai = next((m for m in reversed(messages) if isinstance(m, AIMessage)), None)
+            if last_ai:
+                assistant_message_id = last_ai.id
 
         return {
             "answer":            result.get("answer", ""),
+            "assistant_message_id": assistant_message_id,
             "retrieved_chunks":  result.get("retrieved_chunks", []),
             "retrieved_images":  result.get("retrieved_images", []),
             "chapter_id":        result.get("chapter_id"),

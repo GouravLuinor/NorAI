@@ -184,20 +184,19 @@ const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}
 // ---------------------------------------------------------------------------
 // Initial seed
 // ---------------------------------------------------------------------------
-
-const _seedThreads = getPersistedThreads()
-// RC-C: use the LAST (most recent) thread as the active one
-const _seedThreadId = _seedThreads.length > 0
-  ? _seedThreads[_seedThreads.length - 1]
-  : 'default'
+// RC-FIX: Do NOT read localStorage at import time.
+// activeLectureId is null at this point, so getPersistedThreads() would read
+// from the 'default' scope and pull stale threads from old lectures.
+// loadThreads() is the sole initialiser — called once activeLectureId is set.
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
 
 export const useThreadStore = create<ThreadState>((set, get) => ({
-  threadId: _seedThreadId,
-  threads:  _seedThreads.length > 0 ? _seedThreads : ['default'],
+  threadId: 'default',
+  threads:  ['default'],
   messages: [],
   isLoading: false,
   streamingText: '',
@@ -216,7 +215,8 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
 
     const cached = get()._messagesCache[id] ?? []
     // RC-D: restore cached messages instantly (no flash to empty state)
-    set({ threadId: id, messages: cached, isLoading: cached.length === 0 })
+    // Fix: clear liveReferences so sources from previous thread don't persist
+    set({ threadId: id, messages: cached, isLoading: cached.length === 0, liveReferences: [] })
   },
 
   addMessage: (msg) =>
@@ -228,17 +228,15 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
       }
     }),
 
+  // RC-FIX: setMessages is a full REPLACEMENT, not an append.
+  // The only caller is loadThreadMessages which already has the complete list.
+  // Append-with-dedup was causing duplicates when backend data overlapped
+  // with optimistically-inserted messages.
   setMessages: (msgs) =>
-    set((s) => {
-      // Deduplicate by content — never add the same message twice
-      const existingContents = new Set(s.messages.map(m => m.content))
-      const unique = msgs.filter(m => !existingContents.has(m.content))
-      const all = [...s.messages, ...unique]
-      return {
-        messages: all,
-        _messagesCache: { ...s._messagesCache, [s.threadId]: all },
-      }
-    }),
+    set((s) => ({
+      messages: msgs,
+      _messagesCache: { ...s._messagesCache, [s.threadId]: msgs },
+    })),
 
   setLoading: (loading) => set({ isLoading: loading }),
   setLiveReferences: (refs) => set({ liveReferences: refs }),   // ← add this line
@@ -258,31 +256,32 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
 loadThreads: async () => {
     if (_loadThreadsInFlight) return
     _loadThreadsInFlight = true
-    
+
     try {
-      console.log('🔍 lecture_id being sent:', getLectureId())
-      const data = await apiFetch<{ threads: string[] }>(`/threads?lecture_id=${getLectureId()}`)
+      const lectureId = getLectureId()
+      const data = await apiFetch<{ threads: string[] }>(`/threads?lecture_id=${lectureId}`)
 
       let threads: string[] = data?.threads ?? []
 
-      console.log('🔍 loadThreads called. Backend returned:', threads)
-
       if (threads.length === 0) {
         const local = getPersistedThreads()
-        console.log('🔍 localStorage fallback:', local)
         threads = local.length > 0 ? local : ['default']
       }
 
-      console.log('🔍 Final threads to set:', threads)
-      // ... rest unchanged
+      threads.forEach((id) => getOrCreateLabel(id))
+      persistThreads(threads)
 
-        threads.forEach((id) => getOrCreateLabel(id))
-        persistThreads(threads)
-        set({ threads })
-      } finally {
-        _loadThreadsInFlight = false
-      }
-    },
+      // Set the active thread to the most recent one if current is stale
+      const current = get().threadId
+      const threadId = threads.includes(current)
+        ? current
+        : threads[threads.length - 1] || 'default'
+
+      set({ threads, threadId })
+    } finally {
+      _loadThreadsInFlight = false
+    }
+  },
 
   // -------------------------------------------------------------------------
   // RC-B: AbortController + generation counter.
@@ -300,7 +299,11 @@ loadThreads: async () => {
 
     set({ isLoading: true })
 
-    const data = await apiFetch<{ messages: { role: string; content: string }[] }>(
+    const data = await apiFetch<{ 
+      messages: any[];
+      last_retrieved_chunks?: any[];
+      last_retrieved_images?: any[];
+    }>(
       `/threads/${threadId}?lecture_id=${getLectureId()}`,
       { signal: controller.signal },
     )
@@ -310,18 +313,64 @@ loadThreads: async () => {
     // Drop if user switched away while fetching
     if (get().threadId !== threadId) return
 
-    const msgs: Message[] = (data?.messages ?? []).map((m) => ({
-      id: genId(),
+    const msgs: Message[] = (data?.messages ?? []).map((m: any) => ({
+      id: m.id || genId(),
       role: m.role as 'user' | 'assistant',
       content: m.content,
       timestamp: '',
     }))
 
-    set((s) => ({
-      messages: msgs,
-      isLoading: false,
-      _messagesCache: { ...s._messagesCache, [threadId]: msgs },
-    }))
+    set((s) => {
+      // Phase 4: Cache resilience - merge incoming messages with optimistic UI messages
+      const existing = s._messagesCache[threadId] || []
+      const merged = [...msgs]
+      const backendIds = new Set(merged.map(m => m.id))
+      for (const msg of existing) {
+        if (!backendIds.has(msg.id)) {
+          merged.push(msg)
+        }
+      }
+
+      const isCurrentThread = s.threadId === threadId;
+      
+      let refs = s.liveReferences;
+      if (isCurrentThread) {
+        refs = [
+          ...(data?.last_retrieved_chunks ?? []).map((c: any) => {
+            const headingParts = (c.heading_path || '').split('>')
+            const leafHeading  = headingParts[headingParts.length - 1].trim()
+            const sectionId    = 'sec-' + leafHeading
+              .toLowerCase()
+              .replace(/[^a-z0-9\s-]/g, '')
+              .trim()
+              .replace(/\s+/g, '-')
+              .replace(/-+/g, '-')
+            return {
+              id: c.heading_path,
+              title: c.heading_path,
+              section: `Ch ${c.chapter_id}`,
+              sectionId,
+              chapterId: c.chapter_id,
+              type: 'note' as const,
+            }
+          }),
+          ...(data?.last_retrieved_images ?? []).map((img: any) => ({
+            id: img.path,
+            title: img.section,
+            section: img.path,
+            sectionId: '',
+            type: 'screenshot' as const,
+          })),
+        ];
+      }
+
+      return {
+        messages: isCurrentThread ? merged : s.messages,
+        liveReferences: refs,
+        isLoading: false,
+        _messagesCache: { ...s._messagesCache, [threadId]: merged },
+      }
+    })
   },
 
   // -------------------------------------------------------------------------
@@ -338,7 +387,11 @@ loadThreads: async () => {
     // RC-A: don't call loadThreadMessages here — new thread has no messages
     set({ threads: next, threadId, messages: [], isLoading: false })
 
-    apiFetch(`/threads?lecture_id=${getLectureId()}`, { method: 'POST' }).catch(() => {})
+    apiFetch(`/threads?lecture_id=${getLectureId()}`, { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ thread_id: threadId })
+    }).catch(() => {})
 
     return threadId
   },
@@ -391,8 +444,8 @@ export async function sendChatMessage(
   threadId: string,
   userQuestion: string,
   lectureTitle = '',
-  opts?: { lectureId?: string },
-): Promise<{ answer: string; retrieved_chunks: any[]; retrieved_images: any[] }> {
+  opts?: { lectureId?: string; messageId?: string },
+): Promise<{ answer: string; assistant_message_id?: string; retrieved_chunks: any[]; retrieved_images: any[] }> {
   const res = await fetch(`${API_BASE}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -401,6 +454,7 @@ export async function sendChatMessage(
       user_question: userQuestion,
       lecture_title: lectureTitle,
       lecture_id: opts?.lectureId || 'default',
+      message_id: opts?.messageId,
     }),
   })
   const ct = res.headers.get('content-type') || ''
@@ -418,6 +472,7 @@ export async function* sendChatMessageStream(
   userQuestion: string,
   lectureTitle = '',
   signal?: AbortSignal,
+  opts?: { messageId?: string },
 ): AsyncGenerator<string | { type: 'final'; data: any }> {
   const res = await fetch(`${API_BASE}/chat/stream`, {
     method: 'POST',
@@ -427,6 +482,7 @@ export async function* sendChatMessageStream(
       user_question: userQuestion,
       lecture_title: lectureTitle,
       lecture_id: useLectureStore.getState().activeLectureId || 'default',
+      message_id: opts?.messageId,
     }),
     signal,
   })

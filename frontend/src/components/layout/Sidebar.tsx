@@ -30,28 +30,36 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
   const lectures            = useLectureStore(s => s.lectures)
   const activeLectureId     = useLectureStore(s => s.activeLectureId)
   const chapters         = useChapterStore(s => s.chapters)           // ← add
-  const loadChapters     = useChapterStore(s => s.loadChapters) 
   const setActiveLecture    = useLectureStore(s => s.setActiveLecture)
   const loadLectures        = useLectureStore(s => s.loadLectures)
   const navigate = useNavigate()
 
-  const initialLoadDone = useRef(false)
+  const switchCooldownRef = useRef(false)
 
   useEffect(() => {
-    if (!activeLectureId || activeLectureId === 'default') return 
+    if (!activeLectureId || activeLectureId === 'default') return
+    let active = true
     loadThreads().then(() => {
-      const active = useThreadStore.getState().threadId
-      if (active && active !== 'default') {
-        loadThreadMessages(active)
+      if (!active) return
+      const current = useThreadStore.getState().threadId
+      if (current && current !== 'default') {
+        loadThreadMessages(current)
       }
     })
     loadLectures()
+    // RC-FIX: cleanup flag prevents stale promise callbacks in Strict Mode
+    return () => { active = false }
   }, [activeLectureId])
 
+  // RC-FIX: Debounce rapid thread clicks to prevent overlapping
+  // setThreadId + loadThreadMessages calls that cause layout glitch (Bug 5)
   const handleThreadClick = useCallback((id: string) => {
+    if (switchCooldownRef.current || id === threadId) return
+    switchCooldownRef.current = true
     setThreadId(id)
     loadThreadMessages(id)
-  }, [setThreadId, loadThreadMessages])
+    setTimeout(() => { switchCooldownRef.current = false }, 300)
+  }, [setThreadId, loadThreadMessages, threadId])
 
   // FIX: only call onToggleCollapse — Workspace already toggles the store
   const handleCollapse = useCallback(() => {

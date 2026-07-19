@@ -12,9 +12,9 @@ ASSESSMENT_GLOB = "outputs/assessment/assessment_chapter_*.json"
 COMBINED_ASSESSMENT = "outputs/assessment/assessment.json"
 
 
-def start_quiz(chapter_id: Optional[int] = None) -> dict:
+def start_quiz(chapter_id: Optional[int] = None, output_dir: str = None) -> dict:
     """Prepare a quiz – sets state, the existing quiz loop takes over."""
-    questions = _load_questions(chapter_id)
+    questions = _load_questions(chapter_id, output_dir)
     if not questions:
         return {"error": "No questions found for this chapter."}
 
@@ -33,17 +33,18 @@ def start_quiz(chapter_id: Optional[int] = None) -> dict:
     }
 
 
-def show_summary(chapter_id: int) -> str:
+def show_summary(chapter_id: int, output_dir: str = None) -> str:
     """Return the pre‑made revision summary for a chapter."""
-    path = Path(f"outputs/revision/revision_chapter_{chapter_id}.md")
+    base = Path(output_dir) if output_dir else Path("outputs")
+    path = base / "revision" / f"revision_chapter_{chapter_id}.md"
     if path.exists():
         return path.read_text(encoding="utf-8")
     return f"No summary available for chapter {chapter_id}."
 
 
-def show_flashcards(chapter_id: Optional[int] = None) -> str:
+def show_flashcards(chapter_id: Optional[int] = None, output_dir: str = None) -> str:
     """Generate a set of flashcards from assessment data."""
-    questions = _load_questions(chapter_id)
+    questions = _load_questions(chapter_id, output_dir)
     if not questions:
         return "I couldn't find any questions to make flashcards from."
 
@@ -60,14 +61,15 @@ def show_flashcards(chapter_id: Optional[int] = None) -> str:
     return "\n".join(lines)
 
 
-def _load_questions(chapter_id: Optional[int]) -> list[dict]:
+def _load_questions(chapter_id: Optional[int], output_dir: str = None) -> list[dict]:
     """Load assessment questions, optionally filtered by chapter."""
+    base = Path(output_dir) if output_dir else Path("outputs")
     if chapter_id is not None:
-        path = Path(f"outputs/assessment/assessment_chapter_{chapter_id}.json")
+        path = base / "assessment" / f"assessment_chapter_{chapter_id}.json"
         if path.exists():
             with open(path) as f:
                 return json.load(f)
-    combined = Path(COMBINED_ASSESSMENT)
+    combined = base / "assessment" / "assessment.json"
     if combined.exists():
         with open(combined) as f:
             all_qs = json.load(f)

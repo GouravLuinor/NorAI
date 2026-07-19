@@ -136,11 +136,19 @@ html, body, #root {
 }
 
 @media print {
+  html, body, #root {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    width: auto !important;
+  }
   .print-document {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     background: var(--color-nb) !important;
     color: var(--color-nt) !important;
+    height: auto !important;
+    overflow: visible !important;
   }
   .print-chapter {
     break-before: page;

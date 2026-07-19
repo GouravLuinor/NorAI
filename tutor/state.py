@@ -78,6 +78,8 @@ class ChatState(TypedDict):
 
     # ── Current-turn scratch space ───────────────────────────────────────
     user_question: str
+    search_query: str | None
+    message_id: str | None
     retrieved_chunks: list
     retrieved_images: list
     answer: str

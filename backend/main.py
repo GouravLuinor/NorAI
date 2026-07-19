@@ -17,6 +17,7 @@ import asyncio
 import json as json_lib
 import random
 import uuid
+import re
 from backend.orchestrator import run_pipeline, get_or_create_task_sync
 from contextlib import contextmanager
 from pathlib import Path
@@ -25,7 +26,7 @@ from backend.dependencies import get_lecture_db_path, _get_or_create_lecture_gra
 import sqlite3
 import time
 import threading
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -66,7 +67,7 @@ app.add_middleware(
 def _db():
     """Yield a short-lived SQLite connection and commit/close on exit."""
     CHECKPOINT_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(CHECKPOINT_DB_PATH))
+    conn = sqlite3.connect(str(CHECKPOINT_DB_PATH), timeout=10.0)
     try:
         yield conn
         conn.commit()
@@ -116,11 +117,15 @@ def _get_all_thread_ids() -> list[str]:
 # Request / Response models
 # ---------------------------------------------------------------------------
 
+class CreateThreadRequest(BaseModel):
+    thread_id: str | None = None
+
 class ChatRequest(BaseModel):
     thread_id: str
     user_question: str
     lecture_title: str = ""
     lecture_id: str | None = None   # ← new field
+    message_id: str | None = None
 
 class ChatResponse(BaseModel):
     answer: str
@@ -151,11 +156,13 @@ class QuizEvaluateRequest(BaseModel):
 @app.post("/chat")
 async def chat(req: ChatRequest):
     try:
-        result = invoke_tutor(
+        result = await asyncio.to_thread(
+            invoke_tutor,
             thread_id=req.thread_id,
             user_question=req.user_question,
             lecture_title=req.lecture_title,
             lecture_id=req.lecture_id,
+            message_id=req.message_id,
         )
         return result
     except Exception as e:
@@ -168,11 +175,13 @@ async def chat(req: ChatRequest):
 async def chat_stream(req: ChatRequest):
     async def event_generator():
         try:
-            result = invoke_tutor(
+            result = await asyncio.to_thread(
+                invoke_tutor,
                 thread_id=req.thread_id,
                 user_question=req.user_question,
                 lecture_title=req.lecture_title,
                 lecture_id=req.lecture_id,        # ← added
+                message_id=req.message_id,
             )
             answer = result.get("answer", "")
             for ch in answer:
@@ -180,6 +189,7 @@ async def chat_stream(req: ChatRequest):
                 await asyncio.sleep(0.015)
 
             final_data = {
+                "assistant_message_id": result.get("assistant_message_id"),
                 "retrieved_chunks": result.get("retrieved_chunks", []),
                 "retrieved_images": result.get("retrieved_images", []),
                 "chapter_id": result.get("chapter_id"),
@@ -209,18 +219,24 @@ async def list_threads(lecture_id: str = "default"):
 
     threads = set()
     try:
-        conn = sqlite3.connect(str(db_path))
-        # 1) user_threads table (explicitly created threads)
+        conn = sqlite3.connect(str(db_path), timeout=10.0)
+        # 1) Auto-migrate old threads: check if a checkpoint has HumanMessage
         try:
             conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
-            for row in conn.execute("SELECT thread_id FROM user_threads"):
-                if row[0]:
-                    threads.add(row[0])
+            cursor = conn.execute("SELECT thread_id, checkpoint FROM checkpoints")
+            rows = cursor.fetchall()
+            for row in rows:
+                tid = row[0]
+                chk = row[1]
+                if isinstance(chk, bytes) and b"HumanMessage" in chk:
+                    conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (tid,))
+            conn.commit()
         except Exception:
             pass
-        # 2) LangGraph checkpoints
+            
+        # 2) user_threads table (explicitly created or migrated user threads)
         try:
-            for row in conn.execute("SELECT DISTINCT thread_id FROM checkpoints"):
+            for row in conn.execute("SELECT thread_id FROM user_threads"):
                 if row[0]:
                     threads.add(row[0])
         except Exception:
@@ -233,13 +249,20 @@ async def list_threads(lecture_id: str = "default"):
 
 
 @app.post("/threads")
-async def create_thread_endpoint(lecture_id: str = "default"):
+async def create_thread_endpoint(request: Request, lecture_id: str = "default"):
     """Create a new conversation thread in a lecture."""
-    thread_id = f"thread-{int(time.time() * 1000)}"
+    thread_id = None
+    try:
+        body = await request.json()
+        thread_id = body.get("thread_id")
+    except Exception:
+        pass
+    if not thread_id:
+        thread_id = f"thread-{int(time.time() * 1000)}"
     db_path = get_lecture_db_path(lecture_id)
     db_path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        conn = sqlite3.connect(str(db_path))
+        conn = sqlite3.connect(str(db_path), timeout=10.0)
         conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
         conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (thread_id,))
         conn.commit()
@@ -261,11 +284,26 @@ async def get_thread(thread_id: str, lecture_id: str = "default"):
 
         result = []
         for msg in snapshot.values.get("messages", []):
+            role = "user" if msg.__class__.__name__ == "HumanMessage" else "assistant"
+            content = msg.content
+            if role == "assistant":
+                content = re.sub(r'\*\*Sources\*\*[\s\S]*$', '', content).strip()
+                
             result.append({
-                "role": "user" if msg.__class__.__name__ == "HumanMessage" else "assistant",
-                "content": msg.content,
+                "id": msg.id,
+                "role": role,
+                "content": content,
             })
-        return {"thread_id": thread_id, "messages": result}
+            
+        last_retrieved_chunks = snapshot.values.get("retrieved_chunks", [])
+        last_retrieved_images = snapshot.values.get("retrieved_images", [])
+            
+        return {
+            "thread_id": thread_id, 
+            "messages": result,
+            "last_retrieved_chunks": last_retrieved_chunks,
+            "last_retrieved_images": last_retrieved_images
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -276,7 +314,7 @@ async def delete_thread(thread_id: str, lecture_id: str = "default"):
     db_path = get_lecture_db_path(lecture_id)
     if db_path.exists():
         try:
-            conn = sqlite3.connect(str(db_path))
+            conn = sqlite3.connect(str(db_path), timeout=10.0)
             for table in ["checkpoints", "checkpoint_blobs", "checkpoint_writes", "user_threads"]:
                 try:
                     conn.execute(f"DELETE FROM {table} WHERE thread_id = ?", (thread_id,))

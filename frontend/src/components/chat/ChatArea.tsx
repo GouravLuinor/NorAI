@@ -34,6 +34,12 @@ export function ChatArea() {
   const activeThreadRef    = useRef(threadId)
   const abortControllerRef = useRef<AbortController | null>(null)
 
+  // RC-FIX: Keep activeThreadRef in sync so guards in handleSend
+  // always compare against the *current* thread, not the one at mount time.
+  useEffect(() => {
+    activeThreadRef.current = threadId
+  }, [threadId])
+
 const handleSend = useCallback(async (text: string) => {
     if (inFlightRef.current) return
     inFlightRef.current = true
@@ -56,7 +62,7 @@ const handleSend = useCallback(async (text: string) => {
 
     try {
       // 2. Get the full answer — lecture‑scoped
-      const data = await sendChatMessage(targetThreadId, text, '', { lectureId })
+      const data = await sendChatMessage(targetThreadId, text, '', { lectureId, messageId: userMsg.id })
 
       if (controller.signal.aborted) return
 
@@ -65,21 +71,34 @@ const handleSend = useCallback(async (text: string) => {
       // 3. Store assistant message under the ORIGINAL thread (targetThreadId),
       //    even if the user navigated away while waiting.
       const assistantMsg = {
-        id: genId(),
+        id: data.assistant_message_id || genId(),
         role: 'assistant' as const,
         content: cleanAnswer,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
 
-      const store = useThreadStore.getState()
-      const threadCache = store._messagesCache[targetThreadId] ?? []
-      const updatedCache = [...threadCache, userMsg, assistantMsg]
+      // RC-FIX2: Fully atomic read-check-write inside a single setState.
+      // This eliminates the race where loadThreadMessages could inject the
+      // same assistant message between a getState() snapshot and a separate
+      // setState() call, causing duplicates.
+      useThreadStore.setState((s) => {
+        const currentMessages = s.threadId === targetThreadId
+          ? s.messages
+          : (s._messagesCache[targetThreadId] ?? [])
 
-      // Update cache and, if user is still on this thread, visible messages
-      useThreadStore.setState((s) => ({
-        _messagesCache: { ...s._messagesCache, [targetThreadId]: updatedCache },
-        ...(s.threadId === targetThreadId ? { messages: updatedCache } : {}),
-      }))
+        // Guard: if loadThreadMessages already brought in this response
+        // (because the backend checkpoint was updated before we got here),
+        // skip the append to avoid a duplicate.
+        if (currentMessages.some(m => m.role === 'assistant' && m.content === cleanAnswer)) {
+          return {}
+        }
+
+        const updated = [...currentMessages, assistantMsg]
+        return {
+          _messagesCache: { ...s._messagesCache, [targetThreadId]: updated },
+          ...(s.threadId === targetThreadId ? { messages: updated } : {}),
+        }
+      })
 
       // 4. Build references (only show if still on the target thread)
       if (activeThreadRef.current === targetThreadId) {
@@ -123,10 +142,11 @@ const handleSend = useCallback(async (text: string) => {
         })
       }
     } finally {
-      if (activeThreadRef.current === targetThreadId) {
-        setLoading(false)
-        inFlightRef.current = false
-      }
+      // RC-FIX: Always clear loading and inflight state regardless of which
+      // thread is active. The old code guarded this behind activeThreadRef
+      // which could be stale, leaving the shimmer loader permanently visible.
+      setLoading(false)
+      inFlightRef.current = false
     }
   }, [threadId, addMessage, setLoading, lectureId])
 

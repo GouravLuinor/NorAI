@@ -135,10 +135,18 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
             for t in formatted
         ]
 
-        result = self._client.models.embed_content(
-            model=self._model,
-            contents=contents,
-            config=types.EmbedContentConfig(output_dimensionality=self._dims),
-        )
-
-        return [e.values for e in result.embeddings]
+        import time
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                result = self._client.models.embed_content(
+                    model=self._model,
+                    contents=contents,
+                    config=types.EmbedContentConfig(output_dimensionality=self._dims),
+                )
+                return [e.values for e in result.embeddings]
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise
+                # Exponential backoff: 2s, 4s, 8s...
+                time.sleep(2 ** (attempt + 1))

@@ -11,7 +11,7 @@ import { useLectureStore } from '../../stores/useLectureStore'
 export function AIPanel() {
   const { activeChapterId } = useChapterStore()
   const activeLectureId = useLectureStore(s => s.activeLectureId)
-  const { aiMode, setMode, startQuiz, reset } = useQuizStore()
+  const { aiMode, setMode, startQuiz } = useQuizStore()
   const addToast = useToastStore(s => s.addToast)
 
 useEffect(() => {

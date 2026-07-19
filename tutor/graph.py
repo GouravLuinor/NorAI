@@ -21,7 +21,8 @@ def build_graph(checkpointer, output_dir=None):
         lambda state, config: retrieve_node(state, config, output_dir))
     builder.add_node("generate_answer", generate_answer_node)
     builder.add_node("save_memory", save_memory_node)
-    builder.add_node("execute_command", execute_command)
+    builder.add_node("execute_command", 
+        lambda state, config: execute_command(state, config, output_dir))
 
     # Quiz nodes
     builder.add_node("quiz_ask", quiz_ask)
