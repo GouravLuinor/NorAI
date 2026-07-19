@@ -53,4 +53,16 @@ def get_lecture(lecture_id: str) -> Optional[dict]:
 
 
 def list_lectures() -> list[dict]:
-    return list(_load().values())
+    lectures = list(_load().values())
+    for lec in lectures:
+        outline_path = Path(lec.get("output_dir", "")) / "notes" / "lecture_outline.json"
+        if outline_path.exists():
+            try:
+                with open(outline_path, encoding="utf-8") as f:
+                    lec["chapter_count"] = len(json.load(f).get("chapters", []))
+            except Exception:
+                lec["chapter_count"] = 0
+        else:
+            lec["chapter_count"] = 0
+            
+    return sorted(lectures, key=lambda x: x.get("created_at", ""), reverse=True)

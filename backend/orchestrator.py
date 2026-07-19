@@ -369,6 +369,28 @@ def run_pipeline(
         except Exception as e:
             logger.error(f"Screenshot index failed (continuing): {e}")
 
+        # ── Stage 19: Cleanup Temporary Files ──────────────────────────────
+        update_progress_sync(task_id, "cleanup", "Cleaning up temporary files…", 99.5)
+        import shutil
+        from pathlib import Path
+
+        lecture_dir = Path(out)
+        if (lecture_dir / "notes").exists() and (lecture_dir / "tutor" / "chroma").exists():
+            temp_dirs = [
+                "videos", "audio", "screenshots/raw", "chunks", 
+                "objects", "visual_objects", "merged_objects", "mappings",
+                "metadata"
+            ]
+            for d in temp_dirs:
+                target = lecture_dir / d
+                if target.exists():
+                    try:
+                        shutil.rmtree(target)
+                    except Exception as e:
+                        logger.warning(f"Failed to delete intermediate directory {target}: {e}")
+        else:
+            logger.warning("Skipping cleanup: Final notes or tutor index missing. Keeping intermediates for debugging.")
+
         # ── Done ───────────────────────────────────────────────────────────
         mark_complete_sync(task_id)
 
