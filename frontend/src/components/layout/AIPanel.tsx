@@ -69,7 +69,7 @@ useEffect(() => {
                 (mode === 'tutor' && aiMode === 'tutor') ||
                 (mode === 'quiz' && aiMode === 'quiz') ||
                 (mode === 'cards' && aiMode === 'cards')
-                  ? 'bg-ns4 text-nt shadow-sm'
+                  ? 'bg-nt4/20 text-nt shadow-sm'
                   : 'text-nt3 hover:text-nt2'
               }`}
             >

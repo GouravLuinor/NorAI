@@ -172,7 +172,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           </ul>
         </div>
 
-        <div className="h-px bg-bdr mx-3.5" />
+        <div className="h-px bg-gradient-to-r from-transparent via-bdr to-transparent mx-3.5" />
 
         {/* Thread list */}
         <div className="flex-1 overflow-hidden px-3.5 py-3.5">
@@ -209,7 +209,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           ))}
         </div>
 
-        <div className="h-px bg-bdr mx-3.5" />
+        <div className="h-px bg-gradient-to-r from-transparent via-bdr to-transparent mx-3.5" />
 
         {/* Theme toggle */}
         <div className="px-3.5 pb-1.5">
@@ -220,7 +220,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
         <div className="p-3.5 pt-2.5">
           <button
             onClick={handleCreateThread}
-            className="w-full py-1.5 rounded-lg border border-bdr2 bg-transparent text-nt3 text-[11px] flex items-center justify-center gap-1.5 hover:bg-ns2 hover:text-nt2 hover:border-bdr2 transition active:scale-98"
+            className="w-full py-1.5 rounded-lg border border-bdr2 bg-transparent text-nt3 text-[11px] flex items-center justify-center gap-1.5 hover:bg-ns2 hover:text-nt2 hover:border-nt4 hover:shadow-sm transition active:scale-98"
           >
             <span className="text-xs">+</span> New thread
           </button>
