@@ -25,6 +25,7 @@ const STAGES: StageInfo[] = [
   { label: 'Creating assessment', key: 'assessment' },
   { label: 'Indexing for tutor', key: 'tutor_index' },
   { label: 'Indexing screenshots', key: 'screenshot_index' },
+  { label: 'Cleaning up', key: 'cleanup' },
 ]
 
 export function ProcessingPage() {
