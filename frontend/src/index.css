@@ -69,7 +69,7 @@ html, body, #root {
 }
 
 .animate-shimmer {
-  animation: shimmer 1.5s infinite linear;
+  animation: shimmer 2.2s infinite linear;
 }
 
 @keyframes scrollpulse {
