@@ -134,7 +134,7 @@ def retrieve_images_node(state: dict, config: RunnableConfig, output_dir=None) -
     from tutor.retrieval_config import CHROMA_DIR, SCREENSHOT_COLLECTION_NAME, TOP_K_IMAGES
     from tutor.embedding import GeminiEmbeddingFunction
     
-    query = state.get("user_question", "")
+    query = state.get("search_query") or state.get("user_question", "")
     
     # Use lecture-specific chroma dir if available
     chroma_dir = Path(output_dir) / "tutor" / "chroma" if output_dir else CHROMA_DIR
@@ -181,7 +181,7 @@ def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
     LangGraph node: rewrite state['user_question'] into a retrieval-optimised query.
 
     Reads:  state['user_question'], state['messages'] (recent history)
-    Writes: state['user_question'] (overwritten with the rewritten query)
+    Writes: state['search_query'] (the rewritten query)
             state['retrieved_chunks'] = []  (clear any stale chunks from prior turn)
     """
     question = state.get("user_question", "")
@@ -224,7 +224,7 @@ def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
         )
     except Exception as exc:
         logger.warning(f"rewrite_query_node: LLM init failed ({exc}), using raw question")
-        return {"user_question": question, "retrieved_chunks": []}
+        return {"search_query": question, "retrieved_chunks": []}
 
     try:
         response = llm.invoke(
@@ -239,11 +239,11 @@ def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
 
         if rewritten:
             logger.debug(f"Query rewrite: {question!r} → {rewritten!r}")
-            return {"user_question": rewritten, "retrieved_chunks": []}
+            return {"search_query": rewritten, "retrieved_chunks": []}
     except Exception as exc:
         logger.warning(f"rewrite_query_node: LLM call failed ({exc}), using raw question")
 
-    return {"user_question": question, "retrieved_chunks": []}
+    return {"search_query": question, "retrieved_chunks": []}
 
 
 def _get_model_from_config() -> str:
@@ -268,7 +268,7 @@ def retrieve_node(state: dict, config: RunnableConfig, output_dir=None) -> dict:
         question alone. Add chapter_id filtering here once we have a routing
         signal (e.g. the user says "in chapter 3...").
     """
-    question = state.get("user_question", "")
+    question = state.get("search_query") or state.get("user_question", "")
     if not question:
         logger.warning("retrieve_node: no user_question, returning empty chunks")
         return {"retrieved_chunks": []}

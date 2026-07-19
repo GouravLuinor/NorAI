@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Eye, EyeOff, Download, Play } from 'lucide-react'
+import { Eye, EyeOff, Play } from 'lucide-react'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore, fetchQuizQuestions } from '../../stores/useQuizStore'
 import { useLectureStore } from '../../stores/useLectureStore' 

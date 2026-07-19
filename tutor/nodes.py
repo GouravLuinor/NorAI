@@ -39,7 +39,7 @@ into a concise paragraph. Include:
 - The student's apparent level of understanding (if evident).
 Keep the summary factual and brief — no more than 5 sentences."""
 
-def chapter_summary_node(state: dict, config: RunnableConfig) -> dict:
+def chapter_summary_node(state: dict, config: RunnableConfig, output_dir: str = None) -> dict:
     """
     Load the pre-made revision summary for a chapter and return it as the answer.
 
@@ -59,7 +59,8 @@ def chapter_summary_node(state: dict, config: RunnableConfig) -> dict:
             "summary_requested": False,
         }
 
-    path = Path(f"outputs/revision/revision_chapter_{chapter_id}.md")
+    base = Path(output_dir) if output_dir else Path("outputs")
+    path = base / "revision" / f"revision_chapter_{chapter_id}.md"
     if not path.exists():
         msg = f"Sorry, I don't have a summary for chapter {chapter_id}."
         return {
@@ -208,10 +209,14 @@ def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
     # ── Update state ───────────────────────────────────────────────────────────
     # add_messages reducer appends both messages to the persisted list.
     # We do NOT store the SystemMessages — they're rebuilt from state each turn.
+    message_id = state.get("message_id")
+    human_kwargs = {"id": message_id} if message_id else {}
+    ai_kwargs = {"id": f"ai-{message_id}"} if message_id else {}
+
     return {
         "messages": [
-            HumanMessage(content=user_question),
-            AIMessage(content=answer_text),
+            HumanMessage(content=user_question, **human_kwargs),
+            AIMessage(content=answer_text, **ai_kwargs),
         ],
         "answer": answer_text,
     }
