@@ -3227,7 +3227,7 @@ This improves:
 ---
 
 # Week 12 Result
-
+h
 Week 12 transformed NorAI from a collection of powerful AI modules into a cohesive, lecture-aware, full-stack learning platform.
 
 The system now supports:
