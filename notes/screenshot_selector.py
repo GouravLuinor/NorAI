@@ -6,7 +6,7 @@ from concurrent.futures import (
 import json
 import logging
 import os
-from random import random
+import random
 import time
 from pathlib import Path
 
@@ -14,7 +14,7 @@ import imagehash
 from PIL import Image as PILImage
 from google import genai
 from dotenv import load_dotenv
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
@@ -97,7 +97,7 @@ from google.genai import types
 
 class FrameQualityScore(BaseModel):
 
-    path: str
+    path: str = Field(description="The exact local file path of the attached frame as provided in the prompt list, e.g. outputs/.../frame_136.jpg")
 
     content_density: int
 
@@ -118,7 +118,7 @@ class FrameQualityBatch(BaseModel):
 
 class SelectedScreenshot(BaseModel):
 
-    path: str
+    path: str = Field(description="The exact local file path of the attached frame as provided in the candidate list, e.g. outputs/.../frame_136.jpg")
 
     reason: str
 
@@ -532,15 +532,18 @@ def score_frames_batch(
 
             scores = []
 
-            for entry in raw_scores:
+            for idx, entry in enumerate(raw_scores):
 
                 try:
 
-                    scores.append(
+                    fq_score = FrameQualityScore(**entry)
+                    if fq_score.path not in valid_paths and idx < len(valid_paths):
+                        logger.info(
+                            f"Remapped synthetic path '{fq_score.path}' -> '{valid_paths[idx]}' by batch position."
+                        )
+                        fq_score.path = valid_paths[idx]
 
-                        FrameQualityScore(**entry)
-
-                    )
+                    scores.append(fq_score)
 
                 except Exception as entry_error:
 
@@ -953,34 +956,24 @@ def filter_candidates(
 
 
 def upload_screenshots(
-
     screenshot_paths
-
 ):
     """
-    Upload each screenshot to the Gemini Files API.
+    Upload each screenshot concurrently to the Gemini Files API.
 
-    Returns a list of (path, uploaded_file) tuples, skipping
-    any paths that fail to upload or do not exist.
+    Returns a list of (path, uploaded_file) tuples in original order,
+    skipping any paths that fail to upload or do not exist.
     """
+    if not screenshot_paths:
+        return []
+
+    with ThreadPoolExecutor(max_workers=min(len(screenshot_paths), 6)) as executor:
+        results = list(executor.map(upload_single_screenshot, screenshot_paths))
 
     uploaded = []
-
-    for path in screenshot_paths:
-
-        uploaded_file = upload_single_screenshot(
-
-            path
-
-        )
-
+    for path, uploaded_file in zip(screenshot_paths, results):
         if uploaded_file is not None:
-
-            uploaded.append(
-
-                (path, uploaded_file)
-
-            )
+            uploaded.append((path, uploaded_file))
 
     return uploaded
 
@@ -1105,8 +1098,8 @@ def generate_selection(
     Run Pass 1 quality filtering, then call the LLM with
     chapter context and the surviving screenshots for Pass 2
     ranking. Returns a tuple of (raw_response_text,
-    original_candidate_count), or (None, 0) if the chapter
-    should be skipped.
+    original_candidate_count, valid_paths), or (None, original_count, [])
+    if the chapter should be skipped.
 
     The caller is responsible for parsing the raw text and
     applying the deterministic top-K cut using
@@ -1129,7 +1122,7 @@ def generate_selection(
             f" has no screenshots, skipping."
         )
 
-        return None, 0
+        return None, 0, []
 
     surviving_paths, original_count = filter_candidates(
 
@@ -1147,7 +1140,7 @@ def generate_selection(
             f": no candidates survived Pass 1 filtering."
         )
 
-        return None, original_count
+        return None, original_count, []
 
     uploaded = (
 
@@ -1167,7 +1160,7 @@ def generate_selection(
             f": no screenshots could be uploaded for Pass 2."
         )
 
-        return None, original_count
+        return None, original_count, []
 
     valid_paths = [
 
@@ -1218,7 +1211,7 @@ def generate_selection(
                 )
             )
 
-            return response.text, original_count
+            return response.text, original_count, valid_paths
 
         except Exception as e:
 
@@ -1250,7 +1243,8 @@ def generate_selection(
 def parse_selection(
 
     raw_text,
-    chapter_id
+    chapter_id,
+    valid_paths=None
 
 ):
     """
@@ -1279,6 +1273,18 @@ def parse_selection(
     )
 
     data["chapter_id"] = chapter_id
+
+    # Positional remapping for Pass 2 if model echoed a synthetic URL/path
+    if valid_paths and "screenshots" in data and isinstance(data["screenshots"], list):
+        valid_set = set(valid_paths)
+        for idx, shot in enumerate(data["screenshots"]):
+            if isinstance(shot, dict):
+                p = shot.get("path", "")
+                if p not in valid_set and idx < len(valid_paths):
+                    logger.info(
+                        f"Chapter {chapter_id} Pass 2: Remapped synthetic path '{p}' -> '{valid_paths[idx]}' by position."
+                    )
+                    shot["path"] = valid_paths[idx]
 
     return ChapterScreenshots(
 
@@ -1345,7 +1351,7 @@ def process_chapter(
     → deterministic top-K cut → save.
     """
 
-    raw_text, original_count = (
+    raw_text, original_count, valid_paths = (
 
         generate_selection(
 
@@ -1364,7 +1370,8 @@ def process_chapter(
         parse_selection(
 
             raw_text,
-            chapter_id
+            chapter_id,
+            valid_paths=valid_paths
 
         )
     )

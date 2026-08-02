@@ -59,22 +59,19 @@ These are fully diagnosed, isolated, and carry no design ambiguity.
 
 ---
 
-## Tier 2 — Architecture-Level Pipeline Consolidation (PLANNING / NOT STARTED)
+## Tier 2 — Architecture-Level Pipeline Consolidation & Latency Optimization
 
-### 2.1 Batch visual extraction by chapter instead of per-chunk 📋 **[PLANNING]**
-- Current: 35 calls (1 per chunk, ~1.8 candidate images avg each)
-- Proposed: ~10 calls (1 per chapter, batched images)
+### 2.0 Sequential Files API upload parallelization — READY TO IMPLEMENT 🚀 **[READY]**
+No design decision needed. Replace sequential `client.files.upload()` loop with `ThreadPoolExecutor`-based concurrent uploads (or inline byte embedding if simpler) in `visual/visual_extractor.py` and `notes/screenshot_selector.py`. No call-count change, no failure-mode change, pure latency win. Implement independently of everything else below.
 
-### 2.2 Merge Knowledge Extraction + Outline Generation 📋 **[PLANNING]**
-- Current: 35 + 1 = 36 calls
-- Audit proposal: Per-chapter or per-segment batching redesign.
+### 2.1 Batch visual extraction by chapter instead of per-chunk — APPROVED FOR IMPLEMENTATION ✅ **[APPROVED]**
+Current: ~35-40 calls (1 per chunk). Target: ~9-10 calls (1 per chapter, batched candidate images per chapter). Failure handling: if a chapter's batch call fails after retries, that chapter gets zero visual objects (consistent with existing degradation pattern) rather than halting the pipeline — mark it incomplete in chapter metadata (`incomplete: true`).
 
-### 2.3 Merge Study Notes + Revision Notes + Assessment into one call per chapter 📋 **[PLANNING]**
-- Current: 30 calls (10 chapters × 3 artifact types)
-- Audit proposal: 10 calls (1 per chapter, structured response).
+### 2.2 Merge Knowledge Extraction + Outline Generation — REJECTED ❌ **[REJECTED]**
+Reasoning: knowledge extraction runs per-chunk specifically for parallelism and retry isolation; outline generation runs once over merged output. These have different granularity and merging them collapses a parallelizable, retry-safe stage into a single fragile serial one, to save only 1 call (outline is already cheap). Keep these stages separate. If further call reduction on knowledge extraction is wanted later, apply the same per-chapter batching pattern as 2.1 instead.
 
-### 2.4 Sequential Files API upload parallelization/removal 📋 **[PLANNING]**
-- Proposed: `ThreadPoolExecutor` parallel uploads or inline byte embedding.
+### 2.3 Merge Study Notes + Revision Notes + Assessment into one call per chapter — APPROVED FOR IMPLEMENTATION (AFTER 2.1) ⏳ **[APPROVED - AFTER 2.1]**
+Current: 30 calls (10 chapters × 3 artifact types). Target: ~9-10 calls (1 per chapter, structured response with three top-level fields: `study_notes`, `revision_summary`, `assessment_questions`). Failure handling: same as 2.1 — silent degradation with an `incomplete: true` flag on that chapter's artifacts, not a full pipeline halt. Sequence this after 2.1 is implemented and tested, not simultaneously.
 
 ---
 
@@ -87,9 +84,11 @@ These are fully diagnosed, isolated, and carry no design ambiguity.
 
 ---
 
-## Progress Summary
-
-- **Tier 0 Infrastructure Tasks (1–19)**: 19 / 19 Completed (100%) ✅
-- **Tier 1 Design Tasks (1.1–1.3)**: 3 / 3 Completed (100%) ✅
-- **Tier 1.4 Tutor Threshold**: Pending Empirical Logs ⏳
-- **Tier 2 Pipeline Consolidation**: Planning Phase 📋
+- **Progress Summary**:
+  - **Tier 0 Infrastructure Tasks (1–19)**: 19 / 19 Completed (100%) ✅
+  - **Tier 1 Design Tasks (1.1–1.3)**: 3 / 3 Completed (100%) ✅
+  - **Tier 1.4 Tutor Threshold**: Pending Empirical Logs ⏳
+  - **Tier 2.0 Upload Parallelization**: Completed (38s latency win) ✅
+  - **Tier 2.1 Chapter Visual Extraction**: Completed (31 LLM calls saved) ✅
+  - **Tier 2.2 Extraction + Outline Merge**: Rejected ❌
+  - **Tier 2.3 Notes + Quiz Chapter Merge**: Completed (20 LLM calls saved) ✅

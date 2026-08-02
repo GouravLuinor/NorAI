@@ -25,7 +25,7 @@ from visual.mapper import create_chunk_screenshot_mapping
 from visual.visual_extractor import process_all_chunks as process_visual_chunks
 from extract.merger import merge_all_chunks
 from notes.chapter_builder import build_chapters_pipeline
-from notes.notes_generator import generate_study_notes
+from notes.notes_generator import generate_study_notes, generate_consolidated_chapter_artifacts
 from notes.screenshot_selector import select_screenshots_for_lecture
 from revision_notes.revision_generator import generate_revision_notes_for_lecture
 from assessment.assessment_generator import generate_assessment_for_lecture
@@ -185,34 +185,17 @@ def run_pipeline(
         mapping_path = str(Path(mappings_dir) / "chunk_screenshot_mapping.json")
         create_chunk_screenshot_mapping(chunks_path, keyframes_meta, mapping_path)
 
-        # ── Stage 8: Visual Knowledge ──────────────────────────────────────
-        update_progress_sync(task_id, "visual_knowledge", "Understanding visuals…", 42)
-        visual_objects_dir = str(lecture_dir / "visual_objects")
-        try:
-            process_visual_chunks(mapping_path, visual_objects_dir)
-        except Exception as e:
-            logger.error(f"Visual knowledge failed (continuing): {e}")
-
-        # ── Stage 9: Knowledge Merging ─────────────────────────────────────
-        update_progress_sync(task_id, "knowledge_merging", "Merging knowledge…", 50)
-        merged_dir = str(lecture_dir / "merged_objects")
-        try:
-            merge_all_chunks(objects_dir, visual_objects_dir, merged_dir)
-        except Exception as e:
-            logger.error(f"Knowledge merging failed (continuing): {e}")
-
-        # ── Stage 10: Outline Generation ───────────────────────────────────
-        update_progress_sync(task_id, "outline", "Generating lecture outline…", 54)
+        # ── Stage 8: Outline Generation ───────────────────────────────────
+        update_progress_sync(task_id, "outline", "Generating lecture outline…", 40)
         chapters_dir = str(lecture_dir / "chapters")
         notes_dir    = str(lecture_dir / "notes")
         Path(chapters_dir).mkdir(parents=True, exist_ok=True)
         Path(notes_dir).mkdir(parents=True, exist_ok=True)
         try:
-            outline_result = generate_lecture_outline(merged_dir, out)
+            outline_result = generate_lecture_outline(objects_dir, out)
             outline_path   = str(Path(notes_dir) / "lecture_outline.json")
         except Exception as e:
             logger.error(f"Outline generation failed (continuing): {e}")
-            # Minimal fallback outline – one chapter that covers all chunks
             import json as _json
             fallback = {
                 "lecture_title": "Untitled Lecture",
@@ -242,6 +225,22 @@ def run_pipeline(
         except Exception:
             pass
 
+        # ── Stage 9: Visual Knowledge (Chapter-Aligned) ───────────────────
+        update_progress_sync(task_id, "visual_knowledge", "Understanding visuals…", 46)
+        visual_objects_dir = str(lecture_dir / "visual_objects")
+        try:
+            process_visual_chunks(mapping_path, visual_objects_dir, outline_path=outline_path)
+        except Exception as e:
+            logger.error(f"Visual knowledge failed (continuing): {e}")
+
+        # ── Stage 10: Knowledge Merging ────────────────--------------------
+        update_progress_sync(task_id, "knowledge_merging", "Merging knowledge…", 52)
+        merged_dir = str(lecture_dir / "merged_objects")
+        try:
+            merge_all_chunks(objects_dir, visual_objects_dir, merged_dir)
+        except Exception as e:
+            logger.error(f"Knowledge merging failed (continuing): {e}")
+
         # ── Stage 11: Chapter Building ─────────────────────────────────────
         update_progress_sync(task_id, "chapter_building", "Building chapters…", 58)
         try:
@@ -249,45 +248,19 @@ def run_pipeline(
         except Exception as e:
             logger.error(f"Chapter building failed (continuing): {e}")
 
-        # ── Stage 12: Study Notes ──────────────────────────────────────────
-        update_progress_sync(task_id, "study_notes", "Writing study notes…", 64)
-        try:
-            generate_study_notes(chapters_dir, outline_path, out)
-        except Exception as e:
-            logger.error(f"Study notes generation failed (continuing): {e}")
-
-        # ── Stage 13: Screenshot Selection ─────────────────────────────────
-        update_progress_sync(task_id, "screenshot_selection", "Selecting screenshots…", 70)
+        # ── Stage 12: Screenshot Selection ─────────────────────────────────
+        update_progress_sync(task_id, "screenshot_selection", "Selecting screenshots…", 64)
         try:
             select_screenshots_for_lecture(chapters_dir, out)
         except Exception as e:
             logger.error(f"Screenshot selection failed (continuing): {e}")
 
-        # ── Stage 14: Revision Notes ───────────────────────────────────────
-        update_progress_sync(task_id, "revision_notes", "Writing revision notes…", 76)
+        # ── Stages 13–16: Consolidated Artifact Generation (Notes, Revision, Assessment, Cards) ─
+        update_progress_sync(task_id, "chapter_artifacts", "Generating study notes, revision & assessment…", 75)
         try:
-            generate_revision_notes_for_lecture(notes_dir, outline_path, out)
+            generate_consolidated_chapter_artifacts(chapters_dir, outline_path, out)
         except Exception as e:
-            logger.error(f"Revision notes generation failed (continuing): {e}")
-
-        # ── Stage 15: Assessment ───────────────────────────────────────────
-        update_progress_sync(task_id, "assessment", "Creating assessment…", 82)
-        try:
-            generate_assessment_for_lecture(notes_dir, out)
-        except Exception as e:
-            logger.error(f"Assessment generation failed (continuing): {e}")
-
-        # ── Stage: Flashcards ─────────────────────────────────────────────
-        update_progress_sync(task_id, "flashcards", "Generating flashcards…", 86)
-        try:
-            import flashcards.generate_flashcards as fg
-            lecture_dir = Path(out)
-            fg.ASSESSMENT_DIR = lecture_dir / "assessment"
-            fg.FLASHCARDS_DIR = lecture_dir / "flashcards"
-            fg.FLASHCARDS_DIR.mkdir(parents=True, exist_ok=True)
-            fg.main()
-        except Exception as e:
-            logger.error(f"Flashcards generation failed (continuing): {e}")
+            logger.error(f"Consolidated chapter artifacts generation failed (continuing): {e}")
 
         # REMOVED: PDFs are now generated on-demand when user clicks download
 
