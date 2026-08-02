@@ -20,6 +20,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
+from pydantic import BaseModel, Field
 from backend.ratelimit import rate_limiter as _limiter
 from config import MODEL_NAME
 
@@ -71,28 +72,17 @@ def upload_images(
     image_paths
 ):
     """
-    Upload screenshots to
-    Google AI Studio.
+    Upload screenshots concurrently to Google AI Studio Files API.
     """
+    if not image_paths:
+        return []
 
-    uploaded_files = []
+    def _upload(p):
+        logger.info(f"Uploading: {p}")
+        return client.files.upload(file=p)
 
-    for image_path in image_paths:
-
-        logger.info(
-            f"Uploading: "
-            f"{image_path}"
-        )
-
-        file = client.files.upload(
-            file=image_path
-        )
-
-        uploaded_files.append(
-            file
-        )
-
-    return uploaded_files
+    with ThreadPoolExecutor(max_workers=min(len(image_paths), 6)) as executor:
+        return list(executor.map(_upload, image_paths))
 
 
 
@@ -587,59 +577,181 @@ def save_visual_object(
     return output_path
 
 
+class VisualObjectItem(BaseModel):
+    chunk_id: int
+    visual_notes: str
+    important_information: list[str]
+    ocr_text: str
+    visual_summary: str
+    visual_type: str
+    teaching_stage: str
+    importance_score: int
+    include_in_notes: bool
+    source_screenshots: list[str] = []
+
+
+class ChapterVisualKnowledgeModel(BaseModel):
+    chapter_id: int
+    incomplete: bool = Field(default=False)
+    visual_objects: list[VisualObjectItem]
+
+
+def create_empty_visual_object(chunk_mapping: dict) -> dict:
+    """
+    Create a valid fallback/empty visual object for a chunk with 0 screenshots or on batch failure.
+    """
+    return {
+        "chunk_id": chunk_mapping.get("chunk_id", 0),
+        "start": chunk_mapping.get("start", 0.0),
+        "end": chunk_mapping.get("end", 0.0),
+        "visual_notes": "",
+        "important_information": [],
+        "ocr_text": "",
+        "visual_summary": "",
+        "visual_type": "none",
+        "teaching_stage": "none",
+        "importance_score": 0,
+        "include_in_notes": False,
+        "source_screenshots": [],
+        "screenshot_count": 0,
+        "object_type": "visual_object",
+        "generated_by": MODEL_NAME,
+        "incomplete": False,
+    }
+
+
+def process_chapter_visual_batch(chapter_id: int, chapter_title: str, chapter_chunks: list[dict], output_dir: str):
+    """
+    Process candidate screenshots for a single chapter strictly within chapter boundaries.
+    If call fails after retries, marks incomplete=True and saves empty fallback objects.
+    """
+    all_image_paths = []
+    chunk_image_map = {}
+    chunk_ids = [c["chunk_id"] for c in chapter_chunks]
+    
+    for c in chapter_chunks:
+        c_id = c["chunk_id"]
+        shots = [
+            p for s in c.get("screenshots", [])
+            if (p := (s.get("image_path") or s.get("path"))) and Path(p).exists()
+        ]
+        chunk_image_map[c_id] = shots
+        all_image_paths.extend(shots)
+
+    if not all_image_paths:
+        for c in chapter_chunks:
+            fallback = create_empty_visual_object(c)
+            save_visual_object(fallback, output_dir)
+        return
+
+    uploaded_files = upload_images(all_image_paths)
+    
+    prompt = f"""
+Analyze the candidate screenshots for Chapter {chapter_id}: "{chapter_title}" covering chunks {chunk_ids}.
+For each chunk with screenshots in this chapter, extract concise visual notes, OCR text, visual summary, and importance score.
+
+Return a JSON matching ChapterVisualKnowledgeModel.
+"""
+
+    for attempt in range(3):
+        try:
+            _limiter.wait()
+            client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=[*uploaded_files, prompt],
+                config=types.GenerateContentConfig(
+                    temperature=0.2,
+                    response_mime_type="application/json",
+                    response_schema=ChapterVisualKnowledgeModel,
+                )
+            )
+            data = json.loads(response.text)
+            batch_result = ChapterVisualKnowledgeModel(**data)
+            
+            # Save visual objects for each chunk in chapter
+            processed_chunk_ids = set()
+            for vo in batch_result.visual_objects:
+                obj_dict = vo.model_dump()
+                obj_dict["object_type"] = "visual_object"
+                obj_dict["generated_by"] = MODEL_NAME
+                save_visual_object(obj_dict, output_dir)
+                processed_chunk_ids.add(vo.chunk_id)
+
+            # Fallback for any chunks in chapter missing from LLM response
+            for c in chapter_chunks:
+                if c["chunk_id"] not in processed_chunk_ids:
+                    fallback = create_empty_visual_object(c)
+                    save_visual_object(fallback, output_dir)
+            return
+        except Exception as e:
+            logger.warning(f"Chapter {chapter_id} visual batch attempt {attempt+1} failed: {e}")
+            time.sleep(2 * (attempt + 1))
+
+    # Graceful degradation on failure: write incomplete fallback objects for this chapter
+    logger.error(f"Chapter {chapter_id} visual batch failed after 3 retries. Marking incomplete.")
+    for c in chapter_chunks:
+        fallback = create_empty_visual_object(c)
+        fallback["incomplete"] = True
+        save_visual_object(fallback, output_dir)
+
+
 def process_all_chunks(
     mapping_path,
     output_dir,
-    max_workers=7
+    outline_path=None,
+    max_workers=3
 ):
     """
-    Process all chunks.
+    Process visual candidate images batched strictly within real chapter boundaries (1 call per chapter).
     """
+    mapping = load_mapping(mapping_path)
+    chunk_map = {c["chunk_id"]: c for c in mapping}
+    logger.info(f"Loaded {len(mapping)} chunks for chapter-aligned visual extraction.")
 
-    mapping = load_mapping(
-        mapping_path
-    )
+    # Locate lecture_outline.json to discover real chapter boundaries
+    if not outline_path:
+        possible_outline = Path(output_dir).parent / "notes" / "lecture_outline.json"
+        if possible_outline.exists():
+            outline_path = str(possible_outline)
 
-    logger.info(
-        f"Loaded "
-        f"{len(mapping)} chunks."
-    )
+    chapter_batches = []
+    if outline_path and Path(outline_path).exists():
+        with open(outline_path, "r", encoding="utf-8") as f:
+            outline_data = json.load(f)
+        for ch in outline_data.get("chapters", []):
+            ch_id = ch["chapter_id"]
+            ch_title = ch.get("title", f"Chapter {ch_id}")
+            c_ids = ch.get("chunk_ids")
+            if c_ids is None:
+                s_chunk = ch.get("start_chunk", 0)
+                e_chunk = ch.get("end_chunk", s_chunk)
+                c_ids = list(range(s_chunk, e_chunk + 1))
+            ch_chunks = [chunk_map[cid] for cid in c_ids if cid in chunk_map]
+            if ch_chunks:
+                chapter_batches.append((ch_id, ch_title, ch_chunks))
+    else:
+        # Fallback: if outline not found, group by 4-chunk boundaries
+        batch_size = 4
+        chunks_list = list(mapping)
+        for idx, i in enumerate(range(0, len(chunks_list), batch_size)):
+            b_chunks = chunks_list[i:i + batch_size]
+            chapter_batches.append((idx + 1, f"Chapter Batch {idx+1}", b_chunks))
 
-    completed = 0
-
-    with ThreadPoolExecutor(
-        max_workers=max_workers
-    ) as executor:
-
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [
-
-            executor.submit(
-                process_chunk,
-                chunk,
-                output_dir
-            )
-
-            for chunk
-            in mapping
+            executor.submit(process_chapter_visual_batch, ch_id, ch_title, ch_chunks, output_dir)
+            for ch_id, ch_title, ch_chunks in chapter_batches
         ]
-
-        for future in as_completed(
-            futures
-        ):
-
+        for future in as_completed(futures):
             future.result()
 
-            completed += 1
+    logger.info(f"Chapter-aligned visual extraction complete ({len(chapter_batches)} chapters processed).")
 
-            logger.info(
-                f"Progress: "
-                f"{completed}/"
-                f"{len(mapping)}"
-            )
 
-    logger.info(
-        "Visual extraction complete."
-    )
+def process_visual_chunks(mapping_path: str, output_dir: str, outline_path: str = None):
+    """Alias for backend orchestrator compatibility."""
+    return process_all_chunks(mapping_path, output_dir, outline_path=outline_path)
 
 
 # Example Usage

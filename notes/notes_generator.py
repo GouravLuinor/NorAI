@@ -24,6 +24,7 @@ from pathlib import Path
 import os
 import time
 from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 from notes.notes_prompt import NOTES_PROMPT
 load_dotenv()
@@ -779,6 +780,172 @@ def generate_study_notes(
 
     return {
         "notes_dir": str(notes_dir),
+        "num_chapters": len(chapters),
+    }
+
+
+# ── Task 2.3: Consolidated Chapter Artifact Generator ─────────────────────────
+from pydantic import BaseModel, Field
+from assessment.assessment_models import Question
+from flashcards.generate_flashcards import convert_assessment_to_flashcards
+from revision_notes.revision_generator import render_revision_markdown
+
+
+class CoreConceptItem(BaseModel):
+    concept: str
+    explanation: str
+
+
+class MergedChapterArtifactsModel(BaseModel):
+    chapter_id: int
+    incomplete: bool = Field(default=False)
+    study_notes_markdown: str = Field(description="Comprehensive Markdown study notes for this chapter with headings, bullet points, latex math, and screenshot embeds.")
+    revision_summary: list[str] = Field(description="3 to 5 key exam takeaways for this chapter.")
+    core_concepts_breakdown: list[CoreConceptItem] = Field(description="List of key concepts with brief 1-2 sentence explanations.")
+    assessment_questions: list[Question] = Field(description="Quiz questions with embedded flashcard_front/back/explanation fields.")
+
+
+def process_chapter_artifacts_merged(chapter_json: dict, outline: dict, output_dir: str):
+    """
+    Generate Study Notes, Revision Notes, Assessment Questions, and Flashcards
+    for 1 chapter in 1 consolidated LLM call.
+    """
+    chapter_id = chapter_json.get("chapter_id", 1)
+    chapter_title = chapter_json.get("title", f"Chapter {chapter_id}")
+
+    prompt = f"""
+Generate comprehensive learning artifacts for Chapter {chapter_id}: "{chapter_title}".
+
+Chapter Content JSON:
+{json.dumps(chapter_json, indent=2)}
+
+Produce a valid JSON object matching MergedChapterArtifactsModel:
+1. study_notes_markdown: Detailed study notes in Github-flavored Markdown.
+2. revision_summary: 3-5 concise bullet points for exam revision.
+3. core_concepts_breakdown: Key concepts with short explanations.
+4. assessment_questions: 3 quiz questions (MCQ/Short Answer) with flashcard_front/back/explanation fields.
+"""
+
+    notes_dir = Path(output_dir) / "notes"
+    revision_dir = Path(output_dir) / "revision"
+    assessment_dir = Path(output_dir) / "assessment"
+    flashcards_dir = Path(output_dir) / "flashcards"
+
+    for d in (notes_dir, revision_dir, assessment_dir, flashcards_dir):
+        d.mkdir(parents=True, exist_ok=True)
+
+    for attempt in range(3):
+        try:
+            _limiter.wait()
+            client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=[prompt],
+                config=types.GenerateContentConfig(
+                    temperature=0.3,
+                    max_output_tokens=8192,
+                    response_mime_type="application/json",
+                    response_schema=MergedChapterArtifactsModel,
+                )
+            )
+            data = json.loads(response.text)
+            model = MergedChapterArtifactsModel(**data)
+
+            # 1. Save Study Notes Markdown
+            notes_file = notes_dir / f"chapter_{chapter_id}.md"
+            with open(notes_file, "w", encoding="utf-8") as f:
+                f.write(model.study_notes_markdown)
+
+            # 2. Render & Save Revision Markdown
+            rev_md = render_revision_markdown(
+                chapter_id=chapter_id,
+                chapter_title=chapter_title,
+                revision_summary=model.revision_summary,
+                core_concepts_breakdown=model.core_concepts_breakdown,
+            )
+            rev_file = revision_dir / f"revision_chapter_{chapter_id}.md"
+            with open(rev_file, "w", encoding="utf-8") as f:
+                f.write(rev_md)
+
+            # 3. Save Assessment Questions JSON
+            questions_dicts = [q.model_dump() for q in model.assessment_questions]
+            ass_data = {
+                "chapter_id": chapter_id,
+                "chapter_title": chapter_title,
+                "questions": questions_dicts,
+            }
+            ass_file = assessment_dir / f"assessment_chapter_{chapter_id}.json"
+            with open(ass_file, "w", encoding="utf-8") as f:
+                json.dump(ass_data, f, indent=4, ensure_ascii=False)
+
+            # 4. Save Flashcards JSON (0-call transformation)
+            cards = convert_assessment_to_flashcards(questions_dicts)
+            cards_data = {
+                "chapter_id": chapter_id,
+                "chapter_title": chapter_title,
+                "flashcards": cards,
+            }
+            cards_file = flashcards_dir / f"flashcards_chapter_{chapter_id}.json"
+            with open(cards_file, "w", encoding="utf-8") as f:
+                json.dump(cards_data, f, indent=4, ensure_ascii=False)
+
+            logger.info(f"Chapter {chapter_id} consolidated artifacts generated successfully.")
+            return
+        except Exception as e:
+            logger.warning(f"Chapter {chapter_id} consolidated artifacts attempt {attempt+1} failed: {e}")
+            time.sleep(2 * (attempt + 1))
+
+    # Graceful degradation: write fallback files for all 4 artifacts with incomplete: true
+    logger.error(f"Chapter {chapter_id} consolidated artifacts failed after 3 retries. Marking incomplete.")
+    notes_file = notes_dir / f"chapter_{chapter_id}.md"
+    with open(notes_file, "w", encoding="utf-8") as f:
+        f.write(f"# Chapter {chapter_id}: {chapter_title}\n\n*Note: Content generation was partially degraded for this chapter.*")
+
+    rev_file = revision_dir / f"revision_chapter_{chapter_id}.md"
+    with open(rev_file, "w", encoding="utf-8") as f:
+        f.write(f"# Revision Notes — Chapter {chapter_id}: {chapter_title}\n\n*Note: Content generation was partially degraded for this chapter.*")
+
+    ass_file = assessment_dir / f"assessment_chapter_{chapter_id}.json"
+    with open(ass_file, "w", encoding="utf-8") as f:
+        json.dump({"chapter_id": chapter_id, "chapter_title": chapter_title, "incomplete": True, "questions": []}, f, indent=4)
+
+    cards_file = flashcards_dir / f"flashcards_chapter_{chapter_id}.json"
+    with open(cards_file, "w", encoding="utf-8") as f:
+        json.dump({"chapter_id": chapter_id, "chapter_title": chapter_title, "incomplete": True, "flashcards": []}, f, indent=4)
+
+
+def generate_consolidated_chapter_artifacts(
+    chapters_dir: str,
+    outline_path: str,
+    output_dir: str,
+    max_workers: int = 3,
+) -> dict:
+    """
+    Generate all chapter artifacts (Study Notes, Revision Notes, Assessment, Flashcards)
+    in parallel 1-call per chapter batches.
+    """
+    chapters = load_chapters(chapters_dir)
+    outline = load_outline(outline_path)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [
+            executor.submit(process_chapter_artifacts_merged, ch, outline, output_dir)
+            for ch in chapters
+        ]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                logger.error(f"Merged chapter artifact worker failed: {e}")
+
+    # Combine notes & revision files into main summary files
+    import notes.notes_generator as _nsg
+    _nsg.NOTES_DIR = Path(output_dir) / "notes"
+    _nsg.CHAPTER_DIR = Path(chapters_dir)
+    combine_notes()
+
+    return {
+        "output_dir": output_dir,
         "num_chapters": len(chapters),
     }
 
