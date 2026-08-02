@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict
 
 from langgraph.checkpoint.sqlite import SqliteSaver
-from tutor.config import CHECKPOINT_DB_PATH   # fallback for the default lecture
+from config import CHECKPOINT_DB_PATH   # fallback for the default lecture
 from tutor.graph import build_graph
 
 

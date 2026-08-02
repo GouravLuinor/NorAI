@@ -1,58 +1,16 @@
 """
-config.py
-
-Config block for the tutor package, following the same convention as
-notes_generator.py / assessment_generator.py: constants up top, a
-load_llm()-style function for client setup, .env loaded once on import.
-
-Deliberately reuses GEMINI_API_KEY (not GOOGLE_API_KEY) as the env var
-name, matching every other NorAI pipeline — langchain-google-genai
-defaults to reading GOOGLE_API_KEY itself, but we pass the key
-explicitly to ChatGoogleGenerativeAI instead of relying on that
-default, so this package doesn't require a second, differently-named
-API key env var alongside the one the rest of NorAI already uses.
+tutor/config.py — Re-exports configuration from top-level config.py for tutor subsystem.
 """
 
-import logging
-import os
-from pathlib import Path
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
+from config import (
+    MODEL_NAME,
+    DEFAULT_MODEL_NAME,
+    DEFAULT_FRAME_INTERVAL_SECONDS,
+    DEFAULT_SEGMENTS_PER_CHUNK,
+    DEFAULT_MAX_RETRIES,
+    DEFAULT_RPM_LIMIT,
+    TEMPERATURE,
+    CHECKPOINT_DIR,
+    CHECKPOINT_DB_PATH,
+    get_api_key,
 )
-
-logger = logging.getLogger(__name__)
-
-# Constants
-
-MODEL_NAME = "gemini-3.1-flash-lite-preview"
-DEFAULT_MODEL_NAME = MODEL_NAME
-DEFAULT_FRAME_INTERVAL_SECONDS = 8
-DEFAULT_SEGMENTS_PER_CHUNK = 15
-DEFAULT_MAX_RETRIES = 8
-DEFAULT_RPM_LIMIT = 12
-
-TEMPERATURE = 0.4
-
-CHECKPOINT_DIR = Path("outputs/tutor")
-CHECKPOINT_DB_PATH = CHECKPOINT_DIR / "checkpoints.sqlite"
-
-
-def get_api_key() -> str:
-    """
-    Read GEMINI_API_KEY from the environment, matching every other
-    NorAI generator. Raises clearly rather than letting
-    ChatGoogleGenerativeAI fail later with a less obvious error about
-    a missing GOOGLE_API_KEY.
-    """
-    api_key = os.getenv("GEMINI_API_KEY")
-
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY not found.")
-
-    return api_key

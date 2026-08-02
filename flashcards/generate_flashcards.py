@@ -25,7 +25,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
-from tutor.config import MODEL_NAME, TEMPERATURE, get_api_key
+from config import MODEL_NAME, TEMPERATURE, get_api_key
 
 ASSESSMENT_DIR = Path("outputs/assessment")
 FLASHCARDS_DIR = Path("outputs/flashcards")

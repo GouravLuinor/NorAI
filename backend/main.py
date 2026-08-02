@@ -34,7 +34,7 @@ from fastapi.staticfiles import StaticFiles
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from backend.lecture_registry import list_lectures, get_lecture
-from tutor.config import MODEL_NAME, get_api_key, CHECKPOINT_DB_PATH
+from config import MODEL_NAME, get_api_key, CHECKPOINT_DB_PATH
 from backend.dependencies import invoke_tutor
 from backend.lecture_registry import get_lecture
 # ---------------------------------------------------------------------------
