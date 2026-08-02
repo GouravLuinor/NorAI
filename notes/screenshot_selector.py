@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 MAX_RETRIES = 8
 
-MODEL_NAME = "gemini-3.1-flash-lite-preview"
+from config import MODEL_NAME
 
 CHAPTER_DIR = Path(
         "outputs/chapters"

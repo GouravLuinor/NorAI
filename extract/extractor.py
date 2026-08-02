@@ -20,6 +20,7 @@ from concurrent.futures import (
     as_completed
 )
 from backend.ratelimit import rate_limiter as _limiter
+from config import MODEL_NAME
 
 load_dotenv()
 
@@ -94,7 +95,7 @@ def extract_knowledge_object(
     _limiter.wait()
     response = (
         client.models.generate_content(
-            model="gemini-3.1-flash-lite-preview",
+            model=MODEL_NAME,
             contents=f"{EXTRACTION_SYSTEM_PROMPT}\n\n{prompt}",
             config=types.GenerateContentConfig(
                 temperature=0.2,
@@ -155,7 +156,7 @@ def process_chunk_with_retry(
             logger.warning(
                 f"Chunk "
                 f"{chunk['chunk_id']} "
-                f"failed. "
+                f"failed ({e}). "
                 f"Retry "
                 f"{attempt + 1}/"
                 f"{max_retries}. "

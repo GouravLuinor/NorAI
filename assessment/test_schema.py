@@ -2,9 +2,11 @@
 import os
 from google import genai
 from google.genai import types
+from config import MODEL_NAME
 from pydantic import BaseModel
 from typing import Literal
 from dotenv import load_dotenv
+
 class TestQuestion(BaseModel):
     question_id: int
     type: Literal["MCQ", "True/False", "Short Answer"]
@@ -21,7 +23,7 @@ load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 response = client.models.generate_content(
-    model="gemini-3.1-flash-lite-preview",
+    model=MODEL_NAME,
     contents=["Generate 3 short questions (mix of MCQ and Short Answer) "
               "about photosynthesis, matching the required schema exactly."],
     config=types.GenerateContentConfig(

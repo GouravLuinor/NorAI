@@ -40,8 +40,9 @@ logger = logging.getLogger(__name__)
 
 #constants
 
+from config import MODEL_NAME
+
 MAX_RETRIES = 8
-MODEL_NAME = "gemini-3.1-flash-lite-preview"
 NOTES_DIR = Path(
         "outputs/notes"
 )

@@ -176,7 +176,7 @@ def merge_objects(
         "external_knowledge":
             knowledge_object.get(
                 "external_knowledge",
-                {}
+                []
             ),
 
         "visual_information":
@@ -307,7 +307,7 @@ def merge_objects_without_visual(knowledge_object: dict) -> dict:
         "concepts":             knowledge_object.get("concepts", []),
         "important_information": knowledge_object.get("key_points", []),
         "inferred_knowledge":   knowledge_object.get("inferred_knowledge", []),
-        "external_knowledge":   knowledge_object.get("external_knowledge", {}),
+        "external_knowledge":   knowledge_object.get("external_knowledge", []),
         "visual_information":   [],
         "ocr_text":             "",
         "visual_summary":       "",
