@@ -22,7 +22,7 @@ from backend.orchestrator import run_pipeline, get_or_create_task_sync
 from contextlib import contextmanager
 from pathlib import Path
 from typing import List
-from backend.dependencies import get_lecture_db_path, _get_or_create_lecture_graph
+from backend.dependencies import get_lecture_db_path, _get_or_create_lecture_graph, sanitize_lecture_id
 import sqlite3
 import time
 import threading
@@ -68,6 +68,11 @@ def _db():
     """Yield a short-lived SQLite connection and commit/close on exit."""
     CHECKPOINT_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(CHECKPOINT_DB_PATH), timeout=10.0)
+    try:
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA busy_timeout=5000;")
+    except Exception:
+        pass
     try:
         yield conn
         conn.commit()
@@ -220,28 +225,30 @@ async def list_threads(lecture_id: str = "default"):
     threads = set()
     try:
         conn = sqlite3.connect(str(db_path), timeout=10.0)
-        # 1) Auto-migrate old threads: check if a checkpoint has HumanMessage
         try:
-            conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
-            cursor = conn.execute("SELECT thread_id, checkpoint FROM checkpoints")
-            rows = cursor.fetchall()
-            for row in rows:
-                tid = row[0]
-                chk = row[1]
-                if isinstance(chk, bytes) and b"HumanMessage" in chk:
-                    conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (tid,))
-            conn.commit()
-        except Exception:
-            pass
-            
-        # 2) user_threads table (explicitly created or migrated user threads)
-        try:
-            for row in conn.execute("SELECT thread_id FROM user_threads"):
-                if row[0]:
-                    threads.add(row[0])
-        except Exception:
-            pass
-        conn.close()
+            # 1) Auto-migrate old threads: check if a checkpoint has HumanMessage
+            try:
+                conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
+                cursor = conn.execute("SELECT thread_id, checkpoint FROM checkpoints")
+                rows = cursor.fetchall()
+                for row in rows:
+                    tid = row[0]
+                    chk = row[1]
+                    if isinstance(chk, bytes) and b"HumanMessage" in chk:
+                        conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (tid,))
+                conn.commit()
+            except Exception:
+                pass
+
+            # 2) user_threads table (explicitly created or migrated user threads)
+            try:
+                for row in conn.execute("SELECT thread_id FROM user_threads"):
+                    if row[0]:
+                        threads.add(row[0])
+            except Exception:
+                pass
+        finally:
+            conn.close()
     except Exception:
         pass
 
@@ -263,10 +270,12 @@ async def create_thread_endpoint(request: Request, lecture_id: str = "default"):
     db_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         conn = sqlite3.connect(str(db_path), timeout=10.0)
-        conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
-        conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (thread_id,))
-        conn.commit()
-        conn.close()
+        try:
+            conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
+            conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (thread_id,))
+            conn.commit()
+        finally:
+            conn.close()
     except Exception:
         pass
     return {"thread_id": thread_id}
@@ -288,18 +297,18 @@ async def get_thread(thread_id: str, lecture_id: str = "default"):
             content = msg.content
             if role == "assistant":
                 content = re.sub(r'\*\*Sources\*\*[\s\S]*$', '', content).strip()
-                
+
             result.append({
                 "id": msg.id,
                 "role": role,
                 "content": content,
             })
-            
+
         last_retrieved_chunks = snapshot.values.get("retrieved_chunks", [])
         last_retrieved_images = snapshot.values.get("retrieved_images", [])
-            
+
         return {
-            "thread_id": thread_id, 
+            "thread_id": thread_id,
             "messages": result,
             "last_retrieved_chunks": last_retrieved_chunks,
             "last_retrieved_images": last_retrieved_images
@@ -315,13 +324,15 @@ async def delete_thread(thread_id: str, lecture_id: str = "default"):
     if db_path.exists():
         try:
             conn = sqlite3.connect(str(db_path), timeout=10.0)
-            for table in ["checkpoints", "checkpoint_blobs", "checkpoint_writes", "user_threads"]:
-                try:
-                    conn.execute(f"DELETE FROM {table} WHERE thread_id = ?", (thread_id,))
-                except sqlite3.OperationalError:
-                    pass
-            conn.commit()
-            conn.close()
+            try:
+                for table in ["checkpoints", "checkpoint_blobs", "checkpoint_writes", "user_threads"]:
+                    try:
+                        conn.execute(f"DELETE FROM {table} WHERE thread_id = ?", (thread_id,))
+                    except sqlite3.OperationalError:
+                        pass
+                conn.commit()
+            finally:
+                conn.close()
         except Exception:
             pass
     return {"deleted": thread_id}
@@ -502,7 +513,9 @@ async def start_processing(
     if file:
         upload_dir = Path("outputs/uploads")
         upload_dir.mkdir(parents=True, exist_ok=True)
-        file_path = upload_dir / f"{task_id}_{file.filename}"
+        raw_name = Path(file.filename or "upload.mp4").name
+        safe_filename = re.sub(r"[^a-zA-Z0-9_.-]", "_", raw_name)
+        file_path = upload_dir / f"{task_id}_{safe_filename}"
         with open(file_path, "wb") as f:
             content = await file.read()
             f.write(content)
@@ -524,7 +537,11 @@ async def get_lectures():
 
 @app.get("/lectures/{lecture_id}")
 async def get_lecture_info(lecture_id: str):
-    info = get_lecture(lecture_id)
+    try:
+        clean_id = sanitize_lecture_id(lecture_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid lecture_id format")
+    info = get_lecture(clean_id)
     if not info:
         raise HTTPException(status_code=404, detail="Lecture not found")
     return info

@@ -10,20 +10,25 @@ import time
 from pathlib import Path
 from typing import Optional
 
+import threading
+
 REGISTRY_PATH = Path("outputs/lectures.json")
+_registry_lock = threading.Lock()
 
 
 def _load() -> dict:
-    if not REGISTRY_PATH.exists():
-        return {}
-    with open(REGISTRY_PATH, encoding="utf-8") as f:
-        return json.load(f)
+    with _registry_lock:
+        if not REGISTRY_PATH.exists():
+            return {}
+        with open(REGISTRY_PATH, encoding="utf-8") as f:
+            return json.load(f)
 
 
 def _save(data: dict):
-    REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(REGISTRY_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    with _registry_lock:
+        REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(REGISTRY_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
 
 
 def create_lecture(lecture_id: str, title: str = "Untitled Lecture") -> Path:

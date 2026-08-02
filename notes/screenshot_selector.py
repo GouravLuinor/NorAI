@@ -17,8 +17,7 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-from backend.ratelimit import RPMRateLimiter
-_limiter = RPMRateLimiter(max_calls=12)
+from backend.ratelimit import rate_limiter as _limiter
 
 logging.basicConfig(
     level=logging.INFO,
@@ -145,11 +144,11 @@ For EACH frame, in the same order as attached, score the
 following, each as an integer 0-10:
 
 1. content_density: how much teaching content (diagram,
-   formula, code, written example, labeled illustration) is
+   formula, code, written example, labeled illustration, slide text, or bullet points explaining concepts) is
    visible and legible in that frame.
-   0 = no teaching content visible at all.
-   10 = the frame is dominated by clear, legible teaching
-   content.
+   0 = no teaching content visible at all (blank screen, pure webcam, or logo).
+   6-8 = clear, legible slide text, code, or bulleted lecture notes explaining concepts.
+   9-10 = rich labeled diagrams, complex equations, or high-value visual illustrations.
 
 2. instructor_occlusion: how much of that frame is taken up by
    the instructor's webcam/video feed rather than the

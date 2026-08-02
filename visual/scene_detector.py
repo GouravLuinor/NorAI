@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 SCENE_THRESHOLD = 30
 
-MAX_GAP_SECONDS = 90
+MAX_GAP_SECONDS = 45
 
 
 

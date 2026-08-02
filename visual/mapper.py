@@ -53,13 +53,18 @@ def load_screenshots(
 # Mapping
 
 
+FALLBACK_TOLERANCE_SECONDS = 20.0
+
+
 def map_screenshots_to_chunks(
     chunks_json_path,
-    screenshots_metadata_path
+    screenshots_metadata_path,
+    tolerance_seconds=FALLBACK_TOLERANCE_SECONDS
 ):
     """
-    Assign screenshots
-    to their corresponding chunks.
+    Assign screenshots to their corresponding chunks.
+    If a chunk has no screenshots under strict boundary matching,
+    assigns the single nearest keyframe within tolerance_seconds.
     """
 
     chunk_data = load_chunks(
@@ -76,6 +81,8 @@ def map_screenshots_to_chunks(
 
     for chunk in chunks:
 
+        chunk_start = chunk["start"]
+        chunk_end = chunk["end"]
         chunk_screenshots = []
 
         for screenshot in screenshots:
@@ -87,14 +94,38 @@ def map_screenshots_to_chunks(
             )
 
             if (
-                chunk["start"]
+                chunk_start
                 <= timestamp
-                <= chunk["end"]
+                <= chunk_end
             ):
 
                 chunk_screenshots.append(
                     screenshot
                 )
+
+        # Fallback: if no screenshot falls strictly inside [start, end]
+        if not chunk_screenshots and screenshots:
+            best_candidate = None
+            min_dist = float("inf")
+
+            for screenshot in screenshots:
+                ts = screenshot["timestamp"]
+                if ts < chunk_start:
+                    dist = chunk_start - ts
+                else:
+                    dist = ts - chunk_end
+
+                if dist < min_dist:
+                    min_dist = dist
+                    best_candidate = screenshot
+
+            if best_candidate is not None and min_dist <= tolerance_seconds:
+                logger.info(
+                    f"Chunk {chunk['chunk_id']} ({chunk_start:.2f}s-{chunk_end:.2f}s) "
+                    f"has 0 strict screenshots. Assigning fallback screenshot at "
+                    f"{best_candidate['timestamp']}s (distance: {min_dist:.2f}s <= {tolerance_seconds}s)."
+                )
+                chunk_screenshots.append(best_candidate)
 
         mapped_chunks.append(
             {
@@ -104,14 +135,10 @@ def map_screenshots_to_chunks(
                     ],
 
                 "start":
-                    chunk[
-                        "start"
-                    ],
+                    chunk_start,
 
                 "end":
-                    chunk[
-                        "end"
-                    ],
+                    chunk_end,
 
                 "screenshots":
                     chunk_screenshots
