@@ -75,6 +75,9 @@ matching this schema:
 
 # Extraction
 
+from google.genai import types
+from extract.models import KnowledgeObject, ChunkKnowledgeModel
+
 def extract_knowledge_object(
     chunk
 ):
@@ -91,29 +94,18 @@ def extract_knowledge_object(
     _limiter.wait()
     response = (
         client.models.generate_content(
-            model=
-            "gemini-3.1-flash-lite-preview",
-
-            contents=
-            f"{EXTRACTION_SYSTEM_PROMPT}\n\n{prompt}"
+            model="gemini-3.1-flash-lite-preview",
+            contents=f"{EXTRACTION_SYSTEM_PROMPT}\n\n{prompt}",
+            config=types.GenerateContentConfig(
+                temperature=0.2,
+                response_mime_type="application/json",
+                response_schema=ChunkKnowledgeModel,
+            )
         )
-    )
-
-    raw_json = (
-        response.text
-        .replace(
-            "```json",
-            ""
-        )
-        .replace(
-            "```",
-            ""
-        )
-        .strip()
     )
 
     data = json.loads(
-        raw_json
+        response.text
     )
 
     logger.info(

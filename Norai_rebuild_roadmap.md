@@ -43,8 +43,11 @@ These are diagnosed at the "what's wrong" level but need an actual decision on *
 ### 1.1 Flashcards → deterministic transform
 - **What's known**: Currently a second LLM pass off assessment data, then a *third* compression pass to fit UI size constraints. Both extra passes should be eliminated.
 - **What's decided**: Extend assessment generation to output flashcard-ready `flashcard_front`/`flashcard_back` fields in the *same* call as the rest of assessment content — no separate pass at all.
-- **Open question before implementing**: what is the actual UI size constraint (character/word limit) for flashcard front/back? Not yet confirmed. Need this before writing the prompt instructions for the new fields.
-- **Also open**: should this wait until Tier 1.2 (structured output rollout) happens first, since the new schema fields are a natural fit for a Pydantic-defined structured output schema rather than a prompt-instruction-only approach?
+- **Confirmed Word Limits** (from `generate_flashcards.py` prompt & UI constraints):
+  - `flashcard_front`: **max 15 words** (short, self-contained question)
+  - `flashcard_back`: **max 20 words** (short, precise answer)
+  - `flashcard_explanation`: **max 30 words** (brief clarifying explanation)
+- **Status**: Ready for implementation. Recommended to implement alongside or right after Tier 1.2 (structured output rollout), embedding these exact field constraints directly into the Pydantic schema for `Question` objects.
 
 ### 1.2 Adopt structured output (`responseSchema`) across all LLM calls
 - **What's known**: Gemini 3.1 Flash-Lite supports enforced JSON schema output via Pydantic. This was not available under the old Gemma 4 setup and is a genuine unlock now.

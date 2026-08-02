@@ -61,7 +61,7 @@ DEDUP_HASH_DISTANCE = 6
 # Pass 1 batch size: how many frames to score in a single LLM
 # call. The last batch in a chapter may be smaller.
 
-PASS1_BATCH_SIZE = 5
+PASS1_BATCH_SIZE = 10
 
 
 # LLM Setup
@@ -89,6 +89,14 @@ def load_llm():
 
 
 client = load_llm()
+
+
+from google.genai import types
+
+
+class FrameQualityBatch(BaseModel):
+
+    scores: list[FrameQualityScore]
 
 
 # Models
@@ -501,30 +509,25 @@ def score_frames_batch(
                 client.models.generate_content(
 
                     model=MODEL_NAME,
-                    contents=contents
+                    contents=contents,
+                    config=types.GenerateContentConfig(
+                        temperature=0.2,
+                        response_mime_type="application/json",
+                        response_schema=FrameQualityBatch,
+                    )
                 )
             )
 
-            cleaned = (
-
-                response.text
-
-                .strip()
-
-                .removeprefix("```json")
-
-                .removeprefix("```")
-
-                .removesuffix("```")
-
-                .strip()
-            )
-
-            raw_scores = json.loads(
-
-                cleaned
-
-            )
+            try:
+                data = json.loads(response.text)
+                if isinstance(data, dict) and "scores" in data:
+                    raw_scores = data["scores"]
+                elif isinstance(data, list):
+                    raw_scores = data
+                else:
+                    raw_scores = []
+            except Exception:
+                raw_scores = []
 
             scores = []
 
@@ -1205,7 +1208,12 @@ def generate_selection(
                 client.models.generate_content(
 
                     model=MODEL_NAME,
-                    contents=contents
+                    contents=contents,
+                    config=types.GenerateContentConfig(
+                        temperature=0.2,
+                        response_mime_type="application/json",
+                        response_schema=ChapterScreenshots,
+                    )
                 )
             )
 

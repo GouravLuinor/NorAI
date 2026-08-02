@@ -68,51 +68,36 @@ def load_assessment_questions(chapter_id: int | None = None) -> List[Dict[str, A
     return questions
 
 
-def build_prompt(questions: List[Dict[str, Any]]) -> str:
-    """Create a prompt for a batch of questions."""
-    lines = []
+def convert_assessment_to_flashcards(questions: List[Dict[str, Any]]) -> List[Dict[str, str]]:
+    """
+    Deterministic 0-call transform converting assessment questions directly into flashcards.
+    Uses flashcard_front, flashcard_back, flashcard_explanation if present, or falls back
+    to question, answer, explanation.
+    """
+    cards = []
     for q in questions:
-        lines.append(f"Q: {q.get('question', '')}")
-        lines.append(f"A: {q.get('answer', '')}")
-        explanation = q.get('explanation', '')
-        if explanation:
-            lines.append(f"Explanation: {explanation}")
-        lines.append("")
-    return PROMPT_TEMPLATE.format(questions_text="\n".join(lines))
+        front = q.get("flashcard_front") or q.get("question", "")
+        back = q.get("flashcard_back") or q.get("answer", "")
+        explanation = q.get("flashcard_explanation") or q.get("explanation", "")
 
+        front_words = front.split()
+        if len(front_words) > 15:
+            front = " ".join(front_words[:15]) + "..."
 
-def generate_flashcards_batch(batch: Tuple[int, int, List[Dict[str, Any]]]) -> Tuple[int, int, List[Dict[str, str]]]:
-    """Call the LLM for a single batch. Returns (chapter_id, batch_index, cards)."""
-    chapter_id, batch_idx, questions = batch
-    llm = ChatGoogleGenerativeAI(
-        model=MODEL_NAME,
-        temperature=0.3,
-        google_api_key=get_api_key(),
-    )
-    prompt = build_prompt(questions)
-    try:
-        response = llm.invoke([
-            SystemMessage(content="You are a helpful flashcard generator. Always respond with valid JSON."),
-            HumanMessage(content=prompt),
-        ])
-        text = response.content
-        if isinstance(text, list):
-            text = " ".join(block.get("text", "") for block in text if isinstance(block, dict))
-    except Exception as e:
-        print(f"    Chapter {chapter_id} batch {batch_idx} LLM call failed: {e}")
-        return (chapter_id, batch_idx, [])
+        back_words = back.split()
+        if len(back_words) > 20:
+            back = " ".join(back_words[:20]) + "..."
 
-    try:
-        json_start = text.find('[')
-        json_end = text.rfind(']') + 1
-        if json_start != -1 and json_end > json_start:
-            json_str = text[json_start:json_end]
-            cards = json.loads(json_str)
-            return (chapter_id, batch_idx, cards)
-    except json.JSONDecodeError:
-        pass
+        explanation_words = explanation.split()
+        if len(explanation_words) > 30:
+            explanation = " ".join(explanation_words[:30]) + "..."
 
-    return (chapter_id, batch_idx, [{"front": "Error", "back": "Could not generate flashcards", "explanation": text}])
+        cards.append({
+            "front": front,
+            "back": back,
+            "explanation": explanation
+        })
+    return cards
 
 
 def main(chapter=None, max_cards=DEFAULT_MAX_CARDS, workers=DEFAULT_WORKERS):
@@ -124,10 +109,7 @@ def main(chapter=None, max_cards=DEFAULT_MAX_CARDS, workers=DEFAULT_WORKERS):
             for f in ASSESSMENT_DIR.glob("assessment_chapter_*.json")
         })
 
-    # Collect all batches from all chapters
-    all_batches: List[Tuple[int, int, List[Dict[str, Any]]]] = []
-    chapter_question_counts = {}
-
+    total_cards = []
     for ch in chapters:
         questions = load_assessment_questions(ch)
         if not questions:
@@ -138,34 +120,12 @@ def main(chapter=None, max_cards=DEFAULT_MAX_CARDS, workers=DEFAULT_WORKERS):
             import random
             questions = random.sample(questions, max_cards)
 
-        chapter_question_counts[ch] = len(questions)
-        batches = [questions[i:i+BATCH_SIZE] for i in range(0, len(questions), BATCH_SIZE)]
-        for idx, batch in enumerate(batches):
-            all_batches.append((ch, idx + 1, batch))
-
-    total_batches = len(all_batches)
-    print(f"\nTotal batches across all chapters: {total_batches}")
-    print(f"Using {workers} workers.\n")
-
-    # Process all batches concurrently with a single pool
-    all_cards_by_chapter: Dict[int, List[Dict[str, str]]] = {ch: [] for ch in chapters}
-
-    with ThreadPoolExecutor(max_workers=workers) as executor:
-        # ... rest unchanged
-        futures = {executor.submit(generate_flashcards_batch, b): b for b in all_batches}
-        for future in as_completed(futures):
-            ch, batch_idx, cards = future.result()
-            all_cards_by_chapter[ch].extend(cards)
-            print(f"  Chapter {ch} batch {batch_idx}: {len(cards)} cards")
-
-    # Write per‑chapter files and combined file
-    total_cards = []
-    for ch in chapters:
-        cards = all_cards_by_chapter.get(ch, [])
+        cards = convert_assessment_to_flashcards(questions)
         total_cards.extend(cards)
+
         out_path = FLASHCARDS_DIR / f"flashcards_chapter_{ch}.json"
         out_path.write_text(json.dumps(cards, indent=2, ensure_ascii=False), encoding="utf-8")
-        print(f"\n  Chapter {ch}: {len(cards)} cards written to {out_path}")
+        print(f"  Chapter {ch}: {len(cards)} flashcards created (0 API calls) -> {out_path}")
 
     combined_path = FLASHCARDS_DIR / "flashcards.json"
     combined_path.write_text(json.dumps(total_cards, indent=2, ensure_ascii=False), encoding="utf-8")

@@ -164,26 +164,27 @@ def build_prompt(
     )
 
 
+from google.genai import types
+from notes.notes_models import LectureOutlineModel
 
 def generate_outline(
     chapters
 ):
-
-    prompt = (
-        build_prompt(
-            chapters
-        )
+    prompt = build_prompt(
+        chapters
     )
 
     _limiter.wait()
+
     response = (
         client.models.generate_content(
-            model=
-            MODEL_NAME,
-
-            contents=[
-                prompt
-            ]
+            model=MODEL_NAME,
+            contents=[prompt],
+            config=types.GenerateContentConfig(
+                temperature=0.3,
+                response_mime_type="application/json",
+                response_schema=LectureOutlineModel,
+            )
         )
     )
 

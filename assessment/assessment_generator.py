@@ -368,6 +368,10 @@ def _parse_questions(raw_text: str, chapter_id: int) -> list[Question]:
 # Generate chapter questions
 # ---------------------------------------------------------------------------
 
+class ChapterQuestionsOutput(BaseModel):
+    questions: list[Question]
+
+
 def generate_chapter_questions(
     chapter_id: int, chapter_title: str, chapter_markdown: str
 ) -> list[Question]:
@@ -376,9 +380,6 @@ def generate_chapter_questions(
     last_error: str | None = None
 
     for attempt in range(MAX_RETRIES):
-        # On retry, append what went wrong last time so the model gets
-        # a chance to actually fix it, instead of repeating the same
-        # prompt and hoping for a different random outcome.
         if last_error is None:
             prompt = base_prompt
         else:
@@ -388,10 +389,7 @@ def generate_chapter_questions(
                 f"Your last response was rejected. The specific reason "
                 f"was:\n\n{last_error}\n\n"
                 f"Produce the response again from scratch, making sure "
-                f"this specific problem does not happen again — pay "
-                f"particular attention to valid JSON string escaping "
-                f"(no raw backslashes, no LaTeX) and to matching every "
-                f"field name and value exactly as specified above."
+                f"this specific problem does not happen again."
             )
 
         logger.info(
@@ -406,6 +404,8 @@ def generate_chapter_questions(
                 contents=[prompt],
                 config=types.GenerateContentConfig(
                     temperature=0.3,
+                    response_mime_type="application/json",
+                    response_schema=ChapterQuestionsOutput,
                 ),
             )
 

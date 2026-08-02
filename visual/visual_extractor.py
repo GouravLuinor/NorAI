@@ -131,19 +131,25 @@ def analyze_chunk_images(
         )
     )
 
+from google.genai import types
+from visual.visual_models import VisualChunkKnowledgeModel
+
     for attempt in range(3):
 
         try:
             _limiter.wait()
             response = (
                 client.models.generate_content(
-                    model=
-                    "gemini-3.1-flash-lite-preview",
-
+                    model="gemini-3.1-flash-lite-preview",
                     contents=[
                         *uploaded_files,
                         enhanced_prompt
-                    ]
+                    ],
+                    config=types.GenerateContentConfig(
+                        temperature=0.2,
+                        response_mime_type="application/json",
+                        response_schema=VisualChunkKnowledgeModel,
+                    )
                 )
             )
 
