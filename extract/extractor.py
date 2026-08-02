@@ -19,8 +19,7 @@ from concurrent.futures import (
     ThreadPoolExecutor,
     as_completed
 )
-from backend.ratelimit import RPMRateLimiter
-_limiter = RPMRateLimiter(max_calls=12)
+from backend.ratelimit import rate_limiter as _limiter
 
 load_dotenv()
 

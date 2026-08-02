@@ -92,63 +92,64 @@ def extract_frames(
     saved_count = 0
     current_time = 0
 
-    while current_time < duration:
+    try:
+        while current_time < duration:
 
-        cap.set(
-            cv2.CAP_PROP_POS_MSEC,
-            current_time * 1000
-        )
-
-        success, frame = cap.read()
-
-        if not success:
-
-            logger.warning(
-                f"Failed at "
-                f"{current_time:.2f}s"
+            cap.set(
+                cv2.CAP_PROP_POS_MSEC,
+                current_time * 1000
             )
+
+            success, frame = cap.read()
+
+            if not success:
+
+                logger.warning(
+                    f"Failed at "
+                    f"{current_time:.2f}s"
+                )
+
+                current_time += (
+                    interval_seconds
+                )
+
+                continue
+
+            filename = (
+                f"frame_"
+                f"{int(current_time)}.jpg"
+            )
+
+            output_path = (
+                output_dir /
+                filename
+            )
+
+            cv2.imwrite(
+                str(output_path),
+                frame
+            )
+
+            metadata.append(
+                {
+                    "timestamp":
+                        round(
+                            current_time,
+                            2
+                        ),
+
+                    "image_path":
+                        str(output_path)
+                }
+            )
+
+            saved_count += 1
 
             current_time += (
                 interval_seconds
             )
-
-            continue
-
-        filename = (
-            f"frame_"
-            f"{int(current_time)}.jpg"
-        )
-
-        output_path = (
-            output_dir /
-            filename
-        )
-
-        cv2.imwrite(
-            str(output_path),
-            frame
-        )
-
-        metadata.append(
-            {
-                "timestamp":
-                    round(
-                        current_time,
-                        2
-                    ),
-
-                "image_path":
-                    str(output_path)
-            }
-        )
-
-        saved_count += 1
-
-        current_time += (
-            interval_seconds
-        )
-
-    cap.release()
+    finally:
+        cap.release()
 
     metadata_path = (
         output_dir /
@@ -196,7 +197,7 @@ if __name__ == "__main__":
 
     VIDEO_PATH = (
         "outputs/videos/"
-        "ciHThtTVNto_h264.mp4"
+        "ciHThtTVNto.mp4"
     )
 
     OUTPUT_DIR = (

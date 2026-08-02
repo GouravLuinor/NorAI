@@ -21,3 +21,8 @@ class RPMRateLimiter:
                     time.sleep(sleep_time)
                     self.calls = [t for t in self.calls if time.time() - t < self.window]
             self.calls.append(time.time())
+
+
+# Shared global rate limiter singleton across all pipeline modules
+_limiter = RPMRateLimiter(max_calls=12, window_seconds=60.0)
+rate_limiter = _limiter

@@ -30,12 +30,32 @@ _lecture_graphs: Dict[str, dict] = {}
 _cache_lock = threading.Lock()
 
 
+import re
+
+def sanitize_lecture_id(lecture_id: str) -> str:
+    """Ensure lecture_id is a safe alphanumeric/UUID string to prevent directory traversal."""
+    clean_id = Path(lecture_id).name
+    if not clean_id or not re.match(r"^[a-zA-Z0-9_-]+$", clean_id):
+        raise ValueError(f"Invalid lecture_id: {lecture_id}")
+    return clean_id
+
+
+def configure_sqlite(conn: sqlite3.Connection):
+    try:
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA busy_timeout=5000;")
+    except Exception:
+        pass
+
+
 def _init_graph_for_lecture(lecture_id: str):
-    lecture_dir = Path("outputs") / lecture_id
+    clean_id = sanitize_lecture_id(lecture_id)
+    lecture_dir = Path("outputs") / clean_id
     db_path = lecture_dir / "tutor" / "checkpoints.sqlite"
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     conn = sqlite3.connect(str(db_path), check_same_thread=False)
+    configure_sqlite(conn)
     checkpointer = SqliteSaver(conn)
     graph = build_graph(checkpointer, output_dir=str(lecture_dir))
     return graph
@@ -46,6 +66,7 @@ def _init_default_graph():
     global _default_graph
     CHECKPOINT_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(CHECKPOINT_DB_PATH), check_same_thread=False)
+    configure_sqlite(conn)
     checkpointer = SqliteSaver(conn)
     _default_graph = build_graph(checkpointer)
 
@@ -59,17 +80,19 @@ def _get_or_create_lecture_graph(lecture_id: str):
     Return (graph, lock) for the given lecture.
     Caches each graph so it's built only once per lecture.
     """
+    clean_id = sanitize_lecture_id(lecture_id)
     with _cache_lock:
-        if lecture_id not in _lecture_graphs:
-            graph = _init_graph_for_lecture(lecture_id)
+        if clean_id not in _lecture_graphs:
+            graph = _init_graph_for_lecture(clean_id)
             lock = threading.Lock()
-            _lecture_graphs[lecture_id] = {"graph": graph, "lock": lock}
-        entry = _lecture_graphs[lecture_id]
+            _lecture_graphs[clean_id] = {"graph": graph, "lock": lock}
+        entry = _lecture_graphs[clean_id]
         return entry["graph"], entry["lock"]
 
 def get_lecture_db_path(lecture_id: str) -> Path:
     """Return the path to the SQLite checkpoints DB for a lecture."""
-    return Path("outputs") / lecture_id / "tutor" / "checkpoints.sqlite"
+    clean_id = sanitize_lecture_id(lecture_id)
+    return Path("outputs") / clean_id / "tutor" / "checkpoints.sqlite"
 # ---------------------------------------------------------------------------
 # Public API — invoke the tutor for a specific lecture
 # ---------------------------------------------------------------------------

@@ -32,16 +32,22 @@ def is_url(string: str) -> bool:
     except ValueError:
         return False
 
+YOUTUBE_DOMAINS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"}
+GDRIVE_DOMAINS = {"drive.google.com", "docs.google.com"}
+
 def is_youtube_url(url: str) -> bool:
-    return (
-        "youtube.com" in url
-        or "youtu.be" in url
-    )
+    try:
+        netloc = urlparse(url).netloc.lower()
+        return netloc in YOUTUBE_DOMAINS or any(netloc.endswith(f".{d}") for d in ["youtube.com"])
+    except Exception:
+        return False
 
 def is_gdrive_url(url: str) -> bool:
-    return (
-        "drive.google.com" in url
-    )
+    try:
+        netloc = urlparse(url).netloc.lower()
+        return netloc in GDRIVE_DOMAINS
+    except Exception:
+        return False
 
 def extract_gdrive_file_id(url: str) -> str:
     """
@@ -125,48 +131,6 @@ def extract_from_gdrive(
 # -----------------------------
 
 
-def convert_to_h264(
-    input_video_path,
-    output_video_path
-):
-    """
-    Convert video to H.264 MP4.
-    """
-
-    logger.info(
-        "Converting video to H.264..."
-    )
-
-    try:
-
-        (
-            ffmpeg
-            .input(input_video_path)
-            .output(
-                output_video_path,
-                vcodec="libx264",
-                acodec="copy",
-                preset="fast",
-                crf=23
-            )
-            .overwrite_output()
-            .run(quiet=True)
-        )
-
-    except ffmpeg.Error as e:
-
-        logger.error(
-            f"H.264 conversion failed: {e}"
-        )
-
-        raise
-
-    logger.info(
-        f"Converted video saved: "
-        f"{output_video_path}"
-    )
-
-
 def extract_from_youtube(
     url: str,
     output_dir: str
@@ -198,9 +162,7 @@ def extract_from_youtube(
 
     ydl_opts = {
         "format":
-            "bestvideo[height<=720]"
-            "+bestaudio/"
-            "best[height<=720]",
+            "bestvideo[height<=720][vcodec^=avc1]+bestaudio/best[height<=720][vcodec^=avc1]/bestvideo[height<=720]+bestaudio/best[height<=720]",
 
         "outtmpl":
             os.path.join(
@@ -236,27 +198,10 @@ def extract_from_youtube(
 
     video_id = info["id"]
 
-    original_video_path = os.path.join(
+    video_path = os.path.join(
         video_dir,
         f"{video_id}.mp4"
     )
-
-    h264_video_path = os.path.join(
-        video_dir,
-        f"{video_id}_h264.mp4"
-    )
-
-    convert_to_h264(
-        original_video_path,
-        h264_video_path
-    )
-
-    if os.path.exists(
-        original_video_path
-    ):
-        os.remove(
-            original_video_path
-        )
 
     audio_path = os.path.join(
         audio_dir,
@@ -272,7 +217,7 @@ def extract_from_youtube(
         (
             ffmpeg
             .input(
-                h264_video_path
+                video_path
             )
             .output(
                 audio_path,
@@ -315,7 +260,7 @@ def extract_from_youtube(
             ),
 
         "video_path":
-            h264_video_path,
+            video_path,
 
         "audio_path":
             audio_path
@@ -347,7 +292,7 @@ def extract_from_youtube(
             audio_path,
 
         "video_path":
-            h264_video_path,
+            video_path,
 
         "metadata_path":
             metadata_path,

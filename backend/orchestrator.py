@@ -143,32 +143,40 @@ def run_pipeline(
         audio_path  = ing["audio_path"]
         meta_path   = ing["metadata_path"]
 
-        # ── Stage 2: Transcription ─────────────────────────────────────────
-        update_progress_sync(task_id, "transcription", "Transcribing lecture…", 8)
-        tr = transcribe_audio(audio_path, meta_path, output_dir=out)
-        transcript_json = tr["transcript_json_path"]
+        # ── Stage 2-6: Parallel Processing (Text Branch & Visual Branch) ────
+        from concurrent.futures import ThreadPoolExecutor
 
-        # ── Stage 3: Chunking ──────────────────────────────────────────────
-        update_progress_sync(task_id, "chunking", "Chunking transcript…", 14)
-        ch = chunk_transcript(transcript_json, output_dir=out)
-        chunks_path = ch["chunks_path"]
+        def _run_text_branch():
+            update_progress_sync(task_id, "transcription", "Transcribing lecture…", 8)
+            tr = transcribe_audio(audio_path, meta_path, output_dir=out)
+            t_json = tr["transcript_json_path"]
 
-        # ── Stage 4: Knowledge Extraction ──────────────────────────────────
-        update_progress_sync(task_id, "knowledge_extraction", "Extracting knowledge…", 20)
-        ke = extract_all_chunks(chunks_path, output_dir=out)
-        objects_dir = ke["objects_dir"]
+            update_progress_sync(task_id, "chunking", "Chunking transcript…", 14)
+            ch = chunk_transcript(t_json, output_dir=out)
+            c_path = ch["chunks_path"]
 
-        # ── Stage 5: Frame Extraction ──────────────────────────────────────
-        update_progress_sync(task_id, "frame_extraction", "Extracting frames…", 26)
-        raw_dir = str(lecture_dir / "screenshots" / "raw")
-        fe = extract_frames(video_path, raw_dir)
-        frames_meta = fe["metadata_file"]
+            update_progress_sync(task_id, "knowledge_extraction", "Extracting knowledge…", 20)
+            ke = extract_all_chunks(c_path, output_dir=out)
+            o_dir = ke["objects_dir"]
+            return c_path, o_dir
 
-        # ── Stage 6: Scene Detection ───────────────────────────────────────
-        update_progress_sync(task_id, "scene_detection", "Detecting key scenes…", 32)
-        keyframes_dir = str(lecture_dir / "screenshots" / "keyframes")
-        detect_scenes(frames_meta, keyframes_dir)
-        keyframes_meta = str(Path(keyframes_dir) / "metadata.json")
+        def _run_visual_branch():
+            update_progress_sync(task_id, "frame_extraction", "Extracting frames…", 26)
+            raw_dir = str(lecture_dir / "screenshots" / "raw")
+            fe = extract_frames(video_path, raw_dir)
+            f_meta = fe["metadata_file"]
+
+            update_progress_sync(task_id, "scene_detection", "Detecting key scenes…", 32)
+            keyframes_dir = str(lecture_dir / "screenshots" / "keyframes")
+            detect_scenes(f_meta, keyframes_dir)
+            kf_meta = str(Path(keyframes_dir) / "metadata.json")
+            return kf_meta
+
+        with ThreadPoolExecutor(max_workers=2) as exec_pipe:
+            fut_text = exec_pipe.submit(_run_text_branch)
+            fut_visual = exec_pipe.submit(_run_visual_branch)
+            chunks_path, objects_dir = fut_text.result()
+            keyframes_meta = fut_visual.result()
 
         # ── Stage 7: Chunk‑to‑Screenshot Mapping ───────────────────────────
         update_progress_sync(task_id, "mapping", "Mapping screenshots to chunks…", 35)
@@ -273,8 +281,7 @@ def run_pipeline(
         update_progress_sync(task_id, "flashcards", "Generating flashcards…", 86)
         try:
             import flashcards.generate_flashcards as fg
-            from pathlib import Path as _Path
-            lecture_dir = _Path(out)
+            lecture_dir = Path(out)
             fg.ASSESSMENT_DIR = lecture_dir / "assessment"
             fg.FLASHCARDS_DIR = lecture_dir / "flashcards"
             fg.FLASHCARDS_DIR.mkdir(parents=True, exist_ok=True)
@@ -288,11 +295,10 @@ def run_pipeline(
         update_progress_sync(task_id, "tutor_index", "Indexing for tutor…", 96)
         try:
             import chromadb
-            from pathlib import Path as _Path
             from tutor.chunker import chunk_glob
             from tutor.embedding import GeminiEmbeddingFunction
 
-            lecture_dir = _Path(out)
+            lecture_dir = Path(out)
             notes_glob = str(lecture_dir / "notes" / "chapter_*.md")
             chroma_dir = lecture_dir / "tutor" / "chroma"
             chroma_dir.mkdir(parents=True, exist_ok=True)
@@ -328,10 +334,9 @@ def run_pipeline(
         try:
             import json as _json, glob as _glob
             import chromadb
-            from pathlib import Path as _Path
             from tutor.embedding import GeminiEmbeddingFunction
 
-            lecture_dir = _Path(out)
+            lecture_dir = Path(out)
             screenshot_glob = str(lecture_dir / "screenshots" / "selected" / "chapter_*_screenshots.json")
             chroma_dir = lecture_dir / "tutor" / "chroma"
 
@@ -353,7 +358,7 @@ def run_pipeline(
                     chapter_id = data.get("chapter_id")
                     screenshots = data.get("screenshots", [])
                     for shot in screenshots:
-                        shot_id = f"ch{chapter_id}_{_Path(shot['path']).stem}"
+                        shot_id = f"ch{chapter_id}_{Path(shot['path']).stem}"
                         collection.upsert(
                             ids=[shot_id],
                             documents=[shot.get("reason", "")],
@@ -372,7 +377,6 @@ def run_pipeline(
         # ── Stage 19: Cleanup Temporary Files ──────────────────────────────
         update_progress_sync(task_id, "cleanup", "Cleaning up temporary files…", 99.5)
         import shutil
-        from pathlib import Path
 
         lecture_dir = Path(out)
         if (lecture_dir / "notes").exists() and (lecture_dir / "tutor" / "chroma").exists():

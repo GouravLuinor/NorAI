@@ -53,8 +53,7 @@ from assessment.assessment_models import (
 
 load_dotenv()
 
-from backend.ratelimit import RPMRateLimiter
-_limiter = RPMRateLimiter(max_calls=12)
+from backend.ratelimit import rate_limiter as _limiter
 
 logging.basicConfig(
     level=logging.INFO,

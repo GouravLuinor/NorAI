@@ -31,12 +31,12 @@ logger = logging.getLogger(__name__)
 # Constants
 
 MODEL_NAME = "gemini-3.1-flash-lite-preview"
+DEFAULT_MODEL_NAME = MODEL_NAME
+DEFAULT_FRAME_INTERVAL_SECONDS = 8
+DEFAULT_SEGMENTS_PER_CHUNK = 15
+DEFAULT_MAX_RETRIES = 8
+DEFAULT_RPM_LIMIT = 12
 
-# Temperature for tutor responses. Slightly above 0 since conversational
-# answers benefit from a little natural variation, but still fairly
-# deterministic — this isn't creative writing, it's explaining material
-# from a fixed source (and once Phase 3 adds retrieval, answers should
-# stay close to the retrieved context rather than wandering).
 TEMPERATURE = 0.4
 
 CHECKPOINT_DIR = Path("outputs/tutor")
