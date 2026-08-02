@@ -1,3 +1,4 @@
+from __future__ import annotations
 from concurrent.futures import (
     ThreadPoolExecutor,
     as_completed
@@ -94,6 +95,19 @@ client = load_llm()
 from google.genai import types
 
 
+class FrameQualityScore(BaseModel):
+
+    path: str
+
+    content_density: int
+
+    instructor_occlusion: int
+
+    blur_level: int
+
+    is_transition_or_decorative: bool
+
+
 class FrameQualityBatch(BaseModel):
 
     scores: list[FrameQualityScore]
@@ -118,19 +132,6 @@ class ChapterScreenshots(BaseModel):
     chapter_id: int
 
     screenshots: list[SelectedScreenshot]
-
-
-class FrameQualityScore(BaseModel):
-
-    path: str
-
-    content_density: int
-
-    instructor_occlusion: int
-
-    blur_level: int
-
-    is_transition_or_decorative: bool
 
 
 # Prompts

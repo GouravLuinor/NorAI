@@ -13,6 +13,8 @@ The complete findings are organized into 4 detailed audit reports:
    - Benchmark data extracted directly from real 25-minute lecture run (`outputs/5154a6ea-ccfe-4698-a9e1-799d4a5fec75/`), including chunk statistics, screenshot survival counts per chapter, exact API call breakdown, and Files API latency analysis.
 4. 📄 **[Part 4: Open Architectural Findings](file:///home/gourav/coding/VScode/Projects/NorAI/audit/audit_open_findings.md)**
    - High-impact architectural improvements: fragmented rate-limiter instances, hardcoded configurations, dead PDF builder code, and SQLite lock bottlenecks.
+5. 📄 **[Part 5: LangGraph Subsystem, RAG & Auxiliary Audit](file:///home/gourav/coding/VScode/Projects/NorAI/audit/audit_tutor_and_auxiliary.md)**
+   - Deep review of the LangGraph AI tutor (`tutor/`), vector search retrieval pipelines (`retriever.py`, `embedding.py`), auxiliary pipeline compilers (`chapter_builder.py`, `chunk.py`), and frontend Zustand stores (`useThreadStore.ts`).
 
 ---
 
@@ -29,3 +31,6 @@ Presents concrete baseline metrics from processing a 24m56s lecture video (35 ch
 
 ### [Audit Part 4: Open Architectural Findings](file:///home/gourav/coding/VScode/Projects/NorAI/audit/audit_open_findings.md)
 Highlights structural anti-patterns and technical debt across the project. Finds that rate limiters (`RPMRateLimiter`) are instantiated locally per module rather than shared globally, causing concurrent threads to breach Gemini API rate limits. Identifies dead PDF builder scripts (`assessment_pdf_builder.py`, `study_pdf_builder.py`), unconfigured SQLite WAL mode causing `database is locked` errors during tutor queries, and scattered hardcoded parameters across 6 separate python files.
+
+### [Audit Part 5: LangGraph Subsystem, RAG & Auxiliary Audit](file:///home/gourav/coding/VScode/Projects/NorAI/audit/audit_tutor_and_auxiliary.md)
+Evaluates the AI Tutor subsystem and retrieval infrastructure. Discovers a **parallel branch race condition** in `tutor/graph.py` where `retrieve_images` evaluates `search_query` concurrently before `rewrite_query` finishes generating it (causing image queries to use raw or stale terms). Finds that `retrieved_images` state is not cleared per turn, leading to stale image prompt injections. Identifies direct `chromadb.PersistentClient` re-initialization overhead per query in `nodes_retrieval.py` and proposes order-preserving deduplication for `chapter_builder.py`.
