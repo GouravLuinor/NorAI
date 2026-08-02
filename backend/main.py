@@ -225,6 +225,7 @@ async def list_threads(lecture_id: str = "default"):
     threads = set()
     try:
         conn = sqlite3.connect(str(db_path), timeout=10.0)
+        configure_sqlite(conn)
         try:
             # 1) Auto-migrate old threads: check if a checkpoint has HumanMessage
             try:
@@ -270,6 +271,7 @@ async def create_thread_endpoint(request: Request, lecture_id: str = "default"):
     db_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         conn = sqlite3.connect(str(db_path), timeout=10.0)
+        configure_sqlite(conn)
         try:
             conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
             conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (thread_id,))
@@ -324,6 +326,7 @@ async def delete_thread(thread_id: str, lecture_id: str = "default"):
     if db_path.exists():
         try:
             conn = sqlite3.connect(str(db_path), timeout=10.0)
+            configure_sqlite(conn)
             try:
                 for table in ["checkpoints", "checkpoint_blobs", "checkpoint_writes", "user_threads"]:
                     try:

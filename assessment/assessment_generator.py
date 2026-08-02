@@ -40,7 +40,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from assessment.assessment_prompts import ASSESSMENT_PROMPT
 from assessment.assessment_models import (

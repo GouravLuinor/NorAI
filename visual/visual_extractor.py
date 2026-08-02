@@ -4,11 +4,13 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 import time
 import random
 from visual.visual_prompts import (
     VISUAL_PROMPT
 )
+from visual.visual_models import VisualChunkKnowledgeModel
 from concurrent.futures import (
     ThreadPoolExecutor,
     as_completed
@@ -121,18 +123,10 @@ def analyze_chunk_images(
 
     enhanced_prompt = (
         VISUAL_PROMPT
-        +
-        "\n\n"
-        +
-        "Screenshot Index Mapping:\n"
-        +
-        "\n".join(
-            image_listing
-        )
+        + "\n\n"
+        + "Screenshot Index Mapping:\n"
+        + "\n".join(image_listing)
     )
-
-from google.genai import types
-from visual.visual_models import VisualChunkKnowledgeModel
 
     for attempt in range(3):
 
