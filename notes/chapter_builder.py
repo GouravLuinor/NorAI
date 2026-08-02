@@ -289,7 +289,9 @@ def build_chapters(
 
             chunk_ids=chunk_ids,
 
-            focus_concepts=focus_concepts,
+            focus_concepts=list(
+                dict.fromkeys(focus_concepts)
+            ),
 
             topics=list(
                 dict.fromkeys(topics)

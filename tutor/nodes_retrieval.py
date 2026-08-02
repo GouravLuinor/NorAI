@@ -125,52 +125,19 @@ def detect_chapter_node(state: dict, config: RunnableConfig) -> dict:
 
 def retrieve_images_node(state: dict, config: RunnableConfig, output_dir=None) -> dict:
     """
-    Retrieve relevant screenshots using the original user question.
-    Uses a direct Chroma connection to avoid cache conflicts with
-    parallel text retrieval.
+    Retrieve relevant screenshots using the rewritten search query or user question.
+    Uses the process-wide singleton retriever from tutor.retriever.
     """
-    import chromadb
-    from pathlib import Path
-    from tutor.retrieval_config import CHROMA_DIR, SCREENSHOT_COLLECTION_NAME, TOP_K_IMAGES
-    from tutor.embedding import GeminiEmbeddingFunction
-    
     query = state.get("search_query") or state.get("user_question", "")
-    
-    # Use lecture-specific chroma dir if available
-    chroma_dir = Path(output_dir) / "tutor" / "chroma" if output_dir else CHROMA_DIR
+    chapter_id = state.get("chapter_id")
     
     retrieved_images: list = []
     try:
-        client = chromadb.PersistentClient(path=str(chroma_dir))
-        embedding_fn = GeminiEmbeddingFunction(role="query")
-        collection = client.get_collection(
-            name=SCREENSHOT_COLLECTION_NAME,
-            embedding_function=embedding_fn,
+        retrieved_images = retrieve_images(
+            query=query,
+            chapter_id=chapter_id,
+            k=TOP_K_IMAGES,
         )
-        chapter_id = state.get("chapter_id")  # Phase 5: chapter routing
-        where_filter = None
-        if chapter_id is not None:
-            where_filter = {"chapter_id": chapter_id}
-
-        results = collection.query(
-            query_texts=[query],
-            n_results=TOP_K_IMAGES,
-            where=where_filter,
-            include=["metadatas", "distances"],
-        )
-        
-        if results["ids"] and results["ids"][0]:
-            for idx in range(len(results["ids"][0])):
-                meta = results["metadatas"][0][idx]
-                dist = results["distances"][0][idx]
-                retrieved_images.append({
-                    "path": meta["path"],
-                    "section": meta.get("section", ""),
-                    "importance": meta.get("importance", 0),
-                    "chapter_id": meta.get("chapter_id"),
-                    "distance": dist,
-                })
-            retrieved_images.sort(key=lambda x: (x["distance"], -x["importance"]))
     except Exception:
         logger.error("[retrieve_images_node] Unexpected error:", exc_info=True)
     
@@ -183,11 +150,12 @@ def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
     Reads:  state['user_question'], state['messages'] (recent history)
     Writes: state['search_query'] (the rewritten query)
             state['retrieved_chunks'] = []  (clear any stale chunks from prior turn)
+            state['retrieved_images'] = []  (clear any stale images from prior turn)
     """
     question = state.get("user_question", "")
     if not question:
         logger.warning("rewrite_query_node: no user_question in state, skipping rewrite")
-        return {"retrieved_chunks": []}
+        return {"retrieved_chunks": [], "retrieved_images": []}
 
     # Pull recent history for context (exclude SystemMessages — they're not
     # conversational context, just the tutor prompt rebuilt each turn)
@@ -210,12 +178,9 @@ def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
         f"Rewritten search query:"
     )
 
-    # Use the LLM from config (same model as generate_answer_node, already
-    # initialised there — but we construct it independently here so the node
-    # is self-contained and testable in isolation)
     try:
         from langchain_google_genai import ChatGoogleGenerativeAI  # type: ignore
-        from tutor.config import get_api_key
+        from config import get_api_key
 
         llm = ChatGoogleGenerativeAI(
             model=_get_model_from_config(),
@@ -224,7 +189,7 @@ def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
         )
     except Exception as exc:
         logger.warning(f"rewrite_query_node: LLM init failed ({exc}), using raw question")
-        return {"search_query": question, "retrieved_chunks": []}
+        return {"search_query": question, "retrieved_chunks": [], "retrieved_images": []}
 
     try:
         response = llm.invoke(
@@ -239,11 +204,11 @@ def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
 
         if rewritten:
             logger.debug(f"Query rewrite: {question!r} → {rewritten!r}")
-            return {"search_query": rewritten, "retrieved_chunks": []}
+            return {"search_query": rewritten, "retrieved_chunks": [], "retrieved_images": []}
     except Exception as exc:
         logger.warning(f"rewrite_query_node: LLM call failed ({exc}), using raw question")
 
-    return {"search_query": question, "retrieved_chunks": []}
+    return {"search_query": question, "retrieved_chunks": [], "retrieved_images": []}
 
 
 def _get_model_from_config() -> str:

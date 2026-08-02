@@ -81,9 +81,9 @@ def build_graph(checkpointer, output_dir=None):
     builder.add_edge("quiz_llm_evaluate", "save_memory")
 
     # Normal Q&A flow
-    builder.add_edge("start_normal", "retrieve_images")
     builder.add_edge("start_normal", "rewrite_query")
     builder.add_edge("rewrite_query", "retrieve")
+    builder.add_edge("rewrite_query", "retrieve_images")
     builder.add_edge("retrieve", "generate_answer")
     builder.add_edge("retrieve_images", "generate_answer")
     builder.add_edge("generate_answer", "save_memory")
