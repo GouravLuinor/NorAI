@@ -1,27 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import List
 
+class OutlineChapter(BaseModel):
+    chapter_id: int
+    title: str
+    focus_concepts: List[str]
+    chunk_ids: List[int]
+    start_chunk: int
+    end_chunk: int
 
-class Chapter(BaseModel):
-
-    chapter_title: str
-
-    chunk_ids: list[int]
-
-    concepts: list[str]
-
-    lecture_notes: str
-
-    visual_notes: str
-
-    important_information: list[str]
-
-    screenshots: list[str]
-
-
-class LectureNotes(BaseModel):
-
-    lecture_title: str
-
-    generated_from: int
-
-    chapters: list[Chapter]
+class LectureOutlineModel(BaseModel):
+    chapters: List[OutlineChapter]

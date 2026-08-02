@@ -20,3 +20,12 @@ class KnowledgeObject(
     inferred_knowledge: list[str]
 
     external_knowledge: dict[str, str]
+
+
+class ChunkKnowledgeModel(BaseModel):
+    topic: str
+    lecture_notes: str
+    key_points: list[str]
+    concepts: list[str]
+    inferred_knowledge: list[str]
+    external_knowledge: dict[str, str]

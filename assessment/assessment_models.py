@@ -112,6 +112,21 @@ class Question(BaseModel):
 
     explanation: str = ""
 
+    flashcard_front: str = Field(
+        default="",
+        description="Very short, self-contained question for flashcard front, strictly MAX 15 WORDS"
+    )
+
+    flashcard_back: str = Field(
+        default="",
+        description="Short, precise answer for flashcard back, strictly MAX 20 WORDS"
+    )
+
+    flashcard_explanation: str = Field(
+        default="",
+        description="Brief clarifying rationale for flashcard, strictly MAX 30 WORDS"
+    )
+
     @model_validator(mode="after")
     def _validate_options_for_type(self) -> "Question":
         requires_options = self.type in _OPTION_REQUIRED_TYPES
