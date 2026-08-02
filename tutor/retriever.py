@@ -166,6 +166,7 @@ def retrieve_images(
     query: str,
     chapter_id: Optional[int] = None,
     k: int = TOP_K_IMAGES,
+    output_dir: Optional[str] = None,
 ) -> list[dict]:
     """
     Query the screenshot captions index and return the top-k most relevant images.
@@ -174,6 +175,7 @@ def retrieve_images(
         query:      The user's question (or rewritten query).
         chapter_id: If set, restrict results to screenshots from this chapter.
         k:          Number of images to return.
+        output_dir: If set, use this directory's Chroma index instead of default.
 
     Returns:
         List of RetrievedImage dicts, sorted by (distance ascending, importance descending).
@@ -181,7 +183,15 @@ def retrieve_images(
     Raises:
         IndexNotBuiltError: if the screenshot index hasn't been built yet.
     """
-    collection = _get_screenshot_collection()
+    if output_dir:
+        chroma_dir = Path(output_dir) / "tutor" / "chroma"
+        client = chromadb.PersistentClient(path=str(chroma_dir))
+        collection = client.get_collection(
+            name=SCREENSHOT_COLLECTION_NAME,
+            embedding_function=GeminiEmbeddingFunction(role="query"),
+        )
+    else:
+        collection = _get_screenshot_collection()
 
     where: dict | None = None
     if chapter_id is not None:

@@ -32,6 +32,11 @@ OUTPUT_SCHEMA = """
   "key_points": [],
   "concepts": [],
   "inferred_knowledge": [],
-  "external_knowledge": {}
+  "external_knowledge": [
+    {
+      "key": "concept_name",
+      "value": "explanation"
+    }
+  ]
 }
 """

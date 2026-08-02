@@ -21,6 +21,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 from backend.ratelimit import rate_limiter as _limiter
+from config import MODEL_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +135,7 @@ def analyze_chunk_images(
             _limiter.wait()
             response = (
                 client.models.generate_content(
-                    model="gemini-3.1-flash-lite-preview",
+                    model=MODEL_NAME,
                     contents=[
                         *uploaded_files,
                         enhanced_prompt
@@ -456,7 +457,7 @@ def extract_visual_object(
     visual_object[
         "generated_by"
     ] = (
-        "gemini-3.1-flash-lite-preview"
+        MODEL_NAME
     )
 
     return visual_object

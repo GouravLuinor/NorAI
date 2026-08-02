@@ -22,7 +22,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-MODEL_NAME = "gemini-3.1-flash-lite-preview"
+from config import MODEL_NAME
 
 
 def load_llm():

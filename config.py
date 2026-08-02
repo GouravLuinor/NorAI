@@ -21,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ── Canonical Pipeline & LLM Defaults ─────────────────────────────────────────
-MODEL_NAME = "gemini-3.1-flash-lite-preview"
+MODEL_NAME = "gemini-3.1-flash-lite"
 DEFAULT_MODEL_NAME = MODEL_NAME
 
 DEFAULT_FRAME_INTERVAL_SECONDS = 8

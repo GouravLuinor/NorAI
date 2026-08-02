@@ -137,6 +137,7 @@ def retrieve_images_node(state: dict, config: RunnableConfig, output_dir=None) -
             query=query,
             chapter_id=chapter_id,
             k=TOP_K_IMAGES,
+            output_dir=output_dir,
         )
     except Exception:
         logger.error("[retrieve_images_node] Unexpected error:", exc_info=True)
