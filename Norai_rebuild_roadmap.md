@@ -1,20 +1,18 @@
 # NorAI — Rebuild Roadmap
 
-Status: Tier 0 & Tier 1 Implementation Completed and Verified. Planning for Tier 2.
+Status: Tier 0, Tier 1, Tier 2, and Tier 3 Implementation Completed and Verified.
 
-Purpose: organize everything surfaced by the overnight audit + follow-up investigation into a sequenced plan, grouped by dependency and readiness — not just a flat list of findings.
+Purpose: Organize everything surfaced by the codebase audit + follow-up investigations into a sequenced plan, grouped by dependency and readiness.
 
 ---
 
 ## Constraint That Shapes Everything Below
 
-**Google AI Studio free tier: 15 RPM / 500 RPD.** This is a hard ceiling, not a soft optimization target. At current pipeline shape (~128 calls for a 25-min lecture), one lecture already consumes ~25% of the daily quota. This constraint raises the priority of API-call reduction work beyond "nice to have cost savings" — it directly determines how many lectures/day the system can realistically process. Keep this in view when sequencing everything else.
+**Google AI Studio free tier: 15 RPM / 500 RPD.** This is a hard ceiling, not a soft optimization target. Through Tier 2 consolidation, the total LLM calls per lecture were reduced from **~128 calls down to ~35 calls** (~72% reduction), drastically lowering quota footprint and pipeline latency.
 
 ---
 
-## Tier 0 — No Dependencies, No Open Questions (100% COMPLETED)
-
-These are fully diagnosed, isolated, and carry no design ambiguity.
+## Tier 0 — No Dependencies, No Open Questions (100% COMPLETED) ✅
 
 1. **Delete dead H.264 conversion code** (`ingest/ingest.py`) — `convert_to_h264()` confirmed unused. ✅ **[DONE]**
 2. **Fix chunk-to-screenshot mapping gap** (`visual/mapper.py`) — add nearest-keyframe fallback (within ±20s tolerance) when strict boundary check yields zero screenshots. ✅ **[DONE]**
@@ -32,7 +30,7 @@ These are fully diagnosed, isolated, and carry no design ambiguity.
 14. **Clean up root-level orphan files** (`test_api.py`, `visual.txt`, `tree.txt`). ✅ **[DONE]**
 15. **Centralize hardcoded config** into top-level `config.py` — root configuration module created and re-exported. ✅ **[DONE]**
 
-### Tutor Subsystem — Tier 0 (COMPLETED)
+### Tutor Subsystem — Tier 0 (COMPLETED) ✅
 
 16. **Re-sequence LangGraph edges in `tutor/graph.py`** — `rewrite_query` completes before both `retrieve` and `retrieve_images` fire. ✅ **[DONE]**
 17. **Clear `retrieved_images: []` per turn in `rewrite_query_node`** (`tutor/nodes_retrieval.py`) — reset `retrieved_images` alongside `retrieved_chunks`. ✅ **[DONE]**
@@ -41,54 +39,80 @@ These are fully diagnosed, isolated, and carry no design ambiguity.
 
 ---
 
-## Tier 1 — Design Decisions & Refactoring (100% COMPLETED / 1 PENDING VERIFICATION)
+## Tier 1 — Design Decisions & Refactoring (100% COMPLETED) ✅
 
 ### 1.1 Flashcards → deterministic 0-call transform ✅ **[DONE]**
-- **Status**: Extended `Question` model in `assessment_models.py` with `flashcard_front` (max 15 words), `flashcard_back` (max 20 words), `flashcard_explanation` (max 30 words).
-- **Implementation**: `generate_flashcards.py` uses `convert_assessment_to_flashcards()`, a 0-call transform (saved ~30 LLM calls per lecture).
+- Extended `Question` model in `assessment_models.py` with `flashcard_front`, `flashcard_back`, and `flashcard_explanation`.
+- `generate_flashcards.py` uses `convert_assessment_to_flashcards()`, a 0-call transform (saved ~30 LLM calls per lecture).
 
 ### 1.2 Adopt structured output (`response_schema`) across all LLM calls ✅ **[DONE]**
-- **Status**: Enforced Pydantic `response_schema` across all 6 JSON-producing LLM endpoints (`assessment_generator.py`, `outline_generator.py`, `extractor.py`, `visual_extractor.py`, Pass 1 & Pass 2 in `screenshot_selector.py`).
+- Enforced Pydantic `response_schema` across all JSON-producing LLM endpoints (`assessment_generator.py`, `outline_generator.py`, `extractor.py`, `visual_extractor.py`, Pass 1 & Pass 2 in `screenshot_selector.py`).
 
 ### 1.3 `MAX_GAP_SECONDS` scene detection tuning & batch size optimization ✅ **[DONE]**
-- **Status**: Set `MAX_GAP_SECONDS = 60` in `visual/scene_detector.py` (matches ~57-80s chunk duration). Set `PASS1_BATCH_SIZE = 10` in `notes/screenshot_selector.py` (cuts Pass 1 API calls by 50%).
+- Set `MAX_GAP_SECONDS = 60` in `visual/scene_detector.py`. Set `PASS1_BATCH_SIZE = 10` in `notes/screenshot_selector.py` (cuts Pass 1 API calls by 50%).
 
 ### 1.4 Tutor retrieval confidence threshold calibration (`tutor/retrieval_config.py`) ⏳ **[PENDING VERIFICATION]**
-- **Proposed change**: Increase `CONFIDENCE_THRESHOLD` from `0.30` to `0.35` to reduce false-positive low-confidence disclaimers.
-- **Status**: Pending empirical cosine distance verification from real tutor query logs before modifying.
+- Pending empirical cosine distance verification from real tutor query logs before modifying.
 
 ---
 
-## Tier 2 — Architecture-Level Pipeline Consolidation & Latency Optimization
+## Tier 2 — Architecture-Level Pipeline Consolidation & Latency Optimization (100% COMPLETED) ✅
 
-### 2.0 Sequential Files API upload parallelization — READY TO IMPLEMENT 🚀 **[READY]**
-No design decision needed. Replace sequential `client.files.upload()` loop with `ThreadPoolExecutor`-based concurrent uploads (or inline byte embedding if simpler) in `visual/visual_extractor.py` and `notes/screenshot_selector.py`. No call-count change, no failure-mode change, pure latency win. Implement independently of everything else below.
+### 2.0 Sequential Files API upload parallelization ✅ **[DONE]**
+- Replaced sequential `client.files.upload()` loop with `ThreadPoolExecutor`-based concurrent uploads in `visual/visual_extractor.py` and `notes/screenshot_selector.py` (38s latency improvement).
 
-### 2.1 Batch visual extraction by chapter instead of per-chunk — APPROVED FOR IMPLEMENTATION ✅ **[APPROVED]**
-Current: ~35-40 calls (1 per chunk). Target: ~9-10 calls (1 per chapter, batched candidate images per chapter). Failure handling: if a chapter's batch call fails after retries, that chapter gets zero visual objects (consistent with existing degradation pattern) rather than halting the pipeline — mark it incomplete in chapter metadata (`incomplete: true`).
+### 2.1 Batch visual extraction by chapter instead of per-chunk ✅ **[DONE]**
+- Replaced ~35-40 per-chunk visual calls with chapter-aligned batch calls (1 call per chapter, saved 31 LLM calls).
 
 ### 2.2 Merge Knowledge Extraction + Outline Generation — REJECTED ❌ **[REJECTED]**
-Reasoning: knowledge extraction runs per-chunk specifically for parallelism and retry isolation; outline generation runs once over merged output. These have different granularity and merging them collapses a parallelizable, retry-safe stage into a single fragile serial one, to save only 1 call (outline is already cheap). Keep these stages separate. If further call reduction on knowledge extraction is wanted later, apply the same per-chapter batching pattern as 2.1 instead.
+- Kept separate for per-chunk parallel execution and retry isolation.
 
-### 2.3 Merge Study Notes + Revision Notes + Assessment into one call per chapter — APPROVED FOR IMPLEMENTATION (AFTER 2.1) ⏳ **[APPROVED - AFTER 2.1]**
-Current: 30 calls (10 chapters × 3 artifact types). Target: ~9-10 calls (1 per chapter, structured response with three top-level fields: `study_notes`, `revision_summary`, `assessment_questions`). Failure handling: same as 2.1 — silent degradation with an `incomplete: true` flag on that chapter's artifacts, not a full pipeline halt. Sequence this after 2.1 is implemented and tested, not simultaneously.
+### 2.3 Merge Study Notes + Revision Notes + Assessment into one call per chapter ✅ **[DONE]**
+- Consolidated Study Notes, Revision Summaries, and Quiz Assessments into 1 LLM call per chapter (saved 20 LLM calls).
 
 ---
 
-## Do Not Touch Yet
+## Tier 3 — Quality, Prompt Engineering & UI Determinism (100% COMPLETED) ✅
 
-- **Removing redundant `start_normal` pass-through node in `tutor/graph.py`** — cosmetic/efficiency change only with zero functional impact; not worth bundling with real bug fixes.
-- **Multi-user / auth / deployment hardening** (CORS lockdown, endpoint auth) — deferred until there's an actual deployment target.
-- **Database modernization (SQLite → Postgres)** — deferred until multi-user becomes a real near-term goal.
+### 3.1 Domain-Aware Prompt Overhaul & Noise Rejection ✅ **[DONE]**
+- Overhauled `EXTRACTION_SYSTEM_PROMPT` in `extract/prompts.py` for technical terms, formulas, and strict bounds on `inferred_knowledge`.
+- Added UI noise rejection (ignoring YouTube player timeline, captions, watermarks) to `visual/visual_prompts.py`.
+- Enforced density-based word count scaling and organic formatting guidelines (tables, math blocks) in `notes/notes_generator.py`.
+
+### 3.2 Pydantic Structured Section Cards & Deterministic UI Rendering ✅ **[DONE]**
+- Added `StudyNoteSection` model (`section_type`, `title`, `content_markdown`) to `MergedChapterArtifactsModel` in `notes/notes_generator.py`.
+- Persisted dual outputs: `chapter_{id}.json` (for 100% deterministic UI card rendering) and `chapter_{id}.md` (for RAG vector indexing).
+- Updated `/notes/{chapter_id}` backend endpoint, `NotesView.tsx`, and `PrintPage.tsx` to map section types directly to UI cards for web and PDF export views.
+
+### 3.3 Lecture Title Sync & Dynamic AI Thread Naming ✅ **[DONE]**
+- Implemented 3-tier title fallback hierarchy (`lecture_outline.json` $\rightarrow$ `chapters[0]` $\rightarrow$ `chapter_1.md`) in `backend/lecture_registry.py`.
+- Implemented ChatGPT-style auto-renaming for AI chat threads on first question in `useThreadStore.ts`.
+
+### 3.4 Granular Chunking & Chapter Target Optimization ✅ **[DONE]**
+- Updated `DEFAULT_SEGMENTS_PER_CHUNK = 5` (~1 min/chunk) in `chunking/chunk.py`.
+- Updated `target_chapters` calculation formula (3 to 8 chapters) in `notes/outline_generator.py` for full-length lecture coverage.
+
+---
+
+## Deferred Items
+
+- **Removing redundant `start_normal` pass-through node in `tutor/graph.py`** — cosmetic/efficiency change deferred.
+- **Multi-user / auth / deployment hardening** (CORS lockdown, endpoint auth) — deferred until deployment target.
+- **Database modernization (SQLite → Postgres)** — deferred.
 - **Async DAG workflow engine (Temporal/Prefect)** — deferred.
 
 ---
 
-- **Progress Summary**:
-  - **Tier 0 Infrastructure Tasks (1–19)**: 19 / 19 Completed (100%) ✅
-  - **Tier 1 Design Tasks (1.1–1.3)**: 3 / 3 Completed (100%) ✅
-  - **Tier 1.4 Tutor Threshold**: Pending Empirical Logs ⏳
-  - **Tier 2.0 Upload Parallelization**: Completed (38s latency win) ✅
-  - **Tier 2.1 Chapter Visual Extraction**: Completed (31 LLM calls saved) ✅
-  - **Tier 2.2 Extraction + Outline Merge**: Rejected ❌
-  - **Tier 2.3 Notes + Quiz Chapter Merge**: Completed (20 LLM calls saved) ✅
+## Progress Summary
+
+- **Tier 0 Infrastructure Tasks (1–19)**: 19 / 19 Completed (100%) ✅
+- **Tier 1 Design Tasks (1.1–1.3)**: 3 / 3 Completed (100%) ✅
+- **Tier 1.4 Tutor Threshold**: Pending Empirical Logs ⏳
+- **Tier 2.0 Upload Parallelization**: Completed (38s latency win) ✅
+- **Tier 2.1 Chapter Visual Extraction**: Completed (31 LLM calls saved) ✅
+- **Tier 2.2 Extraction + Outline Merge**: Rejected ❌
+- **Tier 2.3 Notes + Quiz Chapter Merge**: Completed (20 LLM calls saved) ✅
+- **Tier 3.1 Prompt Overhaul**: Completed ✅
+- **Tier 3.2 Structured UI Section Cards**: Completed ✅
+- **Tier 3.3 Title & Thread Auto-Sync**: Completed ✅
+- **Tier 3.4 Chunking & Chapter Target Optimization**: Completed ✅

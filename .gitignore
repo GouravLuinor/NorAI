@@ -36,6 +36,7 @@ uploads/
 # Chroma DB
 chroma/
 .chroma/
+chroma_db/
 
 # Node & Frontend Build Artifacts
 node_modules/
