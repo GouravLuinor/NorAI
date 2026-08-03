@@ -1,14 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { fetchGeneratedFlashcards } from '../../stores/useQuizStore'
+import { fetchGeneratedFlashcards, type Flashcard } from '../../stores/useQuizStore'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useLectureStore } from '../../stores/useLectureStore'   // ← added
-
-interface Flashcard {
-  front: string
-  back: string
-  explanation?: string
-}
 
 type Rating = 'Again' | 'Hard' | 'Good' | 'Easy'
 

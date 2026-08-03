@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Reference } from '../../mocks/references'
+import type { Reference } from '../../types'
 import { Bookmark, ChevronUp, FileText, Image } from 'lucide-react'
 
 interface ReferencesPanelProps {

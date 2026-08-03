@@ -92,7 +92,6 @@ export function HighlightAsk() {
     setLoading(true)
     try {
       // Lecture‑scoped request
-      console.log('HighlightAsk sending with lectureId:', lectureId)
       const data = await sendChatMessage(
         useThreadStore.getState().threadId,
         question,

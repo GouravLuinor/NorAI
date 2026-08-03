@@ -1,6 +1,7 @@
 import { useEffect, useState} from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Check, Loader2, ArrowRight } from 'lucide-react'
+import type { ProcessEvent } from '../types'
 
 interface StageInfo {
   label: string
@@ -44,7 +45,7 @@ useEffect(() => {
   let pollTimer: ReturnType<typeof setInterval> | null = null
   let cancelled = false
 
-  const processEventData = (data: any) => {
+  const processEventData = (data: ProcessEvent) => {
     const stage = data.stage
     if (stage === 'complete') {
       setCompletedStages(prev => {
@@ -62,6 +63,7 @@ useEffect(() => {
       setMessage(`Error: ${data.message || 'Something went wrong.'}`)
       return
     }
+    if (!stage) return
     setActiveStage(stage)
     setCompletedStages(prev => {
       const next = new Set(prev)
@@ -77,16 +79,14 @@ useEffect(() => {
 const poll = async () => {
     if (cancelled) return
     try {
-        const res = await fetch(`http://localhost:8000/process/${taskId}/status`)
-        console.log('Poll status:', res.status)  // ← add this
+        const res = await fetch(`/process/${taskId}/status`)
         const data = await res.json()
-        console.log('Poll data:', data)  // ← add this
         processEventData(data)
         if (data.stage === 'complete' || data.stage === 'error') {
             if (pollTimer) clearInterval(pollTimer)
         }
-    } catch(e) {
-        console.error('Poll error:', e)  // ← add this
+    } catch {
+        // polling continues; transient network errors should not break the flow
     }
 }
 

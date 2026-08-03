@@ -29,6 +29,7 @@
 import { create } from 'zustand'
 import { useQuizStore } from './useQuizStore'
 import { useLectureStore } from './useLectureStore'
+import type { Reference, RetrievedChunk, RetrievedImage, ChatResponse } from '../types'
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -164,8 +165,8 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T | nul
       return null
     }
     return res.json() as Promise<T>
-  } catch (err: any) {
-    if (err?.name !== 'AbortError') console.error(`apiFetch error for ${path}:`, err)
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name !== 'AbortError') console.error(`apiFetch error for ${path}:`, err)
     return null
   }
 }
@@ -198,8 +199,8 @@ interface ThreadState {
 
   // RC-D: cache so switching back to a thread shows messages instantly
   _messagesCache: Record<string, Message[]>
-  liveReferences: any[]
-  setLiveReferences: (refs: any[]) => void
+  liveReferences: Reference[]
+  setLiveReferences: (refs: Reference[]) => void
   setThreadId: (id: string) => void
   addMessage: (msg: Message) => void
   setMessages: (msgs: Message[]) => void
@@ -335,10 +336,10 @@ loadThreads: async () => {
 
     set({ isLoading: true })
 
-    const data = await apiFetch<{ 
-      messages: any[];
-      last_retrieved_chunks?: any[];
-      last_retrieved_images?: any[];
+    const data = await apiFetch<{
+      messages: Array<{ id: string; role: string; content: string }>
+      last_retrieved_chunks?: RetrievedChunk[]
+      last_retrieved_images?: RetrievedImage[]
     }>(
       `/threads/${threadId}?lecture_id=${getLectureId()}`,
       { signal: controller.signal },
@@ -349,7 +350,7 @@ loadThreads: async () => {
     // Drop if user switched away while fetching
     if (get().threadId !== threadId) return
 
-    const msgs: Message[] = (data?.messages ?? []).map((m: any) => ({
+    const msgs: Message[] = (data?.messages ?? []).map((m) => ({
       id: m.id || genId(),
       role: m.role as 'user' | 'assistant',
       content: m.content,
@@ -372,7 +373,7 @@ loadThreads: async () => {
       let refs = s.liveReferences;
       if (isCurrentThread) {
         refs = [
-          ...(data?.last_retrieved_chunks ?? []).map((c: any) => {
+          ...(data?.last_retrieved_chunks ?? []).map((c) => {
             const headingParts = (c.heading_path || '').split('>')
             const leafHeading  = headingParts[headingParts.length - 1].trim()
             const sectionId    = 'sec-' + leafHeading
@@ -390,7 +391,7 @@ loadThreads: async () => {
               type: 'note' as const,
             }
           }),
-          ...(data?.last_retrieved_images ?? []).map((img: any) => ({
+          ...(data?.last_retrieved_images ?? []).map((img) => ({
             id: img.path,
             title: img.section,
             section: img.path,
@@ -481,7 +482,7 @@ export async function sendChatMessage(
   userQuestion: string,
   lectureTitle = '',
   opts?: { lectureId?: string; messageId?: string },
-): Promise<{ answer: string; assistant_message_id?: string; retrieved_chunks: any[]; retrieved_images: any[] }> {
+): Promise<ChatResponse> {
   if (isDefaultLabel(threadId)) {
     const newTitle = generateThreadTitle(userQuestion)
     setThreadLabel(threadId, newTitle)
@@ -502,8 +503,9 @@ export async function sendChatMessage(
   if (!ct.includes('application/json'))
     throw new Error(`Unexpected response type: ${ct} (status ${res.status})`)
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error((err as any).detail || `Chat request failed: ${res.status}`)
+    const err: unknown = await res.json().catch(() => ({}))
+    const detail = typeof err === 'object' && err !== null && 'detail' in err ? (err as { detail?: string }).detail : undefined
+    throw new Error(detail || `Chat request failed: ${res.status}`)
   }
   return res.json()
 }
@@ -514,7 +516,7 @@ export async function* sendChatMessageStream(
   lectureTitle = '',
   signal?: AbortSignal,
   opts?: { messageId?: string },
-): AsyncGenerator<string | { type: 'final'; data: any }> {
+): AsyncGenerator<string | { type: 'final'; data: ChatResponse }> {
   if (isDefaultLabel(threadId)) {
     const newTitle = generateThreadTitle(userQuestion)
     setThreadLabel(threadId, newTitle)
