@@ -39,6 +39,22 @@ export function MessageBubble({ message }: { message: Message }) {
                   ul: ({ children }) => <ul className="list-none pl-0 space-y-1 mt-1">{children}</ul>,
                   li: ({ children }) => <li className="relative pl-4 text-[12px] text-nt2 leading-relaxed"><span className="absolute left-0 top-2 w-1 h-1 rounded-full bg-ns3 border border-bdr2" />{children}</li>,
                   code: ({ children }: any) => <code className="font-mono text-[10px] bg-ns2 px-1 py-0.5 rounded text-nt border border-bdr">{children}</code>,
+                  img: ({ src, alt }: any) => {
+                    let cleanSrc = src || ''
+                    if (cleanSrc.startsWith('outputs/')) {
+                      cleanSrc = `/static/${cleanSrc.replace(/^outputs\//, '')}`
+                    } else if (!cleanSrc.startsWith('/') && !cleanSrc.startsWith('http')) {
+                      cleanSrc = `/static/${cleanSrc}`
+                    }
+                    return (
+                      <img
+                        src={cleanSrc}
+                        alt={alt || ''}
+                        className="rounded-lg border border-bdr my-2 max-h-60 object-contain shadow-sm"
+                        loading="lazy"
+                      />
+                    )
+                  },
                 }}
               >
                 {message.content}

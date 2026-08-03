@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 from dataclasses import dataclass, field
 
-from backend.lecture_registry import create_lecture
+from backend.lecture_registry import create_lecture, update_lecture_title
 
 # ── All pipeline imports ────────────────────────────────────────────────────
 from ingest.ingest import process_source

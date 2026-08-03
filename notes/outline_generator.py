@@ -298,6 +298,15 @@ def generate_lecture_outline(
     outline = parse_outline(outline_text)
 
     chapters = outline.get("chapters", [])
+    if not outline.get("lecture_title") and chapters and isinstance(chapters[0], dict) and chapters[0].get("title"):
+        outline["lecture_title"] = chapters[0]["title"]
+
+    target_chapters = max(3, min(8, max(3, total_chunks // 3)))
+    if len(chapters) > target_chapters and target_chapters > 0:
+        logger.info(f"Capping generated chapters from {len(chapters)} to target maximum of {target_chapters}.")
+        chapters = chapters[:target_chapters]
+        outline["chapters"] = chapters
+
     num_chapters = len(chapters)
     if num_chapters == 0:
         raise ValueError("Outline generation produced zero chapters.")

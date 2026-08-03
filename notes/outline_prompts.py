@@ -1,18 +1,17 @@
 OUTLINE_PROMPT = """
 You are an expert curriculum designer.
 
-You are given a sequence of lecture chapters.
+You are given a sequence of raw lecture chunks.
 
-Your task is to create a clean lecture outline.
+Your task is to organize and cluster these chunks into a clean, high-level lecture outline with substantial, well-balanced chapters.
 
-Goals:
-
-1. Give each chapter a meaningful title.
-2. Identify the primary concepts that chapter should focus on.
-3. Ensure adjacent chapters have different purposes.
-4. Avoid assigning the same concept as a primary focus
-   for multiple chapters.
-5. Think like a textbook author.
+CRITICAL CLUSTERING RULES:
+1. Do NOT create a separate chapter for every input chunk. Group related consecutive chunks together into major thematic chapters.
+2. For typical lectures (15-30 minutes), create strictly 3 to 6 major chapters total. Each chapter must cover a substantial portion of the lecture.
+3. Give each chapter a clear, professional textbook-style title.
+4. Identify the primary concepts that each chapter should focus on.
+5. Ensure adjacent chapters represent meaningful transitions in topic or depth.
+6. Think like a textbook author creating major chapter divisions.
 
 Return ONLY valid JSON.
 

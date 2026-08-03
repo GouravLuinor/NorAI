@@ -620,6 +620,20 @@ def create_empty_visual_object(chunk_mapping: dict) -> dict:
     }
 
 
+def dedup_paths(paths: list[str]) -> list[str]:
+    """
+    Order-preserving path deduplication using normalized path strings.
+    """
+    seen = set()
+    unique = []
+    for p in paths:
+        norm = os.path.normpath(str(p))
+        if norm not in seen:
+            seen.add(norm)
+            unique.append(p)
+    return unique
+
+
 def process_chapter_visual_batch(chapter_id: int, chapter_title: str, chapter_chunks: list[dict], output_dir: str):
     """
     Process candidate screenshots for a single chapter strictly within chapter boundaries.
@@ -637,6 +651,8 @@ def process_chapter_visual_batch(chapter_id: int, chapter_title: str, chapter_ch
         ]
         chunk_image_map[c_id] = shots
         all_image_paths.extend(shots)
+
+    all_image_paths = dedup_paths(all_image_paths)
 
     if not all_image_paths:
         for c in chapter_chunks:
@@ -666,6 +682,8 @@ Return a JSON matching ChapterVisualKnowledgeModel.
                     response_schema=ChapterVisualKnowledgeModel,
                 )
             )
+            if not response or not response.text:
+                raise ValueError("Gemini returned empty or blocked response (response.text is None)")
             data = json.loads(response.text)
             batch_result = ChapterVisualKnowledgeModel(**data)
             
@@ -673,6 +691,7 @@ Return a JSON matching ChapterVisualKnowledgeModel.
             processed_chunk_ids = set()
             for vo in batch_result.visual_objects:
                 obj_dict = vo.model_dump()
+                obj_dict["source_screenshots"] = chunk_image_map.get(vo.chunk_id, [])
                 obj_dict["object_type"] = "visual_object"
                 obj_dict["generated_by"] = MODEL_NAME
                 save_visual_object(obj_dict, output_dir)

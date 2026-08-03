@@ -1,11 +1,18 @@
 # Tier 2 Implementation Plan — Pipeline Consolidation & Latency Optimization
 
 **Target Subsystems**: Ingestion, Visual Extraction, Notes Generation, Assessment, Revision Notes  
-**Status**: Approved (Proceeding with Step-by-Step Implementation)
+**Status**: In Progress — Tasks 2.0, 2.1, and 2.3 Code Implemented; Debugged & Awaiting Clean Pipeline Integration Test Run
 
 ---
 
-## 1. Overview & Strategy
+## Current Execution & Validation Status
+
+| Task / Feature | Implementation Status | Verification Status | Notes / Recent Fixes |
+|---|---|---|---|
+| **Task 2.0**: Files API Parallelization | **Implemented** ✅ | **Working Fine** ✅ | `ThreadPoolExecutor` parallel uploads in `visual_extractor.py` and `screenshot_selector.py`. Saves ~38s. |
+| **Task 2.1**: Chapter-Batched Visual Extraction | **Implemented** ✅ | **Working Fine** ✅ | Batches candidate screenshots per chapter (1 call/chapter). Fixed KeyError `'path'`, missing schema models, range lookup, dedup uploads, and `source_screenshots` URL override. |
+| **Task 2.3**: Merged Chapter Artifact Generation | **Implemented** ✅ | **Working Fine** ✅ | 1 consolidated call per chapter producing study notes, revision summary, core concepts, assessment questions, and 0-call flashcards. Bridge renderer `render_revision_markdown()` verified. Fallback stub files added for retry failures. |
+| **Screenshot Selection**: Pass 1 & Pass 2 URL Remapping | **Implemented** ✅ | **Pending Final Run Verification** ⏳ | Added Pydantic `Field` hints, canonical `dedup_paths()`, filename-based remapping with collision guards, and positional fallbacks. Fixed `Field` and `random` import bugs. |
 
 Tier 2 collapses the pipeline's API call footprint from **~121 calls down to ~45 calls** for a standard 25-minute lecture while eliminating **~43 seconds** of sequential network blocking latency.
 

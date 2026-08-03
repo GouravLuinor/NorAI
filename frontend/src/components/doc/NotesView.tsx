@@ -241,6 +241,22 @@ const baseComponents: Components = {
   td: ({ children }) => (
     <td className="p-2 border-b border-bdr last:border-none">{children}</td>
   ),
+  img: ({ src, alt }) => {
+    let cleanSrc = src || ''
+    if (cleanSrc.startsWith('outputs/')) {
+      cleanSrc = `/static/${cleanSrc.replace(/^outputs\//, '')}`
+    } else if (!cleanSrc.startsWith('/') && !cleanSrc.startsWith('http')) {
+      cleanSrc = `/static/${cleanSrc}`
+    }
+    return (
+      <img
+        src={cleanSrc}
+        alt={alt || ''}
+        className="rounded-lg border border-bdr my-3 max-h-72 object-contain shadow-sm"
+        loading="lazy"
+      />
+    )
+  },
   // Assign generated IDs to deep subheadings for linking
   h3: ({ children }) => <h3 id={headingToId(extractText(children))} className="text-[14px] font-medium text-nt mt-5 mb-2">{children}</h3>,
   h4: ({ children }) => <h4 id={headingToId(extractText(children))} className="text-[13px] font-medium text-nt mt-4 mb-2">{children}</h4>,
@@ -250,8 +266,14 @@ const baseComponents: Components = {
 
 // ── Main Component ───────────────────────────────────────────────────────────
 
+interface SectionItem {
+  heading: string
+  body: string
+  cardType?: CardType
+}
+
 export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterId: number | null; screenshotsExpanded?: boolean }) {
-  const [sections, setSections] = useState<{ heading: string; body: string }[]>([])
+  const [sections, setSections] = useState<SectionItem[]>([])
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -272,23 +294,41 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
     fetch(`/notes/${chapterIdStr}?lecture_id=${lectureId}`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) throw new Error('Not found')
-        const rawText = await res.text()
+        const contentType = res.headers.get('content-type') || ''
+        if (contentType.includes('application/json')) {
+          return res.json()
+        }
+        const text = await res.text()
         try {
-          return rawText.startsWith('"') ? JSON.parse(rawText) : rawText
+          return JSON.parse(text)
         } catch {
-          return rawText
+          return text
         }
       })
-      .then((text) => {
-        const lines = text.split('\n')
-        let mdTitle = ''
-        if (lines[0]?.startsWith('# ')) {
-          mdTitle = lines[0].replace(/^# /, '').trim()
-          text = lines.slice(1).join('\n').trim()
+      .then((data) => {
+        if (typeof data === 'object' && data !== null && 'sections' in data) {
+          // 100% Deterministic Structured JSON Payload
+          setTitle(data.title || `Chapter ${chapterIdStr}`)
+          const parsedSecs: SectionItem[] = (data.sections || []).map((sec: any) => ({
+            heading: sec.title || '',
+            body: (sec.content_markdown || '').replace(/!\[.*?\]\(.*?\)/g, '').trim(),
+            cardType: sec.section_type as CardType
+          }))
+          setSections(parsedSecs)
+        } else {
+          // Legacy Raw Markdown String Fallback
+          let text = typeof data === 'string' ? data : String(data)
+          const cleanedText = text.replace(/!\[.*?\]\(.*?\)/g, '').replace(/\n{3,}/g, '\n\n').trim()
+          const lines = cleanedText.split('\n')
+          let mdTitle = ''
+          if (lines[0]?.startsWith('# ')) {
+            mdTitle = lines[0].replace(/^# /, '').trim()
+            text = lines.slice(1).join('\n').trim()
+          }
+          const secs = splitByH2(text)
+          setTitle(mdTitle)
+          setSections(secs)
         }
-        const secs = splitByH2(text)
-        setTitle(mdTitle)
-        setSections(secs)
         setLoading(false)
       })
       .catch((err) => {
@@ -318,7 +358,7 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
       )}
 
       {sections.map((section, idx) => {
-        const { heading, body } = section
+        const { heading, body, cardType: explicitType } = section
         if (!body) return null
 
         const innerContent = (
@@ -341,7 +381,7 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
           )
         }
 
-        const cardType = getCardType(heading, body)
+        const cardType = explicitType || getCardType(heading, body)
 
         switch (cardType) {
           case 'definition':

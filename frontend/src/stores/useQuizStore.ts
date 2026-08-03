@@ -154,7 +154,10 @@ export async function fetchQuizQuestions(
   if (lectureId) params.set('lecture_id', lectureId)
   const res = await fetch(`${API_BASE}/quiz/questions?${params}`)
   if (!res.ok) throw new Error('Failed to load quiz questions')
-  return res.json()
+  const data = await res.json()
+  if (Array.isArray(data)) return data
+  if (data && Array.isArray(data.questions)) return data.questions
+  return []
 }
 
 export async function evaluateQuiz(
@@ -182,7 +185,10 @@ export async function fetchGeneratedFlashcards(
   if (lectureId) params.set('lecture_id', lectureId)
   const res = await fetch(`${API_BASE}/flashcards?${params}`)
   if (!res.ok) throw new Error('Failed to load flashcards')
-  return res.json()
+  const data = await res.json()
+  if (Array.isArray(data)) return data
+  if (data && Array.isArray(data.flashcards)) return data.flashcards
+  return []
 }
 
 export async function fetchSummary(chapterId: number): Promise<string> {

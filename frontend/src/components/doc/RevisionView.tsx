@@ -235,6 +235,22 @@ const baseComponents: Components = {
   thead: ({ children }) => <thead className="text-[10px] font-semibold text-nt uppercase tracking-wider border-b border-bdr2">{children}</thead>,
   th: ({ children }) => <th className="p-2 text-left">{children}</th>,
   td: ({ children }) => <td className="p-2 border-b border-bdr last:border-none">{children}</td>,
+  img: ({ src, alt }) => {
+    let cleanSrc = src || ''
+    if (cleanSrc.startsWith('outputs/')) {
+      cleanSrc = `/static/${cleanSrc.replace(/^outputs\//, '')}`
+    } else if (!cleanSrc.startsWith('/') && !cleanSrc.startsWith('http')) {
+      cleanSrc = `/static/${cleanSrc}`
+    }
+    return (
+      <img
+        src={cleanSrc}
+        alt={alt || ''}
+        className="rounded-lg border border-bdr my-3 max-h-72 object-contain shadow-sm"
+        loading="lazy"
+      />
+    )
+  },
 }
 
 // ── Main Component ───────────────────────────────────────────────────────────
