@@ -14,7 +14,6 @@ export function DocPanel() {
   const { activeDocTab, setDocTab, activeChapterId } = useChapterStore()
   const addToast = useToastStore((s) => s.addToast)
   const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
-  console.log('DocPanel — activeChapterId:', activeChapterId)
 
   const handleDownloadPDF = () => {
   const pdfMap: Record<string, string> = {

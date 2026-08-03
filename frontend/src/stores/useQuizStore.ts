@@ -29,6 +29,12 @@ export interface QuizEvaluation {
   overall_insights: string
 }
 
+export interface Flashcard {
+  front: string
+  back: string
+  explanation?: string
+}
+
 interface QuizState {
   aiMode: 'tutor' | 'quiz' | 'cards'
   setMode: (mode: 'tutor' | 'quiz' | 'cards') => void
@@ -161,7 +167,7 @@ export async function fetchQuizQuestions(
 }
 
 export async function evaluateQuiz(
-  questions: any[],
+  questions: Array<Question & { user_answer: string }>,
   startTime: number,
   confidences: string[],
 ): Promise<QuizEvaluation> {
@@ -179,7 +185,7 @@ export async function evaluateQuiz(
 export async function fetchGeneratedFlashcards(
   chapterId?: number,
   lectureId?: string,
-): Promise<any[]> {
+): Promise<Flashcard[]> {
   const params = new URLSearchParams()
   if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
   if (lectureId) params.set('lecture_id', lectureId)
@@ -189,10 +195,4 @@ export async function fetchGeneratedFlashcards(
   if (Array.isArray(data)) return data
   if (data && Array.isArray(data.flashcards)) return data.flashcards
   return []
-}
-
-export async function fetchSummary(chapterId: number): Promise<string> {
-  const res = await fetch(`${API_BASE}/summary?chapter_id=${chapterId}`)
-  if (!res.ok) throw new Error('Summary not available')
-  return res.text()
 }

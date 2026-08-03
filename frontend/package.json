@@ -12,7 +12,6 @@
   "dependencies": {
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.1",
-    "clsx": "^2.1.1",
     "framer-motion": "^12.42.0",
     "lucide-react": "^1.22.0",
     "react": "^19.2.7",

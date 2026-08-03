@@ -38,8 +38,8 @@ loadChapters: async (lectureId: string) => {
         return
       }
 
-      const chapters: Chapter[] = chs.map((ch: any) => ({
-        id: ch.chapter_id || ch.id,
+      const chapters: Chapter[] = chs.map((ch: { chapter_id?: number; id?: number; title?: string }) => ({
+        id: ch.chapter_id || ch.id || 1,
         title: ch.title || `Chapter ${ch.chapter_id || ch.id}`,
       }))
 
