@@ -22,8 +22,12 @@ venv.bak/
 .env
 .env.local
 .env.*.local
+.env.production
+.env.*.production
 *.pem
 *.key
+credentials.json
+token.json
 
 # Generated Pipeline Outputs & Data
 outputs/
@@ -69,3 +73,10 @@ Thumbs.db
 logs/
 tmp/
 .temp/
+
+# Intermediates (regenerable — dossiers, scraped data, temp exports, QA artifacts)
+.tmp/
+frontend/.tmp/
+
+# Personal OpenCode guide & opinion docs
+opencode-guide/
