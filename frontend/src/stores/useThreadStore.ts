@@ -111,6 +111,42 @@ export function getOrCreateLabel(threadId: string): string {
   return label
 }
 
+export function setThreadLabel(threadId: string, label: string) {
+  const labels = getLabels()
+  labels[threadId] = label
+  saveLabels(labels)
+  useThreadStore.setState((s) => ({ threads: [...s.threads] }))
+}
+
+export function isDefaultLabel(threadId: string): boolean {
+  const labels = getLabels()
+  const label = labels[threadId]
+  if (!label) return true
+  return /^Thread \d+$/i.test(label.trim()) || label.trim().toLowerCase() === 'default'
+}
+
+export function generateThreadTitle(question: string): string {
+  if (!question || !question.trim()) return 'New Thread'
+  let cleaned = question.trim()
+  cleaned = cleaned.replace(/^(what is|what are|how to|how do|why is|why does|can you|explain|tell me about|describe)\s+/i, '')
+  cleaned = cleaned.replace(/[?.,!:]+$/, '').trim()
+  if (!cleaned) cleaned = question.trim().replace(/[?.,!:]+$/, '')
+  
+  const words = cleaned.split(/\s+/).filter(Boolean)
+  if (words.length === 0) return 'New Thread'
+
+  const titleWords = words.slice(0, 6).map((w) => {
+    if (w === w.toUpperCase() && w.length > 1) return w
+    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+  })
+
+  let title = titleWords.join(' ')
+  if (title.length > 38) {
+    title = title.slice(0, 35) + '...'
+  }
+  return title
+}
+
 // ---------------------------------------------------------------------------
 // apiFetch — bare relative paths only, Vite proxy handles routing
 // ---------------------------------------------------------------------------
@@ -446,6 +482,11 @@ export async function sendChatMessage(
   lectureTitle = '',
   opts?: { lectureId?: string; messageId?: string },
 ): Promise<{ answer: string; assistant_message_id?: string; retrieved_chunks: any[]; retrieved_images: any[] }> {
+  if (isDefaultLabel(threadId)) {
+    const newTitle = generateThreadTitle(userQuestion)
+    setThreadLabel(threadId, newTitle)
+  }
+
   const res = await fetch(`${API_BASE}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -474,6 +515,11 @@ export async function* sendChatMessageStream(
   signal?: AbortSignal,
   opts?: { messageId?: string },
 ): AsyncGenerator<string | { type: 'final'; data: any }> {
+  if (isDefaultLabel(threadId)) {
+    const newTitle = generateThreadTitle(userQuestion)
+    setThreadLabel(threadId, newTitle)
+  }
+
   const res = await fetch(`${API_BASE}/chat/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

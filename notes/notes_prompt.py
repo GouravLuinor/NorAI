@@ -87,11 +87,11 @@ CONTENT RULES
 
 ==================================================
 
-DO NOT MENTION
+DO NOT MENTION OR INCLUDE
 
 * chunks
 * transcripts
-* screenshots
+* screenshots or raw markdown image tags (e.g. ![...](...))
 * lecture processing
 * source extraction
 * AI generation

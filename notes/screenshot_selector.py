@@ -263,6 +263,20 @@ Match this schema exactly:
 # Functions
 
 
+def dedup_paths(paths: list[str]) -> list[str]:
+    """
+    Order-preserving path deduplication using normalized path strings.
+    """
+    seen = set()
+    unique = []
+    for p in paths:
+        norm = os.path.normpath(str(p))
+        if norm not in seen:
+            seen.add(norm)
+            unique.append(p)
+    return unique
+
+
 def chunk_list(
 
     items,
@@ -530,6 +544,18 @@ def score_frames_batch(
             except Exception:
                 raw_scores = []
 
+            # PRECONDITION: valid_paths must be deduplicated by canonical path upstream (via dedup_paths)
+            filename_to_path = {}
+            collisions = []
+            for p in valid_paths:
+                name = Path(p).name
+                if name in filename_to_path and filename_to_path[name] != p:
+                    collisions.append((name, filename_to_path[name], p))
+                filename_to_path[name] = p
+
+            if collisions:
+                logger.warning(f"Basename collisions in valid_paths — filename remap may be unsafe: {collisions}")
+
             scores = []
 
             for idx, entry in enumerate(raw_scores):
@@ -537,9 +563,16 @@ def score_frames_batch(
                 try:
 
                     fq_score = FrameQualityScore(**entry)
-                    if fq_score.path not in valid_paths and idx < len(valid_paths):
+                    p = fq_score.path
+                    if p in valid_paths:
+                        pass
+                    elif Path(p).name in filename_to_path:
+                        remapped = filename_to_path[Path(p).name]
+                        logger.info(f"Chapter {chapter_id} Pass 1: Remapped path by filename '{p}' -> '{remapped}'.")
+                        fq_score.path = remapped
+                    elif idx < len(valid_paths):
                         logger.info(
-                            f"Remapped synthetic path '{fq_score.path}' -> '{valid_paths[idx]}' by batch position."
+                            f"Chapter {chapter_id} Pass 1: Remapped synthetic path '{p}' -> '{valid_paths[idx]}' by position."
                         )
                         fq_score.path = valid_paths[idx]
 
@@ -1106,11 +1139,11 @@ def generate_selection(
     compute_target_count(original_candidate_count).
     """
 
-    screenshot_paths = chapter.get(
-
-        "screenshots",
-        []
-
+    screenshot_paths = dedup_paths(
+        chapter.get(
+            "screenshots",
+            []
+        )
     )
 
     if not screenshot_paths:
@@ -1274,13 +1307,30 @@ def parse_selection(
 
     data["chapter_id"] = chapter_id
 
-    # Positional remapping for Pass 2 if model echoed a synthetic URL/path
+    # PRECONDITION: valid_paths must be deduplicated by canonical path upstream (via dedup_paths)
     if valid_paths and "screenshots" in data and isinstance(data["screenshots"], list):
+        filename_to_path = {}
+        collisions = []
+        for vp in valid_paths:
+            name = Path(vp).name
+            if name in filename_to_path and filename_to_path[name] != vp:
+                collisions.append((name, filename_to_path[name], vp))
+            filename_to_path[name] = vp
+
+        if collisions:
+            logger.warning(f"Pass 2: Basename collisions in valid_paths — filename remap may be unsafe: {collisions}")
+
         valid_set = set(valid_paths)
         for idx, shot in enumerate(data["screenshots"]):
             if isinstance(shot, dict):
                 p = shot.get("path", "")
-                if p not in valid_set and idx < len(valid_paths):
+                if p in valid_set:
+                    pass
+                elif Path(p).name in filename_to_path:
+                    remapped = filename_to_path[Path(p).name]
+                    logger.info(f"Chapter {chapter_id} Pass 2: Remapped path by filename '{p}' -> '{remapped}'.")
+                    shot["path"] = remapped
+                elif idx < len(valid_paths):
                     logger.info(
                         f"Chapter {chapter_id} Pass 2: Remapped synthetic path '{p}' -> '{valid_paths[idx]}' by position."
                     )

@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 # Constants
 
-DEFAULT_SEGMENTS_PER_CHUNK = 15
+DEFAULT_SEGMENTS_PER_CHUNK = 5
 
 
 # Transcript Loader

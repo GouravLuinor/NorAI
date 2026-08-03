@@ -791,15 +791,27 @@ from flashcards.generate_flashcards import convert_assessment_to_flashcards
 from revision_notes.revision_generator import render_revision_markdown
 
 
+from typing import Literal
+
+
 class CoreConceptItem(BaseModel):
     concept: str
     explanation: str
 
 
+class StudyNoteSection(BaseModel):
+    section_type: Literal["definition", "callout", "table", "list", "code", "prose"] = Field(
+        description="Type of UI card: 'definition' for core concepts/overview, 'callout' for key insights/observations, 'table' for comparisons, 'list' for takeaways/applications, 'code' for code snippets, 'prose' for general deep dives."
+    )
+    title: str = Field(description="Section heading title (e.g. '1. INTRODUCTION TO NETWORK INFRASTRUCTURE')")
+    content_markdown: str = Field(description="Markdown content body for this section. Include tables, bullet points, code blocks, or math ($...$) when applicable. Do NOT include markdown image tags.")
+
+
 class MergedChapterArtifactsModel(BaseModel):
     chapter_id: int
-    incomplete: bool = Field(default=False)
-    study_notes_markdown: str = Field(description="Comprehensive Markdown study notes for this chapter with headings, bullet points, latex math, and screenshot embeds.")
+    incomplete: bool = Field(default=False, description="Set to true if content generation was degraded")
+    study_notes_title: str = Field(description="Chapter title heading")
+    study_notes_sections: list[StudyNoteSection] = Field(description="Structured UI sections/cards for the chapter notes. Scale section count and content depth strictly based on information density.")
     revision_summary: list[str] = Field(description="3 to 5 key exam takeaways for this chapter.")
     core_concepts_breakdown: list[CoreConceptItem] = Field(description="List of key concepts with brief 1-2 sentence explanations.")
     assessment_questions: list[Question] = Field(description="Quiz questions with embedded flashcard_front/back/explanation fields.")
@@ -820,10 +832,15 @@ Chapter Content JSON:
 {json.dumps(chapter_json, indent=2)}
 
 Produce a valid JSON object matching MergedChapterArtifactsModel:
-1. study_notes_markdown: Detailed study notes in Github-flavored Markdown.
-2. revision_summary: 3-5 concise bullet points for exam revision.
-3. core_concepts_breakdown: Key concepts with short explanations.
-4. assessment_questions: 3 quiz questions (MCQ/Short Answer) with flashcard_front/back/explanation fields.
+1. study_notes_title: Professional chapter title heading.
+2. study_notes_sections: Array of structured StudyNoteSection cards covering all topics, definitions, mechanisms, and examples present in the chapter content.
+   - DENSITY & LENGTH: Scale depth strictly based on information density. Dense, multi-concept chapters must be written in comprehensive depth across 3 to 6 structured sections (800–1200+ words total); narrower topics should be concise without filler.
+   - SECTION TYPES: Choose appropriate section_type ('definition' for concepts/overview, 'callout' for key insights, 'table' for comparisons, 'list' for takeaways, 'code' for code, 'prose' for deep dives).
+   - FORMATTING: Incorporate comparison tables, bullet points, code snippets, and LaTeX math ($...$ for inline, $$...$$ for display math) whenever naturally applicable.
+   - IMAGES: Do NOT include inline markdown image tags (e.g. ![...](...)).
+3. revision_summary: 3-5 concise bullet points for exam revision.
+4. core_concepts_breakdown: Key concepts with short explanations.
+5. assessment_questions: 3 quiz questions (MCQ/Short Answer) with flashcard_front/back/explanation fields.
 """
 
     notes_dir = Path(output_dir) / "notes"
@@ -848,13 +865,32 @@ Produce a valid JSON object matching MergedChapterArtifactsModel:
                     response_schema=MergedChapterArtifactsModel,
                 )
             )
+            if not response or not response.text:
+                raise ValueError("Gemini returned empty or blocked response (response.text is None)")
             data = json.loads(response.text)
             model = MergedChapterArtifactsModel(**data)
 
-            # 1. Save Study Notes Markdown
+            # 1a. Render & Save Unified Markdown for chapter_N.md (for RAG tutor, combine_notes, etc.)
+            md_lines = [f"# {model.study_notes_title}\n"]
+            for sec in model.study_notes_sections:
+                if sec.title:
+                    md_lines.append(f"## {sec.title}")
+                md_lines.append(f"{sec.content_markdown}\n")
+            full_notes_md = "\n\n".join(md_lines)
+
             notes_file = notes_dir / f"chapter_{chapter_id}.md"
             with open(notes_file, "w", encoding="utf-8") as f:
-                f.write(model.study_notes_markdown)
+                f.write(full_notes_md)
+
+            # 1b. Save Structured JSON for 100% deterministic frontend card rendering
+            notes_json_file = notes_dir / f"chapter_{chapter_id}.json"
+            notes_json_data = {
+                "chapter_id": chapter_id,
+                "title": model.study_notes_title,
+                "sections": [s.model_dump() for s in model.study_notes_sections]
+            }
+            with open(notes_json_file, "w", encoding="utf-8") as f:
+                json.dump(notes_json_data, f, indent=4, ensure_ascii=False)
 
             # 2. Render & Save Revision Markdown
             rev_md = render_revision_markdown(

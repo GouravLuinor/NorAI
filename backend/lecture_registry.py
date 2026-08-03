@@ -53,21 +53,64 @@ def create_lecture(lecture_id: str, title: str = "Untitled Lecture") -> Path:
     return lecture_dir
 
 
+def update_lecture_title(lecture_id: str, title: str):
+    """Update lecture title in registry thread-safely."""
+    if not title or title.strip() in ("", "Untitled Lecture"):
+        return
+    data = _load()
+    if lecture_id in data:
+        data[lecture_id]["title"] = title.strip()
+        _save(data)
+
+
 def get_lecture(lecture_id: str) -> Optional[dict]:
     return _load().get(lecture_id)
 
 
 def list_lectures() -> list[dict]:
     lectures = list(_load().values())
+    dirty = False
+    data = _load()
+
     for lec in lectures:
-        outline_path = Path(lec.get("output_dir", "")) / "notes" / "lecture_outline.json"
+        output_dir = Path(lec.get("output_dir", ""))
+        outline_path = output_dir / "notes" / "lecture_outline.json"
+        real_title = None
+
         if outline_path.exists():
             try:
                 with open(outline_path, encoding="utf-8") as f:
-                    lec["chapter_count"] = len(json.load(f).get("chapters", []))
+                    outline_data = json.load(f)
+                    chapters = outline_data.get("chapters", [])
+                    lec["chapter_count"] = len(chapters)
+                    real_title = outline_data.get("lecture_title") or outline_data.get("title")
+                    if not real_title and chapters and isinstance(chapters[0], dict) and chapters[0].get("title"):
+                        real_title = chapters[0]["title"]
             except Exception:
                 lec["chapter_count"] = 0
         else:
             lec["chapter_count"] = 0
-            
+
+        # Fallback to chapter_1.md header if title is missing/untitled
+        if not real_title or real_title.strip() in ("Untitled Lecture", "New Lecture", ""):
+            ch1_path = output_dir / "notes" / "chapter_1.md"
+            if ch1_path.exists():
+                try:
+                    with open(ch1_path, encoding="utf-8") as f:
+                        first_line = f.readline().strip()
+                        if first_line.startswith("#"):
+                            real_title = first_line.lstrip("#").strip()
+                except Exception:
+                    pass
+
+        if real_title and real_title.strip() and lec.get("title") in ("Untitled Lecture", "New Lecture", "", None):
+            clean_t = real_title.strip()
+            lec["title"] = clean_t
+            if lec.get("lecture_id") in data:
+                data[lec["lecture_id"]]["title"] = clean_t
+                dirty = True
+
+    if dirty:
+        _save(data)
+
     return sorted(lectures, key=lambda x: x.get("created_at", ""), reverse=True)

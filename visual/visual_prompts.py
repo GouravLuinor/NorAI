@@ -75,9 +75,9 @@ Rules:
     ocr_text:
     Extract only educationally useful text.
 
-    Do not include random labels,
-    drawing artifacts,
-    or repeated text.
+    Do not include random labels, video player controls,
+    timeline scrubbers, closed caption overlays, watermarks,
+    drawing artifacts, or repeated text.
 
     Combine text from all screenshots
     into a clean readable form.

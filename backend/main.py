@@ -37,9 +37,18 @@ from backend.lecture_registry import list_lectures, get_lecture
 from config import MODEL_NAME, get_api_key, CHECKPOINT_DB_PATH
 from backend.dependencies import invoke_tutor
 from backend.lecture_registry import get_lecture
-# ---------------------------------------------------------------------------
-# App setup
-# ---------------------------------------------------------------------------
+import logging
+
+# Ensure root logger outputs to both console and outputs/backend.log
+log_file = Path("outputs/backend.log")
+log_file.parent.mkdir(parents=True, exist_ok=True)
+file_handler = logging.FileHandler(log_file, encoding="utf-8")
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s"))
+
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+if not any(isinstance(h, logging.FileHandler) for h in root_logger.handlers):
+    root_logger.addHandler(file_handler)
 
 app = FastAPI(title="NorAI Tutor API")
 
@@ -364,8 +373,12 @@ async def quiz_questions(chapter_id: int | None = None, n: int = 5, lecture_id: 
     path = base / "assessment" / f"assessment_chapter_{chapter_id}.json" if chapter_id else base / "assessment" / "assessment.json"
     if not path.exists():
         return []
-    questions = json_lib.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(questions, list):
+    raw_data = json_lib.loads(path.read_text(encoding="utf-8"))
+    if isinstance(raw_data, dict):
+        questions = raw_data.get("questions", [])
+    elif isinstance(raw_data, list):
+        questions = raw_data
+    else:
         questions = []
     questions = [q for q in questions if isinstance(q, dict)]
     if len(questions) > n:
@@ -462,7 +475,13 @@ async def flashcards(chapter_id: int | None = None, n: int | None = None, lectur
     path = base / "flashcards" / f"flashcards_chapter_{chapter_id}.json" if chapter_id else base / "flashcards" / "flashcards.json"
     if not path.exists():
         return []
-    cards = json_lib.loads(path.read_text(encoding="utf-8"))
+    raw_data = json_lib.loads(path.read_text(encoding="utf-8"))
+    if isinstance(raw_data, dict):
+        cards = raw_data.get("flashcards", [])
+    elif isinstance(raw_data, list):
+        cards = raw_data
+    else:
+        cards = []
     if n is not None and len(cards) > n:
         cards = random.sample(cards, n)
     return cards
@@ -482,10 +501,14 @@ async def chapter_summary(chapter_id: int, lecture_id: str = "default"):
 async def study_notes(chapter_id: int, lecture_id: str = "default"):
     info = get_lecture(lecture_id)
     base = Path(info["output_dir"]) if info else Path("outputs")
-    path = base / "notes" / f"chapter_{chapter_id}.md"
-    if not path.exists():
+    json_path = base / "notes" / f"chapter_{chapter_id}.json"
+    if json_path.exists():
+        with open(json_path, encoding="utf-8") as f:
+            return json_lib.load(f)
+    md_path = base / "notes" / f"chapter_{chapter_id}.md"
+    if not md_path.exists():
         raise HTTPException(status_code=404, detail="Study notes not found")
-    return path.read_text(encoding="utf-8")
+    return md_path.read_text(encoding="utf-8")
 
 @app.get("/screenshots/{chapter_id}")
 async def chapter_screenshots(chapter_id: int, lecture_id: str = "default"):
