@@ -11,14 +11,9 @@ import { fetchQuizQuestions, type Question } from '../stores/useQuizStore'
 import type { Components } from 'react-markdown'
 import { Bookmark, Clock, Lightbulb, Code, List, FileText } from 'lucide-react'
 import { useLectureStore } from '../stores/useLectureStore'
+
 // ── Types ──────────────────────────────────────────────────────────────────
-/**
- * Shape of window.__PRINT_DATA__ injected by generate_pdfs.py via
- * page.evaluate().  When present the component skips all fetch calls and
- * reads directly from this object, eliminating every possible network
- * failure inside Playwright's headless browser.
- */
-interface PrintDataNotes    { type: 'notes' | 'revision'; chapters: string[] }
+interface PrintDataNotes    { type: 'notes' | 'revision'; chapters: any[] }
 interface PrintDataAssessment {
   type: 'assessment'
   assessmentChapters: { ch: number; questions: Question[] }[]
@@ -166,29 +161,23 @@ function PrintPageContent() {
   const rawType   = params.get('type') || 'notes'
   const lectureId = params.get('lecture_id') || 'default'
 
-  // Normalize rawType → internal layout key (mirrors generate_pdfs.py logic)
   let type = 'notes'
   if (rawType.includes('assessment'))              type = 'assessment'
   else if (rawType.includes('revision') || rawType.includes('summary')) type = 'revision'
 
-  const [chapters,           setChapters]           = useState<string[]>([])
+  const [chapters,           setChapters]           = useState<any[]>([])
   const [assessmentChapters, setAssessmentChapters] = useState<{ ch: number; questions: Question[] }[]>([])
   const [loading,            setLoading]            = useState(true)
-
-
   const [globalError,        setGlobalError]        = useState<string | null>(null)
 
-  // ── ADD BELOW THIS LINE ──
   const setActiveLecture = useLectureStore(s => s.setActiveLecture)
 
   useEffect(() => {
     setActiveLecture(lectureId)
   }, [lectureId])
-  // ── END ADD ──
 
   const [numChapters, setNumChapters] = useState(6)
 
-  // Fetch actual chapter count from outline
   useEffect(() => {
     fetch(`/outline?lecture_id=${lectureId}`)
       .then(r => r.json())
@@ -200,16 +189,6 @@ function PrintPageContent() {
   }, [lectureId])
 
   useEffect(() => {
-    /**
-     * Load strategy:
-     *   1. If window.__PRINT_DATA__ is already set (injected by Playwright),
-     *      use it immediately — zero network calls.
-     *   2. If it's not set yet, wait for the 'printDataReady' event (Playwright
-     *      injects data then dispatches the event).
-     *   3. If no injection arrives within 500 ms, fall back to fetching from
-     *      the API (normal browser usage).
-     */
-
     let cancelled = false
 
     const applyData = (data: PrintData) => {
@@ -222,19 +201,16 @@ function PrintPageContent() {
       setLoading(false)
     }
 
-    // ── Path 1 & 2: Playwright injection ────────────────────────────────
     if (window.__PRINT_DATA__) {
       applyData(window.__PRINT_DATA__)
       return
     }
 
-    // Listen for injection event (data arrives just after domcontentloaded)
     const onReady = () => {
       if (window.__PRINT_DATA__) applyData(window.__PRINT_DATA__)
     }
     window.addEventListener('printDataReady', onReady)
 
-    // ── Path 3: Normal browser — fall back to fetching after 500 ms ──────
     const fallbackTimer = setTimeout(async () => {
       if (cancelled || window.__PRINT_DATA__) return
       try {
@@ -256,8 +232,16 @@ function PrintPageContent() {
                 : `${endpoint}/${ch}?lecture_id=${lectureId}`
               const res = await fetch(url)
               if (!res.ok) throw new Error(`HTTP ${res.status}`)
+              const contentType = res.headers.get('content-type') || ''
+              if (contentType.includes('application/json')) {
+                return await res.json()
+              }
               const raw = await res.text()
-              return raw.startsWith('"') ? JSON.parse(raw) : raw
+              try {
+                return JSON.parse(raw)
+              } catch {
+                return raw
+              }
             } catch (err: any) {
               return `# Chapter ${ch}\n\n*Content not yet generated or failed to load. (${err.message})*`
             }
@@ -279,7 +263,6 @@ function PrintPageContent() {
     }
   }, [type, lectureId, numChapters])
 
-    // Auto-trigger browser print dialog when content is ready
   useEffect(() => {
     if (!loading && !globalError) {
       const timer = setTimeout(() => window.print(), 3000)
@@ -287,7 +270,6 @@ function PrintPageContent() {
     }
   }, [loading, globalError])
 
-  // ── Loading / error states ───────────────────────────────────────────────
   if (loading) {
     return <div className="bg-nb text-nt p-8 font-mono text-sm">Preparing your PDF…</div>
   }
@@ -305,11 +287,8 @@ function PrintPageContent() {
     )
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="print-document bg-nb text-nt">
-
-      {/* Assessment */}
       {type === 'assessment' && assessmentChapters.map(({ ch, questions }) => (
         <div key={ch} className="print-chapter px-8 py-6">
           <h1 className="text-[21px] font-semibold text-nt tracking-tight mb-6">Chapter {ch} — Assessment</h1>
@@ -328,23 +307,50 @@ function PrintPageContent() {
         </div>
       ))}
 
-      {/* Notes / revision */}
-      {(type === 'notes' || type === 'revision') && chapters.map((md, idx) => {
+      {(type === 'notes' || type === 'revision') && chapters.map((item: any, idx) => {
         const ch = idx + 1
-        const lines = md.split('\n')
         let title = `Chapter ${ch}`
+        let preamble = ''
+        let sections: { heading: string; body: string; cardType?: string }[] = []
 
-        if (lines[0]?.startsWith('# ')) {
-          title = lines[0].replace(/^# /, '').trim()
-          md = lines.slice(1).join('\n').trim()
+        if (typeof item === 'object' && item !== null && 'sections' in item) {
+          title = item.title || `Chapter ${ch}`
+          sections = (item.sections || []).map((sec: any) => ({
+            heading: sec.title || '',
+            body: (sec.content_markdown || '').replace(/!\[.*?\]\(.*?\)/g, '').trim(),
+            cardType: sec.section_type
+          }))
+        } else {
+          let md = typeof item === 'string' ? item : String(item)
+          let parsedObj: any = null
+          try {
+            parsedObj = JSON.parse(md)
+          } catch {
+            parsedObj = null
+          }
+
+          if (typeof parsedObj === 'object' && parsedObj !== null && 'sections' in parsedObj) {
+            title = parsedObj.title || `Chapter ${ch}`
+            sections = (parsedObj.sections || []).map((sec: any) => ({
+              heading: sec.title || '',
+              body: (sec.content_markdown || '').replace(/!\[.*?\]\(.*?\)/g, '').trim(),
+              cardType: sec.section_type
+            }))
+          } else {
+            const cleanedText = md.replace(/!\[.*?\]\(.*?\)/g, '').replace(/\n{3,}/g, '\n\n').trim()
+            const lines = cleanedText.split('\n')
+            if (lines[0]?.startsWith('# ')) {
+              title = lines[0].replace(/^# /, '').trim()
+              md = lines.slice(1).join('\n').trim()
+            }
+            const parts = md.split(/^[ \t]*## /gm)
+            preamble = parts[0]?.trim() || ''
+            sections = parts.slice(1).map(p => {
+              const [h, ...b] = p.split('\n')
+              return { heading: h?.trim() || '', body: b.join('\n').trim() }
+            })
+          }
         }
-
-        const parts = md.split(/^[ \t]*## /gm)
-        const preamble = parts[0]?.trim()
-        const sections = parts.slice(1).map(p => {
-          const [h, ...b] = p.split('\n')
-          return { heading: h?.trim() || '', body: b.join('\n').trim() }
-        })
 
         return (
           <div key={ch} className="print-chapter px-8 py-7 pb-15">
@@ -371,7 +377,7 @@ function PrintPageContent() {
                   {sec.body}
                 </ReactMarkdown>
               )
-              const cardType = getCardType(sec.heading, sec.body)
+              const cardType = sec.cardType || getCardType(sec.heading, sec.body)
               return <Wrapper key={i} type={cardType} heading={sec.heading}>{inner}</Wrapper>
             })}
 
