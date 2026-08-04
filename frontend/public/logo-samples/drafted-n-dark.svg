@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="NorAI — drafted N monogram">
+  <defs>
+    <pattern id="g-d" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M8 0H0V8" fill="none" stroke="#E8ECF1" stroke-opacity="0.05"/>
+    </pattern>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0A1628"/>
+  <rect width="64" height="64" rx="14" fill="url(#g-d)"/>
+  <rect x="0.5" y="0.5" width="63" height="63" rx="13.5" fill="none" stroke="#E8ECF1" stroke-opacity="0.10"/>
+  <path d="M10 8 L58 56" fill="none" stroke="#E8ECF1" stroke-opacity="0.08" stroke-width="1" stroke-dasharray="2 4"/>
+  <path d="M21 18V46" stroke="#E8ECF1" stroke-width="6" stroke-linecap="square"/>
+  <path d="M45 18V46" stroke="#E8ECF1" stroke-width="6" stroke-linecap="square"/>
+  <path d="M21 18L45 46" stroke="#D1552E" stroke-width="6" stroke-linecap="square"/>
+  <g fill="#0A1628" stroke="#E8ECF1" stroke-width="2">
+    <circle cx="21" cy="18" r="2.5"/>
+    <circle cx="21" cy="46" r="2.5"/>
+    <circle cx="45" cy="18" r="2.5"/>
+    <circle cx="45" cy="46" r="2.5"/>
+  </g>
+  <g stroke="#D1552E" stroke-width="1.5" stroke-linecap="square">
+    <path d="M52 9V17"/>
+    <path d="M48 13H56"/>
+  </g>
+</svg>
