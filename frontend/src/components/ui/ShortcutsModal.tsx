@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { X, Command } from 'lucide-react'
+import { IconButton } from './IconButton'
 
 interface ShortcutsModalProps {
   isOpen: boolean
@@ -32,7 +33,9 @@ export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps) {
           <h3 className="text-sm font-medium text-nt flex items-center gap-2">
             <Command size={14} strokeWidth={1.5} /> Keyboard Shortcuts
           </h3>
-          <button onClick={onClose} className="text-nt3 hover:text-nt transition"><X size={14} strokeWidth={1.5} /></button>
+          <IconButton label="Close shortcuts" variant="bare" onClick={onClose}>
+            <X size={14} strokeWidth={1.5} />
+          </IconButton>
         </div>
         <div className="space-y-2">
           {shortcuts.map((s) => (

@@ -3,21 +3,13 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 import { Bookmark, GitBranch, Clock, Lightbulb, AlertTriangle, Code, List, FileText, FlaskConical } from 'lucide-react'
-import type { Components } from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { useLectureStore } from '../../stores/useLectureStore' 
+import { useLectureStore } from '../../stores/useLectureStore'
+import { revisionMarkdownComponents, headingToId } from '../../lib/markdown'
+import { Card, CardHeader } from '../ui/Card'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function headingToId(heading: string): string {
-  return 'sec-' + heading
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-}
 
 function splitByH2(md: string): { heading: string; body: string }[] {
   const sections: { heading: string; body: string }[] = []
@@ -73,49 +65,45 @@ function getCardType(heading: string, body: string): CardType {
 
 function DefinitionCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1 border-l-2 border-l-np">
-      <div className="flex items-center gap-1.5 text-3xs font-semibold text-np uppercase tracking-wider mb-2">
-        <Bookmark size={13} strokeWidth={1.5} />
-        {heading}
-      </div>
-      {children}
-    </div>
+      <Card accent="border-l-2 border-l-np" className="p-4 mb-4">
+        <CardHeader tone="np" icon={<Bookmark size={13} strokeWidth={1.5} />}>
+          {heading}
+        </CardHeader>
+        {children}
+      </Card>
   )
 }
 
 function AlgorithmCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1">
-      <div className="flex items-center gap-1.5 text-3xs font-semibold text-nbl uppercase tracking-wider mb-2">
-        <GitBranch size={13} strokeWidth={1.5} />
+    <Card className="p-4 mb-4">
+      <CardHeader tone="nbl" icon={<GitBranch size={13} strokeWidth={1.5} />}>
         {heading}
-      </div>
+      </CardHeader>
       {children}
-    </div>
+    </Card>
   )
 }
 
 function ComplexityCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
-      <div className="flex items-center gap-1.5 text-3xs font-semibold text-ng uppercase tracking-wider mb-2">
-        <Clock size={13} strokeWidth={1.5} />
+    <Card className="p-5 mb-5">
+      <CardHeader tone="ng" icon={<Clock size={13} strokeWidth={1.5} />}>
         {heading}
-      </div>
+      </CardHeader>
       {children}
-    </div>
+    </Card>
   )
 }
 
 function ExampleCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1">
-      <div className="flex items-center gap-1.5 text-3xs font-semibold text-na uppercase tracking-wider mb-2">
-        <FlaskConical size={13} strokeWidth={1.5} />
+    <Card className="p-4 mb-4">
+      <CardHeader tone="na" icon={<FlaskConical size={13} strokeWidth={1.5} />}>
         {heading}
-      </div>
+      </CardHeader>
       {children}
-    </div>
+    </Card>
   )
 }
 
@@ -158,10 +146,9 @@ function SummaryCard({ heading, children }: { heading: string; children: React.R
 function ListCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
     <div className="mb-5">
-      <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-        <List size={13} strokeWidth={1.5} className="text-np" />
+      <CardHeader icon={<List size={13} strokeWidth={1.5} className="text-np" />}>
         {heading}
-      </div>
+      </CardHeader>
       <ul className="list-none pl-1.5 space-y-2.5">{children}</ul>
     </div>
   )
@@ -169,13 +156,12 @@ function ListCard({ heading, children }: { heading: string; children: React.Reac
 
 function FormulaCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1 border-l-2 border-l-np">
-      <div className="flex items-center gap-1.5 text-3xs font-semibold text-np uppercase tracking-wider mb-2">
-        <FileText size={13} strokeWidth={1.5} />
+    <Card accent="border-l-2 border-l-np" className="p-4 mb-4">
+      <CardHeader tone="np" icon={<FileText size={13} strokeWidth={1.5} />}>
         {heading}
-      </div>
+      </CardHeader>
       <div className="font-mono text-13 text-nt2">{children}</div>
-    </div>
+    </Card>
   )
 }
 
@@ -183,12 +169,11 @@ function CodeCard({ heading, children, lang }: { heading: string; children: Reac
   return (
     <div className="mb-6">
       {heading && (
-        <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <Code size={13} strokeWidth={1.5} className="text-nbl" />
+        <CardHeader icon={<Code size={13} strokeWidth={1.5} className="text-nbl" />}>
           {heading}
-        </div>
+        </CardHeader>
       )}
-      <div className="bg-nb border border-bdr2 rounded-lg overflow-hidden shadow-ev1">
+      <Card surface="nb" className="overflow-hidden">
         {lang && (
           <div className="flex justify-between items-center bg-ns px-4 py-2 border-b border-bdr font-mono text-2xs text-nt3">
             <span>{lang}</span>
@@ -196,61 +181,20 @@ function CodeCard({ heading, children, lang }: { heading: string; children: Reac
           </div>
         )}
         <pre className="p-4 m-0 overflow-x-auto font-mono text-13 text-nt2 leading-relaxed">{children}</pre>
-      </div>
+      </Card>
     </div>
   )
 }
 
 function ProseCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
-      <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-        <FileText size={13} strokeWidth={1.5} className="text-nt3" />
+    <Card className="p-5 mb-5">
+      <CardHeader icon={<FileText size={13} strokeWidth={1.5} className="text-nt3" />}>
         {heading}
-      </div>
+      </CardHeader>
       {children}
-    </div>
+    </Card>
   )
-}
-
-// ── Custom renderers ─────────────────────────────────────────────────────────
-
-const baseComponents: Components = {
-  p: ({ children }) => <p className="text-13 text-nt2 leading-relaxed mb-2 last:mb-0">{children}</p>,
-  strong: ({ children }) => <strong className="text-nt font-medium">{children}</strong>,
-  ul: ({ children }) => <ul className="list-none pl-0 space-y-2">{children}</ul>,
-  li: ({ children }) => (
-    <li className="relative pl-5 text-13 text-nt2 leading-relaxed">
-      <span className="absolute left-0 top-2 w-1.5 h-1.5 rounded-full bg-ns3 border border-bdr2" />
-      {children}
-    </li>
-  ),
-  code: ({ children, className }) => {
-    if (!className) {
-      return <code className="font-mono text-2xs bg-ns2 px-1.5 py-0.5 rounded text-nt border border-bdr">{children}</code>
-    }
-    return <code className={className}>{children}</code>
-  },
-  table: ({ children }) => <table className="w-full text-xs text-nt2">{children}</table>,
-  thead: ({ children }) => <thead className="text-2xs font-semibold text-nt uppercase tracking-wider border-b border-bdr2">{children}</thead>,
-  th: ({ children }) => <th className="p-2 text-left">{children}</th>,
-  td: ({ children }) => <td className="p-2 border-b border-bdr last:border-none">{children}</td>,
-  img: ({ src, alt }) => {
-    let cleanSrc = src || ''
-    if (cleanSrc.startsWith('outputs/')) {
-      cleanSrc = `/static/${cleanSrc.replace(/^outputs\//, '')}`
-    } else if (!cleanSrc.startsWith('/') && !cleanSrc.startsWith('http')) {
-      cleanSrc = `/static/${cleanSrc}`
-    }
-    return (
-      <img
-        src={cleanSrc}
-        alt={alt || ''}
-        className="rounded-lg border border-bdr my-3 max-h-72 object-contain shadow-ev1"
-        loading="lazy"
-      />
-    )
-  },
 }
 
 // ── Main Component ───────────────────────────────────────────────────────────
@@ -330,7 +274,7 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeHighlight, rehypeKatex]}
-            components={baseComponents}
+            components={revisionMarkdownComponents}
           >
             {body}
           </ReactMarkdown>

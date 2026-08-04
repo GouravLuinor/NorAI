@@ -6,6 +6,7 @@ import { useLectureStore } from '../../stores/useLectureStore'
 import { QuestionCard, AnswerKey } from './assessment-cards'
 import type { Question } from '../../stores/useQuizStore'
 import { useToastStore } from '../../stores/useToastStore'
+import { Button } from '../ui/Button'
 
 
 export function AssessmentView() {
@@ -53,13 +54,13 @@ const handleStartQuiz = async () => {
           <div className="text-11 text-nt3">{questions.length} questions · MCQ, True/False, free response</div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowAnswers(!showAnswers)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-bdr2 bg-transparent text-nt2 text-2xs hover:bg-ns2 hover:text-nt transition active:translate-y-[1px] active:shadow-none">
+          <Button onClick={() => setShowAnswers(!showAnswers)} variant="outline" className="gap-1.5 px-3 py-1.5 rounded-sm text-2xs active:translate-y-[1px] active:shadow-none">
             {showAnswers ? <EyeOff size={13} strokeWidth={1.5} /> : <Eye size={13} strokeWidth={1.5} />}
             {showAnswers ? 'Hide Key' : 'Reveal Key'}
-          </button>
-          <button onClick={handleStartQuiz} className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-npf text-npfg text-2xs font-medium shadow-ev1 hover:bg-npfh hover:shadow-ev2 active:translate-y-[1px] active:shadow-none transition">
+          </Button>
+          <Button variant="primarySoft" onClick={handleStartQuiz} className="gap-1.5 px-3 py-1.5 rounded-sm text-2xs">
             <Play size={13} strokeWidth={1.5} /> Start Quiz
-          </button>
+          </Button>
         </div>
       </div>
 

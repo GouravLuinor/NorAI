@@ -1,5 +1,6 @@
 import { useToastStore } from '../../stores/useToastStore'
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react'
+import { IconButton } from './IconButton'
 
 const icons = {
   success: <CheckCircle size={14} strokeWidth={1.5} className="text-ng" />,
@@ -21,12 +22,13 @@ export function ToastContainer() {
         >
           {icons[toast.type]}
           <span className="flex-1">{toast.message}</span>
-          <button
+          <IconButton
+            label="Dismiss notification"
+            variant="bare"
             onClick={() => removeToast(toast.id)}
-            className="text-nt3 hover:text-nt transition"
           >
             <X size={12} strokeWidth={1.5} />
-          </button>
+          </IconButton>
         </div>
       ))}
     </div>

@@ -3268,6 +3268,18 @@ to:
 
 ---
 
+## Frontend Design Rebuild (Tier 2 — Component Foundation)
+
+Implemented the frontend component foundation per `frontend_design_roadmap.md`.
+
+- **UI primitives** (`frontend/src/components/ui/`): `Button`, `IconButton` (required `label` — aria-label floor), `Card`/`CardHeader`, `Input`, `SegmentedControl` (`aria-pressed`), `Badge`, plus shared `FOCUS_RING` (`shared.ts`). Zero visual delta vs the hand-rolled classes they replaced (hairline `border-bdr2`, hard `shadow-ev1/2`, lucide `strokeWidth={1.5}`, mono ALL-CAPS section labels).
+- **Migration sweep**: ~15 copy-paste sites → primitives — NotesView, RevisionView, PrintPage, FlashcardsPanel (rating row → SegmentedControl), AIPanel (mode switch → SegmentedControl), DocPanel, Sidebar, Workspace, QuizPanel, AssessmentView, HighlightAsk, SearchBar (Input + IconButtons + `focus-within` ring), UploadPage (source tabs → SegmentedControl), Lightbox, ShortcutsModal, ToastContainer. Deliberate holds documented: QuizPanel options (3-state), assessment True/False print stubs (static), UploadPage lecture rows stay `<button>` (Card is a div — a11y regression otherwise), ChapterScreenshots toggle (ghost hover bg).
+- **PrintPage decomposition** (`src/components/print/`): `types.ts`, `cardClassifier.ts`, `parseChapter.ts`, `PrintSectionCard.tsx`, `PrintErrorBoundary.tsx`, `usePrintData.ts`, `PrintChapter.tsx`, `PrintAssessmentChapter.tsx`; `PrintPage.tsx` is now a thin entry. Behavior-preserving (title/preamble/sections, `__PRINT_DATA__` → `printDataReady` → 500 ms fallback fetch, 3 s auto-print).
+
+Build ✓ lint ✓ (no new warnings — 3 pre-existing exhaustive-deps). **QA complete (all three passes green):** Pass A skill-gated code review (2 a11y fixes: SearchBar focus-within ring, UploadPage URL `aria-label`), Pass B Chrome MCP (tutor/quiz/cards, doc search, all three print routes, dark + light — 1 a11y fix: URL input `id`/`name`), Pass C human visual audit of `/.tmp/qa-tier-2/screenshots/` (12 screenshots). Review: `/.tmp/review-tier-2.md`.
+
+---
+
 ## Frontend Design Rebuild (Tier 5 — "Architect's Sketchbook")
 
 Implemented the approved theme reboot for the app frontend (see `frontend_design_roadmap.md`). The old viridian direction is superseded.

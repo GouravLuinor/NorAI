@@ -198,9 +198,23 @@ async def chat_stream(req: ChatRequest):
                 message_id=req.message_id,
             )
             answer = result.get("answer", "")
-            for ch in answer:
-                yield f"data: {ch}\n\n"
-                await asyncio.sleep(0.015)
+
+            # Stream the already-computed answer in small chunks instead of
+            # per-character (old 15ms/char throttle regressed latency on long
+            # answers). Chunks are JSON-wrapped so embedded newlines survive the
+            # SSE line framing; the frontend reassembles them exactly.
+            STEP = 24
+            i = 0
+            n = len(answer)
+            while i < n:
+                end = min(i + STEP, n)
+                if end < n:
+                    nxt = answer.find(" ", end)
+                    if nxt != -1 and nxt - end < 12:
+                        end = nxt + 1
+                yield f"data: {json_lib.dumps({'t': answer[i:end]})}\n\n"
+                await asyncio.sleep(0.002)
+                i = end
 
             final_data = {
                 "assistant_message_id": result.get("assistant_message_id"),
@@ -209,7 +223,7 @@ async def chat_stream(req: ChatRequest):
                 "chapter_id": result.get("chapter_id"),
                 "thread_id": result.get("thread_id"),
             }
-            yield f"data: {json_lib.dumps(final_data)}\n\n"
+            yield f"data: {json_lib.dumps({'final': final_data})}\n\n"
             yield "data: [DONE]\n\n"
         except Exception as exc:
             yield f"data: [ERROR] {exc}\n\n"

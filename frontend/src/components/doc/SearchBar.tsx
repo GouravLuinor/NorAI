@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Search, X, ChevronUp, ChevronDown } from 'lucide-react'
+import { IconButton } from '../ui/IconButton'
+import { Input } from '../ui/Input'
 
 interface SearchBarProps {
   isOpen: boolean
@@ -130,31 +132,31 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
 
   return (
     <div className="flex items-center gap-1 ml-2">
-      <div className="flex items-center gap-1 bg-nb border border-bdr2 rounded-md px-2 py-0.5">
+      <div className="flex items-center gap-1 bg-nb border border-bdr2 rounded-md px-2 py-0.5 focus-within:shadow-[0_0_0_1px_var(--color-np)] transition">
         <Search size={11} strokeWidth={1.5} className="text-nt3" />
-        <input
+        <Input
           ref={inputRef}
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Find in document…"
-          className="bg-transparent border-none outline-none text-2xs text-nt placeholder:text-nt4 w-32"
+          className="text-2xs placeholder:text-nt4 w-32"
         />
         {matchCount > 0 && (
           <span className="text-3xs text-nt3 whitespace-nowrap">
             {currentMatch}/{matchCount}
           </span>
         )}
-        <button onClick={() => goToMatch(currentMatch - 1)} className="text-nt3 hover:text-nt">
+        <IconButton label="Previous match" variant="bare" onClick={() => goToMatch(currentMatch - 1)}>
           <ChevronUp size={11} strokeWidth={1.5} />
-        </button>
-        <button onClick={() => goToMatch(currentMatch + 1)} className="text-nt3 hover:text-nt">
+        </IconButton>
+        <IconButton label="Next match" variant="bare" onClick={() => goToMatch(currentMatch + 1)}>
           <ChevronDown size={11} strokeWidth={1.5} />
-        </button>
+        </IconButton>
       </div>
-      <button onClick={() => { clearHighlights(); onClose() }} className="text-nt3 hover:text-nt">
+      <IconButton label="Close search" variant="bare" onClick={() => { clearHighlights(); onClose() }}>
         <X size={12} strokeWidth={1.5} />
-      </button>
+      </IconButton>
     </div>
   )
 }
