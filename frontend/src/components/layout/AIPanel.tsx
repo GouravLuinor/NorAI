@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useToastStore } from '../../stores/useToastStore'
 import { useEffect } from 'react'
 import { useLectureStore } from '../../stores/useLectureStore'
+import { SegmentedControl } from '../ui/SegmentedControl'
 
 export function AIPanel() {
   const { activeChapterId } = useChapterStore()
@@ -48,34 +49,31 @@ useEffect(() => {
             {String(activeChapterId).padStart(2, '0')} · {aiMode === 'quiz' ? 'Quiz' : aiMode === 'cards' ? 'Cards' : 'Tutor'}
           </div>
         </div>
-        <div className="ml-auto flex gap-0.5 bg-ns2 rounded-lg p-0.5">
-          {(['tutor', 'quiz', 'cards'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => {
-                if (mode === 'quiz') {
-                  fetchQuizQuestions(activeChapterId, activeLectureId || undefined)
-                    .then((qs) => startQuiz(qs, activeChapterId))
-                  addToast('Quiz started', 'success')
-                }
-                 else if (mode === 'cards') {
-                  setMode('cards')
-                  addToast('Flashcards mode activated', 'info')
-                } else {
-                  setMode('tutor')
-                }
-              }}
-              className={`px-2 py-1 rounded-md text-2xs transition ${
-                (mode === 'tutor' && aiMode === 'tutor') ||
-                (mode === 'quiz' && aiMode === 'quiz') ||
-                (mode === 'cards' && aiMode === 'cards')
-                  ? 'bg-nt4/20 text-nt shadow-ev1'
-                  : 'text-nt3 hover:text-nt2'
-              }`}
-            >
-              {mode === 'tutor' ? 'Tutor' : mode === 'quiz' ? 'Quiz' : 'Cards'}
-            </button>
-          ))}
+        <div className="ml-auto">
+          <SegmentedControl
+            containerClass="flex gap-0.5 bg-ns2 rounded-lg p-0.5"
+            itemClass="px-2 py-1 rounded-md text-2xs transition"
+            activeClass="bg-nt4/20 text-nt shadow-ev1"
+            inactiveClass="text-nt3 hover:text-nt2"
+            options={[
+              { value: 'tutor', label: 'Tutor' },
+              { value: 'quiz', label: 'Quiz' },
+              { value: 'cards', label: 'Cards' },
+            ]}
+            value={aiMode}
+            onChange={(mode) => {
+              if (mode === 'quiz') {
+                fetchQuizQuestions(activeChapterId, activeLectureId || undefined)
+                  .then((qs) => startQuiz(qs, activeChapterId))
+                addToast('Quiz started', 'success')
+              } else if (mode === 'cards') {
+                setMode('cards')
+                addToast('Flashcards mode activated', 'info')
+              } else {
+                setMode('tutor')
+              }
+            }}
+          />
         </div>
       </div>
 

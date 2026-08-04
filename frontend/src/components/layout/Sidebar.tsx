@@ -5,6 +5,8 @@ import { useLectureStore } from '../../stores/useLectureStore'
 import { PanelLeftClose, PanelLeftOpen, Trash2 } from 'lucide-react'
 import { useToastStore } from '../../stores/useToastStore'
 import { ThemeToggle } from '../ui/ThemeToggle'
+import { Button } from '../ui/Button'
+import { IconButton } from '../ui/IconButton'
 import { useNavigate } from 'react-router-dom'
 
 
@@ -84,13 +86,13 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           sidebarCollapsed ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none -z-10'
         }`}
       >
-        <button
+        <IconButton
+          label="Open sidebar"
           onClick={handleCollapse}
-          className="w-8 h-8 rounded-md flex items-center justify-center text-nt3 hover:bg-ns2 hover:text-nt2 transition"
-          aria-label="Open sidebar"
+          className="w-8 h-8 rounded-md"
         >
           <PanelLeftOpen size={14} strokeWidth={1.5} />
-        </button>
+        </IconButton>
       </div>
 
       {/* Expanded — use w-full to prevent overlap when sidebar is narrow */}
@@ -106,13 +108,13 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
               N
             </div>
             <span className="font-display text-13 font-medium text-nt tracking-tight">NorAI</span>
-            <button
+            <IconButton
+              label="Collapse sidebar"
               onClick={handleCollapse}
-              className="ml-auto w-5 h-5 rounded-sm flex items-center justify-center text-nt3 hover:bg-ns2 hover:text-nt2 transition"
-              aria-label="Collapse sidebar"
+              className="ml-auto w-5 h-5 rounded-sm"
             >
               <PanelLeftClose size={12} strokeWidth={1.5} />
-            </button>
+            </IconButton>
           </div>
 
           <div className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-md bg-ns2 mb-3.5 text-2xs text-nt2 border border-bdr">
@@ -189,16 +191,17 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
                 }`}
               />
               <span className="truncate flex-1">{getOrCreateLabel(t)}</span>
-              <button
+              <IconButton
+                label="Delete thread"
+                variant="bare"
                 onClick={(e) => {
                   e.stopPropagation()
                   handleDeleteThread(t)
                 }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-ns4"
-                aria-label="Delete thread"
+                className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-ns4"
               >
                 <Trash2 size={10} strokeWidth={1.5} className="text-nt4 hover:text-nr" />
-              </button>
+              </IconButton>
             </div>
           ))}
         </div>
@@ -212,12 +215,13 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
 
         {/* New thread */}
         <div className="p-3.5 pt-2.5">
-        <button
+        <Button
+          variant="outline"
           onClick={handleCreateThread}
-          className="w-full py-1.5 rounded-md border border-bdr2 bg-transparent text-nt3 text-11 flex items-center justify-center gap-1.5 hover:bg-ns2 hover:text-nt2 hover:border-nt4 hover:shadow-ev1 transition active:translate-y-[1px] active:shadow-none"
+          className="w-full py-1.5 rounded-md text-11 gap-1.5 bg-transparent border-bdr2 hover:border-nt4 hover:shadow-ev1 active:translate-y-[1px] active:shadow-none"
         >
           <span className="text-xs">+</span> New thread
-        </button>
+        </Button>
         </div>
       </div>
     </div>

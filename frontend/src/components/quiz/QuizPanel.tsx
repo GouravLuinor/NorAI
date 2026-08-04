@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useQuizStore, type Question, evaluateQuiz } from '../../stores/useQuizStore'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { Check, X, RotateCcw, BookOpen } from 'lucide-react'
+import { Button } from '../ui/Button'
+import { Badge } from '../ui/Badge'
 
 export function QuizPanel() {
   const {
@@ -127,18 +129,20 @@ export function QuizPanel() {
 
             {/* Actions */}
             <div className="flex gap-3 w-full max-w-md pb-4">
-              <button
+              <Button
+                variant="surface"
                 onClick={retakeQuiz}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-nb border border-bdr2 text-nt text-sm font-medium hover:bg-ns2 hover:shadow-ev2 transition"
+                className="flex-1 gap-2 py-2.5 rounded-lg text-sm bg-nb hover:bg-ns2 hover:shadow-ev2"
               >
                 <RotateCcw size={14} strokeWidth={1.5} /> Retake
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
                 onClick={handleReviewNotes}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md bg-npf text-npfg text-sm font-medium hover:bg-npfh transition shadow-ev2 active:translate-y-[1px] active:shadow-none"
+                className="flex-1 gap-2 py-2.5 rounded-md text-sm"
               >
                 <BookOpen size={14} strokeWidth={1.5} /> Review Notes
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -216,7 +220,7 @@ export function QuizPanel() {
 
         <div className="flex items-center gap-2 mb-4">
           <span className="px-2 py-0.5 rounded text-2xs font-semibold uppercase bg-nblb text-nbl">{q.type}</span>
-          <span className="px-2 py-0.5 rounded text-2xs font-semibold uppercase bg-ns3 text-nt2">{q.difficulty || 'Medium'}</span>
+          <Badge tone="default">{q.difficulty || 'Medium'}</Badge>
         </div>
 
         <p className="text-[15px] text-nt leading-relaxed mb-6">{q.question}</p>
@@ -268,10 +272,14 @@ export function QuizPanel() {
             <textarea className="w-full h-24 bg-nb border border-bdr2 rounded-lg p-3 text-sm text-nt resize-none focus:border-np outline-none"
               placeholder="Type your answer…" value={selectedAnswer} onChange={(e) => setSelectedAnswer(e.target.value)} disabled={isAnswered} />
             {!isAnswered && (
-              <button onClick={() => handleSelectAnswer(selectedAnswer)} disabled={!selectedAnswer.trim()}
-                className="py-2 px-6 rounded-md bg-npf text-npfg text-sm font-medium shadow-ev2 hover:bg-npfh transition active:translate-y-[1px] active:shadow-none disabled:opacity-50">
+              <Button
+                variant="primary"
+                onClick={() => handleSelectAnswer(selectedAnswer)}
+                disabled={!selectedAnswer.trim()}
+                className="px-6 py-2 rounded-md text-sm disabled:opacity-50"
+              >
                 Submit Answer
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -291,19 +299,23 @@ export function QuizPanel() {
           <div className="mt-5 pt-5 border-t border-dashed border-bdr flex items-center gap-2 flex-wrap">
             <span className="text-xs text-nt3 font-medium mr-2">How confident were you?</span>
             {['Guess', 'Unsure', 'Confident', 'Very Confident'].map((lvl) => (
-              <button key={lvl} onClick={() => setConfidenceLocal(lvl)}
-                className={`px-3 py-1 rounded-md border text-xs transition ${confidence === lvl ? 'bg-npb border-npbr text-np' : 'border-bdr2 text-nt3 hover:bg-ns2 hover:text-nt2'}`}>
+              <Button key={lvl} variant="outline" onClick={() => setConfidenceLocal(lvl)}
+                className={`px-3 py-1 rounded-md text-xs ${confidence === lvl ? 'bg-npb border-npbr text-np' : 'bg-transparent border-bdr2'}`}>
                 {lvl}
-              </button>
+              </Button>
             ))}
           </div>
         )}
 
         {showFeedback && isAutoGraded && (
           <div className="mt-6 flex justify-end">
-            <button onClick={handleNext} className="py-2 px-6 rounded-md bg-npf text-npfg text-sm font-medium shadow-ev2 hover:bg-npfh transition active:translate-y-[1px] active:shadow-none">
+            <Button
+              variant="primary"
+              onClick={handleNext}
+              className="px-6 py-2 rounded-md text-sm"
+            >
               {currentIndex < questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
-            </button>
+            </Button>
           </div>
         )}
 

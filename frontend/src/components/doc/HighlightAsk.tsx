@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useThreadStore, sendChatMessage } from '../../stores/useThreadStore'
+import { useThreadStore } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { useLectureStore } from '../../stores/useLectureStore'   // ← added
+import { buildReferences } from '../../lib/references'
+import { sendChatMessage } from '../../lib/chatApi'
 import { Sparkles } from 'lucide-react'
+import { Button } from '../ui/Button'
 
 export function HighlightAsk() {
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null)
@@ -100,30 +103,9 @@ export function HighlightAsk() {
       )
 
       // ── Build references from the response ──────────────────────────────
-      const refs = [
-        ...(data.retrieved_chunks ?? []).map((c: any) => {
-          const leaf = (c.heading_path ?? '').split('>').pop()!.trim()
-          const sectionId = 'sec-' + leaf
-            .toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim()
-            .replace(/\s+/g, '-').replace(/-+/g, '-')
-          return {
-            id: c.heading_path,
-            title: c.heading_path,
-            section: `Ch ${c.chapter_id}`,
-            sectionId,
-            chapterId: c.chapter_id,
-            type: 'note' as const,
-          }
-        }),
-        ...(data.retrieved_images ?? []).map((img: any) => ({
-          id: img.path,
-          title: img.section,
-          section: img.path,
-          sectionId: '',
-          type: 'screenshot' as const,
-        })),
-      ]
-      useThreadStore.getState().setLiveReferences(refs)
+      useThreadStore.getState().setLiveReferences(
+        buildReferences(data.retrieved_chunks ?? [], data.retrieved_images ?? [])
+      )
 
       const cleanAnswer = data.answer.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
 
@@ -161,17 +143,18 @@ export function HighlightAsk() {
   if (!selection) return null
 
   return (
-    <button
+    <Button
       ref={buttonRef}
+      variant="primary"
       onClick={handleAsk}
       disabled={loading}
-      className={`fixed z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-npf text-npfg text-11 font-medium shadow-ev2 transition-all animate-fade-in pointer-events-auto ${
-        loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-npfh active:translate-y-[1px] active:shadow-none'
+      className={`fixed z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-11 font-medium shadow-ev2 animate-fade-in pointer-events-auto ${
+        loading ? 'opacity-50 cursor-not-allowed' : ''
       }`}
       style={{ left: `${selection.x}px`, top: `${selection.y}px` }}
     >
       <Sparkles size={13} strokeWidth={1.5} />
       {loading ? 'Asking…' : 'Ask Nora'}
-    </button>
+    </Button>
   )
 }

@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useThreadStore, sendChatMessage } from '../../stores/useThreadStore'
+import { useThreadStore } from '../../stores/useThreadStore'
 import { useChapterStore } from '../../stores/useChapterStore'
-import { useLectureStore } from '../../stores/useLectureStore'   // ← added
+import { sendChatMessageStream } from '../../lib/chatApi'
+import { buildReferences } from '../../lib/references'
 import { MessageBubble } from './MessageBubble'
 import { ReferencesPanel } from './ReferencesPanel'
 import { InputZone } from './InputZone'
@@ -11,6 +12,9 @@ import { Lightbox } from '../ui/Lightbox'
 // ── Stable, collision‑free ID generator ────────────────────────────────────
 const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
+// Strip the auto-appended Sources appendix (it's surfaced via ReferencesPanel).
+const stripSources = (text: string) => text.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
+
 export function ChatArea() {
   const messages   = useThreadStore(s => s.messages)
   const addMessage = useThreadStore(s => s.addMessage)
@@ -18,11 +22,11 @@ export function ChatArea() {
   const threadId   = useThreadStore(s => s.threadId)
   const isLoading  = useThreadStore(s => s.isLoading)
 
+  const streamingText    = useThreadStore(s => s.streamingText)
+  const setStreamingText = useThreadStore(s => s.setStreamingText)
+
   const liveReferences    = useThreadStore(s => s.liveReferences)
   const setLiveReferences = useThreadStore(s => s.setLiveReferences)
-
-  // ── Lecture‑aware ───────────────────────────────────────────────────────
-  const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
 
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
@@ -36,8 +40,12 @@ export function ChatArea() {
 
   // RC-FIX: Keep activeThreadRef in sync so guards in handleSend
   // always compare against the *current* thread, not the one at mount time.
+  // Aborting the in-flight stream on switch stops wasted chunks and leaves no
+  // stale streaming bubble behind.
   useEffect(() => {
+    const previous = activeThreadRef.current
     activeThreadRef.current = threadId
+    if (previous !== threadId) abortControllerRef.current?.abort()
   }, [threadId])
 
 const handleSend = useCallback(async (text: string) => {
@@ -60,75 +68,67 @@ const handleSend = useCallback(async (text: string) => {
     const controller = new AbortController()
     abortControllerRef.current = controller
 
+    // 2. Stream the answer — chunks feed the transient streaming bubble, the
+    //    final event carries the checkpoint refs. Never slower than the
+    //    non-stream path (the backend streams an already-computed answer).
+    let acc = ''
     try {
-      // 2. Get the full answer — lecture‑scoped
-      const data = await sendChatMessage(targetThreadId, text, '', { lectureId, messageId: userMsg.id })
+      for await (const chunk of sendChatMessageStream(
+        targetThreadId,
+        text,
+        '',
+        controller.signal,
+        { messageId: userMsg.id },
+      )) {
+        if (controller.signal.aborted) return
 
-      if (controller.signal.aborted) return
-
-      const cleanAnswer = (data.answer ?? '').replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
-
-      // 3. Store assistant message under the ORIGINAL thread (targetThreadId),
-      //    even if the user navigated away while waiting.
-      const assistantMsg = {
-        id: data.assistant_message_id || genId(),
-        role: 'assistant' as const,
-        content: cleanAnswer,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      }
-
-      // RC-FIX2: Fully atomic read-check-write inside a single setState.
-      // This eliminates the race where loadThreadMessages could inject the
-      // same assistant message between a getState() snapshot and a separate
-      // setState() call, causing duplicates.
-      useThreadStore.setState((s) => {
-        const currentMessages = s.threadId === targetThreadId
-          ? s.messages
-          : (s._messagesCache[targetThreadId] ?? [])
-
-        // Guard: if loadThreadMessages already brought in this response
-        // (because the backend checkpoint was updated before we got here),
-        // skip the append to avoid a duplicate.
-        if (currentMessages.some(m => m.role === 'assistant' && m.content === cleanAnswer)) {
-          return {}
+        if (typeof chunk === 'string') {
+          acc += chunk
+          setStreamingText(stripSources(acc))
+          continue
         }
 
-        const updated = [...currentMessages, assistantMsg]
-        return {
-          _messagesCache: { ...s._messagesCache, [targetThreadId]: updated },
-          ...(s.threadId === targetThreadId ? { messages: updated } : {}),
-        }
-      })
+        // 3. Final event — commit the real assistant message under the ORIGINAL
+        //    thread (targetThreadId), even if the user navigated away while waiting.
+        const data = chunk.data
+        setStreamingText('')
 
-      // 4. Build references (only show if still on the target thread)
-      if (activeThreadRef.current === targetThreadId) {
-        setLiveReferences([
-          ...(data.retrieved_chunks ?? []).map((c: any) => {
-            const headingParts = (c.heading_path || '').split('>')
-            const leafHeading  = headingParts[headingParts.length - 1].trim()
-            const sectionId    = 'sec-' + leafHeading
-              .toLowerCase()
-              .replace(/[^a-z0-9\s-]/g, '')
-              .trim()
-              .replace(/\s+/g, '-')
-              .replace(/-+/g, '-')
-            return {
-              id: c.heading_path,
-              title: c.heading_path,
-              section: `Ch ${c.chapter_id}`,
-              sectionId,
-              chapterId: c.chapter_id,
-              type: 'note' as const,
-            }
-          }),
-          ...(data.retrieved_images ?? []).map((img: any) => ({
-            id: img.path,
-            title: img.section,
-            section: img.path,
-            sectionId: '',
-            type: 'screenshot' as const,
-          })),
-        ])
+        const cleanAnswer = stripSources(acc)
+
+        const assistantMsg = {
+          id: data.assistant_message_id || genId(),
+          role: 'assistant' as const,
+          content: cleanAnswer,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        }
+
+        // RC-FIX2: Fully atomic read-check-write inside a single setState.
+        // This eliminates the race where loadThreadMessages could inject the
+        // same assistant message between a getState() snapshot and a separate
+        // setState() call, causing duplicates.
+        useThreadStore.setState((s) => {
+          const currentMessages = s.threadId === targetThreadId
+            ? s.messages
+            : (s._messagesCache[targetThreadId] ?? [])
+
+          // Guard: if loadThreadMessages already brought in this response
+          // (because the backend checkpoint was updated before we got here),
+          // skip the append to avoid a duplicate.
+          if (currentMessages.some(m => m.role === 'assistant' && m.content === cleanAnswer)) {
+            return {}
+          }
+
+          const updated = [...currentMessages, assistantMsg]
+          return {
+            _messagesCache: { ...s._messagesCache, [targetThreadId]: updated },
+            ...(s.threadId === targetThreadId ? { messages: updated } : {}),
+          }
+        })
+
+        // 4. Build references (only show if still on the target thread)
+        if (activeThreadRef.current === targetThreadId) {
+          setLiveReferences(buildReferences(data.retrieved_chunks ?? [], data.retrieved_images ?? []))
+        }
       }
     } catch (err: any) {
       if (err?.name === 'AbortError') return
@@ -145,10 +145,11 @@ const handleSend = useCallback(async (text: string) => {
       // RC-FIX: Always clear loading and inflight state regardless of which
       // thread is active. The old code guarded this behind activeThreadRef
       // which could be stale, leaving the shimmer loader permanently visible.
+      setStreamingText('')
       setLoading(false)
       inFlightRef.current = false
     }
-  }, [threadId, addMessage, setLoading, lectureId])
+  }, [threadId, addMessage, setLoading, setStreamingText, setLiveReferences])
 
   // ── Reference handlers ────────────────────────────────────────────────────
   const handleReferenceClick = useCallback((sectionId: string) => {
@@ -221,7 +222,18 @@ const handleSend = useCallback(async (text: string) => {
               <MessageBubble key={msg.id} message={msg} />
             ))}
 
-            {isLoading && (
+            {streamingText && (
+              <MessageBubble
+                message={{
+                  id: 'streaming',
+                  role: 'assistant',
+                  content: streamingText,
+                  timestamp: '',
+                }}
+              />
+            )}
+
+            {isLoading && !streamingText && (
               <div className="flex gap-2 items-start">
                 <div className="w-5 h-5 rounded-sm bg-npf flex items-center justify-center text-3xs font-medium text-npfg shrink-0 mt-0.5 shadow-ev1">
                   N

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, Info } from 'lucide-react'
+import { Button } from '../components/ui/Button'
+import { SegmentedControl } from '../components/ui/SegmentedControl'
 
 type InputType = 'youtube' | 'upload' | 'drive'
 
@@ -103,26 +105,19 @@ export function UploadPage() {
           <div className="bg-ns border border-bdr2 rounded-lg p-5 shadow-ev2 fold-marks relative">
             <div className="spec-label mb-3">01. Source</div>
             {/* Segmented Control */}
-            <div className="flex bg-nb border border-bdr rounded-md p-1 mb-4">
-              {([
-                ['youtube', Film, 'YouTube'],
-                ['upload', Upload, 'Upload'],
-                ['drive', Link2, 'Drive'],
-              ] as const).map(([type, Icon, label]) => (
-                <button
-                  key={type}
-                  onClick={() => setInputType(type)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-sm text-xs font-medium transition ${
-                    inputType === type
-                      ? 'bg-ns3 text-nt shadow-ev1'
-                      : 'text-nt3 hover:text-nt2'
-                  }`}
-                >
-                  <Icon size={14} strokeWidth={1.5} />
-                  {label}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl<InputType>
+              containerClass="flex bg-nb border border-bdr rounded-md p-1 mb-4"
+              itemClass="flex-1 flex items-center justify-center gap-2 py-2 rounded-sm text-xs font-medium transition"
+              activeClass="bg-ns3 text-nt shadow-ev1"
+              inactiveClass="text-nt3 hover:text-nt2"
+              options={[
+                { value: 'youtube', label: 'YouTube', prefix: <Film size={14} strokeWidth={1.5} /> },
+                { value: 'upload', label: 'Upload', prefix: <Upload size={14} strokeWidth={1.5} /> },
+                { value: 'drive', label: 'Drive', prefix: <Link2 size={14} strokeWidth={1.5} /> },
+              ]}
+              value={inputType}
+              onChange={setInputType}
+            />
 
             {/* Input Area */}
             {inputType === 'upload' ? (
@@ -143,8 +138,11 @@ export function UploadPage() {
               <div className="relative">
                 <input
                   type="text"
+                  id="lecture-url"
+                  name="lecture-url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
+                  aria-label={inputType === 'youtube' ? 'YouTube URL' : 'Google Drive link'}
                   placeholder={
                     inputType === 'youtube'
                       ? 'Paste YouTube URL…'
@@ -159,14 +157,15 @@ export function UploadPage() {
             )}
 
             {/* Submit Button */}
-            <button
+            <Button
+              variant="primary"
               onClick={handleStart}
               disabled={!canSubmit}
-              className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-md bg-npf text-npfg text-13 font-medium shadow-ev2 hover:bg-npfh transition active:translate-y-[1px] active:shadow-none disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full mt-4 gap-2 py-2.5 rounded-md text-13 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Sparkles size={14} strokeWidth={1.5} />
               Start Processing
-            </button>
+            </Button>
           </div>
 
           <div className="flex items-center justify-center gap-1.5 text-2xs text-nt4 mt-4">

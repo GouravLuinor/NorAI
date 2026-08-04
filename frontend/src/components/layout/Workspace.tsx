@@ -6,6 +6,7 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { PanelLeftOpen, HelpCircle } from 'lucide-react'
 import { ShortcutsModal } from '../ui/ShortcutsModal'
+import { IconButton } from '../ui/IconButton'
 import { useParams } from 'react-router-dom'
 import { useLectureStore } from '../../stores/useLectureStore'
 
@@ -126,13 +127,13 @@ export function Workspace() {
       }}
     >
       {sidebarCollapsed && (
-        <button
+        <IconButton
+          label="Open sidebar"
           onClick={handleSidebarToggle}
-          className="absolute left-2 top-2 z-50 w-8 h-8 rounded-sm bg-ns2 border border-bdr2 text-nt3 hover:text-nt hover:bg-ns3 transition flex items-center justify-center shadow-ev2 active:translate-y-[1px] active:shadow-none"
-          aria-label="Open sidebar"
+          className="absolute left-2 top-2 z-50 w-8 h-8 rounded-sm bg-ns2 border border-bdr2 shadow-ev2 hover:bg-ns3 active:translate-y-[1px] active:shadow-none"
         >
           <PanelLeftOpen size={14} strokeWidth={1.5} />
-        </button>
+        </IconButton>
       )}
 
       <Sidebar onToggleCollapse={handleSidebarToggle} />
@@ -156,13 +157,13 @@ export function Workspace() {
       />
 
       {/* Keyboard shortcuts help button */}
-      <button
+      <IconButton
+        label="Keyboard shortcuts"
         onClick={() => setShortcutsOpen(true)}
-        className="absolute bottom-4 left-4 z-50 w-7 h-7 rounded-sm bg-ns2 border border-bdr2 text-nt3 hover:text-nt hover:bg-ns3 transition flex items-center justify-center shadow-ev2 active:translate-y-[1px] active:shadow-none"
-        aria-label="Keyboard shortcuts"
+        className="absolute bottom-4 left-4 z-50 w-7 h-7 rounded-sm bg-ns2 border border-bdr2 shadow-ev2 hover:bg-ns3 active:translate-y-[1px] active:shadow-none"
       >
         <HelpCircle size={13} strokeWidth={1.5} />
-      </button>
+      </IconButton>
 
       {/* Keyboard shortcuts modal */}
       <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />

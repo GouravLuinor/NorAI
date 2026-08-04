@@ -2,6 +2,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import type { Message } from '../../stores/useThreadStore'
+import { chatMarkdownComponents } from '../../lib/markdown'
 
 export function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user'
@@ -33,29 +34,7 @@ export function MessageBubble({ message }: { message: Message }) {
               <ReactMarkdown
                 remarkPlugins={[remarkMath]}
                 rehypePlugins={[rehypeKatex]}
-                components={{
-                  p: ({ children }) => <p className="mb-1.5 last:mb-0">{children}</p>,
-                  strong: ({ children }) => <strong className="text-nt font-medium">{children}</strong>,
-                  ul: ({ children }) => <ul className="list-none pl-0 space-y-1 mt-1">{children}</ul>,
-                  li: ({ children }) => <li className="relative pl-4 text-xs text-nt2 leading-relaxed"><span className="absolute left-0 top-2 w-1 h-1 rounded-full bg-ns3 border border-bdr2" />{children}</li>,
-                  code: ({ children }: any) => <code className="font-mono text-2xs bg-ns2 px-1 py-0.5 rounded text-nt border border-bdr">{children}</code>,
-                  img: ({ src, alt }: any) => {
-                    let cleanSrc = src || ''
-                    if (cleanSrc.startsWith('outputs/')) {
-                      cleanSrc = `/static/${cleanSrc.replace(/^outputs\//, '')}`
-                    } else if (!cleanSrc.startsWith('/') && !cleanSrc.startsWith('http')) {
-                      cleanSrc = `/static/${cleanSrc}`
-                    }
-                    return (
-                      <img
-                        src={cleanSrc}
-                        alt={alt || ''}
-                        className="rounded-lg border border-bdr my-2 max-h-60 object-contain shadow-ev1"
-                        loading="lazy"
-                      />
-                    )
-                  },
-                }}
+                components={chatMarkdownComponents}
               >
                 {message.content}
               </ReactMarkdown>

@@ -8,6 +8,8 @@ import { SearchBar } from '../doc/SearchBar'
 import { useToastStore } from '../../stores/useToastStore'
 import { HighlightAsk } from '../doc/HighlightAsk'
 import { useLectureStore } from '../../stores/useLectureStore'
+import { Button } from '../ui/Button'
+import { SegmentedControl } from '../ui/SegmentedControl'
 
 export function DocPanel() {
   const [searchOpen, setSearchOpen] = useState(false)
@@ -32,42 +34,33 @@ export function DocPanel() {
     <div className="flex flex-col min-w-0 min-h-0 border-r border-bdr bg-nb">
       {/* Top bar */}
       <div className="flex items-center px-4 h-[38px] border-b border-bdr bg-ns gap-0.5 shrink-0">
-        {(['notes', 'revision', 'assessment'] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setDocTab(tab)}
-            className={`px-2.5 py-1 rounded-sm text-11 transition ${
-              activeDocTab === tab
-                ? 'text-nt bg-ns3 shadow-ev1'
-                : 'text-nt3 hover:text-nt2'
-            }`}
-          >
-            <span className="font-mono text-[9px] text-nt4 tracking-widest mr-1">
-              {tab === 'notes' ? '03' : tab === 'revision' ? '04' : '05'}
-            </span>
-            {tab === 'notes'
-              ? 'Study notes'
-              : tab === 'revision'
-                ? 'Revision'
-                : 'Assessment'}
-          </button>
-        ))}
+        <SegmentedControl
+          options={[
+            { value: 'notes', label: 'Study notes', prefix: <span className="font-mono text-[9px] text-nt4 tracking-widest mr-1">03</span> },
+            { value: 'revision', label: 'Revision', prefix: <span className="font-mono text-[9px] text-nt4 tracking-widest mr-1">04</span> },
+            { value: 'assessment', label: 'Assessment', prefix: <span className="font-mono text-[9px] text-nt4 tracking-widest mr-1">05</span> },
+          ]}
+          value={activeDocTab}
+          onChange={(v) => setDocTab(v)}
+        />
 
         <div className="ml-auto flex items-center gap-1.5">
           {/* Search button – toggles the inline search bar */}
-          <button
+          <Button
+            variant="outline"
             onClick={() => setSearchOpen(!searchOpen)}
-            className="flex items-center gap-1 px-2 py-1 rounded-sm border border-bdr2 bg-transparent text-nt3 text-2xs hover:bg-ns2 hover:text-nt2 transition active:translate-y-[1px] active:shadow-none"
+            className="gap-1 px-2 py-1 rounded-sm text-2xs bg-transparent border-bdr2 active:translate-y-[1px] active:shadow-none"
           >
             <Search size={11} strokeWidth={1.5} /> {searchOpen ? 'Close' : 'Search'}
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="outline"
             onClick={handleDownloadPDF}
-            className="flex items-center gap-1 px-2 py-1 rounded-sm border border-bdr2 bg-transparent text-nt3 text-2xs hover:bg-ns2 hover:text-nt2 transition active:translate-y-[1px] active:shadow-none"
+            className="gap-1 px-2 py-1 rounded-sm text-2xs bg-transparent border-bdr2 active:translate-y-[1px] active:shadow-none"
           >
             <Download size={11} strokeWidth={1.5} /> PDF
-          </button>
+          </Button>
 
           {/* Inline search bar – only visible when search is open */}
           <SearchBar isOpen={searchOpen} onClose={() => setSearchOpen(false)} />

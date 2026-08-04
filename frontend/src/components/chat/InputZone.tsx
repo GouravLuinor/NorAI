@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { ArrowUp } from 'lucide-react'
+import { IconButton } from '../ui/IconButton'
 
 interface InputZoneProps {
   onSend: (text: string) => void
@@ -49,14 +50,14 @@ export function InputZone({ onSend }: InputZoneProps) {
           }}
           onKeyDown={handleKeyDown}
         />
-        <button
-          aria-label="Send message"
+        <IconButton
+          label="Send message"
+          variant="primary"
           onClick={handleSend}
-          /* Added "ripple" class here */
-          className="ripple w-6.5 h-6.5 rounded-sm bg-npf flex items-center justify-center text-npfg hover:bg-npfh transition active:translate-y-[1px] active:shadow-none shrink-0"
+          className="ripple w-6.5 h-6.5 rounded-sm"
         >
           <ArrowUp size={13} strokeWidth={1.5} />
-        </button>
+        </IconButton>
       </div>
       <div className="text-3xs text-nt4 text-center mt-1.5">
         ⌃ Enter to send

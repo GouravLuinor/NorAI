@@ -3,6 +3,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { fetchGeneratedFlashcards, type Flashcard } from '../../stores/useQuizStore'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useLectureStore } from '../../stores/useLectureStore'   // ← added
+import { Button } from '../ui/Button'
+import { SegmentedControl } from '../ui/SegmentedControl'
 
 type Rating = 'Again' | 'Hard' | 'Good' | 'Easy'
 
@@ -118,50 +120,49 @@ export function FlashcardsPanel() {
         {/* Show Answer / Rating */}
         <div className="mt-5 w-full max-w-[90%] flex justify-center">
           {!flipped ? (
-            <button
+            <Button
+              variant="surface"
               onClick={() => setFlipped(true)}
-              className="py-2.5 px-6 rounded-md bg-ns2 border border-bdr2 text-nt text-sm font-medium hover:bg-ns3 transition w-full active:translate-y-[1px] active:shadow-none"
+              className="py-2.5 px-6 rounded-md w-full text-sm bg-ns2 hover:bg-ns3 active:translate-y-[1px] active:shadow-none"
             >
               Show Answer
-            </button>
+            </Button>
           ) : (
             <div className="flex gap-2 w-full">
-              {(['Again', 'Hard', 'Good', 'Easy'] as Rating[]).map((r) => (
-                <button
-                  key={r}
-                  onClick={() => handleRate(r)}
-                  className={`flex-1 py-2 rounded-sm text-11 font-medium transition active:translate-y-[1px] ${
-                    rating === r
-                      ? 'bg-npf text-npfg shadow-ev2 active:shadow-none'
-                      : 'bg-ns border border-bdr2 text-nt2 hover:bg-ns2'
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
+              <SegmentedControl<Rating>
+                containerClass="flex gap-2 w-full"
+                itemClass="flex-1 py-2 rounded-sm text-11 font-medium transition active:translate-y-[1px]"
+                activeClass="bg-npf text-npfg shadow-ev2 active:shadow-none"
+                inactiveClass="bg-ns border border-bdr2 text-nt2 hover:bg-ns2"
+                options={(['Again', 'Hard', 'Good', 'Easy'] as Rating[]).map((r) => ({ value: r, label: r }))}
+                value={rating || 'Again'}
+                onChange={handleRate}
+              />
             </div>
           )}
         </div>
 
         {/* Navigation */}
         <div className="flex items-center justify-between w-full max-w-[90%] mt-5 pt-4 border-t border-bdr">
-          <button
+          <Button
+            variant="outline"
             onClick={() => goTo(current - 1)}
             disabled={current === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-bdr2 text-nt3 text-xs hover:bg-ns2 transition disabled:opacity-40"
+            className="gap-1.5 px-3 py-1.5 rounded-md text-xs bg-transparent border-bdr2 disabled:opacity-40"
           >
             <ChevronLeft size={15} strokeWidth={1.5} /> Prev
-          </button>
+          </Button>
           <span className="text-xs text-nt3">
             {current + 1} / {total}
           </span>
-          <button
+          <Button
+            variant="outline"
             onClick={() => goTo(current + 1)}
             disabled={current === total - 1}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-bdr2 text-nt3 text-xs hover:bg-ns2 transition disabled:opacity-40"
+            className="gap-1.5 px-3 py-1.5 rounded-md text-xs bg-transparent border-bdr2 disabled:opacity-40"
           >
             Next <ChevronRight size={15} strokeWidth={1.5} />
-          </button>
+          </Button>
         </div>
       </div>
 

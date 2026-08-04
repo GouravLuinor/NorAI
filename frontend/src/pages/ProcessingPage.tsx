@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Check, ArrowRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { Button } from '../components/ui/Button'
 import type { ProcessEvent } from '../types'
 
 interface StageInfo {
@@ -199,13 +200,14 @@ export function ProcessingPage() {
 
         {/* Go to workspace button */}
         {finished && (
-          <button
+          <Button
+            variant="primary"
             onClick={() => navigate(`/workspace/${taskId}`)}
-            className="w-full mt-8 flex items-center justify-center gap-2 py-3 rounded-md bg-npf text-npfg text-13 font-medium shadow-ev2 hover:bg-npfh transition active:translate-y-[1px] active:shadow-none fold-marks relative"
+            className="w-full mt-8 gap-2 py-3 rounded-md text-13 fold-marks relative"
           >
             Go to Workspace
             <ArrowRight size={15} strokeWidth={1.5} />
-          </button>
+          </Button>
         )}
       </div>
     </div>
