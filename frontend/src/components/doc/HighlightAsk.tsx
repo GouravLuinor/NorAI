@@ -165,8 +165,8 @@ export function HighlightAsk() {
       ref={buttonRef}
       onClick={handleAsk}
       disabled={loading}
-      className={`fixed z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-np text-white text-[11px] font-medium shadow-lg transition-all animate-fade-in pointer-events-auto ${
-        loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#8E82E0]'
+      className={`fixed z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-np text-npfg text-11 font-medium shadow-ev2 transition-all animate-fade-in pointer-events-auto ${
+        loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-nph'
       }`}
       style={{ left: `${selection.x}px`, top: `${selection.y}px` }}
     >

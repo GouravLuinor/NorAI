@@ -105,7 +105,7 @@ const poll = async () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-np flex items-center justify-center text-lg font-semibold text-white shadow-lg">
+            <div className="w-10 h-10 rounded-lg bg-np flex items-center justify-center text-lg font-semibold text-npfg shadow-ev2">
               N
             </div>
             <span className="text-2xl font-semibold text-nt tracking-tight">NorAI</span>
@@ -130,7 +130,7 @@ const poll = async () => {
             return (
               <div
                 key={stage.key}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md text-[12px] transition ${
+                className={`flex items-center gap-3 px-3 py-2 rounded-md text-xs transition ${
                   isActive
                     ? 'bg-npb text-np'
                     : isComplete
@@ -155,7 +155,7 @@ const poll = async () => {
         {finished && (
           <button
             onClick={() => navigate(`/workspace/${taskId}`)}
-            className="w-full mt-8 flex items-center justify-center gap-2 py-3 rounded-lg bg-np text-white text-[13px] font-medium shadow-lg hover:bg-[#8E82E0] transition"
+            className="w-full mt-8 flex items-center justify-center gap-2 py-3 rounded-lg bg-np text-npfg text-13 font-medium shadow-ev2 hover:bg-nph transition"
           >
             Go to Workspace
             <ArrowRight size={15} />

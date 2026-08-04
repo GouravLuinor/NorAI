@@ -17,7 +17,7 @@ export function ToastContainer() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-lg bg-ns border border-bdr2 shadow-lg text-[12px] text-nt2 animate-slide-in`}
+          className={`pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-lg bg-ns border border-bdr2 shadow-ev2 text-xs text-nt2 animate-slide-in`}
         >
           {icons[toast.type]}
           <span className="flex-1">{toast.message}</span>

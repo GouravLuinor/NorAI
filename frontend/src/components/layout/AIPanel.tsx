@@ -38,13 +38,13 @@ useEffect(() => {
     <div className="flex flex-col min-h-0 bg-ns overflow-hidden h-full">
       {/* Header */}
       <div className="px-3.5 py-2.5 border-b border-bdr flex items-center gap-2 shrink-0">
-        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-np to-nbl flex items-center justify-center text-[11px] font-medium text-white shadow-sm relative">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-np to-nph flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 relative">
           N
           <span className="absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full bg-ng border-1.5 border-ns" />
         </div>
         <div>
           <div className="text-xs font-medium text-nt">Nora</div>
-          <div className="text-[10px] text-nt3">
+          <div className="text-2xs text-nt3">
             Ch {String(activeChapterId).padStart(2, '0')} · {aiMode === 'quiz' ? 'Quiz' : aiMode === 'cards' ? 'Cards' : 'Tutor'}
           </div>
         </div>
@@ -65,11 +65,11 @@ useEffect(() => {
                   setMode('tutor')
                 }
               }}
-              className={`px-2 py-1 rounded-md text-[10px] transition ${
+              className={`px-2 py-1 rounded-md text-2xs transition ${
                 (mode === 'tutor' && aiMode === 'tutor') ||
                 (mode === 'quiz' && aiMode === 'quiz') ||
                 (mode === 'cards' && aiMode === 'cards')
-                  ? 'bg-nt4/20 text-nt shadow-sm'
+                  ? 'bg-nt4/20 text-nt shadow-ev1'
                   : 'text-nt3 hover:text-nt2'
               }`}
             >

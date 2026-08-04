@@ -78,21 +78,21 @@ function getCardType(h: string, body: string): string {
 
 // ── Custom Markdown renderers ──────────────────────────────────────────────
 const baseComponents: Components = {
-  p:      ({ children }) => <p className="text-[13px] text-nt2 leading-relaxed mb-2">{children}</p>,
+  p:      ({ children }) => <p className="text-13 text-nt2 leading-relaxed mb-2">{children}</p>,
   strong: ({ children }) => <strong className="text-nt font-medium">{children}</strong>,
   ul:     ({ children }) => <ul className="list-none pl-0 space-y-2">{children}</ul>,
   li:     ({ children }) => (
-    <li className="relative pl-5 text-[13px] text-nt2 leading-relaxed">
+    <li className="relative pl-5 text-13 text-nt2 leading-relaxed">
       <span className="absolute left-0 top-2 w-1.5 h-1.5 rounded-full bg-ns3 border border-bdr2" />
       {children}
     </li>
   ),
   code:   ({ children, className }: any) =>
     !className
-      ? <code className="font-mono text-[10px] bg-ns2 px-1.5 py-0.5 rounded text-nt border border-bdr">{children}</code>
+      ? <code className="font-mono text-2xs bg-ns2 px-1.5 py-0.5 rounded text-nt border border-bdr">{children}</code>
       : <code className={className}>{children}</code>,
   table:  ({ children }) => <table className="w-full text-xs text-nt2">{children}</table>,
-  thead:  ({ children }) => <thead className="text-[10px] font-semibold text-nt uppercase tracking-wider border-b border-bdr2">{children}</thead>,
+  thead:  ({ children }) => <thead className="text-2xs font-semibold text-nt uppercase tracking-wider border-b border-bdr2">{children}</thead>,
   th:     ({ children }) => <th className="p-2 text-left">{children}</th>,
   td:     ({ children }) => <td className="p-2 border-b border-bdr last:border-none">{children}</td>,
 }
@@ -101,16 +101,16 @@ const baseComponents: Components = {
 const Wrapper = ({ type, heading, children }: { type: string; heading: string; children: React.ReactNode }) => {
   switch (type) {
     case 'definition': return (
-      <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-sm">
-        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+      <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1">
+        <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
           <Bookmark size={13} className="text-np" />{heading}
         </div>
         {children}
       </div>
     )
     case 'table': return (
-      <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-sm">
-        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+      <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
+        <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
           <Clock size={13} className="text-ng" />{heading}
         </div>
         {children}
@@ -120,14 +120,14 @@ const Wrapper = ({ type, heading, children }: { type: string; heading: string; c
       <div className="flex gap-2.5 bg-nblb border border-nblbr rounded-lg p-3 mb-4">
         <Lightbulb size={14} className="text-nbl mt-0.5 shrink-0" />
         <div>
-          <div className="text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-1">{heading}</div>
+          <div className="text-3xs font-semibold text-nt3 uppercase tracking-wider mb-1">{heading}</div>
           <div className="text-xs text-nt2 leading-relaxed">{children}</div>
         </div>
       </div>
     )
     case 'list': return (
       <div className="mb-5">
-        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+        <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
           <List size={13} className="text-np" />{heading}
         </div>
         <ul className="list-none pl-1.5 space-y-2.5">{children}</ul>
@@ -135,17 +135,17 @@ const Wrapper = ({ type, heading, children }: { type: string; heading: string; c
     )
     case 'code': return (
       <div className="mb-6">
-        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+        <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
           <Code size={13} className="text-nbl" />{heading}
         </div>
-        <div className="bg-nb border border-bdr2 rounded-lg overflow-hidden shadow-sm">
-          <pre className="p-4 m-0 overflow-x-auto font-mono text-[13px] text-nt2 leading-relaxed">{children}</pre>
+        <div className="bg-nb border border-bdr2 rounded-lg overflow-hidden shadow-ev1">
+          <pre className="p-4 m-0 overflow-x-auto font-mono text-13 text-nt2 leading-relaxed">{children}</pre>
         </div>
       </div>
     )
     default: return (
-      <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-sm">
-        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+      <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
+        <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
           <FileText size={13} className="text-nt3" />{heading}
         </div>
         {children}

@@ -91,10 +91,10 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
   const goToMatch = useCallback((index: number) => {
     if (marksRef.current.length === 0) return
     // Reset current highlight
-    marksRef.current.forEach(m => m.classList.remove('!bg-np', '!text-white', 'ring-2', 'ring-np'))
+    marksRef.current.forEach(m => m.classList.remove('!bg-np', '!text-npfg', 'ring-2', 'ring-np'))
     const i = ((index - 1) % marksRef.current.length + marksRef.current.length) % marksRef.current.length
     const mark = marksRef.current[i]
-    mark.classList.add('!bg-np', '!text-white', 'ring-2', 'ring-np')
+    mark.classList.add('!bg-np', '!text-npfg', 'ring-2', 'ring-np')
     mark.scrollIntoView({ behavior: 'smooth', block: 'center' })
     setCurrentMatch(i + 1)
   }, [])
@@ -138,10 +138,10 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Find in document…"
-          className="bg-transparent border-none outline-none text-[10px] text-nt placeholder:text-nt4 w-32"
+          className="bg-transparent border-none outline-none text-2xs text-nt placeholder:text-nt4 w-32"
         />
         {matchCount > 0 && (
-          <span className="text-[9px] text-nt3 whitespace-nowrap">
+          <span className="text-3xs text-nt3 whitespace-nowrap">
             {currentMatch}/{matchCount}
           </span>
         )}

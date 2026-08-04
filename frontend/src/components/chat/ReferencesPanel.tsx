@@ -22,10 +22,10 @@ export function ReferencesPanel({ references, onReferenceClick, onScreenshotClic
         className="flex items-center justify-between mb-2 cursor-pointer"
         onClick={() => setCollapsed(!collapsed)}
       >
-        <div className="flex items-center gap-1 text-[10px] font-medium text-nt3">
+        <div className="flex items-center gap-1 text-2xs font-medium text-nt3">
           <Bookmark size={12} />
           References
-          <span className="text-[9px] bg-ns3 px-1.5 py-0.5 rounded-sm text-nt2">
+          <span className="text-3xs bg-ns3 px-1.5 py-0.5 rounded-sm text-nt2">
             {references.length}
           </span>
         </div>
@@ -56,8 +56,8 @@ export function ReferencesPanel({ references, onReferenceClick, onScreenshotClic
               ) : (
                 <FileText size={12} className="text-nt3 shrink-0" />
               )}
-              <span className="text-[10px] text-nt2 flex-1 truncate">{ref.title}</span>
-              <span className="text-[9px] text-nt3 shrink-0">{ref.section}</span>
+              <span className="text-2xs text-nt2 flex-1 truncate">{ref.title}</span>
+              <span className="text-3xs text-nt3 shrink-0">{ref.section}</span>
             </div>
           )
         })}

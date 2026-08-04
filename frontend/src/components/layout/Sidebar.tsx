@@ -102,10 +102,10 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
         {/* Header */}
         <div className="p-3.5 pb-3">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-5.5 h-5.5 rounded-md bg-np flex items-center justify-center text-[11px] font-medium text-white shadow-sm tracking-tight">
+            <div className="w-5.5 h-5.5 rounded-md bg-np flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 tracking-tight">
               N
             </div>
-            <span className="text-[13px] font-medium text-nt tracking-tight">NorAI</span>
+            <span className="text-13 font-medium text-nt tracking-tight">NorAI</span>
             <button
               onClick={handleCollapse}
               className="ml-auto w-5 h-5 rounded-md flex items-center justify-center text-nt3 hover:bg-ns2 hover:text-nt2 transition"
@@ -115,7 +115,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-lg bg-ns2 mb-3.5 text-[10px] text-nt2">
+          <div className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-lg bg-ns2 mb-3.5 text-2xs text-nt2">
             <div className="w-1 h-1 rounded-full bg-np" />
             Now studying{' '}
             <strong className="text-nt font-medium">
@@ -126,7 +126,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
 
           {/* ── Lecture selector ──────────────────────────────── */}
           <div className="mb-3">
-            <div className="text-[9px] font-medium text-nt4 uppercase tracking-wider mb-1.5">
+            <div className="text-3xs font-medium text-nt4 uppercase tracking-wider mb-1.5">
               Lecture
             </div>
             <select
@@ -137,7 +137,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
                 navigate(`/workspace/${newId}`)   // ← add this
               }}
 
-              className="w-full bg-nb border border-bdr2 rounded-md px-2 py-1 text-[11px] text-nt2 outline-none focus:border-np transition"
+              className="w-full bg-nb border border-bdr2 rounded-md px-2 py-1 text-11 text-nt2 outline-none focus:border-np transition"
             >
               {lectures.map((l) => (
                 <option key={l.lecture_id} value={l.lecture_id}>
@@ -149,7 +149,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           {/* ──────────────────────────────────────────────────── */}
 
           {/* Chapter list */}
-          <div className="text-[9px] font-medium text-nt4 uppercase tracking-wider mb-1.5">
+          <div className="text-3xs font-medium text-nt4 uppercase tracking-wider mb-1.5">
             Chapters
           </div>
           <ul className="space-y-0.5">
@@ -157,13 +157,13 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
               <li
                 key={ch.id}
                 onClick={() => setChapter(ch.id)}
-                className={`flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer text-[11px] transition ${
+                className={`flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer text-11 transition ${
                   activeChapterId === ch.id
                     ? 'bg-npb text-np'
                     : 'text-nt3 hover:bg-ns2 hover:text-nt2'
                 }`}
               >
-                <span className="text-[9px] font-medium w-3.5 opacity-70">
+                <span className="text-3xs font-medium w-3.5 opacity-70">
                   {String(ch.id).padStart(2, '0')}
                 </span>
                 <span className="truncate">{ch.title}</span>
@@ -172,18 +172,18 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           </ul>
         </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-bdr to-transparent mx-3.5" />
+        <div className="h-px bg-bdr mx-3.5" />
 
         {/* Thread list */}
         <div className="flex-1 overflow-hidden px-3.5 py-3.5">
-          <div className="text-[9px] font-medium text-nt4 uppercase tracking-wider mb-1.5">
+          <div className="text-3xs font-medium text-nt4 uppercase tracking-wider mb-1.5">
             Threads
           </div>
           {threads.map((t) => (
             <div
               key={t}
               onClick={() => handleThreadClick(t)}
-              className={`flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer text-[11px] transition truncate mb-0.5 group ${
+              className={`flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer text-11 transition truncate mb-0.5 group ${
                 threadId === t
                   ? 'text-nt bg-ns3'
                   : 'text-nt3 hover:bg-ns2 hover:text-nt2'
@@ -209,7 +209,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           ))}
         </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-bdr to-transparent mx-3.5" />
+        <div className="h-px bg-bdr mx-3.5" />
 
         {/* Theme toggle */}
         <div className="px-3.5 pb-1.5">
@@ -220,7 +220,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
         <div className="p-3.5 pt-2.5">
           <button
             onClick={handleCreateThread}
-            className="w-full py-1.5 rounded-lg border border-bdr2 bg-transparent text-nt3 text-[11px] flex items-center justify-center gap-1.5 hover:bg-ns2 hover:text-nt2 hover:border-nt4 hover:shadow-sm transition active:scale-98"
+            className="w-full py-1.5 rounded-lg border border-bdr2 bg-transparent text-nt3 text-11 flex items-center justify-center gap-1.5 hover:bg-ns2 hover:text-nt2 hover:border-nt4 hover:shadow-ev1 transition active:scale-98"
           >
             <span className="text-xs">+</span> New thread
           </button>

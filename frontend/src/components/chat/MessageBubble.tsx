@@ -9,10 +9,10 @@ export function MessageBubble({ message }: { message: Message }) {
   return (
     <div className={`flex gap-2 items-start ${isUser ? 'flex-row-reverse' : ''}`}>
       <div
-        className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-medium text-white shrink-0 mt-0.5 ${
+        className={`w-5 h-5 rounded-full flex items-center justify-center text-3xs font-medium text-npfg shrink-0 mt-0.5 ${
           isUser
             ? 'bg-ns3 text-nt2'
-            : 'bg-gradient-to-br from-np to-nbl shadow-sm'
+            : 'bg-gradient-to-br from-np to-nph shadow-ev1'
         }`}
       >
         {isUser ? '' : 'N'}
@@ -20,7 +20,7 @@ export function MessageBubble({ message }: { message: Message }) {
 
       <div className={`${isUser ? 'items-end' : ''}`}>
         <div
-          className={`text-[12px] leading-relaxed text-nt2 ${
+          className={`text-xs leading-relaxed text-nt2 ${
             isUser
               ? 'bg-ns3 border border-bdr2 rounded-xl px-2.5 py-2 text-nt max-w-[85%]'
               : 'py-0.5 max-w-full'
@@ -37,8 +37,8 @@ export function MessageBubble({ message }: { message: Message }) {
                   p: ({ children }) => <p className="mb-1.5 last:mb-0">{children}</p>,
                   strong: ({ children }) => <strong className="text-nt font-medium">{children}</strong>,
                   ul: ({ children }) => <ul className="list-none pl-0 space-y-1 mt-1">{children}</ul>,
-                  li: ({ children }) => <li className="relative pl-4 text-[12px] text-nt2 leading-relaxed"><span className="absolute left-0 top-2 w-1 h-1 rounded-full bg-ns3 border border-bdr2" />{children}</li>,
-                  code: ({ children }: any) => <code className="font-mono text-[10px] bg-ns2 px-1 py-0.5 rounded text-nt border border-bdr">{children}</code>,
+                  li: ({ children }) => <li className="relative pl-4 text-xs text-nt2 leading-relaxed"><span className="absolute left-0 top-2 w-1 h-1 rounded-full bg-ns3 border border-bdr2" />{children}</li>,
+                  code: ({ children }: any) => <code className="font-mono text-2xs bg-ns2 px-1 py-0.5 rounded text-nt border border-bdr">{children}</code>,
                   img: ({ src, alt }: any) => {
                     let cleanSrc = src || ''
                     if (cleanSrc.startsWith('outputs/')) {
@@ -50,7 +50,7 @@ export function MessageBubble({ message }: { message: Message }) {
                       <img
                         src={cleanSrc}
                         alt={alt || ''}
-                        className="rounded-lg border border-bdr my-2 max-h-60 object-contain shadow-sm"
+                        className="rounded-lg border border-bdr my-2 max-h-60 object-contain shadow-ev1"
                         loading="lazy"
                       />
                     )
@@ -62,7 +62,7 @@ export function MessageBubble({ message }: { message: Message }) {
             </div>
           )}
         </div>
-        <div className={`text-[9px] text-nt4 mt-1 ${isUser ? 'text-right' : ''}`}>
+        <div className={`text-3xs text-nt4 mt-1 ${isUser ? 'text-right' : ''}`}>
           {message.timestamp}
         </div>
       </div>

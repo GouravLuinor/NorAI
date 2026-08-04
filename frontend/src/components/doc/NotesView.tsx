@@ -119,8 +119,8 @@ function getCardType(heading: string, body: string): CardType {
 
 function DefinitionCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-sm">
-      <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+    <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1">
+      <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
         <Bookmark size={13} className="text-np" />
         {heading}
       </div>
@@ -131,8 +131,8 @@ function DefinitionCard({ heading, children }: { heading: string; children: Reac
 
 function TableCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-sm">
-      <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+    <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
+      <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
         <Clock size={13} className="text-ng" />
         {heading}
       </div>
@@ -146,7 +146,7 @@ function CalloutCard({ heading, children }: { heading: string; children: React.R
     <div className="flex gap-2.5 bg-nblb border border-nblbr rounded-lg p-3 mb-4">
       <Lightbulb size={14} className="text-nbl mt-0.5 shrink-0" />
       <div>
-        <div className="text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-1">{heading}</div>
+        <div className="text-3xs font-semibold text-nt3 uppercase tracking-wider mb-1">{heading}</div>
         <div className="text-xs text-nt2 leading-relaxed">{children}</div>
       </div>
     </div>
@@ -156,7 +156,7 @@ function CalloutCard({ heading, children }: { heading: string; children: React.R
 function ListCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
     <div className="mb-5">
-      <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+      <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
         <List size={13} className="text-np" />
         {heading}
       </div>
@@ -167,8 +167,8 @@ function ListCard({ heading, children }: { heading: string; children: React.Reac
 
 function ProseSection({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-sm">
-      <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+    <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
+      <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
         <FileText size={13} className="text-nt3" />
         {heading}
       </div>
@@ -181,21 +181,21 @@ function CodeCard({ heading, children, lang }: { heading: string; children: Reac
   return (
     <div className="mb-6">
       {heading && (
-        <div className="flex items-center gap-1.5 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider mb-2">
+        <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
           <Code size={13} className="text-nbl" />
           {heading}
         </div>
       )}
-      <div className="bg-nb border border-bdr2 rounded-lg overflow-hidden shadow-sm">
+      <div className="bg-nb border border-bdr2 rounded-lg overflow-hidden shadow-ev1">
         {lang && (
-          <div className="flex justify-between items-center bg-ns px-4 py-2 border-b border-bdr font-mono text-[10px] text-nt3">
+          <div className="flex justify-between items-center bg-ns px-4 py-2 border-b border-bdr font-mono text-2xs text-nt3">
             <span>{lang}</span>
             <button className="flex items-center gap-1 bg-transparent border-none text-nt3 hover:text-nt cursor-pointer font-inherit">
               Copy
             </button>
           </div>
         )}
-        <pre className="p-4 m-0 overflow-x-auto font-mono text-[13px] text-nt2 leading-relaxed">
+        <pre className="p-4 m-0 overflow-x-auto font-mono text-13 text-nt2 leading-relaxed">
           {children}
         </pre>
       </div>
@@ -207,14 +207,14 @@ function CodeCard({ heading, children, lang }: { heading: string; children: Reac
 
 const baseComponents: Components = {
   p: ({ children }) => (
-    <p className="text-[13px] text-nt2 leading-relaxed mb-2 last:mb-0">{children}</p>
+    <p className="text-13 text-nt2 leading-relaxed mb-2 last:mb-0">{children}</p>
   ),
   strong: ({ children }) => <strong className="text-nt font-medium">{children}</strong>,
   ul: ({ children }) => (
     <ul className="list-none pl-0 space-y-2">{children}</ul>
   ),
   li: ({ children }) => (
-    <li className="relative pl-5 text-[13px] text-nt2 leading-relaxed">
+    <li className="relative pl-5 text-13 text-nt2 leading-relaxed">
       <span className="absolute left-0 top-2 w-1.5 h-1.5 rounded-full bg-ns3 border border-bdr2" />
       {children}
     </li>
@@ -222,7 +222,7 @@ const baseComponents: Components = {
   code: ({ children, className }) => {
     if (!className) {
       return (
-        <code className="font-mono text-[10px] bg-ns2 px-1.5 py-0.5 rounded text-nt border border-bdr">
+        <code className="font-mono text-2xs bg-ns2 px-1.5 py-0.5 rounded text-nt border border-bdr">
           {children}
         </code>
       )
@@ -233,7 +233,7 @@ const baseComponents: Components = {
     <table className="w-full text-xs text-nt2">{children}</table>
   ),
   thead: ({ children }) => (
-    <thead className="text-[10px] font-semibold text-nt uppercase tracking-wider border-b border-bdr2">
+    <thead className="text-2xs font-semibold text-nt uppercase tracking-wider border-b border-bdr2">
       {children}
     </thead>
   ),
@@ -252,16 +252,16 @@ const baseComponents: Components = {
       <img
         src={cleanSrc}
         alt={alt || ''}
-        className="rounded-lg border border-bdr my-3 max-h-72 object-contain shadow-sm"
+        className="rounded-lg border border-bdr my-3 max-h-72 object-contain shadow-ev1"
         loading="lazy"
       />
     )
   },
   // Assign generated IDs to deep subheadings for linking
-  h3: ({ children }) => <h3 id={headingToId(extractText(children))} className="text-[14px] font-medium text-nt mt-5 mb-2">{children}</h3>,
-  h4: ({ children }) => <h4 id={headingToId(extractText(children))} className="text-[13px] font-medium text-nt mt-4 mb-2">{children}</h4>,
-  h5: ({ children }) => <h5 id={headingToId(extractText(children))} className="text-[12px] font-medium text-nt mt-4 mb-2">{children}</h5>,
-  h6: ({ children }) => <h6 id={headingToId(extractText(children))} className="text-[11px] font-medium text-nt mt-4 mb-2">{children}</h6>,
+  h3: ({ children }) => <h3 id={headingToId(extractText(children))} className="text-sm font-medium text-nt mt-5 mb-2">{children}</h3>,
+  h4: ({ children }) => <h4 id={headingToId(extractText(children))} className="text-13 font-medium text-nt mt-4 mb-2">{children}</h4>,
+  h5: ({ children }) => <h5 id={headingToId(extractText(children))} className="text-xs font-medium text-nt mt-4 mb-2">{children}</h5>,
+  h6: ({ children }) => <h6 id={headingToId(extractText(children))} className="text-11 font-medium text-nt mt-4 mb-2">{children}</h6>,
 }
 
 // ── Main Component ───────────────────────────────────────────────────────────
@@ -375,7 +375,7 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
 
         if (!heading) {
           return (
-            <div key={idx} id={sectionId} className="text-center text-nt3 text-[13px] py-12">
+            <div key={idx} id={sectionId} className="text-center text-nt3 text-13 py-12">
               {innerContent}
             </div>
           )
