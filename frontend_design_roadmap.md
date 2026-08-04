@@ -1,6 +1,6 @@
 # NorAI Frontend — Design Review & Implementation Roadmap
 
-Status: Tier 0 complete, Tier 1 complete. Roadmap amended for the **Architect's Sketchbook** reboot. Next: continue Tier 2 (primitives) → Tier 5 (Sketchbook layer).
+Status: Tier 0, 1, 5 complete (Tier 5 fully QA-green: Pass A/B/C all clean, incl. dark-theme AA contrast fix). **Architect's Sketchbook** theme layer implemented (vellum light default + Prussian dark, red-pencil accent, hard-offset shadows, grid/grain/fold-marks, Space Grotesk + Newsreader, ProcessingPage schematic). **Dark-mode revision complete**: "Luminous Blueprint at Night" — lifted Prussian canvas, light-edge shadows, luminous grid, brighter accent/dots, pre-paint theme persistence (Pass C re-audit PASS). Next: continue Tier 2 (primitives) → Tier 3 → Tier 4.
 
 Scope: **App frontend only** (`frontend/src`) — the React 19 + Vite + Tailwind v4 three-panel workspace.
 
@@ -179,18 +179,18 @@ Self-host via Google Fonts with `font-display: swap` + `<link rel="preload">`; n
 
 > Re-tints/supersedes the viridian tokens from Tier 1 (item 7). Loads fonts + flips default theme. Implements the committed §2 system.
 
-- [ ] 23. Fonts: load Space Grotesk + Newsreader in `index.html` (`font-display: swap` + preload); keep Inter + JetBrains Mono.
-- [ ] 24. Token re-skin in `index.css` per §2.1/§2.2: vellum light default (flip `:root color-scheme` + `theme-color`) + Prussian dark; retire viridian `np/nph/npfg/npb/npbr` → red-pencil tokens; add `--shadow-bp-*` hard-offset shadows; tighten radii.
-   - [ ] 24a. **Theme polarity flip (beyond token swap):** invert `index.css` — base block becomes vellum light (`color-scheme: light`), add a `[data-theme="dark"]` Prussian override (mirrors the old light-override pattern).
-   - [ ] 24b. **`ThemeToggle.tsx`:** default from `'dark'` → `'light'` (`ThemeToggle.tsx:8`); update hardcoded meta `theme-color` hex `#0F0F0E`/`#FAFAF8` → vellum `#F6F2E7` / Prussian `#0A1628` (`ThemeToggle.tsx:15`).
-   - [ ] 24c. **Elevation shadows:** `--shadow-ev1/2/3` referenced 54×. Keep 1px shadow-as-border base; add `--shadow-bp-*` hard-offset tokens (e.g. `3px 3px 0 0`). Re-point interactive/elevated utilities `shadow-ev2/ev3` → `shadow-bp`; keep `ev1` (or a renamed hairline token) for muted containers. No call-site edits needed (utilities cascade).
-- [ ] 25. Texture utilities: `.bg-blueprint-grid` (≤6% opacity), `.noise` grain (~6%), `.fold-marks` corner ticks. Apply to Workspace root, ProcessingPage, UploadPage hero, cards.
-- [ ] 26. Spec-section numbering `01.`–`NN.` for pipeline stages, sidebar sections, panel headers (mono ALL-CAPS).
-- [ ] 27. ProcessingPage = schematic showpiece: numbered spec rows, self-drawing connector lines (framer-motion `stroke-dasharray`/`offset` driven by `activeStage`), progress bar as dashed draft-line → solid ink. Gated by `prefers-reduced-motion`.
-- [ ] 28. Red-pencil annotation utilities: `NOTE:` callouts, dimension markers; UploadPage hero leader-line diagram (`Video → Notes → Quiz → Tutor`).
-- [ ] 29. Hairline icon pass: lucide `strokeWidth={1.5}`, ink-colored, in primitives + app-wide.
-- [ ] 30. Press-down CTAs on interactive elements (`active:translate` + hard shadow).
-- [ ] QA: build + lint green, Pass A review clean, Pass B Chrome MCP clean (dark AND light), Pass C vision audit clean (checklist §4.1).
+- [x] 23. Fonts: load Space Grotesk + Newsreader in `index.html` (`font-display: swap` + preload); keep Inter + JetBrains Mono.
+- [x] 24. Token re-skin in `index.css` per §2.1/§2.2: vellum light default (flip `:root color-scheme` + `theme-color`) + Prussian dark; retire viridian `np/nph/npfg/npb/npbr` → red-pencil tokens; add `--shadow-bp-*` hard-offset shadows; tighten radii.
+   - [x] 24a. **Theme polarity flip (beyond token swap):** invert `index.css` — base block becomes vellum light (`color-scheme: light`), add a `[data-theme="dark"]` Prussian override (mirrors the old light-override pattern).
+   - [x] 24b. **`ThemeToggle.tsx`:** default from `'dark'` → `'light'` (`ThemeToggle.tsx:8`); update hardcoded meta `theme-color` hex `#0F0F0E`/`#FAFAF8` → vellum `#F6F2E7` / Prussian `#0A1628` (`ThemeToggle.tsx:15`).
+   - [x] 24c. **Elevation shadows:** `--shadow-ev1/2/3` referenced 54×. Keep 1px shadow-as-border base; add `--shadow-bp-*` hard-offset tokens (e.g. `3px 3px 0 0`). Re-point interactive/elevated utilities `shadow-ev2/ev3` → `shadow-bp`; keep `ev1` (or a renamed hairline token) for muted containers. No call-site edits needed (utilities cascade).
+- [x] 25. Texture utilities: `.bg-blueprint-grid` (≤6% opacity), `.noise` grain (~6%), `.fold-marks` corner ticks. Apply to Workspace root, ProcessingPage, UploadPage hero, cards.
+- [x] 26. Spec-section numbering `01.`–`NN.` for pipeline stages, sidebar sections, panel headers (mono ALL-CAPS).
+- [x] 27. ProcessingPage = schematic showpiece: numbered spec rows, self-drawing connector lines (framer-motion `stroke-dasharray`/`offset` driven by `activeStage`), progress bar as dashed draft-line → solid ink. Gated by `prefers-reduced-motion`.
+- [x] 28. Red-pencil annotation utilities: `NOTE:` callouts, dimension markers; UploadPage hero leader-line diagram (`Video → Notes → Quiz → Tutor`).
+- [x] 29. Hairline icon pass: lucide `strokeWidth={1.5}`, ink-colored, in primitives + app-wide.
+- [x] 30. Press-down CTAs on interactive elements (`active:translate` + hard shadow).
+- [x] QA: build + lint green, Pass A review clean, Pass B Chrome MCP clean (dark AND light), Pass C vision audit clean (checklist §4.1).
 
 ---
 
@@ -238,9 +238,9 @@ After each tier is implemented, run **three independent passes in parallel** (su
 
 ## 5. Open Items / Decisions Log
 
-- [ ] Confirm font loading approach (Google Fonts CSS vs self-hosted) for Space Grotesk + Newsreader at Tier 4/5.
-- [ ] Confirm default theme: **light (vellum) default, dark (Prussian) via toggle** — committed in §2.1; implementation tracked in Tier 5 items 24a/24b (`index.css` base inversion + `ThemeToggle.tsx` default/meta-hex).
-- [ ] Confirm red-pencil hover/tint values for dark (`#E85D2F` hover, `rgba(209,85,46,0.14)` tint) — verify AA in Pass C.
+- [x] Confirm font loading approach (Google Fonts CSS vs self-hosted) for Space Grotesk + Newsreader at Tier 4/5. — **Decided: Google Fonts CSS link (preconnect + `display=swap`), implemented in Tier 5 item 23.**
+- [x] Confirm default theme: **light (vellum) default, dark (Prussian) via toggle** — committed in §2.1; implementation tracked in Tier 5 items 24a/24b (`index.css` base inversion + `ThemeToggle.tsx` default/meta-hex). — **Implemented in Tier 5.**
+- [x] Confirm red-pencil hover/tint values for dark (`#E85D2F` hover, `rgba(209,85,46,0.14)` tint) — verify AA in Pass C. — **Verified in Pass C.** Dark hover `#E85D2F` = 5.21:1 on `#0A1628` ✓; tint `rgba(209,85,46,0.14)` behind ink text ✓. Separately, white text on the dark `#D1552E` *fill* was 4.16:1 (failed AA) → fixed in Tier 5 with a dedicated `--color-npf`/`--color-npfh` button-fill token (dark `#C43D1E`/`#B93A1D`, ≥5.2:1).
 - [ ] Streaming: decide whether real SSE replaces non-streaming path or exists as fallback (Tier 2.12).
 - [ ] `incomplete: true` badge design (subtle warning dot + text) — flag from tier2 Open Question 2.
 
@@ -255,4 +255,4 @@ Each tier gates on: build + lint green, Pass A code review verdict clean, Pass B
 - **Tier 2**: `[ ]` not started
 - **Tier 3**: `[ ]` not started
 - **Tier 4**: `[ ]` not started
-- **Tier 5**: `[ ]` not started (Architect's Sketchbook theme layer — primary reboot work)
+- **Tier 5**: `[x]` **complete** — Architect's Sketchbook theme layer (reboot): fonts loaded (Space Grotesk + Newsreader, Google Fonts `display=swap` + preconnect); token re-skin with **polarity flip** (vellum `#F6F2E7` light default + Prussian `#0A1628` dark override, red-pencil `#C2410C`/`#D1552E`/`#E85D2F`, status dots pinned, hairline ink borders); hard-offset `--shadow-bp` (`3px 3px 0 0`) with `ev2/ev3` re-pointed (54 call sites cascade, zero edits); `.bg-blueprint-grid`/`.noise`/`.fold-marks`/`.spec-label`/`.note-callout`/`.dimension-marker` utilities; spec numbering `01.`–`NN.` (pipeline stages, sidebar sections, panel headers); ProcessingPage rebuilt as schematic showpiece (numbered spec rows + self-drawing ink rail via framer-motion, dashed→solid progress line, `useReducedMotion`-gated); UploadPage hero leader-line diagram + `NOTE:` callouts in NotesView; lucide `strokeWidth={1.5}` hairline sweep (71 icons); 8 viridian gradients removed (flat `bg-np`), `shadow-np/30` glow → `shadow-bp`; press-down CTAs (`active:translate-y-[1px]` + shadow collapse); `ThemeToggle` default flips to `light`, meta `theme-color` → `#F6F2E7`/`#0A1628`; **dark-theme AA contrast fix** (Pass A/C finding — user-approved): added `--color-npf`/`--color-npfh` fill tokens (light `#C2410C`/`#A9361C`, dark `#C43D1E`/`#B93A1D` — white-on ≥5.2:1, AA pass) applied to 22 text-bearing `bg-np` fill sites. **Dark-mode redesign follow-up ("Luminous Blueprint at Night", user-driven audit)** — dark no longer a flat inverted ramp: canvas lifted to luminous Prussian `#0B1E3A` + wider surface ramp (`#112948`→`#274C74`, separation 1.14→1.88:1); **shadow polarity flipped to LIGHT edges** (`--shadow-bp` → `rgba(150,200,255,0.10)` lit cut, was invisible black-on-black); `--color-grid` token added (dark luminous cyan `rgba(140,200,255,0.08)`, light ink 5% unchanged); accent brightened (`np #E85D2F`, `nph #FF6B38`, `npf #C84926`, tint 0.14→0.20); status blue/purple brightened (`#2F7FE0`/`#9A5CC0`); scrollbar/scrollpulse tokenized off hardcoded rgba; **pre-paint theme-init script in `index.html`** (dark persisted across fresh loads of non-workspace routes — was dropping to light); `theme-color` meta → `#0B1E3A`. Build ✓ lint ✓. Pass C re-audit ✓ (`.tmp/qa-darkmode/visual-review.md` PASS + `visual-review-fix.md` PASS + `visual-review-light.md` light-regression PASS; 10 screenshots in `.tmp/qa-darkmode/screenshots/`).

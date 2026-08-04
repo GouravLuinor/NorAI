@@ -30,9 +30,9 @@ export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps) {
       <div className="bg-ns border border-bdr2 rounded-xl p-6 w-80 shadow-ev3" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-nt flex items-center gap-2">
-            <Command size={14} /> Keyboard Shortcuts
+            <Command size={14} strokeWidth={1.5} /> Keyboard Shortcuts
           </h3>
-          <button onClick={onClose} className="text-nt3 hover:text-nt transition"><X size={14} /></button>
+          <button onClick={onClose} className="text-nt3 hover:text-nt transition"><X size={14} strokeWidth={1.5} /></button>
         </div>
         <div className="space-y-2">
           {shortcuts.map((s) => (

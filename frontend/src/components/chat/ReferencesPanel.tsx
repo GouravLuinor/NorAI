@@ -23,7 +23,7 @@ export function ReferencesPanel({ references, onReferenceClick, onScreenshotClic
         onClick={() => setCollapsed(!collapsed)}
       >
         <div className="flex items-center gap-1 text-2xs font-medium text-nt3">
-          <Bookmark size={12} />
+          <Bookmark size={12} strokeWidth={1.5} />
           References
           <span className="text-3xs bg-ns3 px-1.5 py-0.5 rounded-sm text-nt2">
             {references.length}
@@ -31,6 +31,7 @@ export function ReferencesPanel({ references, onReferenceClick, onScreenshotClic
         </div>
         <ChevronUp
           size={11}
+          strokeWidth={1.5}
           className={`text-nt3 transition-transform ${collapsed ? 'rotate-180' : ''}`}
         />
       </div>
@@ -52,9 +53,9 @@ export function ReferencesPanel({ references, onReferenceClick, onScreenshotClic
               className="flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer hover:bg-ns3 transition"
             >
               {isScreenshot ? (
-                <Image size={12} className="text-nt3 shrink-0" />
+                <Image size={12} strokeWidth={1.5} className="text-nt3 shrink-0" />
               ) : (
-                <FileText size={12} className="text-nt3 shrink-0" />
+                <FileText size={12} strokeWidth={1.5} className="text-nt3 shrink-0" />
               )}
               <span className="text-2xs text-nt2 flex-1 truncate">{ref.title}</span>
               <span className="text-3xs text-nt3 shrink-0">{ref.section}</span>

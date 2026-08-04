@@ -43,9 +43,9 @@ export function ChapterScreenshots({
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 text-3xs font-semibold text-nt3 uppercase tracking-wider hover:text-nt transition"
       >
-        <ImageIcon size={13} />
+        <ImageIcon size={13} strokeWidth={1.5} />
         Important Visuals ({screenshots.length})
-        {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        {open ? <ChevronUp size={13} strokeWidth={1.5} /> : <ChevronDown size={13} strokeWidth={1.5} />}
       </button>
 
       {open && (
@@ -75,7 +75,7 @@ export function ChapterScreenshots({
                     }}
                   />
                   <div className="hidden p-4 text-center text-nt4 text-xs">
-                    <ImageIcon size={24} className="mx-auto mb-1 opacity-40" />
+                    <ImageIcon size={24} strokeWidth={1.5} className="mx-auto mb-1 opacity-40" />
                     Screenshot unavailable
                   </div>
                 </div>

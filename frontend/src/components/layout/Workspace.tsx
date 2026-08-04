@@ -119,7 +119,7 @@ export function Workspace() {
   return (
     <div
       ref={workspaceRef}
-      className="workspace grid h-screen bg-nb text-nt text-xs font-sans rounded-xl border border-bdr2 overflow-hidden shadow-ev3 relative"
+      className="workspace grid h-screen bg-nb text-nt text-xs font-sans rounded-xl border border-bdr2 overflow-hidden shadow-ev3 relative bg-blueprint-grid fold-marks"
       style={{
         gridTemplateColumns: gridColumns,
         transition: isDragging ? 'none' : 'grid-template-columns 240ms cubic-bezier(0.4,0,0.2,1)',
@@ -128,10 +128,10 @@ export function Workspace() {
       {sidebarCollapsed && (
         <button
           onClick={handleSidebarToggle}
-          className="absolute left-2 top-2 z-50 w-8 h-8 rounded-md bg-ns2 border border-bdr2 text-nt3 hover:text-nt hover:bg-ns3 transition flex items-center justify-center shadow-ev2"
+          className="absolute left-2 top-2 z-50 w-8 h-8 rounded-sm bg-ns2 border border-bdr2 text-nt3 hover:text-nt hover:bg-ns3 transition flex items-center justify-center shadow-ev2 active:translate-y-[1px] active:shadow-none"
           aria-label="Open sidebar"
         >
-          <PanelLeftOpen size={14} />
+          <PanelLeftOpen size={14} strokeWidth={1.5} />
         </button>
       )}
 
@@ -158,10 +158,10 @@ export function Workspace() {
       {/* Keyboard shortcuts help button */}
       <button
         onClick={() => setShortcutsOpen(true)}
-        className="absolute bottom-4 left-4 z-50 w-7 h-7 rounded-md bg-ns2 border border-bdr2 text-nt3 hover:text-nt hover:bg-ns3 transition flex items-center justify-center shadow-ev2"
+        className="absolute bottom-4 left-4 z-50 w-7 h-7 rounded-sm bg-ns2 border border-bdr2 text-nt3 hover:text-nt hover:bg-ns3 transition flex items-center justify-center shadow-ev2 active:translate-y-[1px] active:shadow-none"
         aria-label="Keyboard shortcuts"
       >
-        <HelpCircle size={13} />
+        <HelpCircle size={13} strokeWidth={1.5} />
       </button>
 
       {/* Keyboard shortcuts modal */}

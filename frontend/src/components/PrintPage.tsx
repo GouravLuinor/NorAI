@@ -103,7 +103,7 @@ const Wrapper = ({ type, heading, children }: { type: string; heading: string; c
     case 'definition': return (
       <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1">
         <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <Bookmark size={13} className="text-np" />{heading}
+          <Bookmark size={13} strokeWidth={1.5} className="text-np" />{heading}
         </div>
         {children}
       </div>
@@ -111,14 +111,14 @@ const Wrapper = ({ type, heading, children }: { type: string; heading: string; c
     case 'table': return (
       <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
         <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <Clock size={13} className="text-ng" />{heading}
+          <Clock size={13} strokeWidth={1.5} className="text-ng" />{heading}
         </div>
         {children}
       </div>
     )
     case 'callout': return (
       <div className="flex gap-2.5 bg-nblb border border-nblbr rounded-lg p-3 mb-4">
-        <Lightbulb size={14} className="text-nbl mt-0.5 shrink-0" />
+        <Lightbulb size={14} strokeWidth={1.5} className="text-nbl mt-0.5 shrink-0" />
         <div>
           <div className="text-3xs font-semibold text-nt3 uppercase tracking-wider mb-1">{heading}</div>
           <div className="text-xs text-nt2 leading-relaxed">{children}</div>
@@ -128,7 +128,7 @@ const Wrapper = ({ type, heading, children }: { type: string; heading: string; c
     case 'list': return (
       <div className="mb-5">
         <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <List size={13} className="text-np" />{heading}
+          <List size={13} strokeWidth={1.5} className="text-np" />{heading}
         </div>
         <ul className="list-none pl-1.5 space-y-2.5">{children}</ul>
       </div>
@@ -136,7 +136,7 @@ const Wrapper = ({ type, heading, children }: { type: string; heading: string; c
     case 'code': return (
       <div className="mb-6">
         <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <Code size={13} className="text-nbl" />{heading}
+          <Code size={13} strokeWidth={1.5} className="text-nbl" />{heading}
         </div>
         <div className="bg-nb border border-bdr2 rounded-lg overflow-hidden shadow-ev1">
           <pre className="p-4 m-0 overflow-x-auto font-mono text-13 text-nt2 leading-relaxed">{children}</pre>
@@ -146,7 +146,7 @@ const Wrapper = ({ type, heading, children }: { type: string; heading: string; c
     default: return (
       <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
         <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <FileText size={13} className="text-nt3" />{heading}
+          <FileText size={13} strokeWidth={1.5} className="text-nt3" />{heading}
         </div>
         {children}
       </div>

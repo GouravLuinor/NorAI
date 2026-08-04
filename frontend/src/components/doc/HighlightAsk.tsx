@@ -165,12 +165,12 @@ export function HighlightAsk() {
       ref={buttonRef}
       onClick={handleAsk}
       disabled={loading}
-      className={`fixed z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-np text-npfg text-11 font-medium shadow-ev2 transition-all animate-fade-in pointer-events-auto ${
-        loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-nph'
+      className={`fixed z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-npf text-npfg text-11 font-medium shadow-ev2 transition-all animate-fade-in pointer-events-auto ${
+        loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-npfh active:translate-y-[1px] active:shadow-none'
       }`}
       style={{ left: `${selection.x}px`, top: `${selection.y}px` }}
     >
-      <Sparkles size={13} />
+      <Sparkles size={13} strokeWidth={1.5} />
       {loading ? 'Asking…' : 'Ask Nora'}
     </button>
   )

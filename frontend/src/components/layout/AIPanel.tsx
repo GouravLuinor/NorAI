@@ -37,15 +37,15 @@ useEffect(() => {
   return (
     <div className="flex flex-col min-h-0 bg-ns overflow-hidden h-full">
       {/* Header */}
-      <div className="px-3.5 py-2.5 border-b border-bdr flex items-center gap-2 shrink-0">
-        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-np to-nph flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 relative">
+      <div className="px-3.5 py-2.5 border-b border-bdr flex items-center gap-2 shrink-0 bg-ns2/40 fold-marks relative">
+        <div className="w-7 h-7 rounded-sm bg-npf flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 relative">
           N
           <span className="absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full bg-ng border-1.5 border-ns" />
         </div>
         <div>
-          <div className="text-xs font-medium text-nt">Nora</div>
-          <div className="text-2xs text-nt3">
-            Ch {String(activeChapterId).padStart(2, '0')} · {aiMode === 'quiz' ? 'Quiz' : aiMode === 'cards' ? 'Cards' : 'Tutor'}
+          <div className="font-display text-xs font-medium text-nt">Nora</div>
+          <div className="spec-label mt-0.5">
+            {String(activeChapterId).padStart(2, '0')} · {aiMode === 'quiz' ? 'Quiz' : aiMode === 'cards' ? 'Cards' : 'Tutor'}
           </div>
         </div>
         <div className="ml-auto flex gap-0.5 bg-ns2 rounded-lg p-0.5">

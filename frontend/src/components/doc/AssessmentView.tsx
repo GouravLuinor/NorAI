@@ -53,12 +53,12 @@ const handleStartQuiz = async () => {
           <div className="text-11 text-nt3">{questions.length} questions · MCQ, True/False, free response</div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowAnswers(!showAnswers)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-bdr2 bg-transparent text-nt2 text-2xs hover:bg-ns2 hover:text-nt transition active:scale-98">
-            {showAnswers ? <EyeOff size={13} /> : <Eye size={13} />}
+          <button onClick={() => setShowAnswers(!showAnswers)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-bdr2 bg-transparent text-nt2 text-2xs hover:bg-ns2 hover:text-nt transition active:translate-y-[1px] active:shadow-none">
+            {showAnswers ? <EyeOff size={13} strokeWidth={1.5} /> : <Eye size={13} strokeWidth={1.5} />}
             {showAnswers ? 'Hide Key' : 'Reveal Key'}
           </button>
-          <button onClick={handleStartQuiz} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-np text-npfg text-2xs font-medium shadow-ev1 hover:bg-nph hover:shadow-ev2 active:scale-98 transition">
-            <Play size={13} /> Start Quiz
+          <button onClick={handleStartQuiz} className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-npf text-npfg text-2xs font-medium shadow-ev1 hover:bg-npfh hover:shadow-ev2 active:translate-y-[1px] active:shadow-none transition">
+            <Play size={13} strokeWidth={1.5} /> Start Quiz
           </button>
         </div>
       </div>

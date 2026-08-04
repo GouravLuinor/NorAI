@@ -3265,3 +3265,35 @@ to:
 **Current Version:** NorAI v1.2
 
 **Platform State:** Stable end-to-end multimodal learning workflow with remaining improvements focused on thread UX, dynamic quiz refresh, mobile responsiveness, authentication, and production deployment.
+
+---
+
+## Frontend Design Rebuild (Tier 5 — "Architect's Sketchbook")
+
+Implemented the approved theme reboot for the app frontend (see `frontend_design_roadmap.md`). The old viridian direction is superseded.
+
+- **Theme polarity flip**: vellum-paper **light** (`#F6F2E7`) is now the default; Prussian-blue dark (`#0B1E3A`) via `[data-theme="dark"]` override. `ThemeToggle` default + meta `theme-color` updated (`#F6F2E7`/`#0B1E3A`).
+- **Accent = Red Pencil**: `#C2410C` (light fill) / `#D1552E` (dark accent) / `#E85D2F` (dark hover). Viridian tokens retired. Status-dot palette pinned per DESIGN.md.
+- **Dark-theme AA contrast fix**: white text on the dark `#D1552E` fill was 4.16:1 (failed WCAG AA). Added dedicated `--color-npf`/`--color-npfh` button-fill tokens (light `#C2410C`/`#A9361C`, dark `#C43D1E`/`#B93A1D` — white-on ≥5.2:1) applied to 22 text-bearing fill sites (buttons, letter/N badges). Non-text accent fills (dots, rails, progress bars, tints) keep `bg-np`.
+- **Hard-offset shadows**: `--shadow-bp` (`3px 3px 0 0`, zero blur); `shadow-ev2/ev3` re-pointed to it (54 call sites cascade). 1px shadow-as-border hairline kept for muted containers. Dark mode uses **light-edge** offsets (lit cut) since black-on-black is invisible.
+- **Typography**: Space Grotesk (display/chrome) + Newsreader (reading pane H1s) loaded via Google Fonts; Inter + JetBrains Mono kept; `.spec-label` mono ALL-CAPS.
+- **Textures**: `.bg-blueprint-grid` (8px — light ink 5%, dark luminous cyan 8% via `--color-grid`), `.noise` grain, `.fold-marks` corner ticks applied to Workspace, ProcessingPage, UploadPage.
+- **Signature elements**: ProcessingPage rebuilt as a schematic showpiece (numbered spec rows `01.`–`18.`, self-drawing ink rail via framer-motion, dashed→solid progress line, `prefers-reduced-motion`-gated); UploadPage hero leader-line diagram (`Video → Notes → Quiz → Tutor`) + `NOTE:` red-pencil callouts in NotesView.
+- **Hairline icons**: lucide `strokeWidth={1.5}` sweep (71 icons); 8 gradient avatars flattened to solid `bg-np`; soft `shadow-np/30` glow removed.
+- **Press-down CTAs**: `active:translate-y-[1px]` + hard-shadow collapse on interactive elements.
+
+Build ✓ lint ✓ (no new warnings). **QA complete (all three passes green):** Pass A code review clean, Pass B Chrome MCP (dark AND light, zero console errors, 21 screenshots), Pass C MiMo vision audit clean + fix re-verification. Artifacts in `.tmp/qa-tier5/` (screenshots/, `passB-notes.md`, `visual-review.md`, `visual-review-fix.md`).
+
+### Dark-mode revision — "Luminous Blueprint at Night" (user-driven audit)
+
+Follow-up to Tier 5: the dark theme originally read as a flat, muddy inverted ramp of the light tokens. Per a design audit, the dark mode was rebuilt as its own night language (contrast-validated, Pass C vision re-audited).
+
+- **Lifted Prussian canvas**: `#0A1628` → `#0B1E3A`; wider surface ramp `#112948`/`#173352`/`#1F4063`/`#274C74` (separation 1.14→1.88:1 — panels now read as distinct layers, not one slab).
+- **Shadow polarity flipped**: dark `--shadow-bp` was `rgba(0,0,0,0.45)` (invisible black-on-black) → **light-edge lit cut** `rgba(150,200,255,0.10)`, restoring the stamped-paper lift in dark; `--shadow-ev1` dark drop swapped to a blue-tinted ambient.
+- **Luminous grid**: added `--color-grid` token — dark `rgba(140,200,255,0.08)` (brief-faithful glow), light `rgba(36,31,26,0.05)` (unchanged); `.bg-blueprint-grid` rewired off `color-mix(nt 6%)`.
+- **Brighter red-pencil**: `np #E85D2F` (AA on canvas), `nph #FF6B38`, fill `npf #C84926` (white-on 4.73:1), tint `0.14→0.20`; scrollbar/scrollpulse tokenized off hardcoded rgba.
+- **Status dots fixed for dark**: blue `#0062D1`→`#2F7FE0`, purple `#7820BC`→`#9A5CC0` (were camouflage on Prussian); green/amber/red brightened + tint alphas aligned.
+- **Theme persistence fix**: added a pre-paint inline script in `index.html` reading `localStorage` so dark applies on fresh loads of non-workspace routes (was silently dropping to light on `/` and `/process/:id`); `theme-color` meta → `#0B1E3A`.
+- Light mode verified unchanged (ink grid, vellum canvas, no dark bleed).
+
+**Verification:** build ✓ lint ✓; Pass C MiMo vision re-audit PASS on all 10 fresh dark screenshots (`.tmp/qa-darkmode/visual-review.md` + `visual-review-fix.md` + `visual-review-light.md`; screenshots/). Zero console errors/warnings.

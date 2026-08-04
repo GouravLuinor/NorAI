@@ -2,9 +2,9 @@ import { useToastStore } from '../../stores/useToastStore'
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react'
 
 const icons = {
-  success: <CheckCircle size={14} className="text-ng" />,
-  error: <AlertCircle size={14} className="text-nr" />,
-  info: <Info size={14} className="text-nbl" />,
+  success: <CheckCircle size={14} strokeWidth={1.5} className="text-ng" />,
+  error: <AlertCircle size={14} strokeWidth={1.5} className="text-nr" />,
+  info: <Info size={14} strokeWidth={1.5} className="text-nbl" />,
 }
 
 export function ToastContainer() {
@@ -25,7 +25,7 @@ export function ToastContainer() {
             onClick={() => removeToast(toast.id)}
             className="text-nt3 hover:text-nt transition"
           >
-            <X size={12} />
+            <X size={12} strokeWidth={1.5} />
           </button>
         </div>
       ))}

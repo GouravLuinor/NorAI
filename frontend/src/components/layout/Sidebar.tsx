@@ -89,7 +89,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           className="w-8 h-8 rounded-md flex items-center justify-center text-nt3 hover:bg-ns2 hover:text-nt2 transition"
           aria-label="Open sidebar"
         >
-          <PanelLeftOpen size={14} />
+          <PanelLeftOpen size={14} strokeWidth={1.5} />
         </button>
       </div>
 
@@ -102,20 +102,20 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
         {/* Header */}
         <div className="p-3.5 pb-3">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-5.5 h-5.5 rounded-md bg-np flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 tracking-tight">
+            <div className="w-5.5 h-5.5 rounded-sm bg-npf flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 tracking-tight fold-marks relative">
               N
             </div>
-            <span className="text-13 font-medium text-nt tracking-tight">NorAI</span>
+            <span className="font-display text-13 font-medium text-nt tracking-tight">NorAI</span>
             <button
               onClick={handleCollapse}
-              className="ml-auto w-5 h-5 rounded-md flex items-center justify-center text-nt3 hover:bg-ns2 hover:text-nt2 transition"
+              className="ml-auto w-5 h-5 rounded-sm flex items-center justify-center text-nt3 hover:bg-ns2 hover:text-nt2 transition"
               aria-label="Collapse sidebar"
             >
-              <PanelLeftClose size={12} />
+              <PanelLeftClose size={12} strokeWidth={1.5} />
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-lg bg-ns2 mb-3.5 text-2xs text-nt2">
+          <div className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-md bg-ns2 mb-3.5 text-2xs text-nt2 border border-bdr">
             <div className="w-1 h-1 rounded-full bg-np" />
             Now studying{' '}
             <strong className="text-nt font-medium">
@@ -126,9 +126,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
 
           {/* ── Lecture selector ──────────────────────────────── */}
           <div className="mb-3">
-            <div className="text-3xs font-medium text-nt4 uppercase tracking-wider mb-1.5">
-              Lecture
-            </div>
+            <div className="spec-label mb-1.5">01. Lecture</div>
             <select
               value={activeLectureId || ''}
               onChange={(e) => {
@@ -149,9 +147,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           {/* ──────────────────────────────────────────────────── */}
 
           {/* Chapter list */}
-          <div className="text-3xs font-medium text-nt4 uppercase tracking-wider mb-1.5">
-            Chapters
-          </div>
+          <div className="spec-label mb-1.5">02. Chapters</div>
           <ul className="space-y-0.5">
             {chapters.map((ch) => (
               <li
@@ -176,9 +172,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
 
         {/* Thread list */}
         <div className="flex-1 overflow-hidden px-3.5 py-3.5">
-          <div className="text-3xs font-medium text-nt4 uppercase tracking-wider mb-1.5">
-            Threads
-          </div>
+          <div className="spec-label mb-1.5">03. Threads</div>
           {threads.map((t) => (
             <div
               key={t}
@@ -203,7 +197,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
                 className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-ns4"
                 aria-label="Delete thread"
               >
-                <Trash2 size={10} className="text-nt4 hover:text-nr" />
+                <Trash2 size={10} strokeWidth={1.5} className="text-nt4 hover:text-nr" />
               </button>
             </div>
           ))}
@@ -218,12 +212,12 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
 
         {/* New thread */}
         <div className="p-3.5 pt-2.5">
-          <button
-            onClick={handleCreateThread}
-            className="w-full py-1.5 rounded-lg border border-bdr2 bg-transparent text-nt3 text-11 flex items-center justify-center gap-1.5 hover:bg-ns2 hover:text-nt2 hover:border-nt4 hover:shadow-ev1 transition active:scale-98"
-          >
-            <span className="text-xs">+</span> New thread
-          </button>
+        <button
+          onClick={handleCreateThread}
+          className="w-full py-1.5 rounded-md border border-bdr2 bg-transparent text-nt3 text-11 flex items-center justify-center gap-1.5 hover:bg-ns2 hover:text-nt2 hover:border-nt4 hover:shadow-ev1 transition active:translate-y-[1px] active:shadow-none"
+        >
+          <span className="text-xs">+</span> New thread
+        </button>
         </div>
       </div>
     </div>
