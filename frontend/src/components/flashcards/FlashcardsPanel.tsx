@@ -97,13 +97,13 @@ export function FlashcardsPanel() {
             </div>
             {/* Back */}
             <div className="absolute inset-0 bg-ns border border-bdr2 rounded-xl p-5 flex flex-col items-center justify-center backface-hidden rotate-y-180">
-              <span className="text-2xs font-semibold text-np uppercase tracking-wider mb-4">Back</span>
+              <span className="spec-label mb-4">Back</span>
               <p className="text-sm text-nt2 text-center leading-relaxed break-words px-2">
                 {card.back}
               </p>
               {card.explanation && (
-                <div className="flex items-start gap-2 mt-4 p-3 bg-nb border border-bdr2 rounded-lg w-full max-w-[85%]">
-                  <div className="w-5 h-5 rounded-md bg-gradient-to-br from-np to-nph flex items-center justify-center text-3xs font-bold text-npfg shrink-0">
+                <div className="flex items-start gap-2 mt-4 p-3 bg-nb border border-bdr2 rounded-md w-full max-w-[85%]">
+                  <div className="w-5 h-5 rounded-sm bg-npf flex items-center justify-center text-3xs font-bold text-npfg shrink-0">
                     N
                   </div>
                   <p className="text-11 text-nt2 break-words leading-relaxed">
@@ -120,7 +120,7 @@ export function FlashcardsPanel() {
           {!flipped ? (
             <button
               onClick={() => setFlipped(true)}
-              className="py-2.5 px-6 rounded-lg bg-ns2 border border-bdr2 text-nt text-sm font-medium hover:bg-ns3 transition w-full"
+              className="py-2.5 px-6 rounded-md bg-ns2 border border-bdr2 text-nt text-sm font-medium hover:bg-ns3 transition w-full active:translate-y-[1px] active:shadow-none"
             >
               Show Answer
             </button>
@@ -130,9 +130,9 @@ export function FlashcardsPanel() {
                 <button
                   key={r}
                   onClick={() => handleRate(r)}
-                  className={`flex-1 py-2 rounded-lg text-11 font-medium transition ${
+                  className={`flex-1 py-2 rounded-sm text-11 font-medium transition active:translate-y-[1px] ${
                     rating === r
-                      ? 'bg-np text-npfg'
+                      ? 'bg-npf text-npfg shadow-ev2 active:shadow-none'
                       : 'bg-ns border border-bdr2 text-nt2 hover:bg-ns2'
                   }`}
                 >
@@ -150,7 +150,7 @@ export function FlashcardsPanel() {
             disabled={current === 0}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-bdr2 text-nt3 text-xs hover:bg-ns2 transition disabled:opacity-40"
           >
-            <ChevronLeft size={15} /> Prev
+            <ChevronLeft size={15} strokeWidth={1.5} /> Prev
           </button>
           <span className="text-xs text-nt3">
             {current + 1} / {total}
@@ -160,7 +160,7 @@ export function FlashcardsPanel() {
             disabled={current === total - 1}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-bdr2 text-nt3 text-xs hover:bg-ns2 transition disabled:opacity-40"
           >
-            Next <ChevronRight size={15} />
+            Next <ChevronRight size={15} strokeWidth={1.5} />
           </button>
         </div>
       </div>

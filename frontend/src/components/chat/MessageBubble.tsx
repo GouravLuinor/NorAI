@@ -12,7 +12,7 @@ export function MessageBubble({ message }: { message: Message }) {
         className={`w-5 h-5 rounded-full flex items-center justify-center text-3xs font-medium text-npfg shrink-0 mt-0.5 ${
           isUser
             ? 'bg-ns3 text-nt2'
-            : 'bg-gradient-to-br from-np to-nph shadow-ev1'
+            : 'bg-npf shadow-ev1'
         }`}
       >
         {isUser ? '' : 'N'}

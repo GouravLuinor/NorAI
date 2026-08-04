@@ -1,4 +1,4 @@
-import { ChevronDown, Lock, LockOpen } from 'lucide-react'
+import { ChevronDown, Lock, LockOpen, Info } from 'lucide-react'
 import type { Question } from '../../stores/useQuizStore'
 
 // ── Badge ────────────────────────────────────────────────────────────────────
@@ -58,8 +58,8 @@ export function FreeResponseLines({ count = 4 }: { count?: number }) {
           {i === 0 && <span className="text-13 text-nt4 italic">Write your answer here…</span>}
         </div>
       ))}
-      <div className="flex items-start gap-2 mt-4 p-2.5 rounded-lg bg-ns2 border border-bdr2 text-xs text-nt2">
-        <span className="text-nt3 mt-0.5">ⓘ</span>
+      <div className="flex items-start gap-2 mt-4 p-2.5 rounded-md bg-ns2 border border-bdr2 text-xs text-nt2">
+        <Info size={12} strokeWidth={1.5} className="text-nt3 mt-0.5 shrink-0" />
         <span>Suggested length: 2–4 sentences.</span>
       </div>
     </div>
@@ -89,10 +89,10 @@ export function AnswerKey({ questions, isOpen, onToggle }: { questions: Question
   return (
     <div className="mt-8 border border-bdr2 rounded-xl overflow-hidden shadow-ev1">
       <div onClick={onToggle} className="flex items-center gap-3 px-5 py-4 bg-ns2 border-b border-bdr cursor-pointer hover:bg-ns3 transition">
-        {isOpen ? <LockOpen size={17} className="text-nbl" /> : <Lock size={17} className="text-nt3" />}
+        {isOpen ? <LockOpen size={17} strokeWidth={1.5} className="text-nbl" /> : <Lock size={17} strokeWidth={1.5} className="text-nt3" />}
         <span className="text-13 font-medium text-nt">{isOpen ? 'Answer Key' : 'Answers are hidden'}</span>
         <span className="text-2xs text-nt3 bg-ns px-2 py-0.5 rounded-md font-medium">Click to toggle</span>
-        <ChevronDown size={15} className={`ml-auto text-nt3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={15} strokeWidth={1.5} className={`ml-auto text-nt3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </div>
       {isOpen && (
         <div className="px-5 py-3 space-y-4">

@@ -36,12 +36,15 @@ export function DocPanel() {
           <button
             key={tab}
             onClick={() => setDocTab(tab)}
-            className={`px-2.5 py-1 rounded-md text-11 transition ${
+            className={`px-2.5 py-1 rounded-sm text-11 transition ${
               activeDocTab === tab
-                ? 'text-nt bg-ns3'
+                ? 'text-nt bg-ns3 shadow-ev1'
                 : 'text-nt3 hover:text-nt2'
             }`}
           >
+            <span className="font-mono text-[9px] text-nt4 tracking-widest mr-1">
+              {tab === 'notes' ? '03' : tab === 'revision' ? '04' : '05'}
+            </span>
             {tab === 'notes'
               ? 'Study notes'
               : tab === 'revision'
@@ -54,16 +57,16 @@ export function DocPanel() {
           {/* Search button – toggles the inline search bar */}
           <button
             onClick={() => setSearchOpen(!searchOpen)}
-            className="flex items-center gap-1 px-2 py-1 rounded-md border border-bdr2 bg-transparent text-nt3 text-2xs hover:bg-ns2 hover:text-nt2 transition active:scale-98"
+            className="flex items-center gap-1 px-2 py-1 rounded-sm border border-bdr2 bg-transparent text-nt3 text-2xs hover:bg-ns2 hover:text-nt2 transition active:translate-y-[1px] active:shadow-none"
           >
-            <Search size={11} /> {searchOpen ? 'Close' : 'Search'}
+            <Search size={11} strokeWidth={1.5} /> {searchOpen ? 'Close' : 'Search'}
           </button>
 
           <button
             onClick={handleDownloadPDF}
-            className="flex items-center gap-1 px-2 py-1 rounded-md border border-bdr2 bg-transparent text-nt3 text-2xs hover:bg-ns2 hover:text-nt2 transition active:scale-98"
+            className="flex items-center gap-1 px-2 py-1 rounded-sm border border-bdr2 bg-transparent text-nt3 text-2xs hover:bg-ns2 hover:text-nt2 transition active:translate-y-[1px] active:shadow-none"
           >
-            <Download size={11} /> PDF
+            <Download size={11} strokeWidth={1.5} /> PDF
           </button>
 
           {/* Inline search bar – only visible when search is open */}

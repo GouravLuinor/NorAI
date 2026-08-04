@@ -75,7 +75,7 @@ function DefinitionCard({ heading, children }: { heading: string; children: Reac
   return (
     <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1 border-l-2 border-l-np">
       <div className="flex items-center gap-1.5 text-3xs font-semibold text-np uppercase tracking-wider mb-2">
-        <Bookmark size={13} />
+        <Bookmark size={13} strokeWidth={1.5} />
         {heading}
       </div>
       {children}
@@ -87,7 +87,7 @@ function AlgorithmCard({ heading, children }: { heading: string; children: React
   return (
     <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1">
       <div className="flex items-center gap-1.5 text-3xs font-semibold text-nbl uppercase tracking-wider mb-2">
-        <GitBranch size={13} />
+        <GitBranch size={13} strokeWidth={1.5} />
         {heading}
       </div>
       {children}
@@ -99,7 +99,7 @@ function ComplexityCard({ heading, children }: { heading: string; children: Reac
   return (
     <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
       <div className="flex items-center gap-1.5 text-3xs font-semibold text-ng uppercase tracking-wider mb-2">
-        <Clock size={13} />
+        <Clock size={13} strokeWidth={1.5} />
         {heading}
       </div>
       {children}
@@ -111,7 +111,7 @@ function ExampleCard({ heading, children }: { heading: string; children: React.R
   return (
     <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1">
       <div className="flex items-center gap-1.5 text-3xs font-semibold text-na uppercase tracking-wider mb-2">
-        <FlaskConical size={13} />
+        <FlaskConical size={13} strokeWidth={1.5} />
         {heading}
       </div>
       {children}
@@ -122,7 +122,7 @@ function ExampleCard({ heading, children }: { heading: string; children: React.R
 function TipsCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-2.5 bg-nab border border-nabr rounded-lg p-3 mb-4">
-      <Lightbulb size={14} className="text-na mt-0.5 shrink-0" />
+      <Lightbulb size={14} strokeWidth={1.5} className="text-na mt-0.5 shrink-0" />
       <div>
         <div className="text-3xs font-semibold text-na uppercase tracking-wider mb-1">{heading}</div>
         <div className="text-xs text-nt2 leading-relaxed">{children}</div>
@@ -134,7 +134,7 @@ function TipsCard({ heading, children }: { heading: string; children: React.Reac
 function MistakeCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-2.5 bg-nrb border border-nrbr rounded-lg p-3 mb-4">
-      <AlertTriangle size={14} className="text-nr mt-0.5 shrink-0" />
+      <AlertTriangle size={14} strokeWidth={1.5} className="text-nr mt-0.5 shrink-0" />
       <div>
         <div className="text-3xs font-semibold text-nr uppercase tracking-wider mb-1">{heading}</div>
         <div className="text-xs text-nt2 leading-relaxed">{children}</div>
@@ -159,7 +159,7 @@ function ListCard({ heading, children }: { heading: string; children: React.Reac
   return (
     <div className="mb-5">
       <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-        <List size={13} className="text-np" />
+        <List size={13} strokeWidth={1.5} className="text-np" />
         {heading}
       </div>
       <ul className="list-none pl-1.5 space-y-2.5">{children}</ul>
@@ -171,7 +171,7 @@ function FormulaCard({ heading, children }: { heading: string; children: React.R
   return (
     <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1 border-l-2 border-l-np">
       <div className="flex items-center gap-1.5 text-3xs font-semibold text-np uppercase tracking-wider mb-2">
-        <FileText size={13} />
+        <FileText size={13} strokeWidth={1.5} />
         {heading}
       </div>
       <div className="font-mono text-13 text-nt2">{children}</div>
@@ -184,7 +184,7 @@ function CodeCard({ heading, children, lang }: { heading: string; children: Reac
     <div className="mb-6">
       {heading && (
         <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <Code size={13} className="text-nbl" />
+          <Code size={13} strokeWidth={1.5} className="text-nbl" />
           {heading}
         </div>
       )}
@@ -205,7 +205,7 @@ function ProseCard({ heading, children }: { heading: string; children: React.Rea
   return (
     <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
       <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-        <FileText size={13} className="text-nt3" />
+        <FileText size={13} strokeWidth={1.5} className="text-nt3" />
         {heading}
       </div>
       {children}
@@ -317,7 +317,7 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
   return (
     <div className="flex-1 overflow-y-auto doc-content px-8 py-7 pb-15 scroll-smooth">
       {title && (
-        <h1 className="text-[21px] font-semibold text-nt tracking-tight mb-6 leading-tight">
+        <h1 className="font-serif text-[26px] font-medium text-nt tracking-tight mb-6 leading-snug">
           {title}
         </h1>
       )}

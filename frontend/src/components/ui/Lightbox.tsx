@@ -36,7 +36,7 @@ export function Lightbox({ src, alt = '', caption = '', onClose }: LightboxProps
         className="absolute top-4 right-4 w-8 h-8 rounded-md bg-ns2 border border-bdr2 text-nt3 hover:text-nt hover:bg-ns3 transition flex items-center justify-center"
         aria-label="Close lightbox"
       >
-        <X size={16} />
+        <X size={16} strokeWidth={1.5} />
       </button>
 
       {/* Image container */}

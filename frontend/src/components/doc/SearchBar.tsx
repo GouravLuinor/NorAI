@@ -91,10 +91,10 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
   const goToMatch = useCallback((index: number) => {
     if (marksRef.current.length === 0) return
     // Reset current highlight
-    marksRef.current.forEach(m => m.classList.remove('!bg-np', '!text-npfg', 'ring-2', 'ring-np'))
+    marksRef.current.forEach(m => m.classList.remove('!bg-npf', '!text-npfg', 'ring-2', 'ring-np'))
     const i = ((index - 1) % marksRef.current.length + marksRef.current.length) % marksRef.current.length
     const mark = marksRef.current[i]
-    mark.classList.add('!bg-np', '!text-npfg', 'ring-2', 'ring-np')
+    mark.classList.add('!bg-npf', '!text-npfg', 'ring-2', 'ring-np')
     mark.scrollIntoView({ behavior: 'smooth', block: 'center' })
     setCurrentMatch(i + 1)
   }, [])
@@ -131,7 +131,7 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
   return (
     <div className="flex items-center gap-1 ml-2">
       <div className="flex items-center gap-1 bg-nb border border-bdr2 rounded-md px-2 py-0.5">
-        <Search size={11} className="text-nt3" />
+        <Search size={11} strokeWidth={1.5} className="text-nt3" />
         <input
           ref={inputRef}
           type="text"
@@ -146,14 +146,14 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
           </span>
         )}
         <button onClick={() => goToMatch(currentMatch - 1)} className="text-nt3 hover:text-nt">
-          <ChevronUp size={11} />
+          <ChevronUp size={11} strokeWidth={1.5} />
         </button>
         <button onClick={() => goToMatch(currentMatch + 1)} className="text-nt3 hover:text-nt">
-          <ChevronDown size={11} />
+          <ChevronDown size={11} strokeWidth={1.5} />
         </button>
       </div>
       <button onClick={() => { clearHighlights(); onClose() }} className="text-nt3 hover:text-nt">
-        <X size={12} />
+        <X size={12} strokeWidth={1.5} />
       </button>
     </div>
   )

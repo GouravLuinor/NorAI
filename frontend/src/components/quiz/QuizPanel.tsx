@@ -97,7 +97,7 @@ export function QuizPanel() {
               </div>
               <div className="bg-nb border border-bdr2 rounded-xl p-4 flex flex-col items-center gap-1.5 shadow-ev1">
                 <div className="text-lg font-bold font-mono text-nbl">{confidenceLabel}</div>
-                <div className="text-2xs text-nt3 uppercase tracking-wider font-semibold">Confidence</div>
+                <div className="spec-label">Confidence</div>
               </div>
             </div>
 
@@ -107,7 +107,7 @@ export function QuizPanel() {
                 {evaluation.per_question_feedback.map((fb) => (
                   <div key={fb.question_number} className="bg-nb border border-bdr2 rounded-lg p-3.5 shadow-ev1">
                     <div className="flex items-start gap-2.5">
-                      <div className="w-5 h-5 rounded-md bg-gradient-to-br from-np to-nph flex items-center justify-center text-2xs font-bold text-npfg shrink-0 mt-0.5">
+                      <div className="w-5 h-5 rounded-sm bg-npf flex items-center justify-center text-2xs font-bold text-npfg shrink-0 mt-0.5">
                         {fb.question_number}
                       </div>
                       <p className="text-xs text-nt2 leading-relaxed">{fb.remark}</p>
@@ -119,7 +119,7 @@ export function QuizPanel() {
 
             {/* Nora overall summary */}
             <div className="flex items-start gap-3.5 w-full max-w-md pt-6 border-t border-bdr mb-8">
-              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-np to-nph flex items-center justify-center text-xs font-bold text-npfg shrink-0 mt-0.5 shadow-ev1">
+              <div className="w-7 h-7 rounded-sm bg-npf flex items-center justify-center text-xs font-bold text-npfg shrink-0 mt-0.5 shadow-ev1">
                 N
               </div>
               <p className="text-sm text-nt2 leading-relaxed">{evaluation.overall_insights}</p>
@@ -131,13 +131,13 @@ export function QuizPanel() {
                 onClick={retakeQuiz}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-nb border border-bdr2 text-nt text-sm font-medium hover:bg-ns2 hover:shadow-ev2 transition"
               >
-                <RotateCcw size={14} /> Retake
+                <RotateCcw size={14} strokeWidth={1.5} /> Retake
               </button>
               <button
                 onClick={handleReviewNotes}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-np text-npfg text-sm font-medium hover:bg-nph transition shadow-ev2 shadow-np/30"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md bg-npf text-npfg text-sm font-medium hover:bg-npfh transition shadow-ev2 active:translate-y-[1px] active:shadow-none"
               >
-                <BookOpen size={14} /> Review Notes
+                <BookOpen size={14} strokeWidth={1.5} /> Review Notes
               </button>
             </div>
           </div>
@@ -236,8 +236,8 @@ export function QuizPanel() {
                   className={`w-full flex items-center gap-3 p-3 rounded-lg border border-bdr2 bg-nb text-left transition ${isSelected && !showFeedback ? 'bg-ns3 border-np' : 'hover:bg-ns2 hover:border-bdr'} ${stateClass}`}>
                   <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${showFeedback && opt === q.answer ? 'bg-ng text-white' : showFeedback && isSelected ? 'bg-nr text-white' : 'bg-ns3 text-nt2'}`}>{letter}</span>
                   <span className="text-sm text-nt2">{opt}</span>
-                  {showFeedback && opt === q.answer && <Check size={16} className="ml-auto text-ng" />}
-                  {showFeedback && isSelected && opt !== q.answer && <X size={16} className="ml-auto text-nr" />}
+                  {showFeedback && opt === q.answer && <Check size={16} strokeWidth={1.5} className="ml-auto text-ng" />}
+                  {showFeedback && isSelected && opt !== q.answer && <X size={16} strokeWidth={1.5} className="ml-auto text-nr" />}
                 </button>
               )
             })}
@@ -269,7 +269,7 @@ export function QuizPanel() {
               placeholder="Type your answer…" value={selectedAnswer} onChange={(e) => setSelectedAnswer(e.target.value)} disabled={isAnswered} />
             {!isAnswered && (
               <button onClick={() => handleSelectAnswer(selectedAnswer)} disabled={!selectedAnswer.trim()}
-                className="py-2 px-6 rounded-lg bg-np text-npfg text-sm font-medium hover:bg-nph transition disabled:opacity-50">
+                className="py-2 px-6 rounded-md bg-npf text-npfg text-sm font-medium shadow-ev2 hover:bg-npfh transition active:translate-y-[1px] active:shadow-none disabled:opacity-50">
                 Submit Answer
               </button>
             )}
@@ -279,9 +279,9 @@ export function QuizPanel() {
         {showFeedback && isAutoGraded && (
           <div className={`mt-5 p-4 rounded-lg border ${isCorrect ? 'bg-ngb border-ngbr' : 'bg-nrb border-nrbr'}`}>
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-md bg-gradient-to-br from-np to-nph flex items-center justify-center text-2xs font-bold text-npfg shrink-0 mt-0.5">N</div>
+              <div className="w-5 h-5 rounded-sm bg-npf flex items-center justify-center text-2xs font-bold text-npfg shrink-0 mt-0.5">N</div>
               <div className="text-sm text-nt2">
-                {isCorrect ? `✅ Correct! ${q.explanation}` : `❌ Incorrect. The correct answer is **${q.answer}**. ${q.explanation}`}
+                {isCorrect ? `Correct! ${q.explanation}` : `Incorrect. The correct answer is **${q.answer}**. ${q.explanation}`}
               </div>
             </div>
           </div>
@@ -301,7 +301,7 @@ export function QuizPanel() {
 
         {showFeedback && isAutoGraded && (
           <div className="mt-6 flex justify-end">
-            <button onClick={handleNext} className="py-2 px-6 rounded-lg bg-np text-npfg text-sm font-medium hover:bg-nph transition">
+            <button onClick={handleNext} className="py-2 px-6 rounded-md bg-npf text-npfg text-sm font-medium shadow-ev2 hover:bg-npfh transition active:translate-y-[1px] active:shadow-none">
               {currentIndex < questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
             </button>
           </div>

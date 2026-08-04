@@ -121,7 +121,7 @@ function DefinitionCard({ heading, children }: { heading: string; children: Reac
   return (
     <div className="bg-ns border border-bdr2 rounded-lg p-4 mb-4 shadow-ev1">
       <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-        <Bookmark size={13} className="text-np" />
+        <Bookmark size={13} strokeWidth={1.5} className="text-np" />
         {heading}
       </div>
       {children}
@@ -133,7 +133,7 @@ function TableCard({ heading, children }: { heading: string; children: React.Rea
   return (
     <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
       <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-        <Clock size={13} className="text-ng" />
+        <Clock size={13} strokeWidth={1.5} className="text-ng" />
         {heading}
       </div>
       {children}
@@ -143,10 +143,10 @@ function TableCard({ heading, children }: { heading: string; children: React.Rea
 
 function CalloutCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
-    <div className="flex gap-2.5 bg-nblb border border-nblbr rounded-lg p-3 mb-4">
-      <Lightbulb size={14} className="text-nbl mt-0.5 shrink-0" />
+    <div className="note-callout flex gap-2.5 p-3 mb-4">
+      <Lightbulb size={14} strokeWidth={1.5} className="text-np mt-0.5 shrink-0" />
       <div>
-        <div className="text-3xs font-semibold text-nt3 uppercase tracking-wider mb-1">{heading}</div>
+        <div className="note-label mb-1">{heading}</div>
         <div className="text-xs text-nt2 leading-relaxed">{children}</div>
       </div>
     </div>
@@ -157,7 +157,7 @@ function ListCard({ heading, children }: { heading: string; children: React.Reac
   return (
     <div className="mb-5">
       <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-        <List size={13} className="text-np" />
+        <List size={13} strokeWidth={1.5} className="text-np" />
         {heading}
       </div>
       <ul className="list-none pl-1.5 space-y-2.5">{children}</ul>
@@ -169,7 +169,7 @@ function ProseSection({ heading, children }: { heading: string; children: React.
   return (
     <div className="bg-ns border border-bdr2 rounded-lg p-5 mb-5 shadow-ev1">
       <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-        <FileText size={13} className="text-nt3" />
+        <FileText size={13} strokeWidth={1.5} className="text-nt3" />
         {heading}
       </div>
       {children}
@@ -182,7 +182,7 @@ function CodeCard({ heading, children, lang }: { heading: string; children: Reac
     <div className="mb-6">
       {heading && (
         <div className="flex items-center gap-1.5 text-3xs font-semibold text-nt3 uppercase tracking-wider mb-2">
-          <Code size={13} className="text-nbl" />
+          <Code size={13} strokeWidth={1.5} className="text-nbl" />
           {heading}
         </div>
       )}
@@ -352,7 +352,7 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
   return (
     <div className="flex-1 overflow-y-auto doc-content px-8 py-7 pb-15 scroll-smooth">
       {title && (
-        <h1 className="text-[21px] font-semibold text-nt tracking-tight mb-6 leading-tight">
+        <h1 className="font-serif text-[26px] font-medium text-nt tracking-tight mb-6 leading-snug">
           {title}
         </h1>
       )}
