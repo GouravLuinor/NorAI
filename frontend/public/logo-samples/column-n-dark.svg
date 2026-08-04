@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="NorAI — column N monogram">
+  <rect x="0.5" y="0.5" width="63" height="63" rx="13.5" fill="#0A1628" stroke="#E8ECF1" stroke-opacity="0.10"/>
+  <g stroke="#E8ECF1" stroke-width="1.4">
+    <path d="M19 20V44"/>
+    <path d="M19 24.5H22.5V39.5H19"/>
+    <path d="M45 20V44"/>
+    <path d="M41.5 24.5H45V39.5H41.5"/>
+    <path d="M19 20H45"/>
+    <path d="M22.5 44H41.5"/>
+  </g>
+  <path d="M22.5 24.5L41.5 39.5" stroke="#D1552E" stroke-width="1.6"/>
+  <circle cx="22.5" cy="24.5" r="1.6" fill="#0A1628" stroke="#D1552E" stroke-width="1.2"/>
+  <circle cx="41.5" cy="39.5" r="1.6" fill="#0A1628" stroke="#D1552E" stroke-width="1.2"/>
+  <g stroke="#D1552E" stroke-width="1.1" stroke-linecap="square">
+    <path d="M7 14V22"/>
+    <path d="M3 18H11"/>
+  </g>
+</svg>

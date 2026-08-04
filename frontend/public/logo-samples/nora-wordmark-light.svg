@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" role="img" aria-label="NorAI wordmark">
+  <rect x="0.5" y="0.5" width="159" height="47" rx="10" fill="#F6F2E7" stroke="#241F1A" stroke-opacity="0.14"/>
+  <text x="76" y="31" text-anchor="middle" font-family="'Space Grotesk', 'Inter', sans-serif" font-size="26" font-weight="600" letter-spacing="-0.01em" fill="#241F1A">Nora</text>
+  <circle cx="132" cy="24" r="4.5" fill="#C2410C"/>
+  <circle cx="132" cy="24" r="4.5" fill="none" stroke="#C2410C" stroke-opacity="0.3"/>
+  <g stroke="#C2410C" stroke-width="1" stroke-linecap="square">
+    <path d="M22 12V20"/>
+    <path d="M18 16H26"/>
+  </g>
+</svg>

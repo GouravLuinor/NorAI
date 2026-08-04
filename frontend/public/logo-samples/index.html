@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NorAI — Logo Concepts</title>
+<style>
+  :root {
+    --ink: #241F1A;
+    --vel: #F6F2E7;
+    --surf: #FBF8F1;
+    --raised: #EFE9DA;
+    --hairline: rgba(36,31,26,0.14);
+    --prus: #0A1628;
+    --surf-d: #0D1F35;
+    --raised-d: #132740;
+    --ink-d: #E8ECF1;
+    --red: #C2410C;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    background: var(--raised);
+    color: var(--ink);
+    padding: 40px;
+  }
+  h1 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+  .sub { color: rgba(36,31,26,0.6); font-size: 12px; margin-bottom: 36px; }
+  .concept { margin-bottom: 48px; }
+  .concept h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 14px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 900px;
+  }
+  .tile { border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .tile .bg { padding: 40px; display: grid; place-items: center; min-height: 180px; }
+  .bg.light { background: var(--vel); }
+  .bg.dark { background: var(--prus); }
+  .tile .cap {
+    padding: 10px 14px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    border-top: 1px solid var(--hairline);
+    background: var(--surf);
+  }
+  .cap.darkcap { background: var(--raised-d); color: var(--ink-d); border-top: 1px solid rgba(232,236,241,0.10); }
+  svg { width: 96px; height: auto; }
+  .row.wide svg { width: 220px; }
+  .note {
+    max-width: 900px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: rgba(36,31,26,0.7);
+    border-left: 3px solid var(--red);
+    padding-left: 14px;
+    margin-top: 8px;
+  }
+  .row label { font-size: 10px; letter-spacing: 0.15em; }
+</style>
+</head>
+<body>
+  <h1>NorAI — Logo Concepts</h1>
+  <div class="sub">Architect's Sketchbook direction · vellum + Prussian · red-pencil · Space Grotesk</div>
+
+  <div class="concept">
+    <h2>01 — Drafted N · monogram</h2>
+    <div class="row">
+      <div class="tile">
+        <div class="bg light"><img src="./drafted-n-light.svg" alt="Drafted N light"></div>
+        <div class="cap">drafted-n-light.svg · vellum</div>
+      </div>
+      <div class="tile">
+        <div class="bg dark"><img src="./drafted-n-dark.svg" alt="Drafted N dark"></div>
+        <div class="cap darkcap">drafted-n-dark.svg · prussian</div>
+      </div>
+    </div>
+    <div class="note">Blueprint grid + dashed construction line + red-pencil diagonal. "Shows the work" — precision you can trust.</div>
+  </div>
+
+  <div class="concept">
+    <h2>02 — Column N · architecture</h2>
+    <div class="row">
+      <div class="tile">
+        <div class="bg light"><img src="./column-n-light.svg" alt="Column N light"></div>
+        <div class="cap">column-n-light.svg · vellum</div>
+      </div>
+      <div class="tile">
+        <div class="bg dark"><img src="./column-n-dark.svg" alt="Column N dark"></div>
+        <div class="cap darkcap">column-n-dark.svg · prussian</div>
+      </div>
+    </div>
+    <div class="note">Two fluted columns + architrave read as an N. Knowledge as architecture — solid, load-bearing, classical.</div>
+  </div>
+
+  <div class="concept">
+    <h2>03 — Open Book N · knowledge</h2>
+    <div class="row">
+      <div class="tile">
+        <div class="bg light"><img src="./book-n-light.svg" alt="Book N light"></div>
+        <div class="cap">book-n-light.svg · vellum</div>
+      </div>
+      <div class="tile">
+        <div class="bg dark"><img src="./book-n-dark.svg" alt="Book N dark"></div>
+        <div class="cap darkcap">book-n-dark.svg · prussian</div>
+      </div>
+    </div>
+    <div class="note">Open book with the N drafted across the pages — the reading/study association made literal.</div>
+  </div>
+
+  <div class="concept">
+    <h2>04 — Nora · wordmark (signature element)</h2>
+    <div class="row wide">
+      <div class="tile">
+        <div class="bg light"><img src="./nora-wordmark-light.svg" alt="Nora wordmark light"></div>
+        <div class="cap">nora-wordmark-light.svg · vellum</div>
+      </div>
+      <div class="tile">
+        <div class="bg dark"><img src="./nora-wordmark-dark.svg" alt="Nora wordmark dark"></div>
+        <div class="cap darkcap">nora-wordmark-dark.svg · prussian</div>
+      </div>
+    </div>
+    <div class="note">Space Grotesk "Nora" + red status dot — the roadmap's proposed wordmark, ready for the tutor header.</div>
+  </div>
+</body>
+</html>
