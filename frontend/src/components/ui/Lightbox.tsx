@@ -47,7 +47,7 @@ export function Lightbox({ src, alt = '', caption = '', onClose }: LightboxProps
         <img
           src={src}
           alt={alt}
-          className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+          className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-ev3"
         />
         {caption && (
           <p className="mt-4 text-sm text-nt2 text-center max-w-lg leading-relaxed">

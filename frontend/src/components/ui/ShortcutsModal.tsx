@@ -27,7 +27,7 @@ export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-ns border border-bdr2 rounded-xl p-6 w-80 shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="bg-ns border border-bdr2 rounded-xl p-6 w-80 shadow-ev3" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-nt flex items-center gap-2">
             <Command size={14} /> Keyboard Shortcuts
@@ -38,7 +38,7 @@ export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps) {
           {shortcuts.map((s) => (
             <div key={s.keys} className="flex items-center justify-between text-xs">
               <span className="text-nt2">{s.description}</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-ns3 text-nt3 font-mono text-[10px]">{s.keys}</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-ns3 text-nt3 font-mono text-2xs">{s.keys}</kbd>
             </div>
           ))}
         </div>

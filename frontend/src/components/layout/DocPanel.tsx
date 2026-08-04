@@ -36,7 +36,7 @@ export function DocPanel() {
           <button
             key={tab}
             onClick={() => setDocTab(tab)}
-            className={`px-2.5 py-1 rounded-md text-[11px] transition ${
+            className={`px-2.5 py-1 rounded-md text-11 transition ${
               activeDocTab === tab
                 ? 'text-nt bg-ns3'
                 : 'text-nt3 hover:text-nt2'
@@ -54,14 +54,14 @@ export function DocPanel() {
           {/* Search button – toggles the inline search bar */}
           <button
             onClick={() => setSearchOpen(!searchOpen)}
-            className="flex items-center gap-1 px-2 py-1 rounded-md border border-bdr2 bg-transparent text-nt3 text-[10px] hover:bg-ns2 hover:text-nt2 transition active:scale-98"
+            className="flex items-center gap-1 px-2 py-1 rounded-md border border-bdr2 bg-transparent text-nt3 text-2xs hover:bg-ns2 hover:text-nt2 transition active:scale-98"
           >
             <Search size={11} /> {searchOpen ? 'Close' : 'Search'}
           </button>
 
           <button
             onClick={handleDownloadPDF}
-            className="flex items-center gap-1 px-2 py-1 rounded-md border border-bdr2 bg-transparent text-nt3 text-[10px] hover:bg-ns2 hover:text-nt2 transition active:scale-98"
+            className="flex items-center gap-1 px-2 py-1 rounded-md border border-bdr2 bg-transparent text-nt3 text-2xs hover:bg-ns2 hover:text-nt2 transition active:scale-98"
           >
             <Download size={11} /> PDF
           </button>

@@ -10,41 +10,69 @@ html, body, #root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'Fira Code', monospace;
 
+  /* Surfaces */
   --color-nb: #0F0F0E;
   --color-ns: #181817;
   --color-ns2: #212120;
   --color-ns3: #2A2A28;
   --color-ns4: #333330;
 
+  /* Text */
   --color-nt: #E8E6E0;
   --color-nt2: #8C8A82;
-  --color-nt3: #5A5852;
-  --color-nt4: #3A3A37;
+  --color-nt3: #6B6962;
+  --color-nt4: #45443F;
 
-  --color-np: #7C6FD4;
-  --color-npb: rgba(124, 111, 212, 0.13);
-  --color-npbr: rgba(124, 111, 212, 0.28);
+  /* Accent — Electric Viridian (#0CCAB1) */
+  --color-np: #0CCAB1;
+  --color-nph: #2ED6BF;
+  --color-npfg: #04211D;
+  --color-npb: rgba(12, 202, 177, 0.13);
+  --color-npbr: rgba(12, 202, 177, 0.28);
 
-  --color-na: #C88C14;
-  --color-nab: rgba(200, 140, 20, 0.11);
-  --color-nabr: rgba(200, 140, 20, 0.26);
+  /* Status dots — pinned per DESIGN.md */
+  --color-na: #FF990A;
+  --color-nab: rgba(255, 153, 10, 0.11);
+  --color-nabr: rgba(255, 153, 10, 0.26);
 
-  --color-ng: #289650;
-  --color-ngb: rgba(40, 150, 80, 0.11);
-  --color-ngbr: rgba(40, 150, 80, 0.28);
+  --color-ng: #398E4A;
+  --color-ngb: rgba(57, 142, 74, 0.11);
+  --color-ngbr: rgba(57, 142, 74, 0.28);
 
-  --color-nr: #BE3C3C;
-  --color-nrb: rgba(190, 60, 60, 0.11);
-  --color-nrbr: rgba(190, 60, 60, 0.26);
+  --color-nr: #E5484D;
+  --color-nrb: rgba(229, 72, 77, 0.11);
+  --color-nrbr: rgba(229, 72, 77, 0.26);
 
-  --color-nbl: #3782C8;
-  --color-nblb: rgba(55, 130, 200, 0.11);
-  --color-nblbr: rgba(55, 130, 200, 0.26);
+  --color-nbl: #0062D1;
+  --color-nblb: rgba(0, 98, 209, 0.11);
+  --color-nblbr: rgba(0, 98, 209, 0.26);
 
+  --color-npu: #7820BC;
+  --color-npub: rgba(120, 32, 188, 0.11);
+  --color-npubr: rgba(120, 32, 188, 0.26);
+
+  /* Borders */
   --color-bdr: rgba(255, 255, 255, 0.07);
   --color-bdr2: rgba(255, 255, 255, 0.11);
 
-  --radius: 0.5rem;
+  /* Radii (replaces dead --radius) */
+  --radius-md: 0.5rem;
+
+  /* Elevation — shadow-as-border tokens */
+  --shadow-ev1: 0 0 0 1px rgba(255,255,255,0.07), 0 1px 2px rgba(0,0,0,0.40);
+  --shadow-ev2: 0 0 0 1px rgba(255,255,255,0.07), 0 4px 14px rgba(0,0,0,0.50), 0 1px 2px rgba(0,0,0,0.30);
+  --shadow-ev3: 0 0 0 1px rgba(255,255,255,0.07), 0 10px 30px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35);
+
+  /* Type ramp (replaces arbitrary text-[9px]…text-[13.5px]) */
+  --text-3xs: 0.5625rem;
+  --text-2xs: 0.625rem;
+  --text-11: 0.6875rem;
+  --text-13: 0.8125rem;
+}
+
+:root {
+  color-scheme: dark;
+  --ds-focus-ring: 0 0 0 2px var(--color-nb), 0 0 0 4px var(--color-np);
 }
 
 /* Subtle custom scrollbar for all scrollable areas */
@@ -60,7 +88,7 @@ html, body, #root {
   transition: background 0.2s ease;
 }
 .overflow-y-auto:hover::-webkit-scrollbar-thumb {
-  background: rgba(124, 111, 212, 0.25);
+  background: rgba(12, 202, 177, 0.25);
 }
 
 @keyframes shimmer {
@@ -73,7 +101,7 @@ html, body, #root {
 }
 
 @keyframes scrollpulse {
-  0% { background: var(--color-npb); box-shadow: 0 0 0 2px rgba(124,111,212,0.4); }
+  0% { background: var(--color-npb); box-shadow: 0 0 0 2px rgba(12,202,177,0.4); }
   100% { background: transparent; box-shadow: 0 0 0 0 transparent; }
 }
 
@@ -193,9 +221,11 @@ html, body, #root {
   --color-nt3: #8C8A84;
   --color-nt4: #B5B3AD;
 
-  --color-np: #6458C4;
-  --color-npb: rgba(100, 88, 196, 0.08);
-  --color-npbr: rgba(100, 88, 196, 0.18);
+  --color-np: #0B7A6C;
+  --color-nph: #0A6B5E;
+  --color-npfg: #F2FEFB;
+  --color-npb: rgba(11, 122, 108, 0.08);
+  --color-npbr: rgba(11, 122, 108, 0.18);
 
   --color-na: #B87C14;
   --color-nab: rgba(184, 124, 20, 0.08);
@@ -213,13 +243,38 @@ html, body, #root {
   --color-nblb: rgba(43, 108, 176, 0.08);
   --color-nblbr: rgba(43, 108, 176, 0.18);
 
+  --color-npu: #7820BC;
+  --color-npub: rgba(120, 32, 188, 0.08);
+  --color-npubr: rgba(120, 32, 188, 0.18);
+
   --color-bdr: rgba(0, 0, 0, 0.08);
   --color-bdr2: rgba(0, 0, 0, 0.12);
 
-  /* Softer shadows for light mode */
-  --ev1: 0 1px 2px rgba(0,0,0,0.06);
-  --ev2: 0 4px 14px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-  --ev3: 0 10px 30px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06);
+  /* Softer elevation for light mode */
+  --shadow-ev1: 0 0 0 1px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-ev2: 0 0 0 1px rgba(0,0,0,0.08), 0 4px 14px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-ev3: 0 0 0 1px rgba(0,0,0,0.08), 0 10px 30px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --ds-focus-ring: 0 0 0 2px var(--color-nb), 0 0 0 4px var(--color-np);
+}
+
+/* Reduced motion: disable shimmer, x-slides, smooth scroll, scrollpulse */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-shimmer,
+  .animate-slide-in,
+  .animate-fade-in,
+  .scroll-highlight {
+    animation: none !important;
+  }
 }
 
 

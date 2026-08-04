@@ -201,8 +201,8 @@ const handleSend = useCallback(async (text: string) => {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth doc-content">
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-np to-nbl flex items-center justify-center mb-4 shadow-lg">
-              <span className="text-lg font-semibold text-white">N</span>
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-np to-nph flex items-center justify-center mb-4 shadow-ev2">
+              <span className="text-lg font-semibold text-npfg">N</span>
             </div>
             <h3 className="text-sm font-medium text-nt mb-1">What can I help with?</h3>
             <p className="text-xs text-nt3 max-w-[200px]">
@@ -211,7 +211,7 @@ const handleSend = useCallback(async (text: string) => {
           </div>
         ) : (
           <>
-            <div className="text-[9px] text-nt3 text-center flex items-center gap-2">
+            <div className="text-3xs text-nt3 text-center flex items-center gap-2">
               <span className="flex-1 h-px bg-bdr" />
               Today
               <span className="flex-1 h-px bg-bdr" />
@@ -223,7 +223,7 @@ const handleSend = useCallback(async (text: string) => {
 
             {isLoading && (
               <div className="flex gap-2 items-start">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-np to-nbl flex items-center justify-center text-[9px] font-medium text-white shrink-0 mt-0.5 shadow-sm">
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-np to-nph flex items-center justify-center text-3xs font-medium text-npfg shrink-0 mt-0.5 shadow-ev1">
                   N
                 </div>
                 <ShimmerLoader />

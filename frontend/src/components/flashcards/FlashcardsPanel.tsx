@@ -61,7 +61,7 @@ export function FlashcardsPanel() {
       <div className="flex items-center justify-between px-5 py-3 border-b border-bdr shrink-0">
         <div>
           <h3 className="text-sm font-semibold text-nt">Flashcards</h3>
-          <p className="text-[10px] text-nt3">Studying {total} cards</p>
+          <p className="text-2xs text-nt3">Studying {total} cards</p>
         </div>
       </div>
 
@@ -90,23 +90,23 @@ export function FlashcardsPanel() {
           >
             {/* Front */}
             <div className="absolute inset-0 bg-ns border border-bdr2 rounded-xl p-5 flex flex-col items-center justify-center backface-hidden">
-              <span className="text-[10px] font-semibold text-nt3 uppercase tracking-wider mb-4">Front</span>
+              <span className="text-2xs font-semibold text-nt3 uppercase tracking-wider mb-4">Front</span>
               <p className="text-sm font-medium text-nt text-center leading-relaxed break-words px-2">
                 {card.front}
               </p>
             </div>
             {/* Back */}
             <div className="absolute inset-0 bg-ns border border-bdr2 rounded-xl p-5 flex flex-col items-center justify-center backface-hidden rotate-y-180">
-              <span className="text-[10px] font-semibold text-np uppercase tracking-wider mb-4">Back</span>
+              <span className="text-2xs font-semibold text-np uppercase tracking-wider mb-4">Back</span>
               <p className="text-sm text-nt2 text-center leading-relaxed break-words px-2">
                 {card.back}
               </p>
               {card.explanation && (
                 <div className="flex items-start gap-2 mt-4 p-3 bg-nb border border-bdr2 rounded-lg w-full max-w-[85%]">
-                  <div className="w-5 h-5 rounded-md bg-gradient-to-br from-np to-nbl flex items-center justify-center text-[9px] font-bold text-white shrink-0">
+                  <div className="w-5 h-5 rounded-md bg-gradient-to-br from-np to-nph flex items-center justify-center text-3xs font-bold text-npfg shrink-0">
                     N
                   </div>
-                  <p className="text-[11px] text-nt2 break-words leading-relaxed">
+                  <p className="text-11 text-nt2 break-words leading-relaxed">
                     <strong className="text-np">Hint:</strong> {card.explanation}
                   </p>
                 </div>
@@ -130,9 +130,9 @@ export function FlashcardsPanel() {
                 <button
                   key={r}
                   onClick={() => handleRate(r)}
-                  className={`flex-1 py-2 rounded-lg text-[11px] font-medium transition ${
+                  className={`flex-1 py-2 rounded-lg text-11 font-medium transition ${
                     rating === r
-                      ? 'bg-np text-white'
+                      ? 'bg-np text-npfg'
                       : 'bg-ns border border-bdr2 text-nt2 hover:bg-ns2'
                   }`}
                 >
@@ -169,19 +169,19 @@ export function FlashcardsPanel() {
       <div className="flex justify-around items-center px-4 py-2 border-t border-bdr bg-ns2 shrink-0">
         <div className="text-center">
           <div className="text-base font-mono font-semibold text-nt">{reviewed}</div>
-          <div className="text-[9px] text-nt3 uppercase tracking-wider">Reviewed</div>
+          <div className="text-3xs text-nt3 uppercase tracking-wider">Reviewed</div>
         </div>
         <div className="text-center">
           <div className="text-base font-mono font-semibold text-ng">{gotIt}</div>
-          <div className="text-[9px] text-nt3 uppercase tracking-wider">Got it</div>
+          <div className="text-3xs text-nt3 uppercase tracking-wider">Got it</div>
         </div>
         <div className="text-center">
           <div className="text-base font-mono font-semibold text-na">{almost}</div>
-          <div className="text-[9px] text-nt3 uppercase tracking-wider">Almost</div>
+          <div className="text-3xs text-nt3 uppercase tracking-wider">Almost</div>
         </div>
         <div className="text-center">
           <div className="text-base font-mono font-semibold text-nt3">{left}</div>
-          <div className="text-[9px] text-nt3 uppercase tracking-wider">Left</div>
+          <div className="text-3xs text-nt3 uppercase tracking-wider">Left</div>
         </div>
       </div>
     </div>

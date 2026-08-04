@@ -39,7 +39,7 @@ export function InputZone({ onSend }: InputZoneProps) {
       <div className="flex items-end gap-2 bg-ns2 border border-bdr2 rounded-lg px-2.5 py-2 focus-within:shadow-[0_0_0_1px_var(--color-np)] transition">
         <textarea
           ref={textareaRef}
-          className="flex-1 bg-transparent border-none outline-none text-[11.5px] text-nt font-sans resize-none leading-relaxed min-h-[18px] max-h-[60px] placeholder:text-nt3"
+          className="flex-1 bg-transparent border-none outline-none text-11 text-nt font-sans resize-none leading-relaxed min-h-[18px] max-h-[60px] placeholder:text-nt3"
           placeholder="Ask Nora anything…"
           rows={1}
           value={value}
@@ -53,12 +53,12 @@ export function InputZone({ onSend }: InputZoneProps) {
           aria-label="Send message"
           onClick={handleSend}
           /* Added "ripple" class here */
-          className="ripple w-6.5 h-6.5 rounded-md bg-np flex items-center justify-center text-white hover:bg-[#8E82E0] transition active:scale-93 shrink-0"
+          className="ripple w-6.5 h-6.5 rounded-md bg-np flex items-center justify-center text-npfg hover:bg-nph transition active:scale-93 shrink-0"
         >
           <ArrowUp size={13} />
         </button>
       </div>
-      <div className="text-[9px] text-nt4 text-center mt-1.5">
+      <div className="text-3xs text-nt4 text-center mt-1.5">
         ⌃ Enter to send
       </div>
     </div>

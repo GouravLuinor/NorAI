@@ -87,17 +87,17 @@ export function QuizPanel() {
 
             {/* Breakdown grid */}
             <div className="grid grid-cols-3 gap-4 w-full max-w-md mb-8">
-              <div className="bg-nb border border-bdr2 rounded-xl p-4 flex flex-col items-center gap-1.5 shadow-sm">
+              <div className="bg-nb border border-bdr2 rounded-xl p-4 flex flex-col items-center gap-1.5 shadow-ev1">
                 <div className="text-lg font-bold font-mono text-ng">{percentage}%</div>
-                <div className="text-[10px] text-nt3 uppercase tracking-wider font-semibold">Accuracy</div>
+                <div className="text-2xs text-nt3 uppercase tracking-wider font-semibold">Accuracy</div>
               </div>
-              <div className="bg-nb border border-bdr2 rounded-xl p-4 flex flex-col items-center gap-1.5 shadow-sm">
+              <div className="bg-nb border border-bdr2 rounded-xl p-4 flex flex-col items-center gap-1.5 shadow-ev1">
                 <div className="text-lg font-bold font-mono text-nt">{timeStr}</div>
-                <div className="text-[10px] text-nt3 uppercase tracking-wider font-semibold">Time</div>
+                <div className="text-2xs text-nt3 uppercase tracking-wider font-semibold">Time</div>
               </div>
-              <div className="bg-nb border border-bdr2 rounded-xl p-4 flex flex-col items-center gap-1.5 shadow-sm">
+              <div className="bg-nb border border-bdr2 rounded-xl p-4 flex flex-col items-center gap-1.5 shadow-ev1">
                 <div className="text-lg font-bold font-mono text-nbl">{confidenceLabel}</div>
-                <div className="text-[10px] text-nt3 uppercase tracking-wider font-semibold">Confidence</div>
+                <div className="text-2xs text-nt3 uppercase tracking-wider font-semibold">Confidence</div>
               </div>
             </div>
 
@@ -105,9 +105,9 @@ export function QuizPanel() {
             {evaluation.per_question_feedback.length > 0 && (
               <div className="w-full max-w-md mb-6 space-y-3">
                 {evaluation.per_question_feedback.map((fb) => (
-                  <div key={fb.question_number} className="bg-nb border border-bdr2 rounded-lg p-3.5 shadow-sm">
+                  <div key={fb.question_number} className="bg-nb border border-bdr2 rounded-lg p-3.5 shadow-ev1">
                     <div className="flex items-start gap-2.5">
-                      <div className="w-5 h-5 rounded-md bg-gradient-to-br from-np to-nbl flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">
+                      <div className="w-5 h-5 rounded-md bg-gradient-to-br from-np to-nph flex items-center justify-center text-2xs font-bold text-npfg shrink-0 mt-0.5">
                         {fb.question_number}
                       </div>
                       <p className="text-xs text-nt2 leading-relaxed">{fb.remark}</p>
@@ -119,7 +119,7 @@ export function QuizPanel() {
 
             {/* Nora overall summary */}
             <div className="flex items-start gap-3.5 w-full max-w-md pt-6 border-t border-bdr mb-8">
-              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-np to-nbl flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5 shadow-sm">
+              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-np to-nph flex items-center justify-center text-xs font-bold text-npfg shrink-0 mt-0.5 shadow-ev1">
                 N
               </div>
               <p className="text-sm text-nt2 leading-relaxed">{evaluation.overall_insights}</p>
@@ -129,13 +129,13 @@ export function QuizPanel() {
             <div className="flex gap-3 w-full max-w-md pb-4">
               <button
                 onClick={retakeQuiz}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-nb border border-bdr2 text-nt text-sm font-medium hover:bg-ns2 hover:shadow-md transition"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-nb border border-bdr2 text-nt text-sm font-medium hover:bg-ns2 hover:shadow-ev2 transition"
               >
                 <RotateCcw size={14} /> Retake
               </button>
               <button
                 onClick={handleReviewNotes}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-np text-white text-sm font-medium hover:bg-[#8E82E0] transition shadow-lg shadow-np/30"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-np text-npfg text-sm font-medium hover:bg-nph transition shadow-ev2 shadow-np/30"
               >
                 <BookOpen size={14} /> Review Notes
               </button>
@@ -215,8 +215,8 @@ export function QuizPanel() {
         </div>
 
         <div className="flex items-center gap-2 mb-4">
-          <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-nblb text-nbl">{q.type}</span>
-          <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-ns3 text-nt2">{q.difficulty || 'Medium'}</span>
+          <span className="px-2 py-0.5 rounded text-2xs font-semibold uppercase bg-nblb text-nbl">{q.type}</span>
+          <span className="px-2 py-0.5 rounded text-2xs font-semibold uppercase bg-ns3 text-nt2">{q.difficulty || 'Medium'}</span>
         </div>
 
         <p className="text-[15px] text-nt leading-relaxed mb-6">{q.question}</p>
@@ -269,7 +269,7 @@ export function QuizPanel() {
               placeholder="Type your answer…" value={selectedAnswer} onChange={(e) => setSelectedAnswer(e.target.value)} disabled={isAnswered} />
             {!isAnswered && (
               <button onClick={() => handleSelectAnswer(selectedAnswer)} disabled={!selectedAnswer.trim()}
-                className="py-2 px-6 rounded-lg bg-np text-white text-sm font-medium hover:bg-[#8E82E0] transition disabled:opacity-50">
+                className="py-2 px-6 rounded-lg bg-np text-npfg text-sm font-medium hover:bg-nph transition disabled:opacity-50">
                 Submit Answer
               </button>
             )}
@@ -279,7 +279,7 @@ export function QuizPanel() {
         {showFeedback && isAutoGraded && (
           <div className={`mt-5 p-4 rounded-lg border ${isCorrect ? 'bg-ngb border-ngbr' : 'bg-nrb border-nrbr'}`}>
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-md bg-gradient-to-br from-np to-nbl flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">N</div>
+              <div className="w-5 h-5 rounded-md bg-gradient-to-br from-np to-nph flex items-center justify-center text-2xs font-bold text-npfg shrink-0 mt-0.5">N</div>
               <div className="text-sm text-nt2">
                 {isCorrect ? `✅ Correct! ${q.explanation}` : `❌ Incorrect. The correct answer is **${q.answer}**. ${q.explanation}`}
               </div>
@@ -301,7 +301,7 @@ export function QuizPanel() {
 
         {showFeedback && isAutoGraded && (
           <div className="mt-6 flex justify-end">
-            <button onClick={handleNext} className="py-2 px-6 rounded-lg bg-np text-white text-sm font-medium hover:bg-[#8E82E0] transition">
+            <button onClick={handleNext} className="py-2 px-6 rounded-lg bg-np text-npfg text-sm font-medium hover:bg-nph transition">
               {currentIndex < questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
             </button>
           </div>

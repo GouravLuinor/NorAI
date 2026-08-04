@@ -41,7 +41,7 @@ export function ChapterScreenshots({
     <div className="mt-8">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 text-[9.5px] font-semibold text-nt3 uppercase tracking-wider hover:text-nt transition"
+        className="flex items-center gap-2 text-3xs font-semibold text-nt3 uppercase tracking-wider hover:text-nt transition"
       >
         <ImageIcon size={13} />
         Important Visuals ({screenshots.length})
@@ -55,7 +55,7 @@ export function ChapterScreenshots({
             return (
               <div
                 key={i}
-                className="bg-ns border border-bdr2 rounded-lg overflow-hidden shadow-sm"
+                className="bg-ns border border-bdr2 rounded-lg overflow-hidden shadow-ev1"
               >
                 <div
                   className="cursor-zoom-in"
@@ -80,7 +80,7 @@ export function ChapterScreenshots({
                   </div>
                 </div>
                 <div className="p-3 text-xs text-nt2 leading-relaxed">
-                  <span className="text-[10px] font-semibold text-nt3 uppercase tracking-wider block mb-1">
+                  <span className="text-2xs font-semibold text-nt3 uppercase tracking-wider block mb-1">
                     {shot.section}
                   </span>
                   {shot.reason}
