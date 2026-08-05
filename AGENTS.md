@@ -55,4 +55,4 @@ Tests: there is NO test framework/pytest. Tests are standalone `test_*.py` scrip
 
 ## Docs
 
-`README.md` (architecture + pipeline), `DESIGN.md`, `Norai_rebuild_roadmap.md`, `PROJECT_PROGRESS.md`, `tier2_implementation_plan.md`, `context.md`. Update PROJECT_PROGRESS.md when making notable pipeline/backend/frontend changes.
+`README.md` (architecture + pipeline), `PROJECT_PROGRESS.md` (living current-state doc — update when making notable pipeline/backend/frontend changes), `context.md` (project context), `NotebookLM_competitive_analysis.md` (forward feature ideas), `audit/audit_tutor_and_auxiliary.md` (tutor/RAG/frontend audit detail).
