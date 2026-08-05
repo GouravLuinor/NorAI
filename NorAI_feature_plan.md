@@ -28,10 +28,12 @@ Shared single prompt-assembly site: `tutor/prompts.py:7` `TUTOR_SYSTEM_PROMPT` �
 7. `AIPanel.tsx:29–84` — 4th "Study" segment + `onChange` + dispatch; `Workspace.tsx:15–71` widths.
 8. Persona settings modal in `AIPanel.tsx:52` (reuse `Dialog`), persist lecture-scoped via `threadStorage.ts` pattern, send `mode`/`persona` via `chatApi.ts:46–52`.
 
-## Phase 2 — C (difficulty/quantity) — filter-only
-- `backend/main.py:370–389` `/quiz/questions`: add `difficulty` filter over existing generated pool (no regeneration); keep `n`.
-- `notes_generator.py:843`: optional bump pipeline default 3 → ~5 for a filterable pool.
-- `useQuizStore.ts:156–171`: forward `n` + `difficulty`; `AssessmentView` difficulty selector.
+## Phase 2 — C (difficulty/quantity) — filter-only ✓ Done
+- `backend/main.py:377-397` `/quiz/questions`: added `difficulty` query param (case-insensitive `Easy|Medium|Hard`); pre-filters the generated pool before the existing `n` sample. No regeneration (keeps cost posture).
+- `useQuizStore.ts`: exported `QuizDifficulty` type; `fetchQuizQuestions` forwards `difficulty`; `startQuiz` persists `quizDifficulty`, `retakeQuiz` re-filters with it.
+- `AssessmentView.tsx`: `All/Easy/Medium/Hard` selector refetches the list + Start Quiz; empty-state covers a 0-result difficulty; filter resets on lecture change.
+- `backend/test_api_contract.py`: added a `/quiz/questions?difficulty=Easy` shape check.
+- Note: the original "bump pipeline default 3 → ~5 for a filterable pool" was stale — `assessment_prompts.py:133-139` already targets 8–10 questions/chapter (models enforce 4–15). No generator/prompt change; existing pools are filter-only (a given difficulty may return 0 on a small pool, handled by the UI empty-state).
 
 ## Phase 3 — E (explain-with-citation + Study Guide)
 10. `/quiz/evaluate` (`main.py:392–461`): return per-question stored `explanation`.

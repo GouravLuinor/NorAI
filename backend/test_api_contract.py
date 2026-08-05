@@ -19,6 +19,7 @@ CHECKS = {
     "/docs": ("html", None, None, None),
     "/lectures": ("json-list", None, None, None),
     "/quiz/questions": ("quiz-questions", "questions", "incomplete", None),
+    "/quiz/questions?difficulty=Easy": ("quiz-questions", "questions", "incomplete", None),
     "/flashcards": ("json-list", None, None, None),
     "/outline": ("chapters-list", None, None, None),
 }

@@ -51,6 +51,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
 
 ## Recent changes
 
+- **Phase 2 of the NotebookLM parity roadmap: quiz difficulty filter (C).** `/quiz/questions` (`backend/main.py`) takes an optional `difficulty` (`Easy|Medium|Hard`, case-insensitive) that pre-filters the generated pool before the `n` sample — pure read, no regeneration (keeps cost posture). Frontend: `useQuizStore` forwards `difficulty`, and `startQuiz`/`retakeQuiz` persist/filter by the active difficulty; `AssessmentView` gained an `All/Easy/Medium/Hard` selector that refetches the list + Start Quiz and resets on lecture change. `backend/test_api_contract.py` gained a `difficulty=Easy` shape check. The plan's "bump pipeline default to 5" step was stale (prompts already target 8–10/chapter) and was dropped.
 - **Phase 1 of the NotebookLM parity roadmap: tutor Study (Socratic) mode + custom persona.** Backend `ChatState` gained `study_mode` + `persona_instructions`; `tutor/prompts.py` added `SOCRATIC_SYSTEM_PROMPT` + `build_system_prompt(title, mode)`; `tutor/nodes.py` appends a persona `SystemMessage` when non-empty; `ChatRequest` + `invoke_tutor` thread both fields through `/chat` and `/chat/stream`. Frontend: `aiMode` widened to include `socratic`, new `Study` segment in the AI panel, per-lecture persona persists via `useTutorSettingsStore` (localStorage) and a `PersonaModal`. Delivered against `NorAI_feature_plan.md` (A+F).
 - **Backend ↔ frontend contract sync** (post-rebuild): `/quiz/questions` now returns `{"questions": [...], "incomplete": bool}`; removed dead `_load_quiz_questions` and orchestrator-local `update_lecture_title` shadow; `invoke_tutor` treats lecture id `default`/empty as the global graph. Frontend: options-driven generic question cards, `fetchQuizIncomplete` + `PartialContentBadge` in AssessmentView, `ProcessingPage` STAGES aligned to the real backend chain. Added standalone `backend/test_api_contract.py`.
 - **Frontend design rebuild (Tier 0–5)**: "Architect's Sketchbook" theme; a11y/Web-Guidelines pass (Lighthouse a11y 100 both themes); signature typography pass; dark-mode "Luminous Blueprint at Night". Roadmap complete.
@@ -62,5 +63,5 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
 - `README.md` — architecture + pipeline detail.
 - `context.md` — compact project/rebuild context.
 - `NotebookLM_competitive_analysis.md` — forward feature ideas (flashcard persistence, quiz history).
-- `NorAI_feature_plan.md` — staged NotebookLM-parity roadmap (A–F); Phase 1 (A+F) done.
+- `NorAI_feature_plan.md` — staged NotebookLM-parity roadmap (A–F); Phase 1 (A+F) and Phase 2 (C) done.
 - `audit/audit_tutor_and_auxiliary.md` — retained tutor/RAG/frontend audit detail.
