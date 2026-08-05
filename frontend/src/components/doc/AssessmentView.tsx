@@ -1,13 +1,20 @@
 import { useState, useEffect } from 'react'
 import { Eye, EyeOff, Play } from 'lucide-react'
 import { useChapterStore } from '../../stores/useChapterStore'
-import { useQuizStore, fetchQuizQuestions, fetchQuizIncomplete } from '../../stores/useQuizStore'
+import { useQuizStore, fetchQuizQuestions, fetchQuizIncomplete, type QuizDifficulty } from '../../stores/useQuizStore'
 import { useLectureStore } from '../../stores/useLectureStore' 
 import { QuestionCard, AnswerKey } from './assessment-cards'
 import type { Question } from '../../stores/useQuizStore'
 import { PartialContentBadge } from '../ui/PartialContentBadge'
 import { useToastStore } from '../../stores/useToastStore'
 import { Button } from '../ui/Button'
+
+const DIFFICULTY_OPTIONS: Array<{ label: string; value: QuizDifficulty | 'All' }> = [
+  { label: 'All', value: 'All' },
+  { label: 'Easy', value: 'Easy' },
+  { label: 'Medium', value: 'Medium' },
+  { label: 'Hard', value: 'Hard' },
+]
 
 
 export function AssessmentView() {
@@ -19,12 +26,13 @@ export function AssessmentView() {
   const [incomplete, setIncomplete] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showAnswers, setShowAnswers] = useState(false)
+  const [difficulty, setDifficulty] = useState<QuizDifficulty | 'All'>('All')
 
 useEffect(() => {
   if (!lectureId) return  // wait for Workspace to set it
   let cancelled = false
   setLoading(true)
-  fetchQuizQuestions(activeChapterId, lectureId)
+  fetchQuizQuestions(activeChapterId, lectureId, difficulty === 'All' ? undefined : difficulty)
     .then((data) => {
       if (!cancelled) { setQuestions(data); setShowAnswers(false); setLoading(false) }
     })
@@ -33,13 +41,23 @@ useEffect(() => {
     .then((flag) => { if (!cancelled) setIncomplete(flag) })
     .catch(() => { if (!cancelled) setIncomplete(false) })
   return () => { cancelled = true }
-}, [activeChapterId, lectureId])
+}, [activeChapterId, lectureId, difficulty])
+
+useEffect(() => {
+  setDifficulty('All')
+}, [lectureId])
+
+const resetFilter = (value: QuizDifficulty | 'All') => {
+  setDifficulty(value)
+  setShowAnswers(false)
+}
 
 const handleStartQuiz = async () => {
   if (!lectureId) return
-  const qs = await fetchQuizQuestions(activeChapterId, lectureId)
+  const difficultyParam = difficulty === 'All' ? undefined : difficulty
+  const qs = await fetchQuizQuestions(activeChapterId, lectureId, difficultyParam)
   if (qs.length > 0) {
-    startQuiz(qs, activeChapterId)
+    startQuiz(qs, activeChapterId, difficultyParam)
     addToast('Quiz started', 'success')
   }
 }
@@ -47,8 +65,13 @@ const handleStartQuiz = async () => {
   if (loading) return <div className="flex-1 flex items-center justify-center text-nt3 text-sm">Loading assessment…</div>
   if (questions.length === 0) return (
     <div className="flex-1 flex flex-col items-center justify-center gap-4 text-nt3 text-sm">
-      <div>Assessment not available for this chapter.</div>
+      <div>{difficulty === 'All' ? 'Assessment not available for this chapter.' : `No ${difficulty} questions in this chapter.`}</div>
       {incomplete && <PartialContentBadge />}
+      {difficulty !== 'All' && (
+        <Button variant="outline" className="px-3 py-1.5 rounded-sm text-2xs" onClick={() => setDifficulty('All')}>
+          Show all questions
+        </Button>
+      )}
     </div>
   )
 
@@ -62,9 +85,21 @@ const handleStartQuiz = async () => {
       <div className="flex items-center px-4 h-[40px] border-b border-bdr bg-ns shrink-0 gap-4">
         <div className="flex-1 flex flex-col justify-center">
           <div className="text-sm font-semibold text-nt tracking-tight">Ch {String(activeChapterId).padStart(2, '0')} — Assessment</div>
-          <div className="text-11 text-nt3">{questions.length} questions · MCQ, True/False, free response</div>
+          <div className="text-11 text-nt3">{questions.length} question{questions.length === 1 ? '' : 's'}{difficulty !== 'All' ? ` · ${difficulty}` : ''} · MCQ, True/False, free response</div>
         </div>
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 p-0.5 rounded-md bg-ns2 border border-bdr2" role="group" aria-label="Question difficulty">
+            {DIFFICULTY_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => resetFilter(opt.value)}
+                className={`px-2.5 py-1 rounded-[5px] text-2xs font-medium transition ${difficulty === opt.value ? 'bg-np text-ns shadow-sm' : 'text-nt3 hover:text-nt2'}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
           <Button onClick={() => setShowAnswers(!showAnswers)} variant="outline" className="gap-1.5 px-3 py-1.5 rounded-sm text-2xs active:translate-y-[1px] active:shadow-none">
             {showAnswers ? <EyeOff size={13} strokeWidth={1.5} /> : <Eye size={13} strokeWidth={1.5} />}
             {showAnswers ? 'Hide Key' : 'Reveal Key'}

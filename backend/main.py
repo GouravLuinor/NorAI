@@ -374,7 +374,7 @@ async def delete_thread(thread_id: str, lecture_id: str = "default"):
 # ---------------------------------------------------------------------------
 
 @app.get("/quiz/questions")
-async def quiz_questions(chapter_id: int | None = None, n: int = 5, lecture_id: str = "default"):
+async def quiz_questions(chapter_id: int | None = None, n: int = 5, lecture_id: str = "default", difficulty: str | None = None):
     info = get_lecture(lecture_id)
     base = Path(info["output_dir"]) if info else Path("outputs")
     path = base / "assessment" / f"assessment_chapter_{chapter_id}.json" if chapter_id else base / "assessment" / "assessment.json"
@@ -390,6 +390,10 @@ async def quiz_questions(chapter_id: int | None = None, n: int = 5, lecture_id: 
     else:
         questions = []
     questions = [q for q in questions if isinstance(q, dict)]
+    if difficulty:
+        norm = difficulty.strip().lower()
+        if norm in ("easy", "medium", "hard"):
+            questions = [q for q in questions if str(q.get("difficulty", "")).strip().lower() == norm]
     if len(questions) > n:
         questions = random.sample(questions, n)
     return {"questions": questions, "incomplete": incomplete}

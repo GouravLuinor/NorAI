@@ -36,6 +36,8 @@ export interface Flashcard {
   explanation?: string
 }
 
+export type QuizDifficulty = 'Easy' | 'Medium' | 'Hard'
+
 interface QuizState {
   aiMode: 'tutor' | 'quiz' | 'cards' | 'socratic'
   setMode: (mode: 'tutor' | 'quiz' | 'cards' | 'socratic') => void
@@ -49,8 +51,9 @@ interface QuizState {
   evaluation: QuizEvaluation | null
   quizStartTime: number | null
   quizChapterId: number | null
+  quizDifficulty: QuizDifficulty | null
 
-  startQuiz: (questions: Question[], chapterId?: number | null) => void
+  startQuiz: (questions: Question[], chapterId?: number | null, difficulty?: QuizDifficulty | null) => void
   submitAnswer: (answer: string) => void
   setConfidence: (confidence: string) => void
   nextQuestion: () => void
@@ -79,6 +82,7 @@ const INITIAL_STATE: Omit<
   evaluation: null,
   quizStartTime: null,
   quizChapterId: null,
+  quizDifficulty: null,
 }
 
 // ---------------------------------------------------------------------------
@@ -90,7 +94,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
   setMode: (mode) => set({ aiMode: mode }),
 
-  startQuiz: (questions, chapterId = null) =>
+  startQuiz: (questions, chapterId = null, difficulty = null) =>
     set({
       aiMode: 'quiz',
       isActive: true,
@@ -102,6 +106,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       evaluation: null,
       quizStartTime: Date.now(),
       quizChapterId: chapterId ?? null,
+      quizDifficulty: difficulty ?? null,
     }),
 
   submitAnswer: (answer) => {
@@ -129,9 +134,9 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   endQuiz: (evaluation) => set({ evaluation }),
 
   retakeQuiz: async () => {
-    const { quizChapterId } = get()
+    const { quizChapterId, quizDifficulty } = get()
     const lectureId = getLectureId()
-    const questions = await fetchQuizQuestions(quizChapterId ?? undefined, lectureId)
+    const questions = await fetchQuizQuestions(quizChapterId ?? undefined, lectureId, quizDifficulty ?? undefined)
     if (questions.length > 0) {
       set({
         questions,
@@ -156,10 +161,12 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 export async function fetchQuizQuestions(
   chapterId?: number,
   lectureId?: string,
+  difficulty?: QuizDifficulty,
 ): Promise<Question[]> {
   const params = new URLSearchParams()
   if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
   if (lectureId) params.set('lecture_id', lectureId)
+  if (difficulty) params.set('difficulty', difficulty)
   const res = await fetch(`${API_BASE}/quiz/questions?${params}`)
   if (!res.ok) throw new Error('Failed to load quiz questions')
   const data = await res.json()
