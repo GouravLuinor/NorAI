@@ -37,8 +37,8 @@ export interface Flashcard {
 }
 
 interface QuizState {
-  aiMode: 'tutor' | 'quiz' | 'cards'
-  setMode: (mode: 'tutor' | 'quiz' | 'cards') => void
+  aiMode: 'tutor' | 'quiz' | 'cards' | 'socratic'
+  setMode: (mode: 'tutor' | 'quiz' | 'cards' | 'socratic') => void
 
   isActive: boolean
   questions: Question[]

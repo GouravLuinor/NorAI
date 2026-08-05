@@ -62,6 +62,14 @@ class ChatState(TypedDict):
     chapter_id: int | None
     context_messages: list[BaseMessage]
 
+    # ── Tutor persona / study mode ─────────────────────────────────────────
+    # Plain replace, set once per thread like `lecture_title` and persisted by
+    # the checkpointer. `study_mode` selects the base persona ("default" or
+    # "socratic"); `persona_instructions` is an optional free-text override
+    # appended as its own SystemMessage ahead of answer generation.
+    study_mode: str
+    persona_instructions: str
+
     # ── Phase 6: tool calling ────────────────────────────────────────────
     is_command: bool                # set by detect_chapter when user asks for quiz/summary/flashcards
     command_type: str              # "quiz", "summary", or "flashcards"
