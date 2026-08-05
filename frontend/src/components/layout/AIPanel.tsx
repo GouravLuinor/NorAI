@@ -3,17 +3,21 @@ import { useQuizStore, fetchQuizQuestions } from '../../stores/useQuizStore'
 import { ChatArea } from '../chat/ChatArea'
 import { QuizPanel } from '../quiz/QuizPanel'
 import { FlashcardsPanel } from '../flashcards/FlashcardsPanel'
+import { PersonaModal } from '../chat/PersonaModal'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToastStore } from '../../stores/useToastStore'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { SegmentedControl } from '../ui/SegmentedControl'
+import { SlidersHorizontal } from 'lucide-react'
+import { FOCUS_RING } from '../ui/shared'
 
 export function AIPanel() {
   const { activeChapterId } = useChapterStore()
   const activeLectureId = useLectureStore(s => s.activeLectureId)
   const { aiMode, setMode, startQuiz } = useQuizStore()
   const addToast = useToastStore(s => s.addToast)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
 useEffect(() => {
   if (aiMode === 'quiz') {
@@ -46,10 +50,19 @@ useEffect(() => {
         <div>
           <div className="font-display text-xs font-medium text-nt">Nora</div>
           <div className="spec-label mt-0.5">
-            {String(activeChapterId).padStart(2, '0')} · {aiMode === 'quiz' ? 'Quiz' : aiMode === 'cards' ? 'Cards' : 'Tutor'}
+            {String(activeChapterId).padStart(2, '0')} · {aiMode === 'quiz' ? 'Quiz' : aiMode === 'cards' ? 'Cards' : aiMode === 'socratic' ? 'Study' : 'Tutor'}
           </div>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Tutor settings (persona & study mode)"
+            title="Tutor settings"
+            className={`p-1.5 rounded-md text-nt3 hover:text-nt2 hover:bg-ns3 transition ${FOCUS_RING}`}
+          >
+            <SlidersHorizontal size={14} strokeWidth={1.5} />
+          </button>
           <SegmentedControl
             containerClass="flex gap-0.5 bg-ns2 rounded-lg p-0.5"
             itemClass="px-2 py-1 rounded-md text-2xs transition"
@@ -57,6 +70,7 @@ useEffect(() => {
             inactiveClass="text-nt3 hover:text-nt2"
             options={[
               { value: 'tutor', label: 'Tutor' },
+              { value: 'socratic', label: 'Study' },
               { value: 'quiz', label: 'Quiz' },
               { value: 'cards', label: 'Cards' },
             ]}
@@ -78,6 +92,9 @@ useEffect(() => {
               } else if (mode === 'cards') {
                 setMode('cards')
                 addToast('Flashcards mode activated', 'info')
+              } else if (mode === 'socratic') {
+                setMode('socratic')
+                addToast('Study mode activated — I will guide you with questions', 'info')
               } else {
                 setMode('tutor')
               }
@@ -101,6 +118,8 @@ useEffect(() => {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      <PersonaModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   )
 }

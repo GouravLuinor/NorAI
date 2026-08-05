@@ -51,16 +51,16 @@ export function Workspace() {
     loadLectures()
   }, [lectureId, setActiveLecture, loadLectures, loadChapters])
 
-  const minAiWidth = aiMode === 'tutor' ? AI_MIN_TUTOR : AI_MIN_QUIZ_CARDS
+  const minAiWidth = aiMode === 'tutor' || aiMode === 'socratic' ? AI_MIN_TUTOR : AI_MIN_QUIZ_CARDS
 
   useEffect(() => {
-    if (aiMode === 'tutor' && !isDragging) {
+    if ((aiMode === 'tutor' || aiMode === 'socratic') && !isDragging) {
       setTutorAiWidth(aiPanelWidth)
     }
   }, [aiPanelWidth, aiMode, isDragging])
 
   useEffect(() => {
-    if (aiMode !== 'tutor') {
+    if (aiMode !== 'tutor' && aiMode !== 'socratic') {
       if (aiPanelWidth < AI_MIN_QUIZ_CARDS) {
         setAiPanelWidth(AI_MIN_QUIZ_CARDS)
       }

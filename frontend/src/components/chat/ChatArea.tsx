@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useThreadStore } from '../../stores/useThreadStore'
 import { useChapterStore } from '../../stores/useChapterStore'
+import { useQuizStore } from '../../stores/useQuizStore'
 import { sendChatMessageStream } from '../../lib/chatApi'
 import { buildReferences } from '../../lib/references'
+import { useTutorSettingsStore } from '../../stores/useTutorSettingsStore'
 import { MessageBubble } from './MessageBubble'
 import { ReferencesPanel } from './ReferencesPanel'
 import { InputZone } from './InputZone'
@@ -27,6 +29,9 @@ export function ChatArea() {
 
   const liveReferences    = useThreadStore(s => s.liveReferences)
   const setLiveReferences = useThreadStore(s => s.setLiveReferences)
+
+  const studyMode = useQuizStore(s => s.aiMode) === 'socratic' ? 'socratic' : 'default'
+  const persona   = useTutorSettingsStore(s => s.persona)
 
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
@@ -78,7 +83,7 @@ const handleSend = useCallback(async (text: string) => {
         text,
         '',
         controller.signal,
-        { messageId: userMsg.id },
+        { messageId: userMsg.id, studyMode, persona },
       )) {
         if (controller.signal.aborted) return
 
@@ -149,7 +154,7 @@ const handleSend = useCallback(async (text: string) => {
       setLoading(false)
       inFlightRef.current = false
     }
-  }, [threadId, addMessage, setLoading, setStreamingText, setLiveReferences])
+  }, [threadId, addMessage, setLoading, setStreamingText, setLiveReferences, studyMode, persona])
 
   // ── Reference handlers ────────────────────────────────────────────────────
   const handleReferenceClick = useCallback((sectionId: string) => {

@@ -103,6 +103,8 @@ def invoke_tutor(
     lecture_title: str = "",
     lecture_id: str | None = None,
     message_id: str | None = None,
+    study_mode: str = "default",
+    persona_instructions: str = "",
 ) -> dict:
     """
     Invoke the tutor graph for a single turn.
@@ -136,6 +138,8 @@ def invoke_tutor(
             "thread_id": thread_id,
             "user_question": user_question,
             "message_id": message_id,
+            "study_mode": study_mode,
+            "persona_instructions": persona_instructions,
         }
         if is_new and lecture_title:
             input_state["lecture_title"] = lecture_title

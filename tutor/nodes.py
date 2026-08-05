@@ -160,7 +160,9 @@ def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
         return {}
     
     # ── Build prompt ───────────────────────────────────────────────────────────
-    system_prompt = build_system_prompt(lecture_title)
+    study_mode = state.get("study_mode", "default")
+    persona_instructions = state.get("persona_instructions", "")
+    system_prompt = build_system_prompt(lecture_title, mode=study_mode)
     
     # Phase 5: check if all retrieved chunks are weak matches
     low_confidence = (
@@ -182,6 +184,7 @@ def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
 
     prompt_messages = [
         SystemMessage(content=system_prompt),
+        *([SystemMessage(content=persona_instructions)] if persona_instructions else []),
         SystemMessage(content=context_block),
         *([SystemMessage(content=image_context_block)] if image_context_block else []),  # ← Phase 4: only include if non-empty
         *conversational_history,

@@ -51,6 +51,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
 
 ## Recent changes
 
+- **Phase 1 of the NotebookLM parity roadmap: tutor Study (Socratic) mode + custom persona.** Backend `ChatState` gained `study_mode` + `persona_instructions`; `tutor/prompts.py` added `SOCRATIC_SYSTEM_PROMPT` + `build_system_prompt(title, mode)`; `tutor/nodes.py` appends a persona `SystemMessage` when non-empty; `ChatRequest` + `invoke_tutor` thread both fields through `/chat` and `/chat/stream`. Frontend: `aiMode` widened to include `socratic`, new `Study` segment in the AI panel, per-lecture persona persists via `useTutorSettingsStore` (localStorage) and a `PersonaModal`. Delivered against `NorAI_feature_plan.md` (A+F).
 - **Backend ↔ frontend contract sync** (post-rebuild): `/quiz/questions` now returns `{"questions": [...], "incomplete": bool}`; removed dead `_load_quiz_questions` and orchestrator-local `update_lecture_title` shadow; `invoke_tutor` treats lecture id `default`/empty as the global graph. Frontend: options-driven generic question cards, `fetchQuizIncomplete` + `PartialContentBadge` in AssessmentView, `ProcessingPage` STAGES aligned to the real backend chain. Added standalone `backend/test_api_contract.py`.
 - **Frontend design rebuild (Tier 0–5)**: "Architect's Sketchbook" theme; a11y/Web-Guidelines pass (Lighthouse a11y 100 both themes); signature typography pass; dark-mode "Luminous Blueprint at Night". Roadmap complete.
 - **Tier 2 pipeline consolidation**: Files-API parallelization, chapter-batched visual extraction, merged chapter-artifact generation, screenshot selection remapping. ~72% call reduction.
@@ -61,4 +62,5 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
 - `README.md` — architecture + pipeline detail.
 - `context.md` — compact project/rebuild context.
 - `NotebookLM_competitive_analysis.md` — forward feature ideas (flashcard persistence, quiz history).
+- `NorAI_feature_plan.md` — staged NotebookLM-parity roadmap (A–F); Phase 1 (A+F) done.
 - `audit/audit_tutor_and_auxiliary.md` — retained tutor/RAG/frontend audit detail.

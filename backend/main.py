@@ -140,6 +140,8 @@ class ChatRequest(BaseModel):
     lecture_title: str = ""
     lecture_id: str | None = None   # ← new field
     message_id: str | None = None
+    study_mode: str = "default"
+    persona_instructions: str = ""
 
 class ChatResponse(BaseModel):
     answer: str
@@ -177,6 +179,8 @@ async def chat(req: ChatRequest):
             lecture_title=req.lecture_title,
             lecture_id=req.lecture_id,
             message_id=req.message_id,
+            study_mode=req.study_mode,
+            persona_instructions=req.persona_instructions,
         )
         return result
     except Exception as e:
@@ -196,6 +200,8 @@ async def chat_stream(req: ChatRequest):
                 lecture_title=req.lecture_title,
                 lecture_id=req.lecture_id,        # ← added
                 message_id=req.message_id,
+                study_mode=req.study_mode,
+                persona_instructions=req.persona_instructions,
             )
             answer = result.get("answer", "")
 

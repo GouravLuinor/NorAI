@@ -36,7 +36,7 @@ export async function sendChatMessage(
   threadId: string,
   userQuestion: string,
   lectureTitle = '',
-  opts?: { lectureId?: string; messageId?: string },
+  opts?: { lectureId?: string; messageId?: string; studyMode?: string; persona?: string },
 ): Promise<ChatResponse> {
   ensureLabel(threadId, userQuestion)
 
@@ -49,6 +49,8 @@ export async function sendChatMessage(
       lecture_title: lectureTitle,
       lecture_id: opts?.lectureId || 'default',
       message_id: opts?.messageId,
+      study_mode: opts?.studyMode || 'default',
+      persona_instructions: opts?.persona || '',
     }),
   })
   const ct = res.headers.get('content-type') || ''
@@ -67,7 +69,7 @@ export async function* sendChatMessageStream(
   userQuestion: string,
   lectureTitle = '',
   signal?: AbortSignal,
-  opts?: { messageId?: string },
+  opts?: { messageId?: string; studyMode?: string; persona?: string },
 ): AsyncGenerator<string | { type: 'final'; data: ChatResponse }> {
   ensureLabel(threadId, userQuestion)
 
@@ -80,6 +82,8 @@ export async function* sendChatMessageStream(
       lecture_title: lectureTitle,
       lecture_id: getLectureId(),
       message_id: opts?.messageId,
+      study_mode: opts?.studyMode || 'default',
+      persona_instructions: opts?.persona || '',
     }),
     signal,
   })
