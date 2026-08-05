@@ -108,7 +108,7 @@ export function UploadPage() {
                     {step}
                   </span>
                   {i < arr.length - 1 && (
-                    <span className="dimension-marker text-[9px]">[48px]</span>
+                    <span className="dimension-marker text-3xs">[48px]</span>
                   )}
                 </span>
               ))}
