@@ -11,6 +11,7 @@ import { useLectureStore } from '../../stores/useLectureStore'
 import { docMarkdownComponents, headingToId } from '../../lib/markdown'
 import { Card, CardHeader } from '../ui/Card'
 import { FOCUS_RING } from '../ui/shared'
+import { PartialContentBadge } from '../ui/PartialContentBadge'
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function splitByH2(md: string): { heading: string; body: string }[] {
@@ -190,6 +191,7 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
   const [sections, setSections] = useState<SectionItem[]>([])
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(true)
+  const [partiallyGenerated, setPartiallyGenerated] = useState(false)
 
   const chapterIdStr = chapterId != null ? String(chapterId) : null
   const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
@@ -199,11 +201,13 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
       setTitle('')
       setSections([{ heading: '', body: 'Select a chapter from the sidebar to see its study notes.' }])
       setLoading(false)
+      setPartiallyGenerated(false)
       return
     }
 
     const controller = new AbortController()
     setLoading(true)
+    setPartiallyGenerated(false)
 
     fetch(`/notes/${chapterIdStr}?lecture_id=${lectureId}`, { signal: controller.signal })
       .then(async (res) => {
@@ -230,9 +234,13 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
           }))
           setSections(parsedSecs)
         } else {
-          // Legacy Raw Markdown String Fallback
+          // Legacy Raw Markdown String Fallback (includes the graceful-degradation .md)
           let text = typeof data === 'string' ? data : String(data)
-          const cleanedText = text.replace(/!\[.*?\]\(.*?\)/g, '').replace(/\n{3,}/g, '\n\n').trim()
+          setPartiallyGenerated(text.toLowerCase().includes('partially degraded'))
+          const cleanedText = text
+            .replace(/!\[.*?\]\(.*?\)/g, '')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim()
           const lines = cleanedText.split('\n')
           let mdTitle = ''
           if (lines[0]?.startsWith('# ')) {
@@ -266,10 +274,12 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
   return (
     <div className="flex-1 overflow-y-auto doc-content px-8 py-7 pb-15 scroll-smooth">
       {title && (
-        <h1 className="font-serif text-[26px] font-medium text-nt tracking-tight mb-6 leading-snug">
+        <h1 className="font-serif text-hero font-medium text-nt tracking-tight mb-6 leading-snug">
           {title}
         </h1>
       )}
+
+      {partiallyGenerated && <PartialContentBadge className="mb-6" />}
 
       {sections.map((section, idx) => {
         const { heading, body, cardType: explicitType } = section

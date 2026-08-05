@@ -63,9 +63,18 @@ useEffect(() => {
             value={aiMode}
             onChange={(mode) => {
               if (mode === 'quiz') {
+                // Switch eagerly so an empty/errored fetch still lands on the
+                // quiz panel's "no questions" state instead of silently
+                // staying on Tutor; toast only once questions actually load.
+                setMode('quiz')
                 fetchQuizQuestions(activeChapterId, activeLectureId || undefined)
-                  .then((qs) => startQuiz(qs, activeChapterId))
-                addToast('Quiz started', 'success')
+                  .then((qs) => {
+                    if (qs.length > 0) {
+                      startQuiz(qs, activeChapterId)
+                      addToast('Quiz started', 'success')
+                    }
+                  })
+                  .catch(() => {})
               } else if (mode === 'cards') {
                 setMode('cards')
                 addToast('Flashcards mode activated', 'info')

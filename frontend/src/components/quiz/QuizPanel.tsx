@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuizStore, type Question, evaluateQuiz } from '../../stores/useQuizStore'
 import { useChapterStore } from '../../stores/useChapterStore'
-import { Check, X, RotateCcw, BookOpen } from 'lucide-react'
+import { Check, X, RotateCcw, BookOpen, AlertTriangle } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
 import { FOCUS_RING } from '../ui/shared'
@@ -28,6 +28,7 @@ export function QuizPanel() {
   const [showFeedback, setShowFeedback] = useState(false)
   const [confidence, setConfidenceLocal] = useState('')
   const [evaluating, setEvaluating] = useState(false)
+  const [evaluateError, setEvaluateError] = useState('')
 
   // Reset local state when a new quiz starts (retake or fresh)
   useEffect(() => {
@@ -36,6 +37,7 @@ export function QuizPanel() {
       setSelectedAnswer('')
       setShowFeedback(false)
       setConfidenceLocal('')
+      setEvaluateError('')
     }
   }, [currentIndex, questions.length])
 
@@ -180,6 +182,7 @@ export function QuizPanel() {
 
   const finishQuiz = async () => {
     setEvaluating(true)
+    setEvaluateError('')
     // Pull the LATEST state from the store to avoid stale closure
     const currentState = useQuizStore.getState()
     const payload = currentState.questions.map((q, i) => ({
@@ -190,9 +193,11 @@ export function QuizPanel() {
       const result = await evaluateQuiz(payload, quizStartTime!, currentState.confidences)
       if (result) {
         endQuiz(result)
+      } else {
+        setEvaluateError('Evaluation came back empty — please retry.')
       }
     } catch {
-      // silently fail – user can retry
+      setEvaluateError('Evaluation failed — please retry.')
     } finally {
       setEvaluating(false)
     }
@@ -324,6 +329,21 @@ export function QuizPanel() {
 
         {evaluating && (
           <div className="mt-8 text-center text-nt3 text-sm">Evaluating your answers…</div>
+        )}
+
+        {evaluateError && !evaluating && (
+          <div
+            role="status"
+            className="mt-6 p-4 rounded-lg border border-nrbr bg-nrb text-nt2 text-sm flex items-start gap-3"
+          >
+            <AlertTriangle size={16} strokeWidth={1.5} className="text-nr shrink-0 mt-0.5" />
+            <div>
+              <p>{evaluateError}</p>
+              <Button variant="ghost" className="mt-2 px-0" onClick={finishQuiz}>
+                Retry evaluation
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>

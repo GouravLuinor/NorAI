@@ -9,6 +9,7 @@ import { useLectureStore } from '../../stores/useLectureStore'
 import { revisionMarkdownComponents, headingToId } from '../../lib/markdown'
 import { Card, CardHeader } from '../ui/Card'
 import { FOCUS_RING } from '../ui/shared'
+import { PartialContentBadge } from '../ui/PartialContentBadge'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -204,6 +205,7 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
   const [sections, setSections] = useState<{ heading: string; body: string }[]>([])
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(true)
+  const [partiallyGenerated, setPartiallyGenerated] = useState(false)
 
   const chapterIdStr = chapterId != null ? String(chapterId) : null
   const lectureId = useLectureStore(s => s.activeLectureId) || 'default'  
@@ -213,11 +215,13 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
       setTitle('')
       setSections([{ heading: '', body: 'Select a chapter from the sidebar to see its revision notes.' }])
       setLoading(false)
+      setPartiallyGenerated(false)
       return
     }
 
     const controller = new AbortController()
     setLoading(true)
+    setPartiallyGenerated(false)
 
     fetch(`/summary?chapter_id=${chapterIdStr}&lecture_id=${lectureId}`, { signal: controller.signal })
       .then(async (res) => {
@@ -230,6 +234,7 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
         }
       })
       .then((text) => {
+        setPartiallyGenerated(text.toLowerCase().includes('partially degraded'))
         const lines = text.split('\n')
         let mdTitle = ''
         if (lines[0]?.startsWith('# ')) {
@@ -262,10 +267,12 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
   return (
     <div className="flex-1 overflow-y-auto doc-content px-8 py-7 pb-15 scroll-smooth">
       {title && (
-        <h1 className="font-serif text-[26px] font-medium text-nt tracking-tight mb-6 leading-snug">
+        <h1 className="font-serif text-hero font-medium text-nt tracking-tight mb-6 leading-snug">
           {title}
         </h1>
       )}
+
+      {partiallyGenerated && <PartialContentBadge className="mb-6" />}
 
       {sections.map((section, idx) => {
         const { heading, body } = section

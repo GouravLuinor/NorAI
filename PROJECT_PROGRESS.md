@@ -3312,6 +3312,21 @@ Follow-up to Tier 5: the dark theme originally read as a flat, muddy inverted ra
 
 ---
 
+## Frontend Design Rebuild (Tier 4 — Signature Typography Pass)
+
+Implemented the closing design tier per `frontend_design_roadmap.md`, in the user-approved **minimal scope** (no full 98-site type sweep).
+
+- **Item 20 — type ramp hygiene**: added `--text-hero` (1.625rem) token to `@theme`; doc-pane H1s switched from `text-[26px]` → `text-hero` (NotesView + RevisionView, Newsreader). Remaining `text-[9px]` build-step spec prefixes → `text-3xs` (DocPanel `03/04/05` tab prefixes, UploadPage `[48px]` dimension marker). `text-[21px]` print titles and `text-[15px]` quiz questions left as deliberate reading/display sizes.
+- **Item 21 — signature wordmark**: verified already consistent — the Nora panel header uses Space Grotesk with the "Nora" wordmark + `01 · TUTOR` spec label + live status dot; no change needed.
+- **Item 22 — consistent states + quiz correctness**:
+  - `QuizPanel` `finishQuiz` no longer swallows evaluate failures: surfaced in a `role="status"` red-tint error box with a Retry button (tokens `border-nrbr bg-nrb text-nr` — matches the existing incorrect-feedback box), incl. a distinct "came back empty" message.
+  - `AIPanel` quiz switch now calls `setMode('quiz')` eagerly and only fires the "Quiz started" toast once questions actually load (`qs.length > 0`). Fixes the latent bug where a quiz-fetch error left the user silently on Tutor while still showing the success toast.
+  - New `PartialContentBadge` (shared `ui` component, `role="status"`) in NotesView + RevisionView, shown when the backend's graceful-degradation marker ("partially degraded") is present in the fetched content. Assessment intentionally excluded — `/quiz/questions` returns `[]` for both degraded and never-generated chapters, which is indistinguishable frontend-only.
+
+Build ✓ lint ✓ (only 3 pre-existing exhaustive-deps). **QA complete (all three passes green):** Pass A (web-design-guidelines review — `role="status"` regions, Retry button `FOCUS_RING`, lucide icons `aria-hidden`, error copy includes next step), Pass B (Chrome MCP — computed H1 26px Newsreader, 9px spec labels, quiz mode now switches to "QUIZ" + MCQ card renders, zero console errors, both themes, Lighthouse a11y 100 / best-practices 100), Pass C (MiMo vision audit PASS — serif H1, mono labels, MCQ card + 4 options, active Quiz tab, no spurious partial badge). Artifacts in `.tmp/qa-tier4/` (`passA-notes.md`, `passB-notes.md`, `visual-review.md`, `screenshots/`).
+
+---
+
 ## Frontend Design Rebuild (Tier 3 — Accessibility & Web Interface Guidelines)
 
 Implemented the a11y / Web Guidelines compliance pass per `frontend_design_roadmap.md`. **Lighthouse a11y now 100 on BOTH themes** across Study notes, Revision, Assessment, and Quiz views.

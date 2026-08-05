@@ -36,9 +36,9 @@ export function DocPanel() {
       <div className="flex items-center px-4 h-[38px] border-b border-bdr bg-ns gap-0.5 shrink-0">
         <SegmentedControl
           options={[
-            { value: 'notes', label: 'Study notes', prefix: <span className="font-mono text-[9px] text-nt4 tracking-widest mr-1">03</span> },
-            { value: 'revision', label: 'Revision', prefix: <span className="font-mono text-[9px] text-nt4 tracking-widest mr-1">04</span> },
-            { value: 'assessment', label: 'Assessment', prefix: <span className="font-mono text-[9px] text-nt4 tracking-widest mr-1">05</span> },
+            { value: 'notes', label: 'Study notes', prefix: <span className="font-mono text-3xs text-nt4 tracking-widest mr-1">03</span> },
+            { value: 'revision', label: 'Revision', prefix: <span className="font-mono text-3xs text-nt4 tracking-widest mr-1">04</span> },
+            { value: 'assessment', label: 'Assessment', prefix: <span className="font-mono text-3xs text-nt4 tracking-widest mr-1">05</span> },
           ]}
           value={activeDocTab}
           onChange={(v) => setDocTab(v)}
