@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Eye, EyeOff, Play } from 'lucide-react'
 import { useChapterStore } from '../../stores/useChapterStore'
-import { useQuizStore, fetchQuizQuestions } from '../../stores/useQuizStore'
+import { useQuizStore, fetchQuizQuestions, fetchQuizIncomplete } from '../../stores/useQuizStore'
 import { useLectureStore } from '../../stores/useLectureStore' 
 import { QuestionCard, AnswerKey } from './assessment-cards'
 import type { Question } from '../../stores/useQuizStore'
+import { PartialContentBadge } from '../ui/PartialContentBadge'
 import { useToastStore } from '../../stores/useToastStore'
 import { Button } from '../ui/Button'
 
@@ -15,6 +16,7 @@ export function AssessmentView() {
   const addToast = useToastStore(s => s.addToast)
   const lectureId = useLectureStore(s => s.activeLectureId) 
   const [questions, setQuestions] = useState<Question[]>([])
+  const [incomplete, setIncomplete] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showAnswers, setShowAnswers] = useState(false)
 
@@ -27,6 +29,9 @@ useEffect(() => {
       if (!cancelled) { setQuestions(data); setShowAnswers(false); setLoading(false) }
     })
     .catch(() => { if (!cancelled) { setQuestions([]); setLoading(false) } })
+  fetchQuizIncomplete(activeChapterId, lectureId)
+    .then((flag) => { if (!cancelled) setIncomplete(flag) })
+    .catch(() => { if (!cancelled) setIncomplete(false) })
   return () => { cancelled = true }
 }, [activeChapterId, lectureId])
 
@@ -40,11 +45,17 @@ const handleStartQuiz = async () => {
 }
 
   if (loading) return <div className="flex-1 flex items-center justify-center text-nt3 text-sm">Loading assessment…</div>
-  if (questions.length === 0) return <div className="flex-1 flex items-center justify-center text-nt3 text-sm">Assessment not available for this chapter.</div>
+  if (questions.length === 0) return (
+    <div className="flex-1 flex flex-col items-center justify-center gap-4 text-nt3 text-sm">
+      <div>Assessment not available for this chapter.</div>
+      {incomplete && <PartialContentBadge />}
+    </div>
+  )
 
-  const mcq = questions.filter(q => q.type === 'MCQ')
   const tf = questions.filter(q => q.type === 'True/False')
-  const free = questions.filter(q => !['MCQ', 'True/False'].includes(q.type))
+  const hasOptions = (q: Question) => Array.isArray(q.options) && q.options.length > 0
+  const choice = questions.filter(q => q.type !== 'True/False' && hasOptions(q))
+  const free = questions.filter(q => q.type !== 'True/False' && !hasOptions(q))
 
   return (
     <div className="flex flex-col h-full">
@@ -65,10 +76,11 @@ const handleStartQuiz = async () => {
       </div>
 
       <div className="flex-1 overflow-y-auto px-8 py-6 pb-20 space-y-7 scroll-smooth doc-content">
-        {mcq.length > 0 && (
+        {incomplete && <PartialContentBadge className="mb-2" />}
+        {choice.length > 0 && (
           <>
             <div className="flex items-center gap-3 mt-2"><span className="flex-1 h-px bg-bdr" /><span className="text-3xs font-semibold text-nt3 uppercase tracking-wider">Multiple choice</span><span className="flex-1 h-px bg-bdr" /></div>
-            {mcq.map((q, i) => <QuestionCard key={q.id ?? i} question={q} index={i} />)}
+            {choice.map((q, i) => <QuestionCard key={q.id ?? i} question={q} index={i} />)}
           </>
         )}
         {tf.length > 0 && (

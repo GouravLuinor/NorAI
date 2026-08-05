@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { getLectureId } from '../lib/threadStorage'
 
 const API_BASE =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || ''
@@ -14,7 +15,7 @@ export interface QuestionFeedback {
 
 export interface Question {
   id: number
-  type: 'MCQ' | 'True/False' | 'ShortAnswer'
+  type: 'MCQ' | 'True/False' | 'ShortAnswer' | 'Short Answer' | 'Conceptual' | 'Scenario' | 'Application' | 'Fill in the Blank' | string
   difficulty?: string
   question: string
   options?: string[]
@@ -129,7 +130,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
   retakeQuiz: async () => {
     const { quizChapterId } = get()
-    const questions = await fetchQuizQuestions(quizChapterId ?? undefined)
+    const lectureId = getLectureId()
+    const questions = await fetchQuizQuestions(quizChapterId ?? undefined, lectureId)
     if (questions.length > 0) {
       set({
         questions,
@@ -161,9 +163,29 @@ export async function fetchQuizQuestions(
   const res = await fetch(`${API_BASE}/quiz/questions?${params}`)
   if (!res.ok) throw new Error('Failed to load quiz questions')
   const data = await res.json()
-  if (Array.isArray(data)) return data
-  if (data && Array.isArray(data.questions)) return data.questions
-  return []
+  const raw = Array.isArray(data) ? data : data && Array.isArray(data.questions) ? data.questions : []
+  return (raw as Array<Record<string, unknown>>).map((q) => ({
+    ...q,
+    id: (q.id as number) ?? (q.question_id as number),
+  })) as Question[]
+}
+
+/** Whether this chapter's assessment came back partially generated. */
+export async function fetchQuizIncomplete(
+  chapterId?: number,
+  lectureId?: string,
+): Promise<boolean> {
+  const params = new URLSearchParams()
+  if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
+  if (lectureId) params.set('lecture_id', lectureId)
+  try {
+    const res = await fetch(`${API_BASE}/quiz/questions?${params}`)
+    if (!res.ok) return false
+    const data = await res.json()
+    return Boolean(data && typeof data === 'object' && 'incomplete' in data ? data.incomplete : false)
+  } catch {
+    return false
+  }
 }
 
 export async function evaluateQuiz(
