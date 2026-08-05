@@ -2,11 +2,12 @@ import { useEffect, useCallback, useRef } from 'react'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useThreadStore, getOrCreateLabel } from '../../stores/useThreadStore'
 import { useLectureStore } from '../../stores/useLectureStore'
-import { PanelLeftClose, PanelLeftOpen, Trash2 } from 'lucide-react'
+import { PanelLeftClose, Trash2 } from 'lucide-react'
 import { useToastStore } from '../../stores/useToastStore'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { Button } from '../ui/Button'
 import { IconButton } from '../ui/IconButton'
+import { FOCUS_RING } from '../ui/shared'
 import { useNavigate } from 'react-router-dom'
 
 
@@ -80,23 +81,9 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
 
   return (
     <div className="bg-ns border-r border-bdr relative overflow-hidden flex flex-col h-full">
-      {/* Collapsed: show open button */}
-      <div
-        className={`absolute inset-0 flex items-start justify-center pt-3.5 transition-opacity duration-240 ${
-          sidebarCollapsed ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none -z-10'
-        }`}
-      >
-        <IconButton
-          label="Open sidebar"
-          onClick={handleCollapse}
-          className="w-8 h-8 rounded-md"
-        >
-          <PanelLeftOpen size={14} strokeWidth={1.5} />
-        </IconButton>
-      </div>
-
       {/* Expanded — use w-full to prevent overlap when sidebar is narrow */}
       <div
+        inert={sidebarCollapsed}
         className={`w-full flex flex-col h-full transition-opacity duration-240 ${
           sidebarCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
@@ -130,6 +117,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           <div className="mb-3">
             <div className="spec-label mb-1.5">01. Lecture</div>
             <select
+              aria-label="Select lecture"
               value={activeLectureId || ''}
               onChange={(e) => {
                 const newId = e.target.value
@@ -137,7 +125,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
                 navigate(`/workspace/${newId}`)   // ← add this
               }}
 
-              className="w-full bg-nb border border-bdr2 rounded-md px-2 py-1 text-11 text-nt2 outline-none focus:border-np transition"
+              className={`w-full bg-nb border border-bdr2 rounded-md px-2 py-1 text-11 text-nt2 focus:border-np transition ${FOCUS_RING}`}
             >
               {lectures.map((l) => (
                 <option key={l.lecture_id} value={l.lecture_id}>
@@ -152,19 +140,22 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           <div className="spec-label mb-1.5">02. Chapters</div>
           <ul className="space-y-0.5">
             {chapters.map((ch) => (
-              <li
-                key={ch.id}
-                onClick={() => setChapter(ch.id)}
-                className={`flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer text-11 transition ${
-                  activeChapterId === ch.id
-                    ? 'bg-npb text-np'
-                    : 'text-nt3 hover:bg-ns2 hover:text-nt2'
-                }`}
-              >
-                <span className="text-3xs font-medium w-3.5 opacity-70">
-                  {String(ch.id).padStart(2, '0')}
-                </span>
-                <span className="truncate">{ch.title}</span>
+              <li key={ch.id}>
+                <button
+                  type="button"
+                  onClick={() => setChapter(ch.id)}
+                  aria-current={activeChapterId === ch.id ? 'true' : undefined}
+                  className={`w-full flex items-center gap-2 px-1.5 py-1.5 rounded-md text-left text-11 transition ${FOCUS_RING} ${
+                    activeChapterId === ch.id
+                      ? 'bg-npb text-nt font-medium'
+                      : 'text-nt3 hover:bg-ns2 hover:text-nt2'
+                  }`}
+                >
+                  <span className="text-3xs font-medium w-3.5 text-nt4">
+                    {String(ch.id).padStart(2, '0')}
+                  </span>
+                  <span className="truncate">{ch.title}</span>
+                </button>
               </li>
             ))}
           </ul>
@@ -178,27 +169,30 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           {threads.map((t) => (
             <div
               key={t}
-              onClick={() => handleThreadClick(t)}
-              className={`flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer text-11 transition truncate mb-0.5 group ${
-                threadId === t
-                  ? 'text-nt bg-ns3'
-                  : 'text-nt3 hover:bg-ns2 hover:text-nt2'
-              }`}
+              className="grid grid-cols-[1fr_auto] items-center gap-0.5 mb-0.5 group"
             >
-              <span
-                className={`w-1 h-1 rounded-full shrink-0 ${
-                  threadId === t ? 'bg-np' : 'bg-nt4'
+              <button
+                type="button"
+                onClick={() => handleThreadClick(t)}
+                aria-current={threadId === t ? 'true' : undefined}
+                className={`flex items-center gap-2 px-1.5 py-1.5 rounded-md text-left text-11 transition truncate ${FOCUS_RING} ${
+                  threadId === t
+                    ? 'text-nt bg-ns3'
+                    : 'text-nt3 hover:bg-ns2 hover:text-nt2'
                 }`}
-              />
-              <span className="truncate flex-1">{getOrCreateLabel(t)}</span>
+              >
+                <span
+                  className={`w-1 h-1 rounded-full shrink-0 ${
+                    threadId === t ? 'bg-np' : 'bg-nt4'
+                  }`}
+                />
+                <span className="truncate flex-1">{getOrCreateLabel(t)}</span>
+              </button>
               <IconButton
-                label="Delete thread"
+                label={`Delete thread ${getOrCreateLabel(t)}`}
                 variant="bare"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleDeleteThread(t)
-                }}
-                className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-ns4"
+                onClick={() => handleDeleteThread(t)}
+                className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 p-0.5 rounded hover:bg-ns4"
               >
                 <Trash2 size={10} strokeWidth={1.5} className="text-nt4 hover:text-nr" />
               </IconButton>

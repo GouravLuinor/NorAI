@@ -22,8 +22,8 @@ html, body, #root {
   /* Text — ink */
   --color-nt: #241F1A;
   --color-nt2: #5C524A;
-  --color-nt3: #8D8378;
-  --color-nt4: #A79E92;
+  --color-nt3: #6A5F53;
+  --color-nt4: #6D6155;
 
   /* Accent — Red Pencil (light) */
   --color-np: #C2410C;
@@ -50,6 +50,14 @@ html, body, #root {
   --color-nbl: #2B6CB0;
   --color-nblb: rgba(43, 108, 176, 0.08);
   --color-nblbr: rgba(43, 108, 176, 0.18);
+
+  /* Accent TEXT tokens (light): slightly deeper so colored text clears 4.5:1
+     on tinted backgrounds and the vellum surfaces. */
+  --color-npt: #B93B0C;
+  --color-ngt: #1B7238;
+  --color-nat: #8A5A0A;
+  --color-nrt: #B0272C;
+  --color-nblt: #1F5FA8;
 
   --color-npu: #7820BC;
   --color-npub: rgba(120, 32, 188, 0.08);
@@ -234,7 +242,7 @@ html, body, #root {
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--color-np);
+  color: var(--color-npt);
 }
 
 /* Dimension marker — ←—[48px]—→ */
@@ -321,8 +329,8 @@ html, body, #root {
 
   --color-nt: #E9F1FA;
   --color-nt2: #B8C9DE;
-  --color-nt3: #8CA3C0;
-  --color-nt4: #5F7690;
+  --color-nt3: #98AFCB;
+  --color-nt4: #A3BBD6;
 
   --color-np: #E85D2F;
   --color-nph: #FF6B38;
@@ -348,6 +356,18 @@ html, body, #root {
   --color-nblb: rgba(47, 127, 224, 0.14);
   --color-nblbr: rgba(47, 127, 224, 0.34);
 
+  /* Accent TEXT tokens (dark): brighter so colored text clears 4.5:1 on the
+     tinted backgrounds and the blue-ink surfaces. */
+  --color-npt: #FF7A4A;
+  --color-ngt: #54C270;
+  --color-nat: #FFB020;
+  --color-nrt: #FF7076;
+  --color-nblt: #5FA3F0;
+
+  /* Accent FILL tokens (dark): deeper solid fills so white-on-fill clears 4.5. */
+  --color-ngfill: #27793F;
+  --color-nrfill: #C23A40;
+
   --color-npu: #9A5CC0;
   --color-npub: rgba(154, 92, 192, 0.14);
   --color-npubr: rgba(154, 92, 192, 0.34);
@@ -367,6 +387,28 @@ html, body, #root {
 [data-theme="dark"] {
   color-scheme: dark;
   --ds-focus-ring: 0 0 0 2px var(--color-nb), 0 0 0 4px var(--color-np);
+}
+
+/* Accent TEXT tokens: tuned so colored text clears 4.5:1 on its tinted
+   backgrounds and surfaces in each theme while the solid accent fills
+   (--color-ng/nr/...) used by buttons/dots stay untouched. Dark needs brighter
+   text; light needs marginally deeper text.
+   Scoped with `:root :where(...)` inside the utilities layer: specificity
+   (0,1,0) beats the plain `.text-*` utility (later source order wins the tie)
+   but LOSES to `hover:`/`group-hover:` variants (0,2,0) — so future
+   `text-np hover:text-nt` combos work. `:root` also aliases the tuned values
+   before ThemeToggle sets `data-theme` (kills pre-mount FOUC), and dark picks
+   up the dark `-t` values automatically via the variable redefinition. */
+@layer utilities {
+  :root :where(.text-np) { color: var(--color-npt); }
+  :root :where(.text-ng) { color: var(--color-ngt); }
+  :root :where(.text-na) { color: var(--color-nat); }
+  :root :where(.text-nr) { color: var(--color-nrt); }
+  :root :where(.text-nbl) { color: var(--color-nblt); }
+  :root :where(.border-np) { border-color: var(--color-npt); }
+  /* Dark fill overrides for white-on-fill quiz chips (see Pass A major #1) */
+  [data-theme="dark"] :where(.bg-ng) { background-color: var(--color-ngfill); }
+  [data-theme="dark"] :where(.bg-nr) { background-color: var(--color-nrfill); }
 }
 
 /* Reduced motion: disable shimmer, x-slides, smooth scroll, scrollpulse */

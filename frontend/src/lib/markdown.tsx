@@ -54,6 +54,16 @@ export function createMarkdownComponents(options: MarkdownComponentsOptions = {}
   const isChat = options.chat === true
   const withHeadingIds = options.headingIds === true
 
+  // De-dupe generated heading ids within a single render (repeated heading
+  // text, e.g. "Introduction"/"Conclusion", must not share a DOM id).
+  const seenHeadingIds = new Map<string, number>()
+  const uniqueHeadingId = (heading: string): string => {
+    const base = headingToId(heading)
+    const count = seenHeadingIds.get(base) ?? 0
+    seenHeadingIds.set(base, count + 1)
+    return count === 0 ? base : `${base}-${count + 1}`
+  }
+
   return {
     p: ({ children }) => (
       <p className={isChat ? 'mb-1.5 last:mb-0' : 'text-13 text-nt2 leading-relaxed mb-2 last:mb-0'}>
@@ -96,25 +106,28 @@ export function createMarkdownComponents(options: MarkdownComponentsOptions = {}
       <img
         src={cleanImageSrc(src || '')}
         alt={alt || ''}
+        width="1600"
+        height="900"
         className={isChat
-          ? 'rounded-lg border border-bdr my-2 max-h-60 object-contain shadow-ev1'
-          : 'rounded-lg border border-bdr my-3 max-h-72 object-contain shadow-ev1'}
+          ? 'rounded-lg border border-bdr my-2 max-h-60 object-contain shadow-ev1 w-auto h-auto'
+          : 'rounded-lg border border-bdr my-3 max-h-72 object-contain shadow-ev1 w-auto h-auto'}
         loading="lazy"
+        decoding="async"
       />
     ),
     ...(withHeadingIds
       ? {
           h3: ({ children }: { children?: React.ReactNode }) => (
-            <h3 id={headingToId(extractText(children))} className="text-sm font-medium text-nt mt-5 mb-2">{children}</h3>
+            <h3 id={uniqueHeadingId(extractText(children))} className="text-sm font-medium text-nt mt-5 mb-2">{children}</h3>
           ),
           h4: ({ children }: { children?: React.ReactNode }) => (
-            <h4 id={headingToId(extractText(children))} className="text-13 font-medium text-nt mt-4 mb-2">{children}</h4>
+            <h4 id={uniqueHeadingId(extractText(children))} className="text-13 font-medium text-nt mt-4 mb-2">{children}</h4>
           ),
           h5: ({ children }: { children?: React.ReactNode }) => (
-            <h5 id={headingToId(extractText(children))} className="text-xs font-medium text-nt mt-4 mb-2">{children}</h5>
+            <h5 id={uniqueHeadingId(extractText(children))} className="text-xs font-medium text-nt mt-4 mb-2">{children}</h5>
           ),
           h6: ({ children }: { children?: React.ReactNode }) => (
-            <h6 id={headingToId(extractText(children))} className="text-11 font-medium text-nt mt-4 mb-2">{children}</h6>
+            <h6 id={uniqueHeadingId(extractText(children))} className="text-11 font-medium text-nt mt-4 mb-2">{children}</h6>
           ),
         }
       : {}),

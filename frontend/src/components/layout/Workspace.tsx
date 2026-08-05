@@ -33,7 +33,9 @@ export function Workspace() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !sidebarCollapsed) {
+      // A modal dialog (ShortcutsModal, Lightbox) owns Escape while open —
+      // don't also collapse the sidebar.
+      if (e.key === 'Escape' && !sidebarCollapsed && !document.querySelector('[role="dialog"]')) {
         toggleSidebar()
       }
     }
@@ -74,6 +76,36 @@ export function Workspace() {
     setIsDragging(true)
     document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
+  }
+
+  const handleResizeKeyDown = (side: 'left' | 'right') => (e: React.KeyboardEvent) => {
+    const step = 16
+    const apply = (fn: () => void) => {
+      e.preventDefault()
+      fn()
+    }
+    switch (e.key) {
+      case 'ArrowLeft':
+        return apply(() =>
+          side === 'left'
+            ? setSidebarWidth((w) => Math.max(SIDEBAR_MIN, w - step))
+            : setAiPanelWidth((w) => Math.max(minAiWidth, w - step))
+        )
+      case 'ArrowRight':
+        return apply(() =>
+          side === 'left'
+            ? setSidebarWidth((w) => Math.min(SIDEBAR_MAX, w + step))
+            : setAiPanelWidth((w) => Math.min(AI_MAX, w + step))
+        )
+      case 'Home':
+        return apply(() =>
+          side === 'left' ? setSidebarWidth(SIDEBAR_MIN) : setAiPanelWidth(minAiWidth)
+        )
+      case 'End':
+        return apply(() =>
+          side === 'left' ? setSidebarWidth(SIDEBAR_MAX) : setAiPanelWidth(AI_MAX)
+        )
+    }
   }
 
   useEffect(() => {
@@ -142,18 +174,32 @@ export function Workspace() {
 
       {!sidebarCollapsed && (
         <div
-          className="absolute top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-[rgba(128,128,128,0.2)] transition-colors"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize sidebar"
+          aria-valuenow={sidebarWidth}
+          aria-valuemin={SIDEBAR_MIN}
+          aria-valuemax={SIDEBAR_MAX}
+          tabIndex={0}
+          className="absolute top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-[rgba(128,128,128,0.2)] focus-visible:outline-none focus-visible:bg-np/50 transition-colors"
           style={{ left: `calc(${sidebarCollapsed ? 48 : sidebarWidth}px - 4px)` }}
           onMouseDown={handleMouseDown('left')}
-          title="Resize sidebar"
+          onKeyDown={handleResizeKeyDown('left')}
         />
       )}
 
       <div
-        className="absolute top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-[rgba(128,128,128,0.2)] transition-colors"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize AI panel"
+        aria-valuenow={aiPanelWidth}
+        aria-valuemin={minAiWidth}
+        aria-valuemax={AI_MAX}
+        tabIndex={0}
+        className="absolute top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-[rgba(128,128,128,0.2)] focus-visible:outline-none focus-visible:bg-np/50 transition-colors"
         style={{ right: `calc(${aiPanelWidth}px - 4px)` }}
         onMouseDown={handleMouseDown('right')}
-        title="Resize AI panel"
+        onKeyDown={handleResizeKeyDown('right')}
       />
 
       {/* Keyboard shortcuts help button */}

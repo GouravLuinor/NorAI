@@ -31,7 +31,7 @@ export function DocPanel() {
 }
 
   return (
-    <div className="flex flex-col min-w-0 min-h-0 border-r border-bdr bg-nb">
+    <main className="flex flex-col min-w-0 min-h-0 border-r border-bdr bg-nb">
       {/* Top bar */}
       <div className="flex items-center px-4 h-[38px] border-b border-bdr bg-ns gap-0.5 shrink-0">
         <SegmentedControl
@@ -77,6 +77,6 @@ export function DocPanel() {
       )}
       {/* Highlight & Ask — floating button for text selection */}
       <HighlightAsk />
-    </div>
+    </main>
   )
 }
