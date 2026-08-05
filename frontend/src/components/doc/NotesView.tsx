@@ -10,6 +10,7 @@ import rehypeKatex from 'rehype-katex'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { docMarkdownComponents, headingToId } from '../../lib/markdown'
 import { Card, CardHeader } from '../ui/Card'
+import { FOCUS_RING } from '../ui/shared'
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function splitByH2(md: string): { heading: string; body: string }[] {
@@ -136,7 +137,7 @@ function ListCard({ heading, children }: { heading: string; children: React.Reac
       <CardHeader icon={<List size={13} strokeWidth={1.5} className="text-np" />}>
         {heading}
       </CardHeader>
-      <ul className="list-none pl-1.5 space-y-2.5">{children}</ul>
+      <div className="pl-1.5 space-y-2.5">{children}</div>
     </div>
   )
 }
@@ -164,7 +165,7 @@ function CodeCard({ heading, children, lang }: { heading: string; children: Reac
         {lang && (
           <div className="flex justify-between items-center bg-ns px-4 py-2 border-b border-bdr font-mono text-2xs text-nt3">
             <span>{lang}</span>
-            <button className="flex items-center gap-1 bg-transparent border-none text-nt3 hover:text-nt cursor-pointer font-inherit">
+            <button className={`flex items-center gap-1 bg-transparent border-none text-nt3 hover:text-nt cursor-pointer font-inherit ${FOCUS_RING}`}>
               Copy
             </button>
           </div>

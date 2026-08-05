@@ -1,6 +1,6 @@
-import { useEffect, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { IconButton } from './IconButton'
+import { Dialog } from './Dialog'
 
 interface LightboxProps {
   src: string
@@ -10,26 +10,13 @@ interface LightboxProps {
 }
 
 export function Lightbox({ src, alt = '', caption = '', onClose }: LightboxProps) {
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    },
-    [onClose]
-  )
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown)
-    document.body.style.overflow = 'hidden' // prevent background scroll
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = ''
-    }
-  }, [handleKeyDown])
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-8"
-      onClick={onClose}
+    <Dialog
+      ariaLabel={alt || 'Image preview'}
+      ariaDescribedBy={caption ? 'lightbox-caption' : undefined}
+      onClose={onClose}
+      overlayClassName="bg-black/70 backdrop-blur-sm p-8"
+      panelClassName="max-w-full max-h-full flex flex-col items-center"
     >
       {/* Close button */}
       <IconButton
@@ -40,22 +27,18 @@ export function Lightbox({ src, alt = '', caption = '', onClose }: LightboxProps
         <X size={16} strokeWidth={1.5} />
       </IconButton>
 
-      {/* Image container */}
-      <div
-        className="max-w-full max-h-full flex flex-col items-center"
-        onClick={(e) => e.stopPropagation()} // prevent closing when clicking image
-      >
-        <img
-          src={src}
-          alt={alt}
-          className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-ev3"
-        />
-        {caption && (
-          <p className="mt-4 text-sm text-nt2 text-center max-w-lg leading-relaxed">
-            {caption}
-          </p>
-        )}
-      </div>
-    </div>
+      <img
+        src={src}
+        alt={alt}
+        width="1600"
+        height="900"
+        className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-ev3 w-auto h-auto"
+      />
+      {caption && (
+        <p id="lightbox-caption" className="mt-4 text-sm text-nt2 text-center max-w-lg leading-relaxed">
+          {caption}
+        </p>
+      )}
+    </Dialog>
   )
 }

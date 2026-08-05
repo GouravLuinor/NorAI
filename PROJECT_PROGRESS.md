@@ -3309,3 +3309,20 @@ Follow-up to Tier 5: the dark theme originally read as a flat, muddy inverted ra
 - Light mode verified unchanged (ink grid, vellum canvas, no dark bleed).
 
 **Verification:** build ✓ lint ✓; Pass C MiMo vision re-audit PASS on all 10 fresh dark screenshots (`.tmp/qa-darkmode/visual-review.md` + `visual-review-fix.md` + `visual-review-light.md`; screenshots/). Zero console errors/warnings.
+
+---
+
+## Frontend Design Rebuild (Tier 3 — Accessibility & Web Interface Guidelines)
+
+Implemented the a11y / Web Guidelines compliance pass per `frontend_design_roadmap.md`. **Lighthouse a11y now 100 on BOTH themes** across Study notes, Revision, Assessment, and Quiz views.
+
+- **Real buttons + keyboard paths**: collapsed clickable `div`/`li` (Sidebar chapters/threads, QuizPanel MCQ + answer-key toggles, ReferencesPanel rows, FlashcardsPanel flip, ChapterScreenshots zoom + "Important Visuals" toggle with `aria-expanded` + `FOCUS_RING`).
+- **Focus**: `FOCUS_RING` double-ring on all interactive primitives + quiz options + chapter zoom buttons; `:focus-visible` app-wide.
+- **Modals**: ShortcutsModal + Lightbox are real `role="dialog"`/`aria-modal` with focus trap + restore + scroll lock; Escape-collision with the sidebar collapse guard fixed; Lightbox img got `width`/`height` + caption via `aria-describedby`.
+- **Live regions / labels**: ToastContainer `aria-live="polite"`; chat streaming live-region; `aria-label` on SearchBar/ShortcutsModal icon buttons; Sidebar `<select aria-label="Select lecture">`; UploadPage sr-only `<h1>`; doc root `<div>`→`<main>`.
+- **Contrast fixes**: light `nt3`/`nt4` darkened, dark `nt4` lightened; per-theme accent-text token system (`npt/ngt/nat/nrt/nblt` + `[data-theme] .text-*` overrides) + dark fill tokens `ngfill/nrfill` so white-on-green/red **quiz chips** pass AA; sidebar chapter numbers `opacity-70`→`text-nt4`; active chapter ink-on-red-tint; `.note-callout` label → `--color-npt`; AI-panel `h3`→`h2`.
+- **Keyboard-resizable panels**: `role="separator"` + `aria-valuenow` + ArrowLeft/Right (16px) + Home/End — verified with real Chrome `press_key` (synthetic keyboard events don't drive React).
+
+Build ✓ lint ✓ (only 3 pre-existing exhaustive-deps). **QA complete (all three passes green):** Pass A code review (0 critical / 4 major — all fixed: Dialog `onClose` ref-stabilized effect, ReferencesPanel `inert={collapsed}`, quiz dark chips, callout label; 27 minor/nit), Pass B Chrome MCP + Lighthouse (a11y 100 both themes on notes/revision/assessment/quiz; stale console form-field issue verified DOM-clean), Pass C MiMo vision audit (0 critical/major, 3 minor/4 nits — minor #2 already covered by accent-text tokens). Artifacts in `.tmp/qa-tier3/` (`passA-notes.md`, `passB-notes.md`, `visual-review.md`, `screenshots/`).
+
+Remaining Lighthouse SEO gap (no meta description, invalid robots.txt) is out of scope for the frontend a11y tier.

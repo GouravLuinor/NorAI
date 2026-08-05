@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronDown, ChevronUp, Image as ImageIcon } from 'lucide-react'
 import { Lightbox } from '../ui/Lightbox'
+import { FOCUS_RING } from '../ui/shared'
 import { useLectureStore } from '../../stores/useLectureStore'  
 
 interface Screenshot {
@@ -41,7 +42,8 @@ export function ChapterScreenshots({
     <div className="mt-8">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 text-3xs font-semibold text-nt3 uppercase tracking-wider hover:text-nt transition"
+        aria-expanded={open}
+        className={`flex items-center gap-2 text-3xs font-semibold text-nt3 uppercase tracking-wider hover:text-nt transition ${FOCUS_RING}`}
       >
         <ImageIcon size={13} strokeWidth={1.5} />
         Important Visuals ({screenshots.length})
@@ -57,17 +59,22 @@ export function ChapterScreenshots({
                 key={i}
                 className="bg-ns border border-bdr2 rounded-lg overflow-hidden shadow-ev1"
               >
-                <div
-                  className="cursor-zoom-in"
+                <button
+                  type="button"
+                  aria-label={`View screenshot: ${shot.reason}`}
+                  className={`w-full block cursor-zoom-in ${FOCUS_RING}`}
                   onClick={() =>
                     setLightbox({ src: imgUrl, caption: shot.reason })
                   }
                 >
                   <img
                     src={imgUrl}
-                    alt={shot.reason}
-                    className="w-full object-cover"
+                    alt=""
+                    width="1600"
+                    height="900"
+                    className="w-full aspect-video object-cover"
                     loading={lazyLoad ? "lazy" : "eager"}
+                    decoding="async"
                     onError={(e) => {
                       const target = e.currentTarget
                       target.style.display = 'none'
@@ -78,7 +85,7 @@ export function ChapterScreenshots({
                     <ImageIcon size={24} strokeWidth={1.5} className="mx-auto mb-1 opacity-40" />
                     Screenshot unavailable
                   </div>
-                </div>
+                </button>
                 <div className="p-3 text-xs text-nt2 leading-relaxed">
                   <span className="text-2xs font-semibold text-nt3 uppercase tracking-wider block mb-1">
                     {shot.section}

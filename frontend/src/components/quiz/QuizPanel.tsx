@@ -4,6 +4,7 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { Check, X, RotateCcw, BookOpen } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
+import { FOCUS_RING } from '../ui/shared'
 
 export function QuizPanel() {
   const {
@@ -237,6 +238,7 @@ export function QuizPanel() {
               }
               return (
                 <button key={opt} onClick={() => handleSelectAnswer(opt)} disabled={isAnswered}
+                  aria-pressed={isSelected}
                   className={`w-full flex items-center gap-3 p-3 rounded-lg border border-bdr2 bg-nb text-left transition ${isSelected && !showFeedback ? 'bg-ns3 border-np' : 'hover:bg-ns2 hover:border-bdr'} ${stateClass}`}>
                   <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${showFeedback && opt === q.answer ? 'bg-ng text-white' : showFeedback && isSelected ? 'bg-nr text-white' : 'bg-ns3 text-nt2'}`}>{letter}</span>
                   <span className="text-sm text-nt2">{opt}</span>
@@ -259,6 +261,7 @@ export function QuizPanel() {
               }
               return (
                 <button key={val} onClick={() => handleSelectAnswer(val)} disabled={isAnswered}
+                  aria-pressed={isSelected}
                   className={`flex-1 py-3 rounded-lg border border-bdr2 bg-nb text-sm font-medium text-nt2 transition ${isSelected && !showFeedback ? 'bg-ns3 border-np' : 'hover:bg-ns2'} ${stateClass}`}>
                   {val}
                 </button>
@@ -269,7 +272,7 @@ export function QuizPanel() {
 
         {!isAutoGraded && (
           <div className="space-y-4">
-            <textarea className="w-full h-24 bg-nb border border-bdr2 rounded-lg p-3 text-sm text-nt resize-none focus:border-np outline-none"
+            <textarea name="quiz-answer" aria-label="Your answer" className={`w-full h-24 bg-nb border border-bdr2 rounded-lg p-3 text-sm text-nt resize-none focus:border-np ${FOCUS_RING}`}
               placeholder="Type your answer…" value={selectedAnswer} onChange={(e) => setSelectedAnswer(e.target.value)} disabled={isAnswered} />
             {!isAnswered && (
               <Button
@@ -285,11 +288,11 @@ export function QuizPanel() {
         )}
 
         {showFeedback && isAutoGraded && (
-          <div className={`mt-5 p-4 rounded-lg border ${isCorrect ? 'bg-ngb border-ngbr' : 'bg-nrb border-nrbr'}`}>
+          <div role="status" className={`mt-5 p-4 rounded-lg border ${isCorrect ? 'bg-ngb border-ngbr' : 'bg-nrb border-nrbr'}`}>
             <div className="flex items-start gap-3">
               <div className="w-5 h-5 rounded-sm bg-npf flex items-center justify-center text-2xs font-bold text-npfg shrink-0 mt-0.5">N</div>
               <div className="text-sm text-nt2">
-                {isCorrect ? `Correct! ${q.explanation}` : `Incorrect. The correct answer is **${q.answer}**. ${q.explanation}`}
+                {isCorrect ? `Correct! ${q.explanation}` : `Incorrect. The correct answer is ${q.answer}. ${q.explanation}`}
               </div>
             </div>
           </div>
@@ -299,7 +302,7 @@ export function QuizPanel() {
           <div className="mt-5 pt-5 border-t border-dashed border-bdr flex items-center gap-2 flex-wrap">
             <span className="text-xs text-nt3 font-medium mr-2">How confident were you?</span>
             {['Guess', 'Unsure', 'Confident', 'Very Confident'].map((lvl) => (
-              <Button key={lvl} variant="outline" onClick={() => setConfidenceLocal(lvl)}
+              <Button key={lvl} variant="outline" onClick={() => setConfidenceLocal(lvl)} aria-pressed={confidence === lvl}
                 className={`px-3 py-1 rounded-md text-xs ${confidence === lvl ? 'bg-npb border-npbr text-np' : 'bg-transparent border-bdr2'}`}>
                 {lvl}
               </Button>

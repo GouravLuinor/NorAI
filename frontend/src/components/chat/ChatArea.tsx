@@ -199,13 +199,19 @@ const handleSend = useCallback(async (text: string) => {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth doc-content">
+      <div
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth doc-content"
+        role="log"
+        aria-live="polite"
+        aria-busy={isLoading}
+        aria-relevant="additions"
+      >
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="w-12 h-12 rounded-sm bg-npf flex items-center justify-center mb-4 shadow-ev2 fold-marks relative">
               <span className="text-lg font-semibold text-npfg">N</span>
             </div>
-            <h3 className="text-sm font-medium text-nt mb-1">What can I help with?</h3>
+            <h2 className="text-sm font-medium text-nt mb-1">What can I help with?</h2>
             <p className="text-xs text-nt3 max-w-[200px]">
               Ask me anything about your lectures — I'll pull answers straight from your notes.
             </p>

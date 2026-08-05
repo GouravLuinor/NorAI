@@ -48,6 +48,11 @@ Tests: there is NO test framework/pytest. Tests are standalone `test_*.py` scrip
 - `outputs/` and `.tmp/` are regenerable intermediates — never commit them.
 - Personal opencode scripting notes live in `opencode-guide/` (gitignored) — not project docs.
 
+## Agent model notes (image analysis)
+
+- The default agent runs on a **text-only** model (e.g. deepseek v4 flash) that CANNOT see/analyze images. When a task needs image analysis — screenshots, UI snapshots, charts/figures, visual diffs, OCR of images — do NOT try to read the image directly; delegate to a subagent running the **MiMo V2.5 Free** model via the `opencode-subagents` skill.
+- MiMo V2.5 Free is Xiaomi's omnimodal model (text + image + video + audio understanding), available free on OpenCode Zen under the id `opencode/mimo-v2.5-free` (dots — the hyphenated `mimo-v2-5-free` id causes server errors). Pass the image path(s) to the subagent and have it return written findings.
+
 ## Docs
 
 `README.md` (architecture + pipeline), `DESIGN.md`, `Norai_rebuild_roadmap.md`, `PROJECT_PROGRESS.md`, `tier2_implementation_plan.md`, `context.md`. Update PROJECT_PROGRESS.md when making notable pipeline/backend/frontend changes.

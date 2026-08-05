@@ -42,7 +42,7 @@ export function PrintSectionCard({
       return (
         <div className="mb-5">
           <CardHeader icon={<List size={13} strokeWidth={1.5} className="text-np" />}>{heading}</CardHeader>
-          <ul className="list-none pl-1.5 space-y-2.5">{children}</ul>
+          <div className="pl-1.5 space-y-2.5">{children}</div>
         </div>
       )
     case 'code':

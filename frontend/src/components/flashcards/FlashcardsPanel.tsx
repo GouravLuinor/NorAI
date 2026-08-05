@@ -5,6 +5,7 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { useLectureStore } from '../../stores/useLectureStore'   // ← added
 import { Button } from '../ui/Button'
 import { SegmentedControl } from '../ui/SegmentedControl'
+import { FOCUS_RING } from '../ui/shared'
 
 type Rating = 'Again' | 'Hard' | 'Good' | 'Easy'
 
@@ -62,13 +63,13 @@ export function FlashcardsPanel() {
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-bdr shrink-0">
         <div>
-          <h3 className="text-sm font-semibold text-nt">Flashcards</h3>
+          <h2 className="text-sm font-semibold text-nt">Flashcards</h2>
           <p className="text-2xs text-nt3">Studying {total} cards</p>
         </div>
       </div>
 
       {/* Pips */}
-      <div className="flex justify-center gap-1 px-5 py-3">
+      <div aria-hidden="true" className="flex justify-center gap-1 px-5 py-3">
         {cards.map((_, i) => (
           <div
             key={i}
@@ -78,11 +79,14 @@ export function FlashcardsPanel() {
           />
         ))}
       </div>
+      <span className="sr-only">Card {current + 1} of {total}</span>
 
       {/* Card – responsive */}
       <div className="flex-1 flex flex-col items-center px-4 pb-4 overflow-y-auto doc-content">
-        <div
-          className="w-full max-w-[90%] aspect-[4/3] cursor-pointer perspective-1000 mx-auto"
+        <button
+          type="button"
+          aria-pressed={flipped}
+          className={`w-full max-w-[90%] aspect-[4/3] cursor-pointer perspective-1000 mx-auto block p-0 ${FOCUS_RING}`}
           onClick={() => setFlipped(!flipped)}
         >
           <div
@@ -91,14 +95,14 @@ export function FlashcardsPanel() {
             }`}
           >
             {/* Front */}
-            <div className="absolute inset-0 bg-ns border border-bdr2 rounded-xl p-5 flex flex-col items-center justify-center backface-hidden">
+            <div aria-hidden={flipped || undefined} className="absolute inset-0 bg-ns border border-bdr2 rounded-xl p-5 flex flex-col items-center justify-center backface-hidden">
               <span className="text-2xs font-semibold text-nt3 uppercase tracking-wider mb-4">Front</span>
               <p className="text-sm font-medium text-nt text-center leading-relaxed break-words px-2">
                 {card.front}
               </p>
             </div>
             {/* Back */}
-            <div className="absolute inset-0 bg-ns border border-bdr2 rounded-xl p-5 flex flex-col items-center justify-center backface-hidden rotate-y-180">
+            <div aria-hidden={flipped ? undefined : true} className="absolute inset-0 bg-ns border border-bdr2 rounded-xl p-5 flex flex-col items-center justify-center backface-hidden rotate-y-180">
               <span className="spec-label mb-4">Back</span>
               <p className="text-sm text-nt2 text-center leading-relaxed break-words px-2">
                 {card.back}
@@ -115,7 +119,7 @@ export function FlashcardsPanel() {
               )}
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Show Answer / Rating */}
         <div className="mt-5 w-full max-w-[90%] flex justify-center">
@@ -135,7 +139,7 @@ export function FlashcardsPanel() {
                 activeClass="bg-npf text-npfg shadow-ev2 active:shadow-none"
                 inactiveClass="bg-ns border border-bdr2 text-nt2 hover:bg-ns2"
                 options={(['Again', 'Hard', 'Good', 'Easy'] as Rating[]).map((r) => ({ value: r, label: r }))}
-                value={rating || 'Again'}
+                value={rating || null}
                 onChange={handleRate}
               />
             </div>

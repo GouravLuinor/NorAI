@@ -137,6 +137,8 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
         <Input
           ref={inputRef}
           type="text"
+          name="document-search"
+          aria-label="Search in document"
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Find in document…"

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Reference } from '../../types'
 import { Bookmark, ChevronUp, FileText, Image } from 'lucide-react'
+import { FOCUS_RING } from '../ui/shared'
 
 interface ReferencesPanelProps {
   references: Reference[]
@@ -18,9 +19,11 @@ export function ReferencesPanel({ references, onReferenceClick, onScreenshotClic
       }`}
     >
       {/* Header toggle */}
-      <div
-        className="flex items-center justify-between mb-2 cursor-pointer"
+      <button
+        type="button"
+        className={`w-full flex items-center justify-between mb-2 cursor-pointer ${FOCUS_RING}`}
         onClick={() => setCollapsed(!collapsed)}
+        aria-expanded={!collapsed}
       >
         <div className="flex items-center gap-1 text-2xs font-medium text-nt3">
           <Bookmark size={12} strokeWidth={1.5} />
@@ -34,15 +37,16 @@ export function ReferencesPanel({ references, onReferenceClick, onScreenshotClic
           strokeWidth={1.5}
           className={`text-nt3 transition-transform ${collapsed ? 'rotate-180' : ''}`}
         />
-      </div>
+      </button>
 
       {/* Reference rows — note rows scroll, screenshot rows open lightbox */}
-      <div className="space-y-0.5 max-h-[240px] overflow-y-auto">
+      <div inert={collapsed} className="space-y-0.5 max-h-[240px] overflow-y-auto">
         {references.map((ref) => {
           const isScreenshot = ref.type === 'screenshot'
           return (
-            <div
+            <button
               key={ref.id}
+              type="button"
               onClick={() => {
                 if (isScreenshot) {
                   onScreenshotClick?.(ref)
@@ -50,7 +54,7 @@ export function ReferencesPanel({ references, onReferenceClick, onScreenshotClic
                   onReferenceClick?.(ref.sectionId)
                 }
               }}
-              className="flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer hover:bg-ns3 transition"
+              className={`w-full flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer hover:bg-ns3 transition text-left ${FOCUS_RING}`}
             >
               {isScreenshot ? (
                 <Image size={12} strokeWidth={1.5} className="text-nt3 shrink-0" />
@@ -59,7 +63,7 @@ export function ReferencesPanel({ references, onReferenceClick, onScreenshotClic
               )}
               <span className="text-2xs text-nt2 flex-1 truncate">{ref.title}</span>
               <span className="text-3xs text-nt3 shrink-0">{ref.section}</span>
-            </div>
+            </button>
           )
         })}
       </div>

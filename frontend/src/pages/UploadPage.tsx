@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, Info } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
+import { FOCUS_RING } from '../components/ui/shared'
 
 type InputType = 'youtube' | 'upload' | 'drive'
 
@@ -13,25 +14,37 @@ interface LectureInfo {
   chapter_count: number
 }
 
-// Simple helper to convert an ISO date string to a relative time format
+// Relative time via Intl.RelativeTimeFormat (locale-aware, no custom math).
+const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
+const rtfUnits: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+  ['year', 31536000],
+  ['month', 2592000],
+  ['week', 604800],
+  ['day', 86400],
+  ['hour', 3600],
+  ['minute', 60],
+]
 function getRelativeTime(dateString: string) {
   const date = new Date(dateString)
-  const now = new Date()
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-  if (diffInSeconds < 60) return 'Just now'
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
-  return `${Math.floor(diffInSeconds / 86400)} days ago`
+  const diffSeconds = Math.round((date.getTime() - Date.now()) / 1000)
+  const abs = Math.abs(diffSeconds)
+  for (const [unit, seconds] of rtfUnits) {
+    if (abs >= seconds || unit === 'minute') {
+      return rtf.format(Math.round(diffSeconds / seconds), unit)
+    }
+  }
+  return rtf.format(0, 'second')
 }
 
 export function UploadPage() {
   const [inputType, setInputType] = useState<InputType>('youtube')
   const [url, setUrl] = useState('')
   const [file, setFile] = useState<File | null>(null)
+  const [dragActive, setDragActive] = useState(false)
   const [lectures, setLectures] = useState<LectureInfo[]>([])
   const [loadingLectures, setLoadingLectures] = useState(true)
   const navigate = useNavigate()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetch('/lectures')
@@ -82,6 +95,7 @@ export function UploadPage() {
                 NorAI
               </span>
             </div>
+            <h1 className="sr-only">NorAI — transform a lecture into a complete study experience</h1>
             <p className="text-sm text-nt2 max-w-sm mx-auto leading-relaxed font-serif">
               Transform your lecture into a complete study experience with AI.
             </p>
@@ -121,19 +135,40 @@ export function UploadPage() {
 
             {/* Input Area */}
             {inputType === 'upload' ? (
-              <label className="flex flex-col items-center justify-center gap-3 p-8 border border-dashed border-bdr2 rounded-md cursor-pointer hover:border-np transition">
-                <FileVideo size={28} strokeWidth={1.5} className="text-nt3" />
-                <span className="text-xs text-nt2">
-                  {file ? file.name : 'Click or drag a video file here'}
-                </span>
-                <span className="text-2xs text-nt4">MP4, MKV, WebM up to 2 GB</span>
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  setDragActive(true)
+                }}
+                onDragLeave={() => setDragActive(false)}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  setDragActive(false)
+                  const dropped = e.dataTransfer.files?.[0]
+                  if (dropped) setFile(dropped)
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  aria-label={file ? `Selected file: ${file.name}` : 'Choose a video file to upload'}
+                  className={`w-full flex flex-col items-center justify-center gap-3 p-8 border border-dashed rounded-md transition cursor-pointer hover:border-np ${FOCUS_RING} ${dragActive ? 'border-np bg-npb/50' : 'border-bdr2'}`}
+                >
+                  <FileVideo size={28} strokeWidth={1.5} className="text-nt3" />
+                  <span className="text-xs text-nt2">
+                    {file ? file.name : dragActive ? 'Drop the video to upload' : 'Click to choose or drag a video file here'}
+                  </span>
+                  <span className="text-2xs text-nt4">MP4, MKV, WebM up to 2 GB</span>
+                </button>
                 <input
+                  ref={fileInputRef}
+                  name="lecture-file"
                   type="file"
                   accept="video/*"
                   className="hidden"
                   onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                 />
-              </label>
+              </div>
             ) : (
               <div className="relative">
                 <input
@@ -148,7 +183,7 @@ export function UploadPage() {
                       ? 'Paste YouTube URL…'
                       : 'Paste Google Drive share link…'
                   }
-                  className="w-full bg-nb border border-bdr2 rounded-md px-4 py-2.5 pr-12 text-13 text-nt placeholder:text-nt4 outline-none focus:border-np transition"
+                  className={`w-full bg-nb border border-bdr2 rounded-md px-4 py-2.5 pr-12 text-13 text-nt placeholder:text-nt4 focus:border-np transition ${FOCUS_RING}`}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-nt3">
                   {inputType === 'youtube' ? <Film size={15} strokeWidth={1.5} /> : <Link2 size={15} strokeWidth={1.5} />}
@@ -196,7 +231,7 @@ export function UploadPage() {
           <div className="flex flex-col gap-2.5">
             {loadingLectures ? (
               <div className="flex justify-center p-6 text-nt4">
-                <span className="animate-pulse text-xs">Loading...</span>
+                <span className="animate-pulse text-xs">Loading…</span>
               </div>
             ) : lectures.length === 0 ? (
               <div className="bg-ns border border-bdr2 rounded-lg p-8 text-center shadow-ev2">
