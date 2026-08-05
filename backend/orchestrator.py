@@ -109,19 +109,6 @@ def mark_complete_sync(task_id: str):
 
 
     
-def update_lecture_title(lecture_id: str, title: str):
-    """Update the title of a lecture in lectures.json."""
-    import json as _json
-    registry_path = Path("outputs/lectures.json")
-    if not registry_path.exists():
-        return
-    with open(registry_path, encoding="utf-8") as f:
-        lectures = _json.load(f)
-    if lecture_id in lectures:
-        lectures[lecture_id]["title"] = title
-        with open(registry_path, "w", encoding="utf-8") as f:
-            _json.dump(lectures, f, indent=2)
-
 # ── Pipeline runner (SYNCHRONOUS — runs in a background thread) ─────────────
 
 def run_pipeline(

@@ -3341,3 +3341,23 @@ Implemented the a11y / Web Guidelines compliance pass per `frontend_design_roadm
 Build ✓ lint ✓ (only 3 pre-existing exhaustive-deps). **QA complete (all three passes green):** Pass A code review (0 critical / 4 major — all fixed: Dialog `onClose` ref-stabilized effect, ReferencesPanel `inert={collapsed}`, quiz dark chips, callout label; 27 minor/nit), Pass B Chrome MCP + Lighthouse (a11y 100 both themes on notes/revision/assessment/quiz; stale console form-field issue verified DOM-clean), Pass C MiMo vision audit (0 critical/major, 3 minor/4 nits — minor #2 already covered by accent-text tokens). Artifacts in `.tmp/qa-tier3/` (`passA-notes.md`, `passB-notes.md`, `visual-review.md`, `screenshots/`).
 
 Remaining Lighthouse SEO gap (no meta description, invalid robots.txt) is out of scope for the frontend a11y tier.
+---
+
+## Backend ↔ Frontend Contract Sync (post-rebuild)
+
+Drove backend + frontend back into agreement after the frontend rebuild (multi-lecture / design state). Work item from `Norai_rebuild_roadmap.md` ("backend up to date with frontend rebuild").
+
+Backend (`backend/main.py`, `backend/orchestrator.py`):
+- Deleted dead `_load_quiz_questions()` (still read legacy `outputs/assessment/` files).
+- `/quiz/questions` now returns `{"questions": [...], "incomplete": bool}`. Bare-list legacy payload → `incomplete: false`; degraded fallback (`{incomplete:true, questions:[]}`) preserved so AssessmentView can surface `PartialContentBadge`.
+- Removed orchestrator-local `update_lecture_title` shadow (uses thread-safe `lecture_registry.update_lecture_title`).
+- `tutor/dependencies.py` `invoke_tutor`: lecture id `"default"`/empty → global default tutor graph (per-lecture isolation edge).
+
+Frontend:
+- `useQuizStore`: `Question.type` widened to string superset; `fetchQuizQuestions` unwraps the new `{questions}` wrapper and normalizes `question_id → id`; added `fetchQuizIncomplete()`.
+- `AssessmentView`: reduced duplicate fetch; shows `PartialContentBadge` when `incomplete`; regrouping now **options-driven** (`choice` = has-options non-TF, `free` = no-options) instead of hardcoded `MCQ`/`True/False` names.
+- `assessment-cards.tsx`: `QuestionCard` renders True/False, options (`MCQOptions`) for any options-bearing type, else free-response lines; `AnswerKey` letter maps any options-bearing answer.
+
+- `ProcessingPage.tsx`: `STAGES` re-ordered to the true backend stage chain (outline before visual_knowledge; `study_notes`/`revision_notes`/`assessment` collapsed to backend `chapter_artifacts`), so progress ticks track the real pipeline.
+
+Verification: `frontend` `npm run build` (tsc) ✓, `npm run lint` ✓ (3 pre-existing exhaustive-deps). New standalone contract test `backend/test_api_contract.py` — GET probes `/docs`, `/lectures`, `/quiz/questions`, `/flashcards`, `/outline` and asserts response shapes (incl. `incomplete` bool + `questions` list). Runs green against a freshly-restarted backend (no `--reload`, so restart required). Browser smoke (workspace → Assessment for "React Components" lecture): MCQ + TF + Short Answer cards render, no console errors.

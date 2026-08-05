@@ -367,29 +367,18 @@ async def delete_thread(thread_id: str, lecture_id: str = "default"):
 # Quiz, Summary, Flashcards
 # ---------------------------------------------------------------------------
 
-def _load_quiz_questions(chapter_id: int | None) -> list[dict]:
-    if chapter_id is not None:
-        path = Path(f"outputs/assessment/assessment_chapter_{chapter_id}.json")
-    else:
-        path = Path("outputs/assessment/assessment.json")
-    if not path.exists():
-        return []
-    with open(path, encoding="utf-8") as f:
-        data = json_lib.load(f)
-    questions = data if isinstance(data, list) else []
-    return [q for q in questions if isinstance(q, dict)]
-
-
 @app.get("/quiz/questions")
 async def quiz_questions(chapter_id: int | None = None, n: int = 5, lecture_id: str = "default"):
     info = get_lecture(lecture_id)
     base = Path(info["output_dir"]) if info else Path("outputs")
     path = base / "assessment" / f"assessment_chapter_{chapter_id}.json" if chapter_id else base / "assessment" / "assessment.json"
     if not path.exists():
-        return []
+        return {"questions": [], "incomplete": False}
     raw_data = json_lib.loads(path.read_text(encoding="utf-8"))
+    incomplete = False
     if isinstance(raw_data, dict):
         questions = raw_data.get("questions", [])
+        incomplete = bool(raw_data.get("incomplete", False))
     elif isinstance(raw_data, list):
         questions = raw_data
     else:
@@ -397,7 +386,7 @@ async def quiz_questions(chapter_id: int | None = None, n: int = 5, lecture_id: 
     questions = [q for q in questions if isinstance(q, dict)]
     if len(questions) > n:
         questions = random.sample(questions, n)
-    return questions
+    return {"questions": questions, "incomplete": incomplete}
 
 
 @app.post("/quiz/evaluate")

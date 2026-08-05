@@ -110,6 +110,11 @@ def invoke_tutor(
     If `lecture_id` is provided, the lecture‑specific graph and checkpointer
     are used. Otherwise, the global default graph is used (backward compatible).
     """
+    # The frontend uses 'default' as the fallback lecture_id when none is
+    # active. Treat it like "no lecture" so it uses the global default graph
+    # instead of creating a phantom outputs/default/ lecture with no chroma.
+    lecture_id = lecture_id if lecture_id and lecture_id != "default" else None
+
     if lecture_id:
         graph, lock = _get_or_create_lecture_graph(lecture_id)
     else:

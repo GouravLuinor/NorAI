@@ -69,6 +69,7 @@ export function FreeResponseLines({ count = 4 }: { count?: number }) {
 
 // ── Question Card ────────────────────────────────────────────────────────────
 export function QuestionCard({ question, index }: { question: Question; index: number }) {
+  const hasOptions = Array.isArray(question.options) && question.options.length > 0
   return (
     <div className="bg-ns border border-bdr2 rounded-xl p-5 shadow-ev1">
       <div className="flex items-center justify-between mb-4">
@@ -76,9 +77,11 @@ export function QuestionCard({ question, index }: { question: Question; index: n
         <Badge type={question.type} difficulty={question.difficulty ?? 'Medium'} />
       </div>
       <div className="text-sm text-nt leading-relaxed mb-5">{question.question}</div>
-      {question.type === 'MCQ' && <MCQOptions options={question.options ?? []} />}
-      {question.type === 'True/False' && <TrueFalseOptions />}
-      {!['MCQ', 'True/False'].includes(question.type) && (
+      {question.type === 'True/False' ? (
+        <TrueFalseOptions />
+      ) : hasOptions ? (
+        <MCQOptions options={question.options ?? []} />
+      ) : (
         <FreeResponseLines count={question.type?.toLowerCase().includes('short') ? 3 : 4} />
       )}
     </div>
@@ -107,7 +110,11 @@ export function AnswerKey({ questions, isOpen, onToggle }: { questions: Question
               <span className="font-mono text-11 font-semibold text-nt3 min-w-[24px] pt-1">Q{i + 1}</span>
               <div className="text-13 text-nt2 leading-relaxed">
                 <span className={`inline-flex items-center justify-center w-6 h-6 rounded-md border mr-2.5 align-middle text-11 font-semibold ${q.type === 'True/False' && q.answer === 'False' ? 'bg-nrb border-nrbr text-nr' : 'bg-npb border-npbr text-np'}`}>
-                  {q.type === 'MCQ' ? String.fromCharCode(65 + (q.options ?? []).indexOf(q.answer)) : q.type === 'True/False' ? q.answer[0] : q.answer.slice(0, 1)}
+                  {Array.isArray(q.options) && q.options.length > 0 && q.answer
+                    ? String.fromCharCode(65 + q.options.indexOf(q.answer))
+                    : q.type === 'True/False'
+                      ? q.answer[0]
+                      : q.answer.slice(0, 1)}
                 </span>
                 {q.answer}
                 {q.explanation && <span className="block mt-1 text-nt3 text-xs">{q.explanation}</span>}
