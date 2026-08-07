@@ -4,6 +4,7 @@ import { Search, Download } from 'lucide-react'
 import { RevisionView } from '../doc/RevisionView'
 import { NotesView } from '../doc/NotesView'
 import { AssessmentView } from '../doc/AssessmentView'
+import { StudyGuideView } from '../doc/StudyGuideView'
 import { SearchBar } from '../doc/SearchBar'
 import { useToastStore } from '../../stores/useToastStore'
 import { HighlightAsk } from '../doc/HighlightAsk'
@@ -22,6 +23,7 @@ export function DocPanel() {
     notes: 'study_notes',
     revision: 'revision',
     assessment: 'assessment',
+    guide: 'revision',
   }
   const type = pdfMap[activeDocTab]
   if (type) {
@@ -39,6 +41,7 @@ export function DocPanel() {
             { value: 'notes', label: 'Study notes', prefix: <span className="font-mono text-3xs text-nt4 tracking-widest mr-1">03</span> },
             { value: 'revision', label: 'Revision', prefix: <span className="font-mono text-3xs text-nt4 tracking-widest mr-1">04</span> },
             { value: 'assessment', label: 'Assessment', prefix: <span className="font-mono text-3xs text-nt4 tracking-widest mr-1">05</span> },
+            { value: 'guide', label: 'Guide', prefix: <span className="font-mono text-3xs text-nt4 tracking-widest mr-1">06</span> },
           ]}
           value={activeDocTab}
           onChange={(v) => setDocTab(v)}
@@ -68,7 +71,9 @@ export function DocPanel() {
       </div>
 
       {/* Content */}
-      {activeDocTab === 'revision' ? (
+      {activeDocTab === 'guide' ? (
+        <StudyGuideView />
+      ) : activeDocTab === 'revision' ? (
         <RevisionView key={`rev-${activeChapterId}`} chapterId={activeChapterId} />
       ) : activeDocTab === 'notes' ? (
         <NotesView key={`notes-${activeChapterId}`} chapterId={activeChapterId} />

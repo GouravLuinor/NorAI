@@ -165,6 +165,11 @@ class QuizEvaluateRequest(BaseModel):
     elapsed_seconds: int = 0
     confidences: list[str] = []
 
+class QuizExplainRequest(BaseModel):
+    question: str
+    lecture_id: str = "default"
+    chapter_id: int | None = None
+
 # ---------------------------------------------------------------------------
 # Chat endpoints
 # ---------------------------------------------------------------------------
@@ -479,6 +484,119 @@ async def quiz_evaluate(req: QuizEvaluateRequest):
                 "overall_insights": text,
             }
         }
+
+
+@app.post("/quiz/explain")
+async def quiz_explain(req: QuizExplainRequest):
+    """Cite a question's source from the lecture index — on demand only.
+
+    Runs a single embedding retrieval (top-1 note chunk + top-1 screenshot).
+    Never regenerates. Returns source:null gracefully when the index is missing.
+    """
+    if not req.question.strip():
+        return {"source": None, "message": "Empty question."}
+
+    lecture_id = req.lecture_id if req.lecture_id and req.lecture_id != "default" else None
+    output_dir = None
+    if lecture_id:
+        info = get_lecture(lecture_id)
+        if info:
+            output_dir = info.get("output_dir")
+
+    from tutor.retriever import retrieve, retrieve_images, IndexNotBuiltError
+
+    try:
+        chunks = await asyncio.to_thread(
+            retrieve,
+            req.question.strip(),
+            chapter_id=req.chapter_id,
+            k=1,
+            output_dir=output_dir,
+        )
+    except IndexNotBuiltError:
+        return {"source": None, "message": "No lecture index available for citation."}
+    except Exception as exc:
+        print(f"[quiz/explain] retrieval error: {exc}")
+        return {"source": None, "message": "Could not retrieve a source for this question."}
+
+    top = chunks[0] if chunks else None
+    screenshot = None
+    if top:
+        try:
+            images = await asyncio.to_thread(
+                retrieve_images,
+                req.question.strip(),
+                chapter_id=req.chapter_id,
+                k=1,
+                output_dir=output_dir,
+            )
+            if images:
+                screenshot = images[0].get("path")
+        except Exception:
+            screenshot = None
+
+    if not top:
+        return {"source": None, "message": "No matching source found in the lecture."}
+
+    return {
+        "source": top.get("heading_path") or top.get("heading") or "Lecture notes",
+        "heading": top.get("heading", ""),
+        "heading_path": top.get("heading_path", ""),
+        "chapter_id": top.get("chapter_id"),
+        "text": top.get("text", "")[:400],
+        "screenshot": screenshot,
+    }
+
+
+@app.get("/study-guide")
+async def study_guide(lecture_id: str = "default"):
+    """Catalog the already-generated per-chapter revision notes into one doc.
+
+    Pure file reads — no LLM call. Returns {"title", "chapters": [{chapter_id,
+    title, markdown}]} in chapter order.
+    """
+    info = get_lecture(lecture_id)
+    if not info:
+        raise HTTPException(status_code=404, detail="Lecture not found")
+    base = Path(info["output_dir"])
+
+    title = info.get("name") or info.get("title") or ""
+    chapters: list[dict] = []
+
+    outline_path = base / "notes" / "lecture_outline.json"
+    chapter_ids: list[int] = []
+    if outline_path.exists():
+        try:
+            outline = json_lib.loads(outline_path.read_text(encoding="utf-8"))
+            for ch in outline.get("chapters", []):
+                cid = ch.get("chapter_id") or ch.get("id")
+                if cid is not None:
+                    chapter_ids.append(int(cid))
+        except Exception:
+            pass
+    if not chapter_ids:
+        revision_dir = base / "revision"
+        if revision_dir.exists():
+            chapter_ids = sorted(
+                int(p.stem.replace("revision_chapter_", ""))
+                for p in revision_dir.glob("revision_chapter_*.md")
+                if p.stem.replace("revision_chapter_", "").isdigit()
+            )
+
+    for cid in chapter_ids:
+        path = base / "revision" / f"revision_chapter_{cid}.md"
+        if not path.exists():
+            continue
+        chapters.append({
+            "chapter_id": cid,
+            "title": f"Chapter {cid}",
+            "markdown": path.read_text(encoding="utf-8"),
+        })
+
+    if not chapters:
+        raise HTTPException(status_code=404, detail="No revision notes found for this lecture")
+
+    return {"title": title, "chapters": chapters}
 
 
 @app.get("/flashcards")

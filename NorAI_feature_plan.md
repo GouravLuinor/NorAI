@@ -35,11 +35,12 @@ Shared single prompt-assembly site: `tutor/prompts.py:7` `TUTOR_SYSTEM_PROMPT` �
 - `backend/test_api_contract.py`: added a `/quiz/questions?difficulty=Easy` shape check.
 - Note: the original "bump pipeline default 3 → ~5 for a filterable pool" was stale — `assessment_prompts.py:133-139` already targets 8–10 questions/chapter (models enforce 4–15). No generator/prompt change; existing pools are filter-only (a given difficulty may return 0 on a small pool, handled by the UI empty-state).
 
-## Phase 3 — E (explain-with-citation + Study Guide)
-10. `/quiz/evaluate` (`main.py:392–461`): return per-question stored `explanation`.
-11. Cite-on-explain: on explicit "Explain", run `tutor/retriever.retrieve(concepts, chapter_id, output_dir)` → top-1 `source`/`heading_path` (metered only on demand).
-12. Frontend: render via `ReferencesPanel`/`buildReferences` (`references.ts:4–29`) + click-to-scroll (`ChatArea.tsx:155–190`); add `citation?` to `Question` (`useQuizStore.ts:16–24`) + "Explain" in `QuizPanel` (`:295–304`) + `assessment-cards.tsx` AnswerKey.
-13. **Study Guide** (stretch): aggregate written per-chapter `MergedChapterArtifacts` into a Q&A doc; resume stub `study_pdf_builder`; new doc tab. 
+## Phase 3 — E (explain-with-citation + Study Guide) ✓ Done
+- **Cite-on-explain**: `POST /quiz/explain` (`main.py`) — on-demand single retrieval (top-1 note chunk + top-1 screenshot) via `tutor/retriever.retrieve`; returns `{source, heading, heading_path, chapter_id, text, screenshot}` or a graceful `source:null` (missing index) — one embedding call, never regenerates. Frontend: `explainQuizQuestion` helper (`useQuizStore.ts`), shared `CitationBox` component, `lib/cite.ts` click-to-scroll (sets chapter + revision tab + poll-scroll, mirrors ChatArea). Explain affordance in **QuizPanel** (feedback branch) + **AssessmentView** (per-card, `assessment-cards.tsx` `QuestionCard` gained `onExplain`).
+- **Study Guide (zero-run)**: `GET /study-guide` catalogs already-generated `revision_chapter_<id>.md` in chapter order (`{title, chapters:[{chapter_id,title,markdown}]}`) — pure file reads, no LLM. Frontend: new `StudyGuideView` + `'guide'` doc tab (`useChapterStore`/`DocPanel` segment 06); Guide PDF maps to the `revision` print type (same content, all chapters).
+- `backend/test_api_contract.py`: added `/study-guide` shape + `POST /quiz/explain` probes using the first real lecture id.
+- Note: the plan's "resume stub `study_pdf_builder`" was stale — no such file exists; Study Guide is assembled client/backend-side from existing artifacts (locked: zero-run, no drill).
+- Note: question `explanation` was already stored + shown (AnswerKey / QuizPanel feedback), so E's "return stored explanation" needed no work — the gap was source grounding, now filled.
 
 ## Deferred design (locked, not built now)
 - **B**: backend per-lecture tables `quiz_attempts`/`flashcard_ratings` (mirror `user_threads` init `backend/main.py:92–97`, per-lecture DB `get_lecture_db_path()` `dependencies.py:92–95`) + POST/GET endpoints; frontend persist `FlashcardsPanel` ratings (`:19–20`) + quiz session (`useQuizStore.ts:67–82`) & "review missed" (`{Again,Hard}` filter); pin question batch by attempt id.

@@ -1,4 +1,4 @@
-import { ChevronDown, Lock, LockOpen, Info } from 'lucide-react'
+import { ChevronDown, Lock, LockOpen, Info, Quote } from 'lucide-react'
 import type { Question } from '../../stores/useQuizStore'
 import { FOCUS_RING } from '../ui/shared'
 
@@ -68,7 +68,11 @@ export function FreeResponseLines({ count = 4 }: { count?: number }) {
 }
 
 // ── Question Card ────────────────────────────────────────────────────────────
-export function QuestionCard({ question, index }: { question: Question; index: number }) {
+export function QuestionCard({ question, index, onExplain }: {
+  question: Question
+  index: number
+  onExplain?: (question: Question) => void
+}) {
   const hasOptions = Array.isArray(question.options) && question.options.length > 0
   return (
     <div className="bg-ns border border-bdr2 rounded-xl p-5 shadow-ev1">
@@ -83,6 +87,16 @@ export function QuestionCard({ question, index }: { question: Question; index: n
         <MCQOptions options={question.options ?? []} />
       ) : (
         <FreeResponseLines count={question.type?.toLowerCase().includes('short') ? 3 : 4} />
+      )}
+      {onExplain && (
+        <button
+          type="button"
+          onClick={() => onExplain(question)}
+          className={`mt-4 inline-flex items-center gap-1.5 text-2xs font-medium text-nbl hover:text-np bg-transparent border-none cursor-pointer ${FOCUS_RING}`}
+        >
+          <Quote size={12} strokeWidth={1.5} />
+          Explain · where is this in the notes?
+        </button>
       )}
     </div>
   )
