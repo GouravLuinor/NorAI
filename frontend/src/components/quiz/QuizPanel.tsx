@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { useQuizStore, type Question, evaluateQuiz, explainQuizQuestion, type QuizCitation } from '../../stores/useQuizStore'
+import { useQuizStore, type Question, evaluateQuiz, explainQuizQuestion, fetchQuizMissed, type QuizCitation } from '../../stores/useQuizStore'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useLectureStore } from '../../stores/useLectureStore'
-import { Check, X, RotateCcw, BookOpen, AlertTriangle, Quote } from 'lucide-react'
+import { Check, X, RotateCcw, BookOpen, AlertTriangle, Quote, RefreshCw } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
 import { CitationBox } from './CitationBox'
@@ -20,6 +20,7 @@ export function QuizPanel() {
     submitAnswer,
     nextQuestion,
     endQuiz,
+    finishAttempt,
     reset,
     retakeQuiz,
     setConfidence,
@@ -102,6 +103,18 @@ export function QuizPanel() {
       reset()
     }
 
+    const handleReviewMissed = async () => {
+      const state = useQuizStore.getState()
+      if (!state.attemptId) return
+      const lectureId = useLectureStore.getState().activeLectureId || 'default'
+      const missedIds = await fetchQuizMissed(state.attemptId, lectureId)
+      if (missedIds.length === 0) return
+      const missedQuestions = state.questions.filter((q) => missedIds.includes(String(q.id)))
+      if (missedQuestions.length > 0) {
+        state.startQuiz(missedQuestions, state.quizChapterId, state.quizDifficulty)
+      }
+    }
+
     return (
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto doc-content px-6 py-8">
@@ -166,18 +179,29 @@ export function QuizPanel() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 w-full max-w-md pb-4">
-              <Button
-                variant="surface"
-                onClick={retakeQuiz}
-                className="flex-1 gap-2 py-2.5 rounded-lg text-sm bg-nb hover:bg-ns2 hover:shadow-ev2"
-              >
-                <RotateCcw size={14} strokeWidth={1.5} /> Retake
-              </Button>
+            <div className="flex flex-col gap-2.5 w-full max-w-md pb-4">
+              <div className="flex gap-3 w-full">
+                <Button
+                  variant="surface"
+                  onClick={retakeQuiz}
+                  className="flex-1 gap-2 py-2.5 rounded-lg text-sm bg-nb hover:bg-ns2 hover:shadow-ev2"
+                >
+                  <RotateCcw size={14} strokeWidth={1.5} /> Retake
+                </Button>
+                {percentage < 100 && (
+                  <Button
+                    variant="surface"
+                    onClick={handleReviewMissed}
+                    className="flex-1 gap-2 py-2.5 rounded-lg text-sm bg-ns2 hover:bg-ns3 text-nt"
+                  >
+                    <RefreshCw size={14} strokeWidth={1.5} /> Review Missed
+                  </Button>
+                )}
+              </div>
               <Button
                 variant="primary"
                 onClick={handleReviewNotes}
-                className="flex-1 gap-2 py-2.5 rounded-md text-sm"
+                className="w-full gap-2 py-2.5 rounded-md text-sm"
               >
                 <BookOpen size={14} strokeWidth={1.5} /> Review Notes
               </Button>
@@ -227,6 +251,7 @@ export function QuizPanel() {
     try {
       const result = await evaluateQuiz(payload, quizStartTime!, currentState.confidences)
       if (result) {
+        await finishAttempt(result)
         endQuiz(result)
       } else {
         setEvaluateError('Evaluation came back empty — please retry.')

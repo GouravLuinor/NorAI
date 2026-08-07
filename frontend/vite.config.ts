@@ -26,6 +26,7 @@ export default defineConfig({
       '/static': 'http://localhost:8000',
       '/outline': 'http://localhost:8000',
       '/study-guide': 'http://localhost:8000',
+      '/concept-map': 'http://localhost:8000',
     },
   },
 })

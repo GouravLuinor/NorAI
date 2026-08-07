@@ -49,11 +49,23 @@ export interface QuizCitation {
   message?: string
 }
 
+export interface QuizAttempt {
+  id: string
+  lecture_id: string
+  chapter_id: number | null
+  difficulty: string
+  started_at: string
+  finished_at: string | null
+  score: number
+  total: number
+}
+
 interface QuizState {
   aiMode: 'tutor' | 'quiz' | 'cards' | 'socratic'
   setMode: (mode: 'tutor' | 'quiz' | 'cards' | 'socratic') => void
 
   isActive: boolean
+  attemptId: string | null
   questions: Question[]
   currentIndex: number
   answers: string[]
@@ -65,10 +77,12 @@ interface QuizState {
   quizDifficulty: QuizDifficulty | null
 
   startQuiz: (questions: Question[], chapterId?: number | null, difficulty?: QuizDifficulty | null) => void
+  createAttempt: (questions: Question[], chapterId?: number | null, difficulty?: QuizDifficulty | null) => Promise<string | null>
   submitAnswer: (answer: string) => void
   setConfidence: (confidence: string) => void
   nextQuestion: () => void
   endQuiz: (evaluation: QuizEvaluation) => void
+  finishAttempt: (evaluation: QuizEvaluation) => Promise<void>
   retakeQuiz: () => Promise<void>
 
   /** BUG-6: called by useThreadStore on every thread switch — always idempotent */
@@ -80,11 +94,12 @@ interface QuizState {
 // ---------------------------------------------------------------------------
 const INITIAL_STATE: Omit<
   QuizState,
-  | 'setMode' | 'startQuiz' | 'submitAnswer' | 'setConfidence'
-  | 'nextQuestion' | 'endQuiz' | 'retakeQuiz' | 'reset'
+  | 'setMode' | 'startQuiz' | 'createAttempt' | 'submitAnswer' | 'setConfidence'
+  | 'nextQuestion' | 'endQuiz' | 'finishAttempt' | 'retakeQuiz' | 'reset'
 > = {
   aiMode: 'tutor',
   isActive: false,
+  attemptId: null,
   questions: [],
   currentIndex: 0,
   answers: [],
@@ -120,6 +135,32 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       quizDifficulty: difficulty ?? null,
     }),
 
+  createAttempt: async (questions, chapterId = null, difficulty = null) => {
+    const lectureId = getLectureId()
+    get().startQuiz(questions, chapterId, difficulty)
+    try {
+      const res = await fetch(`${API_BASE}/quiz/attempts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lecture_id: lectureId,
+          chapter_id: chapterId ?? null,
+          difficulty: difficulty || 'All',
+          questions,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const attemptId = data.attempt_id
+        set({ attemptId })
+        return attemptId
+      }
+    } catch (err) {
+      console.warn('[QuizStore] Failed to create attempt record:', err)
+    }
+    return null
+  },
+
   submitAnswer: (answer) => {
     const { questions, currentIndex, score } = get()
     const q = questions[currentIndex]
@@ -144,21 +185,39 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
   endQuiz: (evaluation) => set({ evaluation }),
 
+  finishAttempt: async (evaluation) => {
+    set({ evaluation })
+    const { attemptId, questions, answers, confidences, score } = get()
+    if (!attemptId) return
+    const lectureId = getLectureId()
+    const answersPayload = questions.map((q, i) => ({
+      id: q.id,
+      question_id: q.id,
+      user_answer: answers[i] || '',
+    }))
+    try {
+      await fetch(`${API_BASE}/quiz/attempts/${attemptId}/finish?lecture_id=${encodeURIComponent(lectureId)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          answers: answersPayload,
+          confidences,
+          evaluation,
+          score: evaluation.final_score ?? score,
+          total: questions.length,
+        }),
+      })
+    } catch (err) {
+      console.warn('[QuizStore] Failed to finish attempt record:', err)
+    }
+  },
+
   retakeQuiz: async () => {
     const { quizChapterId, quizDifficulty } = get()
     const lectureId = getLectureId()
     const questions = await fetchQuizQuestions(quizChapterId ?? undefined, lectureId, quizDifficulty ?? undefined)
     if (questions.length > 0) {
-      set({
-        questions,
-        currentIndex: 0,
-        answers: [],
-        confidences: new Array(questions.length).fill(''),
-        score: 0,
-        evaluation: null,
-        quizStartTime: Date.now(),
-        isActive: true,
-      })
+      get().createAttempt(questions, quizChapterId, quizDifficulty)
     }
   },
 
@@ -250,4 +309,65 @@ export async function fetchGeneratedFlashcards(
   if (Array.isArray(data)) return data
   if (data && Array.isArray(data.flashcards)) return data.flashcards
   return []
+}
+
+export async function fetchQuizAttempts(
+  lectureId: string,
+  chapterId?: number,
+): Promise<QuizAttempt[]> {
+  const params = new URLSearchParams({ lecture_id: lectureId })
+  if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
+  const res = await fetch(`${API_BASE}/quiz/attempts?${params}`)
+  if (!res.ok) return []
+  const data = await res.json()
+  return (data.attempts || []) as QuizAttempt[]
+}
+
+export async function fetchQuizMissed(
+  attemptId: string,
+  lectureId: string,
+): Promise<string[]> {
+  const res = await fetch(
+    `${API_BASE}/quiz/attempts/${attemptId}/missed?lecture_id=${encodeURIComponent(lectureId)}`
+  )
+  if (!res.ok) return []
+  const data = await res.json()
+  return (data.question_ids || []).map(String)
+}
+
+export async function persistFlashcardRatings(
+  ratings: Array<{ card_key: string; rating: string }>,
+  lectureId: string,
+  chapterId?: number,
+): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/flashcards/ratings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lecture_id: lectureId,
+        chapter_id: chapterId ?? null,
+        ratings,
+      }),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
+export async function fetchFlashcardRatings(
+  lectureId: string,
+  chapterId?: number,
+): Promise<Record<string, string>> {
+  try {
+    const params = new URLSearchParams({ lecture_id: lectureId })
+    if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
+    const res = await fetch(`${API_BASE}/flashcards/ratings?${params}`)
+    if (!res.ok) return {}
+    const data = await res.json()
+    return (data.ratings || {}) as Record<string, string>
+  } catch {
+    return {}
+  }
 }
