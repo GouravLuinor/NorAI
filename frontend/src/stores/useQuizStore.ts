@@ -38,6 +38,17 @@ export interface Flashcard {
 
 export type QuizDifficulty = 'Easy' | 'Medium' | 'Hard'
 
+/** Source citation for a quiz question — returned by POST /quiz/explain. */
+export interface QuizCitation {
+  source: string | null
+  heading?: string
+  heading_path?: string
+  chapter_id?: number | null
+  text?: string
+  screenshot?: string | null
+  message?: string
+}
+
 interface QuizState {
   aiMode: 'tutor' | 'quiz' | 'cards' | 'socratic'
   setMode: (mode: 'tutor' | 'quiz' | 'cards' | 'socratic') => void
@@ -209,6 +220,21 @@ export async function evaluateQuiz(
   if (!res.ok) throw new Error('Evaluation failed')
   const data = await res.json()
   return data.evaluation as QuizEvaluation
+}
+
+/** Cite a question's source in the lecture — metered only on explicit click. */
+export async function explainQuizQuestion(
+  question: string,
+  lectureId: string,
+  chapterId?: number | null,
+): Promise<QuizCitation> {
+  const res = await fetch(`${API_BASE}/quiz/explain`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question, lecture_id: lectureId, chapter_id: chapterId ?? null }),
+  })
+  if (!res.ok) throw new Error('Explain failed')
+  return (await res.json()) as QuizCitation
 }
 
 export async function fetchGeneratedFlashcards(

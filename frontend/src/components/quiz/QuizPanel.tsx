@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useQuizStore, type Question, evaluateQuiz } from '../../stores/useQuizStore'
+import { useQuizStore, type Question, evaluateQuiz, explainQuizQuestion, type QuizCitation } from '../../stores/useQuizStore'
 import { useChapterStore } from '../../stores/useChapterStore'
-import { Check, X, RotateCcw, BookOpen, AlertTriangle } from 'lucide-react'
+import { useLectureStore } from '../../stores/useLectureStore'
+import { Check, X, RotateCcw, BookOpen, AlertTriangle, Quote } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
+import { CitationBox } from './CitationBox'
+import { scrollToHeading } from '../../lib/cite'
 import { FOCUS_RING } from '../ui/shared'
 
 export function QuizPanel() {
@@ -29,6 +32,11 @@ export function QuizPanel() {
   const [confidence, setConfidenceLocal] = useState('')
   const [evaluating, setEvaluating] = useState(false)
   const [evaluateError, setEvaluateError] = useState('')
+  const [citation, setCitation] = useState<QuizCitation | null>(null)
+  const [citing, setCiting] = useState(false)
+  const [citeError, setCiteError] = useState('')
+
+  const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
 
   // Reset local state when a new quiz starts (retake or fresh)
   useEffect(() => {
@@ -38,8 +46,35 @@ export function QuizPanel() {
       setShowFeedback(false)
       setConfidenceLocal('')
       setEvaluateError('')
+      setCitation(null)
+      setCiting(false)
+      setCiteError('')
     }
   }, [currentIndex, questions.length])
+
+  // Clear the per-question citation whenever the active question changes.
+  useEffect(() => {
+    setCitation(null)
+    setCiting(false)
+    setCiteError('')
+  }, [currentIndex, questions])
+
+  const handleExplain = async () => {
+    if (citing) return
+    const target = questions[currentIndex]
+    if (!target) return
+    setCiting(true)
+    setCiteError('')
+    setCitation(null)
+    try {
+      const result = await explainQuizQuestion(target.question, lectureId, useQuizStore.getState().quizChapterId)
+      setCitation(result)
+    } catch {
+      setCiteError('Could not fetch a citation — please try again.')
+    } finally {
+      setCiting(false)
+    }
+  }
 
   // ── Evaluation Screen ────────────────────────────────────────────────────
   if (evaluation) {
@@ -300,6 +335,28 @@ export function QuizPanel() {
                 {isCorrect ? `Correct! ${q.explanation}` : `Incorrect. The correct answer is ${q.answer}. ${q.explanation}`}
               </div>
             </div>
+          </div>
+        )}
+
+        {showFeedback && isAutoGraded && (
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={handleExplain}
+              disabled={citing}
+              className={`inline-flex items-center gap-1.5 text-2xs font-medium text-nbl hover:text-np bg-transparent border-none cursor-pointer disabled:opacity-60 ${FOCUS_RING}`}
+            >
+              <Quote size={12} strokeWidth={1.5} />
+              {citing ? 'Finding source…' : 'Explain · where is this in the notes?'}
+            </button>
+            {citeError && <div className="mt-1 text-2xs text-nr">{citeError}</div>}
+            {citation && (
+              <CitationBox
+                citation={citation}
+                loading={false}
+                onScroll={() => scrollToHeading(citation.heading_path || citation.source || '', citation.chapter_id)}
+              />
+            )}
           </div>
         )}
 

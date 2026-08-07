@@ -48,6 +48,68 @@ def get(path: str) -> tuple[int, object]:
     return status, (headers, data)
 
 
+def post_json(path: str, body: dict) -> tuple[int, object]:
+    import json
+    req = urllib.request.Request(
+        BASE + path,
+        method="POST",
+        headers={"Content-Type": "application/json"},
+        data=json.dumps(body).encode("utf-8"),
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            headers = resp.headers.get("content-type", "")
+            body_bytes = resp.read()
+            status = resp.status
+    except urllib.error.HTTPError as e:
+        return e.code, None
+    except Exception as e:  # noqa: BLE001
+        return 0, f"error: {e}"
+    return status, (headers, body_bytes)
+
+
+def probe_lecture_endpoints() -> list[str]:
+    """/study-guide + /quiz/explain need a real lecture id; probe the first one."""
+    failures: list[str] = []
+    _, payload = get("/lectures")
+    if not payload:
+        return ["/study-guide: /lectures returned nothing to pick a lecture from"]
+    try:
+        lectures = json_parse(payload[1])
+    except Exception as e:  # noqa: BLE001
+        return [f"/study-guide: could not parse /lectures -> {e}"]
+    first = next((l for l in lectures if isinstance(l, dict) and l.get("lecture_id")), None)
+    lid = first.get("lecture_id") if first else None
+    if not lid:
+        return ["/study-guide: no lecture id found to probe with"]
+
+    status, payload = get(f"/study-guide?lecture_id={lid}")
+    print(f"GET  {f'/study-guide?lecture_id={lid}':<18} -> {status}")
+    if status != 200:
+        failures.append(f"/study-guide: expected 200, got {status}")
+    elif payload:
+        try:
+            parsed = json_parse(payload[1])
+            if not isinstance(parsed.get("chapters"), list):
+                failures.append("/study-guide: missing `chapters` list in response")
+        except Exception as e:  # noqa: BLE001
+            failures.append(f"/study-guide: invalid JSON -> {e}")
+
+    status, payload = post_json("/quiz/explain", {"question": "What is a component?", "lecture_id": lid, "chapter_id": 1})
+    print(f"POST {f'/quiz/explain ({lid})':<18} -> {status}")
+    if status != 200:
+        failures.append(f"/quiz/explain: expected 200, got {status}")
+    elif payload:
+        try:
+            parsed = json_parse(payload[1])
+            if not isinstance(parsed, dict):
+                failures.append("/quiz/explain: expected object response")
+        except Exception as e:  # noqa: BLE001
+            failures.append(f"/quiz/explain: invalid JSON -> {e}")
+
+    return failures
+
+
 def main(argv: list[str] | None = None) -> int:
     global BASE
     parser = argparse.ArgumentParser()
@@ -106,6 +168,13 @@ def main(argv: list[str] | None = None) -> int:
                 failures.append(f"{path}: expected object, got {type(parsed)}")
             continue
 
+    if failures:
+        print("\nCONTRACT FAILURES:")
+        for f in failures:
+            print(f"  - {f}")
+        return 1
+
+    failures = probe_lecture_endpoints()
     if failures:
         print("\nCONTRACT FAILURES:")
         for f in failures:

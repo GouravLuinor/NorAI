@@ -25,6 +25,7 @@ export default defineConfig({
       '/lectures': 'http://localhost:8000',
       '/static': 'http://localhost:8000',
       '/outline': 'http://localhost:8000',
+      '/study-guide': 'http://localhost:8000',
     },
   },
 })

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Eye, EyeOff, Play } from 'lucide-react'
 import { useChapterStore } from '../../stores/useChapterStore'
-import { useQuizStore, fetchQuizQuestions, fetchQuizIncomplete, type QuizDifficulty } from '../../stores/useQuizStore'
+import { useQuizStore, fetchQuizQuestions, fetchQuizIncomplete, explainQuizQuestion, type QuizDifficulty, type QuizCitation } from '../../stores/useQuizStore'
 import { useLectureStore } from '../../stores/useLectureStore' 
 import { QuestionCard, AnswerKey } from './assessment-cards'
 import type { Question } from '../../stores/useQuizStore'
 import { PartialContentBadge } from '../ui/PartialContentBadge'
 import { useToastStore } from '../../stores/useToastStore'
 import { Button } from '../ui/Button'
+import { CitationBox } from '../quiz/CitationBox'
+import { scrollToHeading } from '../../lib/cite'
 
 const DIFFICULTY_OPTIONS: Array<{ label: string; value: QuizDifficulty | 'All' }> = [
   { label: 'All', value: 'All' },
@@ -27,6 +29,25 @@ export function AssessmentView() {
   const [loading, setLoading] = useState(false)
   const [showAnswers, setShowAnswers] = useState(false)
   const [difficulty, setDifficulty] = useState<QuizDifficulty | 'All'>('All')
+  const [citations, setCitations] = useState<Record<number, QuizCitation | null>>({})
+  const [citingIds, setCitingIds] = useState<Record<number, boolean>>({})
+  const [citeErrors, setCiteErrors] = useState<Record<number, string>>({})
+
+const handleExplain = async (question: Question) => {
+  const qid = question.id ?? -1
+  if (citingIds[qid]) return
+  setCitingIds((s) => ({ ...s, [qid]: true }))
+  setCiteErrors((s) => ({ ...s, [qid]: '' }))
+  setCitations((s) => ({ ...s, [qid]: null }))
+  try {
+    const result = await explainQuizQuestion(question.question, lectureId || 'default', activeChapterId)
+    setCitations((s) => ({ ...s, [qid]: result }))
+  } catch {
+    setCiteErrors((s) => ({ ...s, [qid]: 'Could not fetch a citation — please try again.' }))
+  } finally {
+    setCitingIds((s) => ({ ...s, [qid]: false }))
+  }
+}
 
 useEffect(() => {
   if (!lectureId) return  // wait for Workspace to set it
@@ -40,6 +61,9 @@ useEffect(() => {
   fetchQuizIncomplete(activeChapterId, lectureId)
     .then((flag) => { if (!cancelled) setIncomplete(flag) })
     .catch(() => { if (!cancelled) setIncomplete(false) })
+  setCitations({})
+  setCitingIds({})
+  setCiteErrors({})
   return () => { cancelled = true }
 }, [activeChapterId, lectureId, difficulty])
 
@@ -80,6 +104,27 @@ const handleStartQuiz = async () => {
   const choice = questions.filter(q => q.type !== 'True/False' && hasOptions(q))
   const free = questions.filter(q => q.type !== 'True/False' && !hasOptions(q))
 
+  const renderCard = (q: Question, i: number) => {
+    const qid = q.id ?? i
+    const citation = citations[qid]
+    const citing = citingIds[qid]
+    const citeError = citeErrors[qid]
+    return (
+      <div key={qid}>
+        <QuestionCard question={q} index={i} onExplain={handleExplain} />
+        {citeError && <div className="mt-1 text-2xs text-nr">{citeError}</div>}
+        {citation && (
+          <CitationBox
+            citation={citation}
+            loading={false}
+            onScroll={() => scrollToHeading(citation.heading_path || citation.source || '', citation.chapter_id)}
+          />
+        )}
+        {citing && !citation && <CitationBox citation={null} loading />}
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center px-4 h-[40px] border-b border-bdr bg-ns shrink-0 gap-4">
@@ -115,19 +160,19 @@ const handleStartQuiz = async () => {
         {choice.length > 0 && (
           <>
             <div className="flex items-center gap-3 mt-2"><span className="flex-1 h-px bg-bdr" /><span className="text-3xs font-semibold text-nt3 uppercase tracking-wider">Multiple choice</span><span className="flex-1 h-px bg-bdr" /></div>
-            {choice.map((q, i) => <QuestionCard key={q.id ?? i} question={q} index={i} />)}
+            {choice.map((q, i) => renderCard(q, i))}
           </>
         )}
         {tf.length > 0 && (
           <>
             <div className="flex items-center gap-3 mt-10"><span className="flex-1 h-px bg-bdr" /><span className="text-3xs font-semibold text-nt3 uppercase tracking-wider">True or false</span><span className="flex-1 h-px bg-bdr" /></div>
-            {tf.map((q, i) => <QuestionCard key={q.id ?? i} question={q} index={i} />)}
+            {tf.map((q, i) => renderCard(q, i))}
           </>
         )}
         {free.length > 0 && (
           <>
             <div className="flex items-center gap-3 mt-10"><span className="flex-1 h-px bg-bdr" /><span className="text-3xs font-semibold text-nt3 uppercase tracking-wider">Free response</span><span className="flex-1 h-px bg-bdr" /></div>
-            {free.map((q, i) => <QuestionCard key={q.id ?? i} question={q} index={i} />)}
+            {free.map((q, i) => renderCard(q, i))}
           </>
         )}
         <AnswerKey questions={questions} isOpen={showAnswers} onToggle={() => setShowAnswers(!showAnswers)} />
