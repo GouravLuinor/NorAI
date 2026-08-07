@@ -15,7 +15,8 @@ import { Lightbox } from '../ui/Lightbox'
 const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
 // Strip the auto-appended Sources appendix (it's surfaced via ReferencesPanel).
-const stripSources = (text: string) => text.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
+export const stripSources = (text: string) =>
+  text.replace(/(\*\*Sources\*\*|\n\nSources\b|Sources\s*[\:\•]|Sources\b[\s\S]*$)[\s\S]*$/i, '').trim()
 
 export function ChatArea() {
   const messages   = useThreadStore(s => s.messages)

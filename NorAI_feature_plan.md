@@ -42,9 +42,15 @@ Shared single prompt-assembly site: `tutor/prompts.py:7` `TUTOR_SYSTEM_PROMPT` �
 - Note: the plan's "resume stub `study_pdf_builder`" was stale — no such file exists; Study Guide is assembled client/backend-side from existing artifacts (locked: zero-run, no drill).
 - Note: question `explanation` was already stored + shown (AnswerKey / QuizPanel feedback), so E's "return stored explanation" needed no work — the gap was source grounding, now filled.
 
-## Deferred design (locked, not built now)
-- **B**: backend per-lecture tables `quiz_attempts`/`flashcard_ratings` (mirror `user_threads` init `backend/main.py:92–97`, per-lecture DB `get_lecture_db_path()` `dependencies.py:92–95`) + POST/GET endpoints; frontend persist `FlashcardsPanel` ratings (`:19–20`) + quiz session (`useQuizStore.ts:67–82`) & "review missed" (`{Again,Hard}` filter); pin question batch by attempt id.
-- **D** — mind map **derive-first** (no LLM): graph from `lecture_outline.json` (`focus_concepts`/`topics`) + `core_concepts_breakdown`; restore concepts `useChapterStore.ts:41–44`; new `activeDocTab` (`useChapterStore.ts:10`) + tab (`DocPanel.tsx:37–45`); add `react-flow`/`d3`.
+## Phase 4 — B (Quiz & Flashcard Persistence + History UI) ✓ Done
+- Backend: added `quiz_attempts` & `flashcard_ratings` tables to per-lecture SQLite DB with zero-LLM metadata endpoints (`POST /quiz/attempts`, `POST /quiz/attempts/{id}/finish`, `GET /quiz/attempts`, `GET /quiz/attempts/{id}/missed`, `POST /flashcards/ratings`, `GET /flashcards/ratings`).
+- Frontend: `useQuizStore.ts` tracks attempt state; `FlashcardsPanel.tsx` uses SHA-256 card keys (`lib/hash.ts`), persists rating updates to backend, and adds an "Again/Hard Missed Only" deck filter toggle; `QuizPanel.tsx` eval screen adds "Review Missed" action; `AssessmentView.tsx` adds a "Questions / History" segmented control with attempt history cards and "Retake Missed" buttons.
+- `backend/test_api_contract.py`: added probe assertions for all 5 new endpoints.
+
+## Phase 5 — D (Mind Map / Concept Map per Chapter) ✓ Done
+- Backend: added zero-LLM endpoint `GET /concept-map` (`backend/main.py`) deriving 3-tier hierarchical nodes and edges from existing `lecture_outline.json` & `notes_chapter_<id>.json` at $0 API cost.
+- Frontend: `useChapterStore.ts` widened `activeDocTab` to include `'concepts'`; `DocPanel.tsx` added segment `07 Mind map`; new interactive `ConceptMapView.tsx` component with SVG bezier curved paths, tree/radial layout toggle, pan/zoom controls, concept selection detail card, and "Ask Nora about this concept" integration with `useThreadStore`.
+- `backend/test_api_contract.py`: added probe check for `/concept-map`.
 
 ## Out of scope (moat track, future)
 Timestamp-anchored video player + click-to-seek; deferred audio revision overview.

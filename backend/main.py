@@ -22,7 +22,7 @@ from backend.orchestrator import run_pipeline, get_or_create_task_sync
 from contextlib import contextmanager
 from pathlib import Path
 from typing import List
-from backend.dependencies import get_lecture_db_path, _get_or_create_lecture_graph, sanitize_lecture_id
+from backend.dependencies import get_lecture_db_path, _get_or_create_lecture_graph, sanitize_lecture_id, configure_sqlite
 import sqlite3
 import time
 import threading
@@ -94,6 +94,40 @@ def _ensure_user_threads_table(conn: sqlite3.Connection) -> None:
     conn.execute(
         "CREATE TABLE IF NOT EXISTS user_threads "
         "(thread_id TEXT PRIMARY KEY, created_at INTEGER DEFAULT (strftime('%s','now')))"
+    )
+
+
+def _ensure_quiz_attempts_table(conn: sqlite3.Connection) -> None:
+    """Create the quiz_attempts table if it doesn't exist."""
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS quiz_attempts ("
+        "id TEXT PRIMARY KEY, "
+        "lecture_id TEXT, "
+        "chapter_id INTEGER, "
+        "difficulty TEXT, "
+        "started_at TEXT, "
+        "finished_at TEXT, "
+        "questions_json TEXT, "
+        "answers_json TEXT, "
+        "confidences_json TEXT, "
+        "evaluation_json TEXT, "
+        "score REAL, "
+        "total INTEGER"
+        ")"
+    )
+
+
+def _ensure_flashcard_ratings_table(conn: sqlite3.Connection) -> None:
+    """Create the flashcard_ratings table if it doesn't exist."""
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS flashcard_ratings ("
+        "lecture_id TEXT, "
+        "chapter_id INTEGER, "
+        "card_key TEXT, "
+        "rating TEXT, "
+        "updated_at TEXT, "
+        "PRIMARY KEY (lecture_id, chapter_id, card_key)"
+        ")"
     )
 
 
@@ -169,6 +203,28 @@ class QuizExplainRequest(BaseModel):
     question: str
     lecture_id: str = "default"
     chapter_id: int | None = None
+
+class CreateQuizAttemptRequest(BaseModel):
+    lecture_id: str = "default"
+    chapter_id: int | None = None
+    difficulty: str = "All"
+    questions: list[dict] = []
+
+class FinishQuizAttemptRequest(BaseModel):
+    answers: list[dict] = []
+    confidences: list[str] = []
+    evaluation: dict | None = None
+    score: float = 0.0
+    total: int = 0
+
+class FlashcardRatingItem(BaseModel):
+    card_key: str
+    rating: str
+
+class UpsertFlashcardRatingsRequest(BaseModel):
+    lecture_id: str = "default"
+    chapter_id: int | None = None
+    ratings: list[FlashcardRatingItem] = []
 
 # ---------------------------------------------------------------------------
 # Chat endpoints
@@ -332,7 +388,7 @@ async def get_thread(thread_id: str, lecture_id: str = "default"):
             role = "user" if msg.__class__.__name__ == "HumanMessage" else "assistant"
             content = msg.content
             if role == "assistant":
-                content = re.sub(r'\*\*Sources\*\*[\s\S]*$', '', content).strip()
+                content = re.sub(r'(\*\*Sources\*\*|\n\nSources\b|Sources\s*[\:\•]|Sources\b[\s\S]*$)[\s\S]*$', '', content, flags=re.IGNORECASE).strip()
 
             result.append({
                 "id": msg.id,
@@ -478,7 +534,7 @@ async def quiz_evaluate(req: QuizEvaluateRequest):
         print(f"[quiz/evaluate] Parse error: {exc}")
         return {
             "evaluation": {
-                "final_score": None,
+            "final_score": None,
                 "total_questions": len(req.questions),
                 "per_question_feedback": [],
                 "overall_insights": text,
@@ -546,6 +602,176 @@ async def quiz_explain(req: QuizExplainRequest):
         "text": top.get("text", "")[:400],
         "screenshot": screenshot,
     }
+
+
+# ---------------------------------------------------------------------------
+# Quiz Attempts & Flashcard Persistence Endpoints
+# ---------------------------------------------------------------------------
+
+@app.post("/quiz/attempts")
+async def create_quiz_attempt(req: CreateQuizAttemptRequest):
+    attempt_id = f"attempt-{uuid.uuid4().hex[:12]}"
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    with _db(req.lecture_id) as conn:
+        _ensure_quiz_attempts_table(conn)
+        conn.execute(
+            "INSERT INTO quiz_attempts "
+            "(id, lecture_id, chapter_id, difficulty, started_at, finished_at, questions_json, answers_json, confidences_json, evaluation_json, score, total) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                attempt_id,
+                req.lecture_id,
+                req.chapter_id,
+                req.difficulty,
+                now,
+                "",
+                json_lib.dumps(req.questions),
+                json_lib.dumps([]),
+                json_lib.dumps([]),
+                json_lib.dumps({}),
+                0.0,
+                len(req.questions),
+            ),
+        )
+    return {"attempt_id": attempt_id}
+
+
+@app.post("/quiz/attempts/{attempt_id}/finish")
+async def finish_quiz_attempt(attempt_id: str, req: FinishQuizAttemptRequest, lecture_id: str = "default"):
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    with _db(lecture_id) as conn:
+        _ensure_quiz_attempts_table(conn)
+        cursor = conn.execute(
+            "UPDATE quiz_attempts SET finished_at=?, answers_json=?, confidences_json=?, evaluation_json=?, score=?, total=? "
+            "WHERE id=?",
+            (
+                now,
+                json_lib.dumps(req.answers),
+                json_lib.dumps(req.confidences),
+                json_lib.dumps(req.evaluation or {}),
+                req.score,
+                req.total,
+                attempt_id,
+            ),
+        )
+    return {"success": True, "attempt_id": attempt_id}
+
+
+@app.get("/quiz/attempts")
+async def list_quiz_attempts(lecture_id: str = "default", chapter_id: int | None = None):
+    with _db(lecture_id) as conn:
+        _ensure_quiz_attempts_table(conn)
+        if chapter_id is not None:
+            cursor = conn.execute(
+                "SELECT id, lecture_id, chapter_id, difficulty, started_at, finished_at, score, total "
+                "FROM quiz_attempts WHERE lecture_id=? AND chapter_id=? ORDER BY started_at DESC",
+                (lecture_id, chapter_id),
+            )
+        else:
+            cursor = conn.execute(
+                "SELECT id, lecture_id, chapter_id, difficulty, started_at, finished_at, score, total "
+                "FROM quiz_attempts WHERE lecture_id=? ORDER BY started_at DESC",
+                (lecture_id,),
+            )
+        rows = cursor.fetchall()
+        attempts = [
+            {
+                "id": r[0],
+                "lecture_id": r[1],
+                "chapter_id": r[2],
+                "difficulty": r[3],
+                "started_at": r[4],
+                "finished_at": r[5],
+                "score": r[6],
+                "total": r[7],
+            }
+            for r in rows
+        ]
+        return {"attempts": attempts}
+
+
+@app.get("/quiz/attempts/{attempt_id}/missed")
+async def get_quiz_attempt_missed(attempt_id: str, lecture_id: str = "default"):
+    with _db(lecture_id) as conn:
+        _ensure_quiz_attempts_table(conn)
+        row = conn.execute(
+            "SELECT questions_json, evaluation_json, answers_json FROM quiz_attempts WHERE id = ?",
+            (attempt_id,),
+        ).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Quiz attempt not found")
+
+        questions = json_lib.loads(row[0]) if row[0] else []
+        evaluation = json_lib.loads(row[1]) if row[1] else {}
+        answers = json_lib.loads(row[2]) if row[2] else []
+
+        ans_map = {}
+        for a in answers:
+            if isinstance(a, dict):
+                qid = a.get("id") or a.get("question_id")
+                if qid:
+                    ans_map[qid] = a.get("user_answer", "")
+
+        feedback = evaluation.get("per_question_feedback", [])
+        fb_map = {}
+        for fb in feedback:
+            if isinstance(fb, dict):
+                idx = fb.get("question_number")
+                if idx is not None:
+                    fb_map[idx] = fb.get("remark", "")
+
+        missed_ids = []
+        for i, q in enumerate(questions, 1):
+            qid = q.get("id") or q.get("question_id") or f"q-{i}"
+            user_ans = ans_map.get(qid) or q.get("user_answer", "")
+            correct_ans = q.get("answer", "")
+
+            is_correct = False
+            if str(user_ans).strip().lower() == str(correct_ans).strip().lower() and str(user_ans).strip() != "":
+                is_correct = True
+            elif i in fb_map:
+                remark = fb_map[i].lower()
+                if "correct" in remark and "incorrect" not in remark and "not correct" not in remark:
+                    is_correct = True
+
+            if not is_correct:
+                missed_ids.append(str(qid))
+
+        return {"attempt_id": attempt_id, "question_ids": missed_ids}
+
+
+@app.post("/flashcards/ratings")
+async def upsert_flashcard_ratings(req: UpsertFlashcardRatingsRequest):
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    with _db(req.lecture_id) as conn:
+        _ensure_flashcard_ratings_table(conn)
+        for item in req.ratings:
+            conn.execute(
+                "INSERT INTO flashcard_ratings (lecture_id, chapter_id, card_key, rating, updated_at) "
+                "VALUES (?, ?, ?, ?, ?) "
+                "ON CONFLICT(lecture_id, chapter_id, card_key) DO UPDATE SET rating=excluded.rating, updated_at=excluded.updated_at",
+                (req.lecture_id, req.chapter_id or 0, item.card_key, item.rating, now),
+            )
+    return {"success": True, "count": len(req.ratings)}
+
+
+@app.get("/flashcards/ratings")
+async def get_flashcard_ratings(lecture_id: str = "default", chapter_id: int | None = None):
+    with _db(lecture_id) as conn:
+        _ensure_flashcard_ratings_table(conn)
+        if chapter_id is not None:
+            cursor = conn.execute(
+                "SELECT card_key, rating FROM flashcard_ratings WHERE lecture_id=? AND chapter_id=?",
+                (lecture_id, chapter_id),
+            )
+        else:
+            cursor = conn.execute(
+                "SELECT card_key, rating FROM flashcard_ratings WHERE lecture_id=?",
+                (lecture_id,),
+            )
+        rows = cursor.fetchall()
+        ratings = {r[0]: r[1] for r in rows}
+        return {"ratings": ratings}
 
 
 @app.get("/study-guide")
@@ -714,6 +940,209 @@ async def get_outline(lecture_id: str = "default"):
         return {"chapters": []}
     with open(path, encoding="utf-8") as f:
         return json_lib.load(f)
+
+
+@app.get("/concept-map")
+async def get_concept_map(chapter_id: int = 1, lecture_id: str = "default"):
+    """Derive zero-LLM visual concept graph for a chapter from existing output JSONs."""
+    info = get_lecture(lecture_id)
+    if info and "output_dir" in info and Path(info["output_dir"]).exists():
+        base = Path(info["output_dir"])
+    elif lecture_id and lecture_id != "default" and (Path("outputs") / lecture_id).exists():
+        base = Path("outputs") / lecture_id
+    else:
+        base = Path("outputs")
+
+    outline_path = base / "notes" / "lecture_outline.json"
+
+    lecture_title = "Lecture Mind Map"
+    chapter_title = f"Chapter {chapter_id}"
+    focus_concepts = []
+    summary = ""
+
+    if outline_path.exists():
+        try:
+            with open(outline_path, encoding="utf-8") as f:
+                outline = json_lib.load(f)
+                lecture_title = outline.get("lecture_title", lecture_title)
+                for ch in outline.get("chapters", []):
+                    cid = ch.get("chapter_id") or ch.get("id")
+                    if int(cid) == int(chapter_id):
+                        chapter_title = ch.get("title", chapter_title)
+                        focus_concepts = ch.get("focus_concepts", [])
+                        summary = ch.get("summary", "")
+                        break
+        except Exception:
+            pass
+
+    notes_json_paths = [
+        base / "notes" / f"chapter_{chapter_id}.json",
+        base / "notes" / f"notes_chapter_{chapter_id}.json",
+    ]
+
+    sections_raw = []
+    important_info = []
+    for np in notes_json_paths:
+        if np.exists():
+            try:
+                with open(np, encoding="utf-8") as f:
+                    notes_data = json_lib.load(f)
+                    sections_raw = notes_data.get("sections", [])
+                    important_info = notes_data.get("important_information", []) + notes_data.get("inferred_knowledge", [])
+                break
+            except Exception:
+                pass
+
+    root_id = f"ch-{chapter_id}"
+    nodes = []
+    edges = []
+
+    nodes.append({
+        "id": root_id,
+        "label": chapter_title,
+        "type": "root",
+        "category": "Chapter",
+        "description": summary or f"Core concept structure for {chapter_title}",
+    })
+
+    if not focus_concepts and sections_raw:
+        focus_concepts = [re.sub(r"^\d+[\.\s\-]+", "", s.get("title", "")).strip() for s in sections_raw if s.get("title")]
+
+    if not focus_concepts:
+        focus_concepts = [f"Section {i+1}" for i in range(len(sections_raw))] or ["Core Concepts"]
+
+    seen_labels = set()
+
+    used_sections = set()
+
+    for i, fc in enumerate(focus_concepts):
+        node_id = f"fc-{chapter_id}-{i}"
+        fc_lower = fc.lower()
+        node_desc = ""
+        matched_section = None
+
+        best_sec = None
+        best_score = 0
+
+        for sec_idx, sec in enumerate(sections_raw):
+            stitle = sec.get("title", "").lower()
+            content = sec.get("content_markdown", "").lower()
+            score = 0
+            
+            if re.search(r'\b' + re.escape(fc_lower) + r'\b', stitle):
+                score = 10
+            elif fc_lower in stitle:
+                score = 7
+            elif re.search(r'\b' + re.escape(fc_lower) + r'\b', content):
+                score = 5
+            elif fc_lower in content:
+                score = 3
+
+            if sec_idx in used_sections:
+                score = score // 3
+
+            if score > best_score:
+                best_score = score
+                best_sec = (sec_idx, sec)
+
+        if best_sec:
+            sec_idx, sec = best_sec
+            used_sections.add(sec_idx)
+            matched_section = sec
+            content = sec.get("content_markdown", "")
+            clean_text = re.sub(r"[\*`#|_]|<[^>]+>", "", content).strip()
+            sentences = [s.strip() for s in clean_text.split(".") if len(s.strip()) > 15]
+            if sentences:
+                node_desc = ". ".join(sentences[:2]) + "."
+                if len(node_desc) > 220:
+                    node_desc = node_desc[:217] + "..."
+
+        if not node_desc and i < len(sections_raw) and i not in used_sections:
+            used_sections.add(i)
+            sec = sections_raw[i]
+            content = sec.get("content_markdown", "")
+            clean_text = re.sub(r"[\*`#|_]|<[^>]+>", "", content).strip()
+            sentences = [s.strip() for s in clean_text.split(".") if len(s.strip()) > 15]
+            if sentences:
+                node_desc = ". ".join(sentences[:2]) + "."
+                if len(node_desc) > 220:
+                    node_desc = node_desc[:217] + "..."
+
+        if not node_desc:
+            node_desc = f"{fc} — Key architectural concept covered in {chapter_title}."
+
+        nodes.append({
+            "id": node_id,
+            "label": fc,
+            "type": "focus_concept",
+            "category": "Core Concept",
+            "description": node_desc,
+        })
+        edges.append({
+            "id": f"edge-root-{node_id}",
+            "source": root_id,
+            "target": node_id,
+            "label": "",
+        })
+
+        sub_items = []
+        if matched_section and matched_section.get("content_markdown"):
+            lines = matched_section["content_markdown"].split("\n")
+            for line in lines:
+                # Filter out table delimiters (| :--- | :--- |), code blocks (```), and non-text artifacts
+                if re.search(r'[:\-]{2,}', line) or (line.strip().startswith('|') and ':' in line):
+                    continue
+                if line.strip().startswith('```') or line.strip().startswith('import ') or line.strip().startswith('export '):
+                    continue
+
+                clean_line = re.sub(r"^[\|\-\*\s\d\.]+", "", line).strip()
+                clean_line = re.sub(r"[\*`#|_]|<[^>]+>", "", clean_line).strip()
+
+                if not re.search(r'[a-zA-Z]{4,}', clean_line):
+                    continue
+
+                if clean_line and len(clean_line) > 10 and clean_line not in seen_labels:
+                    sub_items.append(clean_line)
+                    seen_labels.add(clean_line)
+                    if len(sub_items) >= 2:
+                        break
+
+        if not sub_items and important_info:
+            for item in important_info:
+                clean_item = re.sub(r"^[\|\-\*\s\d\.]+", "", str(item)).strip()
+                clean_item = re.sub(r"[\*`#|_]|<[^>]+>", "", clean_item).strip()
+                if re.search(r'[a-zA-Z]{4,}', clean_item) and clean_item not in seen_labels:
+                    sub_items.append(clean_item)
+                    seen_labels.add(clean_item)
+                    if len(sub_items) >= 2:
+                        break
+
+        for j, item_text in enumerate(sub_items):
+            detail_id = f"dc-{chapter_id}-{i}-{j}"
+            first_sentence = item_text.split(".")[0].strip()
+            short_label = first_sentence[:45] + "..." if len(first_sentence) > 45 else first_sentence
+
+            nodes.append({
+                "id": detail_id,
+                "label": short_label,
+                "type": "detail",
+                "category": "Mechanism",
+                "description": item_text,
+            })
+            edges.append({
+                "id": f"edge-{node_id}-{detail_id}",
+                "source": node_id,
+                "target": detail_id,
+                "label": "details",
+            })
+
+    return {
+        "lecture_title": lecture_title,
+        "chapter_id": chapter_id,
+        "root": {"id": root_id, "label": chapter_title, "summary": summary},
+        "nodes": nodes,
+        "edges": edges,
+    }
 
 
 

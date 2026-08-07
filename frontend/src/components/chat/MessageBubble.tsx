@@ -4,8 +4,11 @@ import rehypeKatex from 'rehype-katex'
 import type { Message } from '../../stores/useThreadStore'
 import { chatMarkdownComponents } from '../../lib/markdown'
 
+import { stripSources } from './ChatArea'
+
 export function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user'
+  const displayContent = isUser ? message.content : stripSources(message.content)
 
   return (
     <div className={`flex gap-2 items-start ${isUser ? 'flex-row-reverse' : ''}`}>
@@ -36,7 +39,7 @@ export function MessageBubble({ message }: { message: Message }) {
                 rehypePlugins={[rehypeKatex]}
                 components={chatMarkdownComponents}
               >
-                {message.content}
+                {displayContent}
               </ReactMarkdown>
             </div>
           )}

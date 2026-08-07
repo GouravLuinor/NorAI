@@ -7,11 +7,11 @@ interface Chapter {
 
 interface ChapterState {
   activeChapterId: number
-  activeDocTab: 'notes' | 'revision' | 'assessment' | 'guide'
+  activeDocTab: 'notes' | 'revision' | 'assessment' | 'guide' | 'concepts'
   sidebarCollapsed: boolean
   chapters: Chapter[]
   setChapter: (id: number) => void
-  setDocTab: (tab: 'notes' | 'revision' | 'assessment' | 'guide') => void
+  setDocTab: (tab: 'notes' | 'revision' | 'assessment' | 'guide' | 'concepts') => void
   toggleSidebar: () => void
   loadChapters: (lectureId: string) => Promise<void>
 }

@@ -107,6 +107,66 @@ def probe_lecture_endpoints() -> list[str]:
         except Exception as e:  # noqa: BLE001
             failures.append(f"/quiz/explain: invalid JSON -> {e}")
 
+    # Phase B: Quiz attempts & flashcard ratings contract probes
+    status, payload = post_json("/quiz/attempts", {"lecture_id": lid, "chapter_id": 1, "difficulty": "Easy", "questions": [{"id": "q1", "question": "Test", "answer": "A"}]})
+    print(f"POST {f'/quiz/attempts ({lid})':<18} -> {status}")
+    attempt_id = None
+    if status != 200:
+        failures.append(f"/quiz/attempts: expected 200, got {status}")
+    elif payload:
+        try:
+            parsed = json_parse(payload[1])
+            attempt_id = parsed.get("attempt_id")
+            if not attempt_id:
+                failures.append("/quiz/attempts: missing `attempt_id` in response")
+        except Exception as e:  # noqa: BLE001
+            failures.append(f"/quiz/attempts: invalid JSON -> {e}")
+
+    if attempt_id:
+        status, payload = post_json(f"/quiz/attempts/{attempt_id}/finish?lecture_id={lid}", {"answers": [{"id": "q1", "user_answer": "B"}], "score": 0.0, "total": 1})
+        print(f"POST {f'/quiz/attempts/finish':<18} -> {status}")
+        if status != 200:
+            failures.append(f"/quiz/attempts/finish: expected 200, got {status}")
+
+        status, payload = get(f"/quiz/attempts/{attempt_id}/missed?lecture_id={lid}")
+        print(f"GET  {f'/quiz/attempts/missed':<18} -> {status}")
+        if status != 200:
+            failures.append(f"/quiz/attempts/missed: expected 200, got {status}")
+        elif payload:
+            try:
+                parsed = json_parse(payload[1])
+                if not isinstance(parsed.get("question_ids"), list):
+                    failures.append("/quiz/attempts/missed: missing `question_ids` list")
+            except Exception as e:  # noqa: BLE001
+                failures.append(f"/quiz/attempts/missed: invalid JSON -> {e}")
+
+    status, payload = get(f"/quiz/attempts?lecture_id={lid}")
+    print(f"GET  {f'/quiz/attempts ({lid})':<18} -> {status}")
+    if status != 200:
+        failures.append(f"/quiz/attempts: expected 200, got {status}")
+
+    status, payload = post_json("/flashcards/ratings", {"lecture_id": lid, "chapter_id": 1, "ratings": [{"card_key": "test_card", "rating": "again"}]})
+    print(f"POST {f'/flashcards/ratings ({lid})':<18} -> {status}")
+    if status != 200:
+        failures.append(f"/flashcards/ratings: expected 200, got {status}")
+
+    status, payload = get(f"/flashcards/ratings?lecture_id={lid}")
+    print(f"GET  {f'/flashcards/ratings ({lid})':<18} -> {status}")
+    if status != 200:
+        failures.append(f"/flashcards/ratings: expected 200, got {status}")
+
+    status, payload = get(f"/concept-map?chapter_id=1&lecture_id={lid}")
+    print(f"GET  {f'/concept-map ({lid})':<18} -> {status}")
+    if status != 200:
+        failures.append(f"/concept-map: expected 200, got {status}")
+    elif payload:
+        try:
+            parsed = json_parse(payload[1])
+            if not isinstance(parsed.get("nodes"), list) or not isinstance(parsed.get("edges"), list):
+                failures.append("/concept-map: missing `nodes` or `edges` list")
+        except Exception as e:  # noqa: BLE001
+            failures.append(f"/concept-map: invalid JSON -> {e}")
+
     return failures
 
 
