@@ -22,7 +22,8 @@ logging.basicConfig(
 )
 from pydantic import BaseModel, Field
 from backend.ratelimit import rate_limiter as _limiter
-from config import MODEL_NAME
+from config import MODEL_NAME, DEFAULT_MAX_RETRIES
+from cache_util import outputs_current, write_marker
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +120,7 @@ def analyze_chunk_images(
         + "\n".join(image_listing)
     )
 
-    for attempt in range(3):
+    for attempt in range(DEFAULT_MAX_RETRIES):
 
         try:
             _limiter.wait()
@@ -153,7 +154,7 @@ def analyze_chunk_images(
             )
 
     raise RuntimeError(
-        "Gemma failed after 3 attempts."
+        f"Gemma failed after {DEFAULT_MAX_RETRIES} attempts."
     )
 
     return response.text
@@ -669,7 +670,7 @@ For each chunk with screenshots in this chapter, extract concise visual notes, O
 Return a JSON matching ChapterVisualKnowledgeModel.
 """
 
-    for attempt in range(3):
+    for attempt in range(DEFAULT_MAX_RETRIES):
         try:
             _limiter.wait()
             client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
@@ -697,6 +698,26 @@ Return a JSON matching ChapterVisualKnowledgeModel.
                 save_visual_object(obj_dict, output_dir)
                 processed_chunk_ids.add(vo.chunk_id)
 
+            # Persist per-frame analysis so screenshot selection (Stage 12)
+            # can reuse it instead of re-uploading + re-scoring the same
+            # keyframes. See ROADMAP P1.3. Only genuinely analyzed chunks get
+            # entries; fallback chunks are left out so selection falls back to
+            # its own Pass 1 LLM scoring for their frames.
+            frames = {}
+            for vo in batch_result.visual_objects:
+                for path in chunk_image_map.get(vo.chunk_id, []):
+                    frames[os.path.normpath(str(path))] = {
+                        "ocr_text": vo.ocr_text,
+                        "importance_score": vo.importance_score,
+                        "visual_type": vo.visual_type,
+                        "include_in_notes": vo.include_in_notes,
+                    }
+            if frames:
+                analysis_path = Path(output_dir) / f"visual_analysis_ch{chapter_id}.json"
+                with open(analysis_path, "w", encoding="utf-8") as f:
+                    json.dump({"chapter_id": chapter_id, "frames": frames}, f, indent=2, ensure_ascii=False)
+                logger.info(f"Chapter {chapter_id}: persisted analysis for {len(frames)} frame(s).")
+
             # Fallback for any chunks in chapter missing from LLM response
             for c in chapter_chunks:
                 if c["chunk_id"] not in processed_chunk_ids:
@@ -723,7 +744,26 @@ def process_all_chunks(
 ):
     """
     Process visual candidate images batched strictly within real chapter boundaries (1 call per chapter).
+
+    Hash-of-inputs cache (ROADMAP P1.4): if the same mapping + outline already
+    produced this stage's outputs (visual objects + per-frame analysis), the
+    stage is skipped so re-runs cost ~0 API calls. The orchestrator preserves
+    ``output_dir`` across runs for exactly this reason.
     """
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    existing_outputs = sorted(
+        list(output_dir.glob("chunk_*.json"))
+        + list(output_dir.glob("visual_analysis_ch*.json"))
+    )
+    marker = output_dir / ".visual_extract.sha256"
+    if outputs_current(marker, existing_outputs, mapping_path, outline_path):
+        logger.info(
+            f"Visual extraction for {output_dir.name}: up to date, skipping "
+            f"({len(existing_outputs)} output file(s) reused)."
+        )
+        return
+
     mapping = load_mapping(mapping_path)
     chunk_map = {c["chunk_id"]: c for c in mapping}
     logger.info(f"Loaded {len(mapping)} chunks for chapter-aligned visual extraction.")
@@ -759,12 +799,13 @@ def process_all_chunks(
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [
-            executor.submit(process_chapter_visual_batch, ch_id, ch_title, ch_chunks, output_dir)
+            executor.submit(process_chapter_visual_batch, ch_id, ch_title, ch_chunks, str(output_dir))
             for ch_id, ch_title, ch_chunks in chapter_batches
         ]
         for future in as_completed(futures):
             future.result()
 
+    write_marker(marker, mapping_path, outline_path)
     logger.info(f"Chapter-aligned visual extraction complete ({len(chapter_batches)} chapters processed).")
 
 

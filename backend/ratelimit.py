@@ -2,9 +2,11 @@ import time
 import threading
 import random
 
+from config import DEFAULT_RPM_LIMIT
+
 class RPMRateLimiter:
     """Allow at most `max_calls` per `window_seconds` using atomic lock checks."""
-    def __init__(self, max_calls: int = 12, window_seconds: float = 60.0):
+    def __init__(self, max_calls: int = DEFAULT_RPM_LIMIT, window_seconds: float = 60.0):
         self.max_calls = max_calls
         self.window = window_seconds
         self.calls = []
@@ -26,5 +28,6 @@ class RPMRateLimiter:
 
 
 # Shared global rate limiter singleton across all pipeline modules
-_limiter = RPMRateLimiter(max_calls=12, window_seconds=60.0)
+# Honours config.DEFAULT_RPM_LIMIT (single source of truth).
+_limiter = RPMRateLimiter(max_calls=DEFAULT_RPM_LIMIT, window_seconds=60.0)
 rate_limiter = _limiter

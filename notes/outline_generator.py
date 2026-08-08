@@ -10,8 +10,8 @@ from notes.outline_prompts import OUTLINE_PROMPT
 
 load_dotenv()
 
-from backend.ratelimit import RPMRateLimiter
-_limiter = RPMRateLimiter(max_calls=12)
+from backend.ratelimit import rate_limiter as _limiter
+from cache_util import outputs_current, write_marker
 
 logging.basicConfig(
     level=logging.INFO,
@@ -279,10 +279,26 @@ def generate_lecture_outline(
     """
     merged_dir = Path(merged_objects_dir)
     objects = []
+    object_files = []
     for f in sorted(merged_dir.glob("chunk_*.json")):
         with open(f, "r", encoding="utf-8") as fh:
             objects.append(json.load(fh))
+        object_files.append(str(f))
     total_chunks = len(objects)
+
+    # Hash-of-inputs cache (ROADMAP P1.4): same merged objects → same outline,
+    # so re-runs skip the LLM call entirely.
+    outline_path = Path(output_dir) / "notes" / "lecture_outline.json"
+    outline_path.parent.mkdir(parents=True, exist_ok=True)
+    marker = outline_path.with_name(".outline.sha256")
+    if outputs_current(marker, [outline_path], *object_files):
+        logger.info("Outline generation: up to date, skipping LLM call.")
+        with open(outline_path, "r", encoding="utf-8") as fh:
+            outline = json.load(fh)
+        return {
+            "outline_path": str(outline_path),
+            "num_chapters": len(outline.get("chapters", [])),
+        }
 
     # Build proto‑chapters so the LLM has something to work with
     proto_chapters = []
@@ -328,6 +344,7 @@ def generate_lecture_outline(
     outline_path = Path(output_dir) / "notes" / "lecture_outline.json"
     outline_path.parent.mkdir(parents=True, exist_ok=True)
     save_outline(outline, outline_path)
+    write_marker(marker, *object_files)
 
     return {
         "outline_path": str(outline_path),

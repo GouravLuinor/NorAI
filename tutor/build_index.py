@@ -55,6 +55,40 @@ def _make_chroma_id(chunk: dict, idx: int) -> str:
     return f"ch{chapter}__{path_slug}__{idx}"
 
 
+def upsert_batched(
+    collection,
+    ids: list,
+    documents: list,
+    metadatas: list | None = None,
+    batch_size: int = BATCH_SIZE,
+    sleep_seconds: float | None = EMBED_BATCH_SLEEP_SEC,
+) -> int:
+    """
+    Upsert documents into a Chroma collection in batches of `batch_size`.
+
+    Because the collection carries an embedding_function, each `.upsert()` call
+    embeds the whole batch in one API call (instead of one embed call per
+    document). `sleep_seconds` paces batches to stay under free-tier embed rate
+    limits. Returns the number of documents upserted.
+
+    This is the batch primitive used both by `build_index` and by the pipeline
+    orchestrator's indexing stages (ROADMAP P1.2).
+    """
+    total = len(ids)
+    inserted = 0
+    for start in range(0, total, batch_size):
+        end = min(start + batch_size, total)
+        collection.upsert(
+            ids=ids[start:end],
+            documents=documents[start:end],
+            metadatas=metadatas[start:end] if metadatas else None,
+        )
+        inserted += end - start
+        if end < total and sleep_seconds:
+            time.sleep(sleep_seconds)
+    return inserted
+
+
 def build_index(reset: bool = False) -> None:
     # ── 1. Chunk ───────────────────────────────────────────────────────────────
     print(f"Chunking notes from: {NOTES_GLOB}")
@@ -106,7 +140,7 @@ def build_index(reset: bool = False) -> None:
         ]
 
         # .upsert() is idempotent: safe to re-run without --reset
-        collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
+        upsert_batched(collection, ids, documents, metadatas, batch_size=len(batch), sleep_seconds=0)
 
         inserted += len(batch)
         pct = inserted / total * 100

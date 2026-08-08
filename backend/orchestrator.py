@@ -8,6 +8,7 @@ emitting real‑time progress via SSE queues.
 import os
 import json as json_lib
 import asyncio
+import hashlib
 import subprocess
 import threading
 from pathlib import Path
@@ -30,8 +31,6 @@ from extract.merger import merge_all_chunks
 from notes.chapter_builder import build_chapters_pipeline
 from notes.notes_generator import generate_study_notes, generate_consolidated_chapter_artifacts
 from notes.screenshot_selector import select_screenshots_for_lecture
-from revision_notes.revision_generator import generate_revision_notes_for_lecture
-from assessment.assessment_generator import generate_assessment_for_lecture
 from notes.outline_generator import generate_lecture_outline
 
 import logging
@@ -278,6 +277,7 @@ def run_pipeline(
             import chromadb
             from tutor.chunker import chunk_glob
             from tutor.embedding import GeminiEmbeddingFunction
+            from tutor.build_index import upsert_batched
 
             lecture_dir = Path(out)
             notes_glob = str(lecture_dir / "notes" / "chapter_*.md")
@@ -295,18 +295,38 @@ def run_pipeline(
                     embedding_function=ef,
                     metadata={"hnsw:space": "cosine"},
                 )
-                for i, c in enumerate(chunks):
-                    collection.upsert(
-                        ids=[f"chunk_{i}"],
-                        documents=[c["text"]],
-                        metadatas=[{
-                            "heading": c["heading"],
-                            "heading_path": c["heading_path"],
-                            "chapter_id": c.get("chapter_id", -1),
-                            "source": c["source"],
-                        }]
+                # Content-hashed ids: re-indexing identical notes is a no-op;
+                # changed notes are diff-synced (no orphaned docs, no quadratic
+                # re-embeds). See ROADMAP P1.2.
+                ids = [
+                    f"chunk_{hashlib.sha256(c['text'].encode('utf-8')).hexdigest()[:16]}"
+                    for c in chunks
+                ]
+                documents = [c["text"] for c in chunks]
+                metadatas = [{
+                    "heading": c["heading"],
+                    "heading_path": c["heading_path"],
+                    "chapter_id": c.get("chapter_id", -1),
+                    "source": c["source"],
+                } for c in chunks]
+                existing = set(collection.get(include=[])["ids"])
+                expected = set(ids)
+                to_add = expected - existing
+                to_remove = existing - expected
+                if to_add:
+                    idx = [i for i, _id in enumerate(ids) if _id in to_add]
+                    upsert_batched(
+                        collection,
+                        [ids[i] for i in idx],
+                        [documents[i] for i in idx],
+                        [metadatas[i] for i in idx],
                     )
-                logger.info(f"  Tutor index: {collection.count()} documents indexed")
+                if to_remove:
+                    collection.delete(ids=list(to_remove))
+                logger.info(
+                    f"  Tutor index: {collection.count()} docs "
+                    f"(added {len(to_add)}, removed {len(to_remove)})"
+                )
         except Exception as e:
             logger.error(f"Tutor index failed (continuing): {e}")
 
@@ -316,6 +336,7 @@ def run_pipeline(
             import json as _json, glob as _glob
             import chromadb
             from tutor.embedding import GeminiEmbeddingFunction
+            from tutor.build_index import upsert_batched
 
             lecture_dir = Path(out)
             screenshot_glob = str(lecture_dir / "screenshots" / "selected" / "chapter_*_screenshots.json")
@@ -332,7 +353,9 @@ def run_pipeline(
                     embedding_function=ef,
                     metadata={"hnsw:space": "cosine"},
                 )
-                total = 0
+                ids = []
+                documents = []
+                metadatas = []
                 for json_path in json_files:
                     with open(json_path) as f:
                         data = _json.load(f)
@@ -340,18 +363,35 @@ def run_pipeline(
                     screenshots = data.get("screenshots", [])
                     for shot in screenshots:
                         shot_id = f"ch{chapter_id}_{Path(shot['path']).stem}"
-                        collection.upsert(
-                            ids=[shot_id],
-                            documents=[shot.get("reason", "")],
-                            metadatas=[{
-                                "path": shot["path"],
-                                "section": shot.get("section", ""),
-                                "importance": shot.get("importance", 0),
-                                "chapter_id": chapter_id,
-                            }]
-                        )
-                        total += 1
-                logger.info(f"  Screenshot index: {total} screenshots indexed")
+                        reason = shot.get("reason", "")
+                        # Reason content-hash makes changed captions re-index
+                        # instead of being wrongly skipped.
+                        ids.append(f"{shot_id}__{hashlib.sha256(reason.encode('utf-8')).hexdigest()[:8]}")
+                        documents.append(reason)
+                        metadatas.append({
+                            "path": shot["path"],
+                            "section": shot.get("section", ""),
+                            "importance": shot.get("importance", 0),
+                            "chapter_id": chapter_id,
+                        })
+                existing = set(collection.get(include=[])["ids"])
+                expected = set(ids)
+                to_add = expected - existing
+                to_remove = existing - expected
+                if to_add:
+                    idx = [i for i, _id in enumerate(ids) if _id in to_add]
+                    upsert_batched(
+                        collection,
+                        [ids[i] for i in idx],
+                        [documents[i] for i in idx],
+                        [metadatas[i] for i in idx],
+                    )
+                if to_remove:
+                    collection.delete(ids=list(to_remove))
+                logger.info(
+                    f"  Screenshot index: {collection.count()} screenshots indexed "
+                    f"(added {len(to_add)}, removed {len(to_remove)})"
+                )
         except Exception as e:
             logger.error(f"Screenshot index failed (continuing): {e}")
 
@@ -362,9 +402,12 @@ def run_pipeline(
         lecture_dir = Path(out)
         if (lecture_dir / "notes").exists() and (lecture_dir / "tutor" / "chroma").exists():
             temp_dirs = [
-                "videos", "audio", "screenshots/raw", "chunks", 
-                "objects", "visual_objects", "merged_objects", "mappings",
-                "metadata"
+                "videos", "audio", "screenshots/raw", "chunks",
+                "mappings", "metadata"
+                # NOTE: "objects", "visual_objects", "merged_objects" are kept —
+                # they hold the hash-of-inputs cache markers + outputs that make
+                # re-runs cost ~0 API calls (ROADMAP P1.4/P1.3). Deleting them
+                # silently wiped the caches every run.
             ]
             for d in temp_dirs:
                 target = lecture_dir / d
