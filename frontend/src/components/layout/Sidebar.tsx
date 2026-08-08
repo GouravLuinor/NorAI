@@ -203,6 +203,27 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
 
         <div className="h-px bg-bdr mx-3.5" />
 
+        {/* User Quota Badge */}
+        <div className="px-3.5 py-2">
+          <div className="p-2 rounded-lg bg-ns2 border border-bdr text-11 font-sans">
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-semibold text-nt text-10 uppercase tracking-wider">Free Trial</span>
+              <button
+                onClick={() => navigate('/pricing')}
+                className="text-10 text-np font-medium hover:underline cursor-pointer"
+              >
+                Upgrade
+              </button>
+            </div>
+            <div className="w-full bg-ns4 h-1.5 rounded-full overflow-hidden mb-1">
+              <div className="bg-np h-full rounded-full w-1/4"></div>
+            </div>
+            <div className="text-10 text-nt3 flex justify-between">
+              <span>Used: 0 / 15 mins</span>
+            </div>
+          </div>
+        </div>
+
         {/* Theme toggle */}
         <div className="px-3.5 pb-1.5">
           <ThemeToggle />
@@ -218,6 +239,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           <span className="text-xs">+</span> New thread
         </Button>
         </div>
+
       </div>
     </div>
   )

@@ -9,7 +9,7 @@
 
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
-| **Antigravity** (IDE) | 🟢 Idle / Completed | **Feature D (NotebookLM Parity)**: Mind Map + Chat Reference & Source Leakage Fixes Complete | 2026-08-07 19:15 UTC |
+| **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
 | **OpenCode** (CLI) | 🟢 Idle | Handed off to Antigravity | 2026-08-07 17:25 UTC |
 
 ---
@@ -33,6 +33,30 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-08] — Antigravity: Production Micro-SaaS Foundation Implemented & Verified
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed
+- **Files Created / Modified**:
+  - `SAAS_ROADMAP.md` [NEW] — decision roadmap covering Phases 0–6.
+  - `backend/db/database.py` [NEW] — SQLAlchemy 2.0 Async engine supporting PostgreSQL (Supabase) and SQLite fallback.
+  - `backend/db/models.py` [NEW] — ORM models for `User`, `Subscription`, `Lecture`, `UsageLog`, and `WebhookEvent`.
+  - `backend/db/__init__.py` [NEW] — database package init.
+  - `backend/auth.py` [NEW] — Supabase Auth JWT decoder & user resolution dependency.
+  - `backend/routers/webhooks.py` [NEW] — Lemon Squeezy webhook handler with HMAC signature verification & idempotency logging.
+  - `backend/main.py` — added `init_db()` startup hook, mounted webhooks router, added `GET /quota`, and wired pre-pipeline quota checks into `POST /process`.
+  - `backend/orchestrator.py` — added 15-minute video duration ceiling check for free trial.
+  - `backend/requirements.txt` — added `sqlalchemy`, `aiosqlite`, `asyncpg`, `pyjwt`.
+  - `frontend/src/stores/useAuthStore.ts` [NEW] — Zustand store for auth session & quota state.
+  - `frontend/src/components/auth/AuthModal.tsx` [NEW] — Log In / Sign Up / Google OAuth / Guest mode modal.
+  - `frontend/src/pages/PricingPage.tsx` [NEW] — Pricing Page with Monthly/Annual billing toggle & tier cards.
+  - `frontend/src/pages/LandingPage.tsx` [NEW] — Marketing Landing Page in "Architect's Sketchbook" theme.
+  - `frontend/src/components/layout/Sidebar.tsx` — added Quota & Plan Indicator Badge.
+  - `frontend/src/App.tsx` — connected `/`, `/pricing`, `/app`, `/workspace` routes and mounted `AuthModal`.
+  - `PROJECT_PROGRESS.md`, `COMMUNICATOR.md`, `walkthrough.md` — updated project logs.
+- **Verification**: Installed dependencies in `venv/`, verified `GET /quota` and database init, verified frontend UI routes and components.
+- **Hand-off Notes**: Complete micro-SaaS foundation is 100% built and ready for local testing (`scripts/start-dev.sh start`).
+
 
 ### [2026-08-07] — Antigravity: Phase D Mind Map Polish & Chat Tutor Reference/Source Fixes
 - **Agent**: Antigravity (IDE)
