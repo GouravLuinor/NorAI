@@ -4,6 +4,7 @@ import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, 
 import { Button } from '../components/ui/Button'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { FOCUS_RING } from '../components/ui/shared'
+import { authHeaders } from '../lib/authHeaders'
 
 type InputType = 'youtube' | 'upload' | 'drive'
 
@@ -68,7 +69,7 @@ export function UploadPage() {
       formData.append('url', url)
     }
 
-    const res = await fetch('/process', { method: 'POST', body: formData })
+    const res = await fetch('/process', { method: 'POST', body: formData, headers: authHeaders() })
     const { task_id } = await res.json()
     navigate(`/process/${task_id}`)
   }

@@ -1,37 +1,46 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Mail, Lock, User as UserIcon, ArrowRight, Sparkles } from 'lucide-react'
 import { useAuthStore } from '../../stores/useAuthStore'
+import { supabase } from '../../lib/supabaseClient'
 
 export function AuthModal() {
-  const { isAuthModalOpen, authModalTab, closeAuthModal, setSession } = useAuthStore()
+  const { isAuthModalOpen, authModalTab, closeAuthModal } = useAuthStore()
   const [tab, setTab] = useState<'login' | 'signup'>(authModalTab)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
+
+  useEffect(() => {
+    setTab(authModalTab)
+  }, [authModalTab])
 
   if (!isAuthModalOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setInfo('')
     setLoading(true)
 
     try {
-      const mockToken = `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const mockUser = {
-        id: `usr_${Date.now()}`,
-        email: email || 'user@example.com',
-        fullName: tab === 'signup' ? fullName || email.split('@')[0] : email.split('@')[0],
-        subscriptionTier: 'free' as const,
-        monthlyQuotaMinutes: 15,
-        usedMinutesThisMonth: 0,
+      if (tab === 'signup') {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName || email.split('@')[0] } },
+        })
+        if (signUpError) throw signUpError
+        if (!data.session) {
+          setInfo('Check your inbox — we sent a confirmation link to confirm your account.')
+        }
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+        if (signInError) throw signInError
       }
-
-      setSession(mockToken, mockUser)
-      closeAuthModal()
     } catch (err: any) {
       setError(err.message || 'Failed to authenticate. Please check your credentials.')
     } finally {
@@ -39,37 +48,31 @@ export function AuthModal() {
     }
   }
 
-  const handleGoogleAuth = () => {
+  const handleGoogleAuth = async () => {
+    setError('')
     setLoading(true)
-    const mockToken = `goog_token_${Date.now()}`
-    const mockUser = {
-      id: `goog_${Date.now()}`,
-      email: 'student@university.edu',
-      fullName: 'University Student',
-      subscriptionTier: 'free' as const,
-      monthlyQuotaMinutes: 15,
-      usedMinutesThisMonth: 0,
-    }
-    setTimeout(() => {
-      setSession(mockToken, mockUser)
-      closeAuthModal()
+    try {
+      const { error: oAuthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin },
+      })
+      if (oAuthError) throw oAuthError
+    } catch (err: any) {
+      setError(err.message || 'Google sign-in is not configured yet.')
       setLoading(false)
-    }, 600)
+    }
   }
 
-  const handleGuestTrial = () => {
-    const mockToken = `guest_${Date.now()}`
-    const mockUser = {
-      id: `guest_${Date.now()}`,
-      email: 'guest@trial.norai',
-      fullName: 'Guest User (Free Trial)',
-      isAnonymous: true,
-      subscriptionTier: 'free' as const,
-      monthlyQuotaMinutes: 15,
-      usedMinutesThisMonth: 0,
+  const handleGuestTrial = async () => {
+    setError('')
+    setLoading(true)
+    try {
+      const { error: guestError } = await supabase.auth.signInAnonymously()
+      if (guestError) throw guestError
+    } catch (err: any) {
+      setError(err.message || 'Unable to start a guest session.')
+      setLoading(false)
     }
-    setSession(mockToken, mockUser)
-    closeAuthModal()
   }
 
   return (
@@ -132,6 +135,13 @@ export function AuthModal() {
           {error && (
             <div className="mb-4 p-3 rounded bg-nrb border border-nrbr text-nrt text-12-regular">
               {error}
+            </div>
+          )}
+
+          {/* Info Banner */}
+          {info && (
+            <div className="mb-4 p-3 rounded bg-npb border border-npbr text-npt text-12-regular">
+              {info}
             </div>
           )}
 
@@ -240,7 +250,8 @@ export function AuthModal() {
 
             <button
               onClick={handleGuestTrial}
-              className="w-full py-2 px-4 text-10-medium font-mono text-nt3 hover:text-nt transition-colors text-center cursor-pointer uppercase tracking-wider"
+              disabled={loading}
+              className="w-full py-2 px-4 text-10-medium font-mono text-nt3 hover:text-nt transition-colors text-center cursor-pointer uppercase tracking-wider disabled:opacity-50"
             >
               Continue as Guest (1 Video Free Trial)
             </button>

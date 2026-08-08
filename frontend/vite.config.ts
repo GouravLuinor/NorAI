@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  envDir: '..',
   server: {
     fs: {
       allow: [
@@ -27,6 +28,7 @@ export default defineConfig({
       '/outline': 'http://localhost:8000',
       '/study-guide': 'http://localhost:8000',
       '/concept-map': 'http://localhost:8000',
+      '/quota': 'http://localhost:8000',
     },
   },
 })

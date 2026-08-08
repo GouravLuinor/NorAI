@@ -1,4 +1,6 @@
 import { create } from 'zustand'
+import type { Session } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabaseClient'
 
 export interface UserProfile {
   id: string
@@ -19,33 +21,49 @@ interface AuthState {
   openAuthModal: (tab?: 'login' | 'signup') => void
   closeAuthModal: () => void
   setSession: (token: string, user: UserProfile) => void
-  logout: () => void
+  logout: () => Promise<void>
+  initAuth: () => Promise<void>
 }
 
-const STORAGE_KEY_TOKEN = 'norai_auth_token'
-const STORAGE_KEY_USER = 'norai_auth_user'
-
-const initialToken = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY_TOKEN) : null
-const initialUser = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem(STORAGE_KEY_USER) || 'null') : null
+const mapSession = (session: Session | null) => {
+  if (!session?.user) return { token: null, user: null }
+  const u = session.user
+  return {
+    token: session.access_token,
+    user: {
+      id: u.id,
+      email: u.email ?? `${u.id}@anonymous.norai`,
+      fullName: (u.user_metadata?.full_name as string) || (u.user_metadata?.name as string) || u.email?.split('@')[0],
+      avatarUrl: u.user_metadata?.avatar_url as string | undefined,
+      isAnonymous: u.is_anonymous ?? false,
+    } as UserProfile,
+  }
+}
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: initialUser,
-  token: initialToken,
+  user: null,
+  token: null,
   isAuthModalOpen: false,
   authModalTab: 'login',
 
   openAuthModal: (tab = 'login') => set({ isAuthModalOpen: true, authModalTab: tab }),
   closeAuthModal: () => set({ isAuthModalOpen: false }),
 
-  setSession: (token, user) => {
-    localStorage.setItem(STORAGE_KEY_TOKEN, token)
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user))
-    set({ token, user, isAuthModalOpen: false })
+  setSession: (token, user) => set({ token, user, isAuthModalOpen: false }),
+
+  logout: async () => {
+    await supabase.auth.signOut()
+    set({ token: null, user: null })
   },
 
-  logout: () => {
-    localStorage.removeItem(STORAGE_KEY_TOKEN)
-    localStorage.removeItem(STORAGE_KEY_USER)
-    set({ token: null, user: null })
+  initAuth: async () => {
+    const { data } = await supabase.auth.getSession()
+    const { token, user } = mapSession(data.session)
+    set({ token, user })
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      const next = mapSession(session)
+      set({ ...next, isAuthModalOpen: false })
+    })
   },
 }))
