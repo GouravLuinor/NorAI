@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 load_dotenv()
 
 from backend.ratelimit import rate_limiter as _limiter
+from cache_util import outputs_current, write_marker
 
 logging.basicConfig(
     level=logging.INFO,
@@ -30,9 +31,9 @@ logger = logging.getLogger(__name__)
 
 # constants
 
-MAX_RETRIES = 8
+from config import MODEL_NAME, DEFAULT_MAX_RETRIES
 
-from config import MODEL_NAME
+MAX_RETRIES = DEFAULT_MAX_RETRIES
 
 CHAPTER_DIR = Path(
         "outputs/chapters"
@@ -63,6 +64,37 @@ DEDUP_HASH_DISTANCE = 6
 # call. The last batch in a chapter may be smaller.
 
 PASS1_BATCH_SIZE = 10
+
+# ── Reuse of visual-extractor analysis (ROADMAP P1.3) ─────────────────────────
+# Keyframes that the visual-knowledge stage (Stage 9) already analyzed get
+# their Pass 1 quality scores synthesized from that analysis instead of being
+# re-uploaded + re-scored by the LLM. Loaded once per lecture.
+#   normalized frame path -> {ocr_text, importance_score, visual_type,
+#                             include_in_notes}
+_VISUAL_ANALYSIS: dict = {}
+
+
+def load_visual_analysis(lecture_dir) -> dict:
+    """
+    Load the per-frame analysis persisted by visual_extractor (Stage 9) from
+    {lecture_dir}/visual_objects/visual_analysis_ch*.json. Returns a dict of
+    normalized frame path -> analysis entry. Missing analysis files are fine
+    (screenshot selection then falls back to its own Pass 1 LLM scoring).
+    """
+    global _VISUAL_ANALYSIS
+    _VISUAL_ANALYSIS = {}
+    analysis_dir = Path(lecture_dir) / "visual_objects"
+    for f in sorted(analysis_dir.glob("visual_analysis_ch*.json")):
+        try:
+            with open(f, "r", encoding="utf-8") as fh:
+                data = json.load(fh)
+            for path, entry in (data.get("frames") or {}).items():
+                _VISUAL_ANALYSIS[os.path.normpath(str(path))] = entry
+        except Exception as e:
+            logger.warning(f"Failed to load visual analysis {f}: {e}")
+    if _VISUAL_ANALYSIS:
+        logger.info(f"Loaded visual analysis for {len(_VISUAL_ANALYSIS)} frame(s).")
+    return _VISUAL_ANALYSIS
 
 
 # LLM Setup
@@ -464,6 +496,41 @@ def score_frames_batch(
     dropped (errors are logged).
     """
 
+    # ── Reuse visual-extractor analysis instead of re-scoring (ROADMAP P1.3)
+    synthesized = []
+    unanalyzed = []
+    for p in screenshot_paths:
+        entry = _VISUAL_ANALYSIS.get(os.path.normpath(str(p)))
+        if entry:
+            imp = max(0, min(10, int(entry.get("importance_score", 0) or 0)))
+            vis_type = (entry.get("visual_type") or "").strip().lower()
+            include_in_notes = bool(entry.get("include_in_notes", True))
+            synthesized.append(
+                FrameQualityScore(
+                    path=p,
+                    content_density=imp,
+                    instructor_occlusion=0,
+                    blur_level=0,
+                    is_transition_or_decorative=(
+                        vis_type in ("", "none") or not include_in_notes or imp <= 0
+                    ),
+                )
+            )
+        else:
+            unanalyzed.append(p)
+
+    if unanalyzed:
+        logger.info(
+            f"Chapter {chapter_id} batch {batch_index}: "
+            f"{len(synthesized)} frame(s) reused from visual analysis, "
+            f"{len(unanalyzed)} to score via LLM."
+        )
+
+    if not unanalyzed:
+        return synthesized
+
+    screenshot_paths = unanalyzed
+
     uploaded = upload_screenshots(
 
         screenshot_paths
@@ -625,16 +692,16 @@ def score_frames_batch(
                     f" frame(s), treating as failed: "
                     f"{sorted(missing_paths)}"
                 )
-
             scores = [
 
                 score
                 for score in scores
+
                 if score.path in valid_path_set
 
             ]
 
-            return scores
+            return scores + synthesized
 
         except Exception as e:
 
@@ -670,7 +737,7 @@ def score_frames_batch(
         f"{last_error}"
     )
 
-    return []
+    return synthesized
 
 
 def score_all_frames(
@@ -1401,6 +1468,16 @@ def process_chapter(
     → deterministic top-K cut → save.
     """
 
+    # ── Cache: skip if this chapter's selection already exists for the same
+    # ── inputs (re-runs cost ~0 API calls). See ROADMAP P1.4.
+    out_path = SCREENSHOTS_OUT_DIR / f"chapter_{chapter_id}_screenshots.json"
+    marker = SCREENSHOTS_OUT_DIR / f".selection_ch{chapter_id}.sha256"
+    if outputs_current(marker, [out_path], chapter, _VISUAL_ANALYSIS):
+        logger.info(
+            f"Chapter {chapter_id} screenshot selection: up to date, skipping"
+        )
+        return
+
     raw_text, original_count, valid_paths = (
 
         generate_selection(
@@ -1457,6 +1534,8 @@ def process_chapter(
         chapter_id
 
     )
+
+    write_marker(marker, chapter, _VISUAL_ANALYSIS)
 
 
 def main():
@@ -1571,6 +1650,10 @@ def select_screenshots_for_lecture(
     selections_dir = Path(output_dir) / "screenshots" / "selected"
     selections_dir.mkdir(parents=True, exist_ok=True)
     _sel.SCREENSHOTS_OUT_DIR = selections_dir
+
+    # Reuse the visual-extractor's per-frame analysis (Stage 9) so Pass 1
+    # doesn't re-upload/re-score the same keyframes (ROADMAP P1.3).
+    _sel.load_visual_analysis(output_dir)
 
     chapters = _sel.load_chapters(_sel.CHAPTER_DIR)
     with ThreadPoolExecutor(max_workers=max_workers) as executor:

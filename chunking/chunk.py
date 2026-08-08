@@ -2,6 +2,8 @@ import json
 import logging
 from pathlib import Path
 
+from config import DEFAULT_SEGMENTS_PER_CHUNK
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
@@ -11,8 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 # Constants
-
-DEFAULT_SEGMENTS_PER_CHUNK = 5
+# The canonical default lives in config.py (single source of truth). The
+# previous local constant of 5 drifted from config's 15, silently tripling the
+# number of extraction LLM calls per lecture. See ROADMAP P1.1.
 
 
 # Transcript Loader

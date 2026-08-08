@@ -20,7 +20,8 @@ from concurrent.futures import (
     as_completed
 )
 from backend.ratelimit import rate_limiter as _limiter
-from config import MODEL_NAME
+from cache_util import outputs_current, write_marker
+from config import MODEL_NAME, DEFAULT_MAX_RETRIES
 
 load_dotenv()
 
@@ -129,7 +130,7 @@ def extract_knowledge_object(
 
 def process_chunk_with_retry(
     chunk,
-    max_retries=8,
+    max_retries=DEFAULT_MAX_RETRIES,
     output_dir="outputs/objects"
 ):
     """
@@ -228,12 +229,28 @@ def process_chunk(
 ):
     """
     Extract and save a single chunk.
+    Skips (returns None) if the chunk was already extracted.
     """
 
     logger.info(
         f"Starting chunk "
         f"{chunk['chunk_id']}"
     )
+
+    output_path = (
+        Path(output_dir)
+        / f"chunk_{chunk['chunk_id']}.json"
+    )
+
+    if output_path.exists():
+
+        logger.info(
+            f"Skipping chunk "
+            f"{chunk['chunk_id']} "
+            f"(already extracted)"
+        )
+
+        return None
 
     knowledge_object = (
         extract_knowledge_object(
@@ -268,12 +285,25 @@ def extract_all_chunks(
 
     chunks = data["chunks"]
     total = len(chunks)
+    objects_dir = Path(output_dir) / "objects"
+    objects_dir.mkdir(parents=True, exist_ok=True)
+
+    # ── Cache: skip the whole stage when outputs exist for the same inputs ──
+    marker = objects_dir / ".extract.sha256"
+    existing_outputs = sorted(objects_dir.glob("chunk_*.json"))
+    if outputs_current(marker, existing_outputs, chunks_path):
+        logger.info(
+            f"Knowledge extraction: up to date for {total} chunks, skipping "
+            f"(0 API calls)"
+        )
+        return {
+            "objects_dir": str(objects_dir),
+            "num_chunks": total,
+        }
+
     logger.info(
         f"Extracting knowledge from {total} chunks (workers={max_workers})"
     )
-
-    objects_dir = Path(output_dir) / "objects"
-    objects_dir.mkdir(parents=True, exist_ok=True)
 
     completed = 0
 
@@ -285,7 +315,7 @@ def extract_all_chunks(
             executor.submit(
                 process_chunk_with_retry,
                 ch,
-                3,
+                DEFAULT_MAX_RETRIES,
                 str(objects_dir)
             )
             for ch in chunks
@@ -301,6 +331,8 @@ def extract_all_chunks(
                     )
             except Exception as e:
                 logger.error(f"  Chunk worker failed: {e}")
+
+    write_marker(marker, chunks_path)
 
     return {
         "objects_dir": str(objects_dir),

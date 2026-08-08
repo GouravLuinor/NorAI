@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **Supabase live**: Postgres via pooler, ES256/JWKS auth, real signUp/signIn/guest on the frontend, bearer-token API calls | 2026-08-08 19:35 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P1 pipeline economics — DoD validated**: 17 API calls first run → **0 on re-run** (all stages cached); chunk drift, batched/diff-synced indexing, analysis reuse, whisper small | 2026-08-08 22:35 UTC |
 
 ---
 
@@ -33,6 +33,27 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-08] — OpenCode: P1 Pipeline Economics (code complete; DoD measurement pending)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed (pending paid-run DoD verification)
+- **Files Modified**:
+  - `chunking/chunk.py` — P1.1: imports `config.DEFAULT_SEGMENTS_PER_CHUNK` (15), removed hardcoded 5.
+  - `tutor/build_index.py` — P1.2: new `upsert_batched()` (batch 20 + `EMBED_BATCH_SLEEP_SEC` pacing); `build_index` delegates to it.
+  - `backend/orchestrator.py` — P1.2: Stage 17/18 delegate to `upsert_batched` with content-hashed ids + diff-sync (delete orphans) against per-lecture `tutor/chroma`.
+  - `visual/visual_extractor.py` — P1.3: writes `visual_analysis_ch{chapter_id}.json` per chapter.
+  - `notes/screenshot_selector.py` — P1.3/P1.4: `load_visual_analysis()` + Pass 1 reuse (synthesized `FrameQualityScore`); per-chapter cache skip via `.selection_ch{id}.sha256` marker; wired into `select_screenshots_for_lecture`.
+  - `notes/notes_generator.py` — P1.4/P1.5: per-chapter artifacts cache marker; fixed `from random import random` shadow bug.
+  - `extract/extractor.py` — P1.4: whole-stage + per-chunk cache (marker `.extract.sha256`).
+  - `cache_util.py` [NEW] — P1.4: `digest`/`outputs_current`/`write_marker` hash-of-inputs helpers.
+  - P1.5 deletions: `retrieval/`, `vectordb/`, `notes/chapter_structurer.py`, `notes/chapter_clusterer.py`, `assessment/{assessment_generator,assessment_prompts,assessment_pdf_builder,assessment_renderer}.py`, `revision_notes/{revision_parser,revision_models,revision_prompts,revision_pdf_builder}.py`; rewrote `revision_notes/revision_generator.py` → only `render_revision_markdown`; `extract/__init__.py` re-exports from `extractor`; trimmed `flashcards/generate_flashcards.py` langchain scaffolding.
+  - P1.6: `backend/ratelimit.py`, `extract/extractor.py`, `notes/notes_generator.py`, `notes/screenshot_selector.py`, `visual/visual_extractor.py`, `notes/outline_generator.py` — honor `config.DEFAULT_RPM_LIMIT`/`DEFAULT_MAX_RETRIES`; shared limiter.
+  - `transcription/transcribe.py` — P1.7: default whisper `small` (`NORAI_WHISPER_MODEL` env), per-size `_MODEL_CACHE`.
+  - New tests: `test_cache_util.py`, `tutor/test_build_index_batching.py`, `chunking/test_chunk_defaults.py`, `notes/test_selector_cache.py`, `transcription/test_transcribe_config.py`.
+  - `ROADMAP.md` — P1 rows updated (P1.1–P1.7 ✅, P1.8 ⏸ deferred); `PROJECT_PROGRESS.md` — P1 entry added.
+- **Verification**: all 7 new offline tests green; existing suite green (backend webhooks/auth/upload/static/api-contract/quiz-missed, tutor tests); `oxlint` 0 errors; `tsc -b && vite build` green. Live servers: backend :8000, frontend :5173 (pre-existing).
+- **DoD validation (2026-08-08)**: Paid run on the consented ~8-min YouTube video (`bdeV_TjNfFA`). First-run Gemini calls = **17** (6 extraction + 1 outline + 3 visual + 2 screenshot Pass-2 + 3 notes artifacts + 2 embed batches); re-run of the **same lecture id** = **0** Gemini calls (every paid stage cache-hit; both Chroma indexes `added 0, removed 0`). **Bug found + fixed during validation**: orchestrator Stage-19 cleanup deleted `objects/`, `visual_objects/`, `merged_objects/`, wiping the extraction + visual-analysis caches every run — those dirs are now preserved, and whole-stage markers added for visual extraction (`.visual_extract.sha256`) and outline (`.outline.sha256`). Note: the first chosen video (`bEFAFHIahXk`) was 25.8 min and was correctly rejected by the 15-min free-trial gate; a transient YouTube 403 on one re-download retry succeeded after a pause. New tests: `visual/test_visual_cache.py`, `notes/test_outline_cache.py`.
+- **Hand-off Notes / Next Steps**: P1 is code-complete AND DoD-validated. P1.8 (adaptive chunking + pre-flight cost estimate) remains deferred — revisit now that real cost constants exist. Re-evaluate the P1.7 `medium` model / diarization as follow-ups if WER on technical vocabulary matters. Uncommitted — commit only if user asks.
 
 ### [2026-08-08] — OpenCode: Supabase wired end-to-end (Postgres + Auth)
 - **Agent**: OpenCode (CLI)

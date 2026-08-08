@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from pathlib import Path
 from faster_whisper import WhisperModel
 
@@ -15,11 +16,17 @@ logger = logging.getLogger(__name__)
 
 
 # Constants
+# Model size is config-driven via NORAI_WHISPER_MODEL (default "small" for
+# better WER on technical lecture vocabulary). Models are cached per size so
+# consecutive lectures don't pay a reload. See ROADMAP P1.7.
 
-
-DEFAULT_MODEL_SIZE = "base"
+DEFAULT_MODEL_SIZE = os.environ.get("NORAI_WHISPER_MODEL", "small")
 DEFAULT_DEVICE = "cpu"
 DEFAULT_COMPUTE_TYPE = "int8"
+
+# Module-level cache: model_size -> WhisperModel. WhisperModel.transcribe is
+# thread-safe, so sharing one instance across concurrent pipelines is safe.
+_MODEL_CACHE: dict[str, WhisperModel] = {}
 
 
 # Metadata Loader
@@ -57,6 +64,13 @@ def load_whisper_model(
     model_size: str = DEFAULT_MODEL_SIZE
 ) -> WhisperModel:
 
+    cached = _MODEL_CACHE.get(model_size)
+    if cached is not None:
+        logger.info(
+            f"Reusing cached Faster-Whisper model: {model_size}"
+        )
+        return cached
+
     logger.info(
         f"Loading Faster-Whisper model: {model_size}"
     )
@@ -68,6 +82,8 @@ def load_whisper_model(
             device=DEFAULT_DEVICE,
             compute_type=DEFAULT_COMPUTE_TYPE
         )
+
+        _MODEL_CACHE[model_size] = model
 
         logger.info(
             "Model loaded successfully."

@@ -18,7 +18,7 @@ from concurrent.futures import (
 )
 import json
 import logging
-from random import random
+import random
 import re
 from pathlib import Path
 import os
@@ -41,9 +41,9 @@ logger = logging.getLogger(__name__)
 
 #constants
 
-from config import MODEL_NAME
+from config import MODEL_NAME, DEFAULT_MAX_RETRIES
 
-MAX_RETRIES = 8
+MAX_RETRIES = DEFAULT_MAX_RETRIES
 NOTES_DIR = Path(
         "outputs/notes"
 )
@@ -786,6 +786,7 @@ def generate_study_notes(
 
 # ── Task 2.3: Consolidated Chapter Artifact Generator ─────────────────────────
 from pydantic import BaseModel, Field
+from cache_util import outputs_current, write_marker
 from assessment.assessment_models import Question
 from flashcards.generate_flashcards import convert_assessment_to_flashcards
 from revision_notes.revision_generator import render_revision_markdown
@@ -851,7 +852,23 @@ Produce a valid JSON object matching MergedChapterArtifactsModel:
     for d in (notes_dir, revision_dir, assessment_dir, flashcards_dir):
         d.mkdir(parents=True, exist_ok=True)
 
-    for attempt in range(3):
+    # ── Cache: skip this chapter when its artifacts already exist for the
+    # ── same inputs (re-runs cost ~0 API calls). See ROADMAP P1.4.
+    chapter_outputs = [
+        notes_dir / f"chapter_{chapter_id}.md",
+        notes_dir / f"chapter_{chapter_id}.json",
+        revision_dir / f"revision_chapter_{chapter_id}.md",
+        assessment_dir / f"assessment_chapter_{chapter_id}.json",
+        flashcards_dir / f"flashcards_chapter_{chapter_id}.json",
+    ]
+    marker = notes_dir / f".artifacts_ch{chapter_id}.sha256"
+    if outputs_current(marker, chapter_outputs, chapter_json):
+        logger.info(
+            f"Chapter {chapter_id} consolidated artifacts: up to date, skipping"
+        )
+        return
+
+    for attempt in range(MAX_RETRIES):
         try:
             _limiter.wait()
             client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
@@ -926,6 +943,7 @@ Produce a valid JSON object matching MergedChapterArtifactsModel:
                 json.dump(cards_data, f, indent=4, ensure_ascii=False)
 
             logger.info(f"Chapter {chapter_id} consolidated artifacts generated successfully.")
+            write_marker(marker, chapter_json)
             return
         except Exception as e:
             logger.warning(f"Chapter {chapter_id} consolidated artifacts attempt {attempt+1} failed: {e}")
@@ -948,6 +966,8 @@ Produce a valid JSON object matching MergedChapterArtifactsModel:
     cards_file = flashcards_dir / f"flashcards_chapter_{chapter_id}.json"
     with open(cards_file, "w", encoding="utf-8") as f:
         json.dump({"chapter_id": chapter_id, "chapter_title": chapter_title, "incomplete": True, "flashcards": []}, f, indent=4)
+
+    write_marker(marker, chapter_json)
 
 
 def generate_consolidated_chapter_artifacts(

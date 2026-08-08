@@ -1,1 +1,0 @@
-# DEPRECATED — PDF generation superseded by frontend markdown rendering.

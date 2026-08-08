@@ -8,7 +8,6 @@ and processes them in parallel across chapters using a fixed pool of workers.
 Internal defaults:
     WORKERS = 7               (parallel API calls)
     MAX_CARDS_PER_CHAPTER = 0  (0 = no limit, use all questions)
-    BATCH_SIZE = 5             (questions per LLM call)
 
 Usage:
     python -m flashcards.generate_flashcards
@@ -20,12 +19,8 @@ Usage:
 import argparse
 import json
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
-from config import MODEL_NAME, TEMPERATURE, get_api_key
 
 ASSESSMENT_DIR = Path("outputs/assessment")
 FLASHCARDS_DIR = Path("outputs/flashcards")
@@ -34,20 +29,6 @@ FLASHCARDS_DIR.mkdir(parents=True, exist_ok=True)
 # ── Internal defaults ─────────────────────────────────────────────────────────
 DEFAULT_WORKERS = 7
 DEFAULT_MAX_CARDS = 0          # 0 = no limit, process all questions
-BATCH_SIZE = 5                 # questions per LLM call
-
-PROMPT_TEMPLATE = """You are an expert flashcard creator. Convert the following assessment questions into concise flashcards.
-
-For each flashcard:
-- The "front" must be a very short, self‑contained question (max 15 words).
-- The "back" must be a short, precise answer (max 20 words).
-- Include a brief "explanation" (max 30 words) that clarifies the answer.
-
-Return ONLY a JSON array of objects with the fields "front", "back", "explanation".
-Do NOT include any other text.
-
-Assessment questions:
-{questions_text}"""
 
 
 def load_assessment_questions(chapter_id: int | None = None) -> List[Dict[str, Any]]:
