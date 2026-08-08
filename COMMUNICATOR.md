@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **QA Review + Fix pass**: tutor memory (context_messages), missed-question correctness, quiz load path, flashcard stats, finish-attempt integrity, dead-code cleanup | 2026-08-08 12:05 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **Landing/Pricing review pass**: fixed dead type-scale utilities, a11y (skip link, tabs, switch, Links, reduced-motion), copy, and a mobile mockup overflow bug | 2026-08-08 16:30 UTC |
 
 ---
 
@@ -33,6 +33,19 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-08] — OpenCode: Landing/Pricing Design + A11y Review Pass (frontend-design + Web Interface Guidelines + MiMo visual QA)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed
+- **Files Modified**:
+  - `frontend/src/index.css` — added missing type-scale tokens to `@theme` (`--text-10/12/14/15/16/17/18/20/22/28/36/44`); added `scroll-margin-top` for `#features`/`#how-it-works`.
+  - `frontend/src/pages/LandingPage.tsx` — mobile nav menu (hamburger, `aria-expanded`); Pricing `<button>`→`<Link>`; removed dead `#privacy`/`#terms` anchors; `aria-hidden` on decorative blueprint grid; ARIA tabs pattern on the workspace mockup (`role="tablist"/tab/tabpanel`, roving tabindex, Arrow/Home/End, focus management); removed `cursor-pointer`/hover from inert quiz-option divs; `transition-all`→explicit; `text-balance` on h1/h2; fixed a mobile overflow bug (mockup tabs bar's nowrap min-content widened the section past the viewport and was clipped) via `w-full` on the mockup section + `overflow-x-auto` tabs bar + truncating mockup title + mobile-hidden status badge.
+  - `frontend/src/pages/PricingPage.tsx` — rewrote invalid `text-*-bold/regular/medium` classes as `text-<size> font-<weight>`; billing toggle now `role="switch"` + `aria-checked` + `aria-label`; `tabular-nums` on prices; sr-only `h2` for heading hierarchy; `text-balance` on h1; deduped pricing h1 ("Pricing Built for the Semester"); tightened free-plan tagline; curly apostrophe; `transition-all`→explicit.
+  - `frontend/src/App.tsx` — skip link → `#main`; global `<MotionConfig reducedMotion="user">` (framer animations previously ignored `prefers-reduced-motion`); dropped now-unused `onOpenPricing` prop.
+  - `frontend/src/pages/UploadPage.tsx`, `ProcessingPage.tsx`, `components/layout/Workspace.tsx` — added `id="main"` (skip-link targets).
+- **Verification**: Critical bug confirmed+fixed — the numeric `text-*` utilities were absent from compiled CSS (type scale silently collapsed to 16px); after fix, all tokens/roles verified present in `dist/`. `tsc -b && vite build` + `oxlint` green (no new findings). Screenshot QA via MiMo (`opencode/mimo-v2.5-free`): 6 screenshots (landing/pricing × light/dark × desktop/mobile) → final verdict ALL PASS, no clipping/overflow/overlap.
+- **Hand-off Notes**: No paid pipeline runs. Screenshot harness lives in `/tmp/opencode/` (throwaway). Next: consider `aria-live` announcements + tabular-nums are in; mobile mockup badge intentionally hidden <640px.
+
 
 ### [2026-08-08] — OpenCode: Feature-Plan QA Review + Fix Pass (tutor memory, quiz correctness, flashcard stats)
 - **Agent**: OpenCode (CLI)

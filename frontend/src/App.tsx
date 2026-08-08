@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { MotionConfig } from 'framer-motion'
 import { LandingPage } from './pages/LandingPage'
 import { PricingPage } from './pages/PricingPage'
 import { UploadPage } from './pages/UploadPage'
@@ -11,10 +12,7 @@ import { AuthModal } from './components/auth/AuthModal'
 function LandingRouteWrapper() {
   const navigate = useNavigate()
   return (
-    <LandingPage
-      onStartWorkspace={() => navigate('/app')}
-      onOpenPricing={() => navigate('/pricing')}
-    />
+    <LandingPage onStartWorkspace={() => navigate('/app')} />
   )
 }
 
@@ -30,17 +28,25 @@ function PricingRouteWrapper() {
 export default function App() {
   return (
     <BrowserRouter>
-      <ToastContainer />
-      <AuthModal />
-      <Routes>
-        <Route path="/" element={<LandingRouteWrapper />} />
-        <Route path="/pricing" element={<PricingRouteWrapper />} />
-        <Route path="/app" element={<UploadPage />} />
-        <Route path="/process/:taskId" element={<ProcessingPage />} />
-        <Route path="/workspace" element={<Workspace />} />
-        <Route path="/workspace/:lectureId" element={<Workspace />} />
-        <Route path="/print" element={<PrintPage />} />
-      </Routes>
+      <MotionConfig reducedMotion="user">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-np focus:text-npfg focus:px-4 focus:py-2 focus:rounded-md focus:shadow-bp"
+        >
+          Skip to main content
+        </a>
+        <ToastContainer />
+        <AuthModal />
+        <Routes>
+          <Route path="/" element={<LandingRouteWrapper />} />
+          <Route path="/pricing" element={<PricingRouteWrapper />} />
+          <Route path="/app" element={<UploadPage />} />
+          <Route path="/process/:taskId" element={<ProcessingPage />} />
+          <Route path="/workspace" element={<Workspace />} />
+          <Route path="/workspace/:lectureId" element={<Workspace />} />
+          <Route path="/print" element={<PrintPage />} />
+        </Routes>
+      </MotionConfig>
     </BrowserRouter>
   )
 }
