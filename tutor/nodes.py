@@ -79,15 +79,36 @@ def chapter_summary_node(state: dict, config: RunnableConfig, output_dir: str = 
         "summary_chapter_id": None,
     }
 
-# ── load_memory (no-op, kept for topology stability) ──────────────────────────
+# ── load_memory (rebuilds the prompt window from the transcript) ─────────────
 
 def load_memory_node(state: dict, config: RunnableConfig) -> dict:
     """
-    Intentional no-op. LangGraph's checkpointer already restores state.
-    Future: load conversation summary, prime retrieved_chunks for multi-hop, etc.
+    Rebuild the windowed conversation history used in the LLM prompt.
+
+    The full transcript lives in state['messages'] (persisted by the
+    checkpointer across turns). This node derives state['context_messages']
+    from it every turn: the most recent summary SystemMessage (if any) plus
+    the last _SUMMARY_RETAIN_RECENT Human/AI messages. This is what gives the
+    model real conversational memory — previously context_messages was never
+    populated, so the prompt contained only the current question.
     """
-    logger.debug("load_memory_node: no-op")
-    return {}
+    messages = state.get("messages", [])
+    if not messages:
+        return {}
+
+    summary = None
+    turns: list = []
+    for m in messages:
+        if isinstance(m, SystemMessage):
+            if m.content and str(m.content).startswith(_SUMMARY_PREFIX):
+                summary = m  # keep only the most recent summary
+        elif isinstance(m, (HumanMessage, AIMessage)):
+            turns.append(m)
+
+    recent = turns[-_SUMMARY_RETAIN_RECENT:] if turns else []
+    context = ([summary] if summary is not None else []) + recent
+    logger.debug(f"load_memory_node: window = {len(context)} messages ({len(recent)} recent, {'summary' if summary else 'no summary'})")
+    return {"context_messages": context}
 
 
 def _build_low_confidence_context_block(chunks: list[dict]) -> str:
@@ -225,28 +246,40 @@ def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
     }
 
 
-# ── save_memory (no-op, kept for topology stability) ──────────────────────────
+# ── save_memory (incremental summarization) ───────────────────────────────────
 
 def save_memory_node(state: dict, config: RunnableConfig) -> dict:
     """
-    Phase 5: Build a windowed conversation history (summary + recent messages)
-    and store it in state['context_messages']. The full transcript remains in
-    state['messages'] but is not used in the prompt.
+    Phase 5: condense old turns into a summary record appended to
+    state['messages'] when enough NEW turns have accumulated since the last
+    summary. The full transcript stays in messages; the prompt window is
+    rebuilt each turn by load_memory_node (summary + recent turns).
 
-    Trigger: when state['context_messages'] reaches _SUMMARY_TRIGGER_MSG_COUNT.
+    Trigger: when the number of Human/AI messages AFTER the last summary
+    record exceeds _SUMMARY_TRIGGER_MSG_COUNT. Keeps the most recent
+    _SUMMARY_RETAIN_RECENT messages untouched; summarises the rest.
     """
-    context_msgs: list = state.get("context_messages", [])
-    if len(context_msgs) <= _SUMMARY_TRIGGER_MSG_COUNT:
+    messages = state.get("messages", [])
+    if not messages:
+        return {}
+
+    # Find the index of the most recent summary record in the transcript
+    last_summary_idx = -1
+    for idx, m in enumerate(messages):
+        if isinstance(m, SystemMessage) and m.content and str(m.content).startswith(_SUMMARY_PREFIX):
+            last_summary_idx = idx
+
+    pending = [m for m in messages[last_summary_idx + 1:] if isinstance(m, (HumanMessage, AIMessage))]
+    if len(pending) <= _SUMMARY_TRIGGER_MSG_COUNT:
         logger.debug("save_memory_node: no summarization needed")
         return {}
 
-    split_idx = len(context_msgs) - _SUMMARY_RETAIN_RECENT
-    to_summarise = context_msgs[:split_idx]
-    recent = context_msgs[split_idx:]
+    split_idx = len(pending) - _SUMMARY_RETAIN_RECENT
+    to_summarise = pending[:split_idx]
 
     logger.info(
         f"save_memory_node: summarising {len(to_summarise)} older messages "
-        f"({len(recent)} recent messages preserved)"
+        f"({_SUMMARY_RETAIN_RECENT} recent messages preserved)"
     )
 
     # Build transcript
@@ -288,12 +321,6 @@ def save_memory_node(state: dict, config: RunnableConfig) -> dict:
 
     summary_msg = SystemMessage(content=f"{_SUMMARY_PREFIX}\n{summary_text}")
 
-    # New context window: summary + recent messages
-    new_context = [summary_msg] + recent
-
-    # Also update the full messages list by appending the summary (as a record)
-    # but without the duplicates — we'll just append the summary.
-    return {
-        "context_messages": new_context,
-        "messages": [summary_msg],  # add summary to full transcript as a record
-    }
+    # Append the summary as a record in the transcript so load_memory_node can
+    # pick it up next turn. The UI filters SystemMessages out of the response.
+    return {"messages": [summary_msg]}

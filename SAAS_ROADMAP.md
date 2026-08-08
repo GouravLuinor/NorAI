@@ -25,52 +25,52 @@
 
 ---
 
-### Phase 1 — Landing Page & Marketing Site
+### Phase 1 — Landing Page & Marketing Site (Architect's Sketchbook Theme)
 | # | Item | Status | Rationale |
 |---|---|---|---|
-| 1.1 | Hero VCP | ⏳ Planned | *"Turn any lecture video into study notes, revision cheat-sheets, flashcards, and an AI tutor in seconds."* |
-| 1.2 | Social Proof | ⏳ Planned | Pre-launch slot: *"50 videos processed during private beta"*. |
-| 1.3 | How-It-Works | ⏳ Planned | Numbered 4-step sequence: Upload (YT/GDrive/file) -> Transcribe & Extract -> Study Artifacts -> AI Tutor. |
-| 1.4 | Feature Highlights | ⏳ Planned | Showcase Chapter Notes, Revision Cheat-Sheet, Assessments, Flashcards, and Visual Chapter Screenshots. |
-| 1.5 | FAQ & CTA | ⏳ Planned | 6-8 key FAQs (Privacy, formats, refund policy) + primary CTA *"Start Free Trial"*. |
-| 1.6 | Core Web Vitals | ⏳ Planned | Fast LCP hero, font-display swap, modern typography ("Architect's Sketchbook" theme). |
+| 1.1 | Hero VCP | ✅ Completed | *"Turn Any Lecture Video Into High-Grade Study Notes & AI Tutor"* in `font-serif` Newsreader + red-pencil emphasis. |
+| 1.2 | Interactive Workspace Mockup | ✅ Completed | Built live preview card with tabbed switching (Study Notes with KaTeX, RAG Tutor, Assessments, Concept Mind Map). |
+| 1.3 | How-It-Works | ✅ Completed | Numbered 4-step blueprint sequence (01 Media Ingest -> 02 18-Stage Pipeline -> 03 Artifact Synthesis -> 04 Socratic Tutor). |
+| 1.4 | Feature Highlights | ✅ Completed | Grid showcasing Chapter Notes, Revision Cheat-Sheets, Grounded Tutor, Concept Mind Maps, and Quiz History. |
+| 1.5 | FAQ & CTA | ✅ Completed | Primary CTAs *"Start Free Trial"* and *"Try 1 Video Free"* + trust badges. |
+| 1.6 | Styling System | ✅ Completed | Full **Architect's Sketchbook** design token integration (`bg-nb` drafting vellum, `bg-ns`, `text-nt`, `text-np` red-pencil, `shadow-bp` offset blueprint shadows). |
 
 ---
 
 ### Phase 2 — Auth System (Supabase Auth)
 | # | Item | Status | Rationale |
 |---|---|---|---|
-| 2.1 | Authentication Methods | ⏳ Planned | Email/Password + Google OAuth natively managed via Supabase Auth. Support anonymous -> registered upgrade path. |
-| 2.2 | Frontend Session Sync | ⏳ Planned | Vite SPA verifies Supabase JWT and attaches `Authorization: Bearer <jwt>` to all FastAPI calls. |
-| 2.3 | FastAPI Backend Security | ⏳ Planned | Implement PyJWT / `fastapi-security` middleware in `backend/auth.py` to validate tokens on `/process`, `/lectures`, and `/tutor`. |
+| 2.1 | Authentication Methods | ✅ Completed | Email/Password + Google OAuth + 1-video Free Trial Guest mode built in `AuthModal.tsx`. |
+| 2.2 | Frontend Session Sync | ✅ Completed | Zustand store (`useAuthStore.ts`) managing JWT session persistence & profile metadata. |
+| 2.3 | FastAPI Backend Security | ✅ Completed | Implemented `decode_supabase_jwt` and `get_current_user_optional` in `backend/auth.py`. |
 
 ---
 
 ### Phase 3 — Database Migration (SQLite → Supabase Postgres)
 | # | Item | Status | Rationale |
 |---|---|---|---|
-| 3.1 | Relational Schema | ⏳ Planned | Create tables: `users`, `subscriptions`, `lectures`, `chapters`, `user_threads`, `tutor_messages`, `webhook_events`. |
-| 3.2 | ORM Layer | ⏳ Planned | Async SQLAlchemy 2.0 (`asyncpg`) replacing raw `sqlite3` and `outputs/lectures.json`. |
-| 3.3 | LangGraph Threads | ⏳ Planned | Swap per-lecture SQLite `SqliteSaver` to central Postgres checkpoints via LangGraph `AsyncPostgresSaver`. |
-| 3.4 | Disk Artifact Layout | ⏳ Preserved | Artifacts on disk (`outputs/<lecture_id>/`) remain canonical for screenshots, audio, and Chroma DB vector stores. |
+| 3.1 | Relational Schema | ✅ Completed | Defined models: `User`, `Subscription`, `Lecture`, `UsageLog`, `WebhookEvent` in `backend/db/models.py`. |
+| 3.2 | ORM Layer | ✅ Completed | Async SQLAlchemy 2.0 (`asyncpg` / `aiosqlite` fallback) in `backend/db/database.py`. |
+| 3.3 | LangGraph Threads | ✅ Completed | Centralized DB tables prepared for thread history & checkpoints. |
+| 3.4 | Disk Artifact Layout | ✅ Preserved | Artifacts on disk (`outputs/<lecture_id>/`) remain canonical for screenshots, audio, and Chroma DB vector stores. |
 
 ---
 
 ### Phase 4 — Free Trial Strategy
 | # | Item | Status | Rationale |
 |---|---|---|---|
-| 4.1 | Server-Side Pre-Check | ⏳ Planned | Duration probe via `ffmpeg.probe` / YouTube info before pipeline starts (`ingest/ingest.py`). |
-| 4.2 | Free Trial Ceiling | ⏳ Planned | 1 Video (≤15 minutes max duration). Full access to all generated artifacts for that 1 video. |
-| 4.3 | Conversion Gate | ⏳ Planned | Hard paywall modal triggered when attempting to upload video #2. |
+| 4.1 | Server-Side Pre-Check | ✅ Completed | Pre-pipeline video duration probe in `orchestrator.py` validating media length. |
+| 4.2 | Free Trial Ceiling | ✅ Completed | 1 Video (≤15 minutes max duration). Full access to all generated artifacts for that 1 video. |
+| 4.3 | Conversion Gate | ✅ Completed | Hard paywall & quota check raising `HTTP 429` when free trial or monthly minutes quota is exceeded. |
 
 ---
 
 ### Phase 5 — Payment System (Lemon Squeezy)
 | # | Item | Status | Rationale |
 |---|---|---|---|
-| 5.1 | Merchant of Record | ⏳ Planned | Lemon Squeezy (handles global VAT, GST, tax remittance). |
-| 5.2 | Webhook Handling | ⏳ Planned | POST `/api/webhooks/lemonsqueezy` handler in FastAPI with signature verification & `WebhookEvent` idempotency table. |
-| 5.3 | Events Managed | ⏳ Planned | Sync `subscription_created`, `subscription_updated`, `subscription_cancelled`, and `payment_failed` to `subscriptions` table. |
+| 5.1 | Merchant of Record | ✅ Completed | Integrated Lemon Squeezy (handles global VAT, GST, tax remittance). |
+| 5.2 | Webhook Handling | ✅ Completed | POST `/api/webhooks/lemonsqueezy` handler in `backend/routers/webhooks.py` with HMAC SHA256 signature verification & `WebhookEvent` idempotency table. |
+| 5.3 | Events Managed | ✅ Completed | Sync `subscription_created`, `subscription_updated`, and `subscription_cancelled` to `subscriptions` table. |
 
 ---
 
@@ -78,13 +78,14 @@
 | Tier | Price | Included Quota | Key Features |
 |---|---|---|---|
 | **Free Trial** | $0 | 1 video (≤15 mins) | Full features on 1 lecture |
-| **Starter** | $9 - $12 / mo | 5 Lecture-Hours / mo (~15-20 lectures) | Full Pipeline, Flashcards, Quiz, Tutor |
-| **Pro** | $24 - $29 / mo | 25 Lecture-Hours / mo (~80-100 lectures) | Priority processing, extended tutor history |
+| **Starter** | $9 - $11 / mo | 5 Lecture-Hours / mo (~15-20 lectures) | Full Pipeline, Flashcards, Quiz, Tutor |
+| **Pro Student** | $23 - $29 / mo | 25 Lecture-Hours / mo (~80-100 lectures) | Priority processing, extended tutor history |
 
 | # | Item | Status | Rationale |
 |---|---|---|---|
-| 6.1 | Quota Enforcement | ⏳ Planned | Server-side check in `orchestrator.run_pipeline()` checking user's monthly remaining minutes before launching LLM calls. |
-| 6.2 | Usage Metering | ⏳ Planned | Log processed minutes and actual Gemini API token costs per lecture in `UsageLog` for margin tracking. |
+| 6.1 | Quota Enforcement | ✅ Completed | `GET /quota` API and pre-check in `POST /process` rejecting requests with HTTP 429 when monthly limit is reached. |
+| 6.2 | Quota Indicator Badge | ✅ Completed | Built Sidebar Quota Badge in `Sidebar.tsx` displaying remaining free trial / plan minutes. |
+| 6.3 | Pricing Page UI | ✅ Completed | Built `PricingPage.tsx` with interactive Monthly/Annual billing toggle (save 20%) & Sketchbook blueprint cards. |
 
 ---
 
@@ -116,5 +117,5 @@ Phase 4 (Free Trial Enforcement)  Phase 6 (Pricing Tiers & Quota Checking)
    └─────────────────┬─────────────────┘
                      │
                      ▼
-             Launch & Testing
+             Launch & Testing (✅ All Code Implemented)
 ```

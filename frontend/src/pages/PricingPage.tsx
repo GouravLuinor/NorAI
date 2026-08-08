@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, Sparkles, ShieldCheck, ArrowRight } from 'lucide-react'
 import { useAuthStore } from '../stores/useAuthStore'
@@ -71,7 +71,7 @@ export function PricingPage({ onStartWorkspace }: PricingPageProps) {
     },
   ]
 
-  const handlePlanSelect = (planId: string) => {
+  const handlePlanSelect = () => {
     if (!user) {
       openAuthModal('signup')
     } else if (onStartWorkspace) {
@@ -168,7 +168,7 @@ export function PricingPage({ onStartWorkspace }: PricingPageProps) {
             </div>
 
             <button
-              onClick={() => handlePlanSelect(plan.id)}
+              onClick={() => handlePlanSelect()}
               className={`w-full py-2.5 px-4 rounded font-display text-11 font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 plan.popular
                   ? 'bg-np hover:bg-nph text-npfg shadow-bp active:translate-y-0.5'
