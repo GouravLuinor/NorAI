@@ -25,15 +25,17 @@ export function PrintChapter({
   item,
   ch,
   showScreenshots = false,
+  continuous = false,
 }: {
   item: any
   ch: number
   showScreenshots?: boolean
+  continuous?: boolean
 }) {
   const { title, preamble, sections } = parseChapterContent(item, ch)
 
   return (
-    <div className="print-chapter px-8 py-7 pb-15">
+    <div className={continuous ? 'print-flow px-8 py-7' : 'print-chapter px-8 py-7 pb-15'}>
       <h1 className="text-[21px] font-semibold text-nt tracking-tight mb-6">{title}</h1>
 
       {preamble && <PrintMarkdown>{preamble}</PrintMarkdown>}

@@ -24,13 +24,23 @@ export function DocPanel() {
       notes: 'study_notes',
       revision: 'revision',
       assessment: 'assessment',
-      guide: 'revision',
-      concepts: 'revision',
+      guide: 'guide',
+      concepts: 'concepts',
     }
     const type = pdfMap[activeDocTab]
     if (type) {
       addToast('Opening print dialog…', 'info')
       window.open(`/print?type=${type}&lecture_id=${lectureId}`, '_blank')
+    }
+  }
+
+  const handleDownloadInteractive = async () => {
+    const { exportInteractiveMindmap } = await import('../../lib/exportInteractiveMindmap')
+    try {
+      await exportInteractiveMindmap(lectureId)
+      addToast('Interactive mind map downloaded', 'success')
+    } catch (err: any) {
+      addToast(`Export failed: ${err?.message || 'unknown error'}`, 'error')
     }
   }
 
@@ -67,6 +77,16 @@ export function DocPanel() {
           >
             <Download size={11} strokeWidth={1.5} /> PDF
           </Button>
+
+          {activeDocTab === 'concepts' && (
+            <Button
+              variant="outline"
+              onClick={handleDownloadInteractive}
+              className="gap-1 px-2 py-1 rounded-sm text-2xs bg-transparent border-bdr2 active:translate-y-[1px] active:shadow-none"
+            >
+              <Download size={11} strokeWidth={1.5} /> Interactive
+            </Button>
+          )}
 
           {/* Inline search bar – only visible when search is open */}
           <SearchBar isOpen={searchOpen} onClose={() => setSearchOpen(false)} />

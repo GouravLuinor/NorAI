@@ -313,6 +313,19 @@ html, body, #root {
     break-before: page;
     page-break-before: always;
   }
+  .print-flow {
+    break-before: auto;
+    page-break-before: auto;
+  }
+  .print-flow h1 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  .print-flow + .print-flow {
+    border-top: 1px solid var(--color-bdr);
+    margin-top: 24px;
+    padding-top: 16px;
+  }
   .doc-content {
     overflow: visible !important;
     max-height: none !important;

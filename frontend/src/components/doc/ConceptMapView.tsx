@@ -9,33 +9,18 @@ import { useThreadStore } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { sendChatMessageStream } from '../../lib/chatApi'
 import { buildReferences } from '../../lib/references'
+import {
+  layoutConceptMap,
+  conceptEdgePath,
+  type ConceptNode,
+  type ConceptEdge,
+  type ConceptMapResponse,
+  type ConceptLayoutMode,
+} from '../../lib/conceptMapLayout'
+
+export type { ConceptNode, ConceptEdge, ConceptMapResponse }
 
 const stripSources = (text: string) => text.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
-
-export interface ConceptNode {
-  id: string
-  label: string
-  type: 'root' | 'focus_concept' | 'detail'
-  category: string
-  description: string
-  x?: number
-  y?: number
-}
-
-export interface ConceptEdge {
-  id: string
-  source: string
-  target: string
-  label: string
-}
-
-export interface ConceptMapResponse {
-  lecture_title: string
-  chapter_id: number
-  root: { id: string; label: string; summary: string }
-  nodes: ConceptNode[]
-  edges: ConceptEdge[]
-}
 
 interface ConceptMapViewProps {
   chapterId: number
@@ -53,7 +38,7 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [layoutMode, setLayoutMode] = useState<'tree' | 'radial'>('tree')
+  const [layoutMode, setLayoutMode] = useState<ConceptLayoutMode>('tree')
 
   const containerRef = useRef<HTMLDivElement>(null)
   const askInFlightRef = useRef(false)
@@ -178,67 +163,8 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
     )
   }
 
-  // Calculate layout coordinates for nodes
-  const height = 600
-  const centerX = 220
-  const centerY = height / 2
-
-  const rootNode = data.nodes.find((n) => n.type === 'root') || data.nodes[0]
-  const focusNodes = data.nodes.filter((n) => n.type === 'focus_concept')
-  const detailNodes = data.nodes.filter((n) => n.type === 'detail')
-
-  // Assign positions
-  const nodePositions: Record<string, { x: number; y: number }> = {}
-  nodePositions[rootNode.id] = { x: centerX, y: centerY }
-
-  if (layoutMode === 'tree') {
-    const focusGapY = Math.min(140, (height - 120) / Math.max(1, focusNodes.length))
-    const startFocusY = centerY - ((focusNodes.length - 1) * focusGapY) / 2
-
-    focusNodes.forEach((fn, i) => {
-      const fy = startFocusY + i * focusGapY
-      const fx = centerX + 260
-      nodePositions[fn.id] = { x: fx, y: fy }
-
-      // Detail nodes for this focus node
-      const childEdges = data.edges.filter((e) => e.source === fn.id)
-      const detailGapY = 55
-      const startDetailY = fy - ((childEdges.length - 1) * detailGapY) / 2
-
-      childEdges.forEach((edge, j) => {
-        nodePositions[edge.target] = {
-          x: fx + 280,
-          y: startDetailY + j * detailGapY,
-        }
-      })
-    })
-  } else {
-    // Radial layout mode
-    const radius = 220
-    const angleStep = (2 * Math.PI) / Math.max(1, focusNodes.length)
-    focusNodes.forEach((fn, i) => {
-      const angle = i * angleStep - Math.PI / 2
-      const fx = centerX + radius * Math.cos(angle)
-      const fy = centerY + radius * Math.sin(angle)
-      nodePositions[fn.id] = { x: fx, y: fy }
-
-      const childEdges = data.edges.filter((e) => e.source === fn.id)
-      childEdges.forEach((edge, j) => {
-        const subAngle = angle + (j - (childEdges.length - 1) / 2) * 0.35
-        nodePositions[edge.target] = {
-          x: fx + 160 * Math.cos(subAngle),
-          y: fy + 160 * Math.sin(subAngle),
-        }
-      })
-    })
-  }
-
-  // Fallback position generator
-  detailNodes.forEach((dn, i) => {
-    if (!nodePositions[dn.id]) {
-      nodePositions[dn.id] = { x: centerX + 500, y: 100 + i * 50 }
-    }
-  })
+  // Calculate layout coordinates for nodes via the shared layout engine
+  const nodePositions = layoutConceptMap(data.nodes, data.edges, layoutMode, { height: 600 })
 
   // Drag handlers
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -348,11 +274,10 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
             const tgt = nodePositions[edge.target]
             if (!src || !tgt) return null
 
-            const dx = tgt.x - src.x
             const isSelected = selectedNode && (selectedNode.id === edge.source || selectedNode.id === edge.target)
 
             // Smooth cubic bezier curve path
-            const pathD = `M ${src.x} ${src.y} C ${src.x + dx * 0.45} ${src.y}, ${tgt.x - dx * 0.45} ${tgt.y}, ${tgt.x} ${tgt.y}`
+            const pathD = conceptEdgePath(src, tgt)
 
             return (
               <g key={edge.id}>

@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **Landing/Pricing review pass**: fixed dead type-scale utilities, a11y (skip link, tabs, switch, Links, reduced-motion), copy, and a mobile mockup overflow bug | 2026-08-08 16:30 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **PDF exports**: real Guide + Mind map PDFs, interactive HTML export, continuous-flow Revision/Guide print, title-collision fix | 2026-08-08 17:45 UTC |
 
 ---
 
@@ -33,6 +33,21 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-08] — OpenCode: PDF Export Rebuild — Guide & Mind map PDFs, Interactive HTML, Continuous-Flow Print, Title Collision Fix
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed
+- **Files Modified**:
+  - `frontend/src/App.tsx` — widened the `PrintRoute`/print-type map: `guide` → `GET /study-guide` (was wrongly mapped to the revision deck), new `concepts` → `GET /concept-map` per chapter. `PrintConceptMap`, `PrintStudyGuide`, `PrintRevision`, `PrintNotes`, `PrintAssessment` remain the type→component resolvers.
+  - `frontend/src/lib/conceptMapLayout.ts` [NEW] — shared deterministic layout engine extracted from `ConceptMapView.tsx` (tree/radial node positions + bezier edge path + bounding box). Used by both the interactive view and the print SVG so they never drift.
+  - `frontend/src/pages/print/PrintConceptMap.tsx` [NEW] — renders each chapter's concept map as static vector SVG (one map per page), using `conceptMapLayout`.
+  - `frontend/src/components/doc/ConceptMapView.tsx` — refactored to import the shared layout; added "Interactive" export button.
+  - `frontend/src/lib/exportInteractiveMindmap.ts` [NEW] — generates a self-contained HTML file (inline CSS + vanilla JS: pan/zoom, clickable nodes → description card, per-chapter tabs) and triggers a download as `mindmap-<lecture>.html`.
+  - `frontend/src/index.css` — new `.print-flow` print rules: `break-before: auto`, `break-after: avoid` on headings (no orphaned titles), thin border divider between chapters, tight chapter padding. Kept `.print-chapter` (page-per-chapter) for notes/assessment.
+  - `frontend/src/components/print/PrintChapter.tsx` — gained a `continuous` prop: renders into `.print-flow` (no forced page break) for revision/guide, keeps `.print-chapter` otherwise.
+  - Print node boxes now cap width + ellipsize long labels (full text kept as SVG tooltip + print heading), fixing title-to-column collisions for chapter titles up to 64 chars.
+- **Verification**: `tsc -b && vite build` + `oxlint` green. Browser-verified all 4 print types render: revision & guide = 9 `.print-flow` chapters (guide adds a cover page), notes = 9 `.print-chapter` (unchanged), concepts = vector SVGs. Interactive export tested (node click → detail card, zoom, chapter tabs, 0 JS errors). Verified 0 node collisions across all 9 chapters of a real lecture. No paid pipeline runs (all data from existing artifacts).
+- **Hand-off Notes**: Changes are **uncommitted**. Earlier commit `f46b949` (landing/pricing pass) is **also unpushed** (DNS was down). Next step when DNS is back: commit + push both. Revision/guide PDFs now flow continuously — intentional (matches the on-screen deck); notes/assessment remain one chapter per page.
 
 ### [2026-08-08] — OpenCode: Landing/Pricing Design + A11y Review Pass (frontend-design + Web Interface Guidelines + MiMo visual QA)
 - **Agent**: OpenCode (CLI)
