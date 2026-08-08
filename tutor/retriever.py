@@ -52,26 +52,28 @@ class IndexNotBuiltError(RuntimeError):
     """Raised when the Chroma index hasn't been built yet."""
 
 
-# ── Singleton Chroma client (shared across all collections) ────────────────────
+# ── Singleton Chroma client (shared per chroma_dir) ───────────────────────────
 
-@lru_cache(maxsize=1)
-def _get_client():
-    """One PersistentClient per process — avoids Chroma 1.x multi-client Rust bug."""
-    if not CHROMA_DIR.exists():
+@lru_cache(maxsize=10)
+def _get_client(chroma_dir: Optional[str] = None):
+    """Cached PersistentClient per chroma_dir path — avoids Chroma 1.x multi-client Rust bug."""
+    path = Path(chroma_dir) if chroma_dir else CHROMA_DIR
+    if not path.exists():
         raise IndexNotBuiltError(
-            f"Chroma index directory not found at {CHROMA_DIR}. "
+            f"Chroma index directory not found at {path}. "
             "Run indexing scripts first (e.g. python -m tutor.build_index)."
         )
-    return chromadb.PersistentClient(path=str(CHROMA_DIR))
+    return chromadb.PersistentClient(path=str(path))
 
 
-@lru_cache(maxsize=2)
-def _get_collection_by_name(collection_name: str, role: str = "query"):
+@lru_cache(maxsize=20)
+def _get_collection_by_name(collection_name: str, role: str = "query", chroma_dir: Optional[str] = None):
     """
-    Module-level singleton cache: reuses the shared PersistentClient.
-    lru_cache ensures each unique (name, role) pair is built once per process.
+    Module-level singleton cache: reuses the shared PersistentClient per chroma_dir.
+    lru_cache ensures each unique (name, role, chroma_dir) pair is built once per process.
     """
-    client = _get_client()
+    client = _get_client(chroma_dir)
+    target_path = Path(chroma_dir) if chroma_dir else CHROMA_DIR
 
     try:
         collection = client.get_collection(
@@ -80,21 +82,21 @@ def _get_collection_by_name(collection_name: str, role: str = "query"):
         )
     except Exception as exc:
         raise IndexNotBuiltError(
-            f"Collection '{collection_name}' not found in {CHROMA_DIR}. "
+            f"Collection '{collection_name}' not found in {target_path}. "
             "Run the appropriate indexing script."
         ) from exc
 
     return collection
 
 
-def _get_notes_collection():
+def _get_notes_collection(chroma_dir: Optional[str] = None):
     """Get or create the study notes collection (query role)."""
-    return _get_collection_by_name(NOTES_COLLECTION, role="query")
+    return _get_collection_by_name(NOTES_COLLECTION, role="query", chroma_dir=chroma_dir)
 
 
-def _get_screenshot_collection():
+def _get_screenshot_collection(chroma_dir: Optional[str] = None):
     """Get or create the screenshot captions collection (query role)."""
-    return _get_collection_by_name(SCREENSHOT_COLLECTION_NAME, role="query")
+    return _get_collection_by_name(SCREENSHOT_COLLECTION_NAME, role="query", chroma_dir=chroma_dir)
 
 
 # ── Public API ─────────────────────────────────────────────────────────────────
@@ -120,16 +122,8 @@ def retrieve(
     Raises:
         IndexNotBuiltError: if the notes index hasn't been built yet.
     """
-    if output_dir:
-        chroma_dir = Path(output_dir) / "tutor" / "chroma"
-        client = chromadb.PersistentClient(path=str(chroma_dir))
-        collection = client.get_collection(
-            name=NOTES_COLLECTION,
-            embedding_function=GeminiEmbeddingFunction(role="query"),
-        )
-    else:
-        collection = _get_notes_collection()
-    # ... rest of the function (where filter, query, return chunks) stays the same
+    chroma_dir = str(Path(output_dir) / "tutor" / "chroma") if output_dir else None
+    collection = _get_notes_collection(chroma_dir=chroma_dir)
 
     where: dict | None = None
     if chapter_id is not None:
@@ -183,15 +177,8 @@ def retrieve_images(
     Raises:
         IndexNotBuiltError: if the screenshot index hasn't been built yet.
     """
-    if output_dir:
-        chroma_dir = Path(output_dir) / "tutor" / "chroma"
-        client = chromadb.PersistentClient(path=str(chroma_dir))
-        collection = client.get_collection(
-            name=SCREENSHOT_COLLECTION_NAME,
-            embedding_function=GeminiEmbeddingFunction(role="query"),
-        )
-    else:
-        collection = _get_screenshot_collection()
+    chroma_dir = str(Path(output_dir) / "tutor" / "chroma") if output_dir else None
+    collection = _get_screenshot_collection(chroma_dir=chroma_dir)
 
     where: dict | None = None
     if chapter_id is not None:
