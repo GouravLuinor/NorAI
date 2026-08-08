@@ -14,6 +14,7 @@ export default defineConfig({
     },
     proxy: {
       '/process': 'http://localhost:8000',
+      '/estimate': 'http://localhost:8000',
       '/chat': 'http://localhost:8000',
       '/chat/stream': 'http://localhost:8000',
       '/quiz': 'http://localhost:8000',

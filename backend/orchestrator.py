@@ -18,6 +18,11 @@ from dataclasses import dataclass, field
 
 from backend.lecture_registry import create_lecture, update_lecture_title
 
+# P1.8: call/batch counters + metrics recording for self-calibration.
+from backend.ratelimit import snapshot_llm_calls
+from tutor.embedding import snapshot_embed_batches
+from backend.estimator import estimate_pipeline, record_metrics
+
 # ── All pipeline imports ────────────────────────────────────────────────────
 from ingest.ingest import process_source
 from transcription.transcribe import transcribe_audio
@@ -119,6 +124,39 @@ def run_pipeline(
     url: str | None = None,
     file_path: str | None = None,
 ):
+    # P1.8: snapshot counters + clock for the metrics record.
+    import time
+    _t_start = time.perf_counter()
+    _llm_before = snapshot_llm_calls()
+    _embed_before = snapshot_embed_batches()
+    _metrics = {
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "lecture_id": task_id,
+        "source_type": source_type,
+        "duration_sec": None,
+        "num_segments": None,
+        "segments_per_chunk": None,
+        "num_chunks": None,
+        "num_chapters": None,
+        "llm_calls": 0,
+        "embed_batches": 0,
+        "stage_seconds": {},
+        "completed": False,
+        "error": None,
+        "planned": None,
+    }
+
+    def _write_metrics(completed: bool, error: str | None = None):
+        _metrics["llm_calls"] = snapshot_llm_calls() - _llm_before
+        _metrics["embed_batches"] = snapshot_embed_batches() - _embed_before
+        _metrics["stage_seconds"]["pipeline"] = round(time.perf_counter() - _t_start, 2)
+        _metrics["completed"] = completed
+        _metrics["error"] = error
+        try:
+            record_metrics(_metrics)
+        except Exception as e:
+            logger.warning(f"Failed to record pipeline metrics: {e}")
+
     try:
         # ── Create lecture directory ────────────────────────────────────────
         lecture_dir = create_lecture(task_id, title="New Lecture")
@@ -137,7 +175,8 @@ def run_pipeline(
             with open(meta_path, "r", encoding="utf-8") as f:
                 meta_data = json_lib.load(f)
                 duration_sec = float(meta_data.get("duration", 0))
-                
+            _metrics["duration_sec"] = duration_sec
+
             max_duration_sec = int(os.environ.get("MAX_FREE_DURATION_MIN", "15")) * 60
             if duration_sec > max_duration_sec and os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true":
                 raise ValueError(
@@ -149,18 +188,39 @@ def run_pipeline(
         except Exception as e:
             logger.warning(f"Could not verify video duration: {e}")
 
+        # P1.8: record the pre-flight estimate (what /estimate would have shown).
+        if _metrics["duration_sec"]:
+            try:
+                _metrics["planned"] = estimate_pipeline(
+                    _metrics["duration_sec"] / 60.0,
+                    source_type=source_type,
+                    segments=_metrics["num_segments"],
+                )
+            except Exception as e:
+                logger.warning(f"Failed to compute planned estimate: {e}")
+
 
         # ── Stage 2-6: Parallel Processing (Text Branch & Visual Branch) ────
         from concurrent.futures import ThreadPoolExecutor
 
         def _run_text_branch():
             update_progress_sync(task_id, "transcription", "Transcribing lecture…", 8)
+            _t_tr = time.perf_counter()
             tr = transcribe_audio(audio_path, meta_path, output_dir=out)
+            _metrics["stage_seconds"]["transcription"] = round(time.perf_counter() - _t_tr, 2)
             t_json = tr["transcript_json_path"]
+            try:
+                with open(t_json, encoding="utf-8") as _f:
+                    _tr = json_lib.load(_f)
+                _metrics["num_segments"] = len(_tr.get("segments", []))
+            except Exception:
+                pass
 
             update_progress_sync(task_id, "chunking", "Chunking transcript…", 14)
             ch = chunk_transcript(t_json, output_dir=out)
             c_path = ch["chunks_path"]
+            _metrics["num_chunks"] = ch.get("num_chunks")
+            _metrics["segments_per_chunk"] = ch.get("segments_per_chunk")
 
             update_progress_sync(task_id, "knowledge_extraction", "Extracting knowledge…", 20)
             ke = extract_all_chunks(c_path, output_dir=out)
@@ -201,6 +261,7 @@ def run_pipeline(
         try:
             outline_result = generate_lecture_outline(objects_dir, out)
             outline_path   = str(Path(notes_dir) / "lecture_outline.json")
+            _metrics["num_chapters"] = (outline_result or {}).get("num_chapters")
         except Exception as e:
             logger.error(f"Outline generation failed (continuing): {e}")
             import json as _json
@@ -420,7 +481,9 @@ def run_pipeline(
             logger.warning("Skipping cleanup: Final notes or tutor index missing. Keeping intermediates for debugging.")
 
         # ── Done ───────────────────────────────────────────────────────────
+        _write_metrics(completed=True)
         mark_complete_sync(task_id)
 
     except Exception as exc:
+        _write_metrics(completed=False, error=str(exc))
         mark_error_sync(task_id, str(exc))

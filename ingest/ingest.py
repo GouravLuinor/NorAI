@@ -303,6 +303,45 @@ def extract_from_youtube(
 
 
 # -----------------------------
+# Metadata Probe (P1.8)
+# -----------------------------
+
+def probe_video_metadata(url: str) -> dict | None:
+    """
+    Cheap pre-flight metadata probe for the /estimate endpoint (P1.8).
+
+    Uses yt-dlp with download=False so no media is fetched (~2s for YouTube).
+    Returns {"duration_sec": float, "title": str} or None when the source
+    can't be probed without downloading (e.g. Google Drive shares, which
+    require gdown and would defeat the purpose of a cheap estimate).
+    """
+    if not is_youtube_url(url):
+        return None
+    try:
+        import yt_dlp
+        ydl_opts = {
+            "quiet": True,
+            "no_warnings": True,
+            "skip_download": True,
+            "noplaylist": True,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+        if not info:
+            return None
+        duration = info.get("duration")
+        if duration is None:
+            return None
+        return {
+            "duration_sec": float(duration),
+            "title": info.get("title"),
+        }
+    except Exception as e:
+        logger.info(f"Metadata probe failed (falling back): {e}")
+        return None
+
+
+# -----------------------------
 # Local Video Processing
 # -----------------------------
 def extract_from_local(file_path: str, output_dir: str) -> dict:
