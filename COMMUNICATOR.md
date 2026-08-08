@@ -50,7 +50,7 @@
   - `frontend/src/main.tsx` — `initAuth()` on startup.
 - **Setup done (user)**: Supabase project (Sydney/ap-southeast-2), Email provider + Anonymous sign-ins enabled, `localhost:5173` redirect URL; `.env` filled (URL, anon key, JWT secret, `DATABASE_URL` = **Session pooler** `postgresql://postgres.<ref>:<pw>@aws-0-ap-southeast-2.pooler.supabase.com:5432/postgres`). Gotcha: the direct `db.<ref>.supabase.co` host is IPv6-only — unreachable on this machine; must use the pooler.
 - **Verification**: `init_db()` created all 5 tables in Supabase Postgres. Browser end-to-end: guest sign-in → real anonymous Supabase session persists across reload → `/quota` through the Vite proxy returns the real per-user quota → `users` + `subscriptions` rows created in Supabase (verified via asyncpg). Email signup path correctly rejects the blocked `example.com` domain and shows the confirm-inbox notice. `npm run build` + `oxlint` + `backend/test_api_contract.py` green.
-- **Hand-off Notes**: Google OAuth button is wired but the provider is NOT yet enabled in the dashboard — enable it under Authentication → Providers when needed (also add `localhost:5173` callback). The earlier landing/pricing + PDF-export commits are already pushed (`f46b949`/`e67918b`); this Supabase change is **uncommitted**. No paid pipeline runs.
+- **Hand-off Notes**: Google OAuth button is wired but the provider is NOT yet enabled in the dashboard — enable it under Authentication → Providers when needed (also add `localhost:5173` callback). All commits pushed to `origin/fix/threads-and-pdf` (`f46b949` landing/pricing, `e67918b` PDF exports, `dacad59` Supabase). No paid pipeline runs.
 
 ### [2026-08-08] — OpenCode: PDF Export Rebuild — Guide & Mind map PDFs, Interactive HTML, Continuous-Flow Print, Title Collision Fix
 - **Agent**: OpenCode (CLI)
@@ -65,7 +65,7 @@
   - `frontend/src/components/print/PrintChapter.tsx` — gained a `continuous` prop: renders into `.print-flow` (no forced page break) for revision/guide, keeps `.print-chapter` otherwise.
   - Print node boxes now cap width + ellipsize long labels (full text kept as SVG tooltip + print heading), fixing title-to-column collisions for chapter titles up to 64 chars.
 - **Verification**: `tsc -b && vite build` + `oxlint` green. Browser-verified all 4 print types render: revision & guide = 9 `.print-flow` chapters (guide adds a cover page), notes = 9 `.print-chapter` (unchanged), concepts = vector SVGs. Interactive export tested (node click → detail card, zoom, chapter tabs, 0 JS errors). Verified 0 node collisions across all 9 chapters of a real lecture. No paid pipeline runs (all data from existing artifacts).
-- **Hand-off Notes**: Changes are **uncommitted**. Earlier commit `f46b949` (landing/pricing pass) is **also unpushed** (DNS was down). Next step when DNS is back: commit + push both. Revision/guide PDFs now flow continuously — intentional (matches the on-screen deck); notes/assessment remain one chapter per page.
+- **Hand-off Notes**: Committed (`e67918b`) and pushed along with `f46b949` and `dacad59`. Revision/guide PDFs now flow continuously — intentional (matches the on-screen deck); notes/assessment remain one chapter per page.
 
 ### [2026-08-08] — OpenCode: Landing/Pricing Design + A11y Review Pass (frontend-design + Web Interface Guidelines + MiMo visual QA)
 - **Agent**: OpenCode (CLI)
