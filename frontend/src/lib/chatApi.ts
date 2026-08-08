@@ -1,5 +1,6 @@
 import type { ChatResponse } from '../types'
 import { getLectureId, generateThreadTitle, isDefaultLabel, setThreadLabel } from './threadStorage'
+import { authHeaders } from './authHeaders'
 
 // API_BASE is intentionally NOT used inside apiFetch — all internal store
 // calls use bare relative paths so the Vite dev proxy routes them correctly.
@@ -9,7 +10,7 @@ export const API_BASE =
 
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T | null> {
   try {
-    const res = await fetch(path, options)
+    const res = await fetch(path, { ...options, headers: { ...authHeaders(), ...options?.headers } })
     const ct = res.headers.get('content-type') || ''
     if (!ct.includes('application/json')) {
       console.warn(`apiFetch: non-JSON response for ${path} (${res.status})`)
@@ -42,7 +43,7 @@ export async function sendChatMessage(
 
   const res = await fetch(`${API_BASE}/chat`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({
       thread_id: threadId,
       user_question: userQuestion,
@@ -75,7 +76,7 @@ export async function* sendChatMessageStream(
 
   const res = await fetch(`${API_BASE}/chat/stream`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({
       thread_id: threadId,
       user_question: userQuestion,

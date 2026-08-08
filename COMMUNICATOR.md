@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **PDF exports**: real Guide + Mind map PDFs, interactive HTML export, continuous-flow Revision/Guide print, title-collision fix | 2026-08-08 17:45 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **Supabase live**: Postgres via pooler, ES256/JWKS auth, real signUp/signIn/guest on the frontend, bearer-token API calls | 2026-08-08 19:35 UTC |
 
 ---
 
@@ -33,6 +33,24 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-08] — OpenCode: Supabase wired end-to-end (Postgres + Auth)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed
+- **Context**: Roadmap claimed "Supabase Auth completed" but it was scaffold-only: backend had `backend/auth.py` + `backend/db/*` but ran on SQLite with an unverified-decode fallback and a placeholder JWT secret; frontend auth was fully mocked (`AuthModal.tsx` fabricated tokens; no `@supabase/supabase-js`).
+- **Files Modified**:
+  - `backend/auth.py` — hard JWT verification. This project's tokens are signed **ES256** (per-project signing keys), so `decode_supabase_jwt` now verifies via the Supabase JWKS endpoint (`PyJWKClient`, keyed by `kid`), with HS256 via `SUPABASE_JWT_SECRET` for legacy projects. `aud` must be `authenticated`/`anon`; fails closed unless `NORAI_DEV_INSECURE_AUTH=1`. Verified: valid authed/anon accepted; tampered/expired/wrong-secret/service_role/ES256 all rejected correctly.
+  - `backend/db/database.py` — added `load_dotenv()` so `DATABASE_URL` is read when imported standalone.
+  - `frontend/package.json` — added `@supabase/supabase-js` ^2.112.2.
+  - `frontend/src/lib/supabaseClient.ts` [NEW] — client from `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`.
+  - `frontend/src/stores/useAuthStore.ts` — rewritten to derive `user`/`token` from `supabase.auth` (`onAuthStateChange`; session persisted in Supabase's own localStorage → survives reloads). Same external `user`/`openAuthModal`/etc. shape, so `LandingPage`/`PricingPage` unchanged.
+  - `frontend/src/components/auth/AuthModal.tsx` — real `signUp`/`signInWithPassword`/`signInWithOAuth`/`signInAnonymously`; email-confirm notice banner + error banners; dropped fabricated tokens.
+  - `frontend/src/lib/authHeaders.ts` [NEW] + `chatApi.ts` + `UploadPage.tsx` — attach `Authorization: Bearer <access_token>` to `/process`, `/chat`, `/chat/stream`, and all `apiFetch` calls.
+  - `frontend/vite.config.ts` — `envDir: '..'` (Vite reads repo-root `.env`, where the `VITE_*` vars live) + `/quota` proxy entry.
+  - `frontend/src/main.tsx` — `initAuth()` on startup.
+- **Setup done (user)**: Supabase project (Sydney/ap-southeast-2), Email provider + Anonymous sign-ins enabled, `localhost:5173` redirect URL; `.env` filled (URL, anon key, JWT secret, `DATABASE_URL` = **Session pooler** `postgresql://postgres.<ref>:<pw>@aws-0-ap-southeast-2.pooler.supabase.com:5432/postgres`). Gotcha: the direct `db.<ref>.supabase.co` host is IPv6-only — unreachable on this machine; must use the pooler.
+- **Verification**: `init_db()` created all 5 tables in Supabase Postgres. Browser end-to-end: guest sign-in → real anonymous Supabase session persists across reload → `/quota` through the Vite proxy returns the real per-user quota → `users` + `subscriptions` rows created in Supabase (verified via asyncpg). Email signup path correctly rejects the blocked `example.com` domain and shows the confirm-inbox notice. `npm run build` + `oxlint` + `backend/test_api_contract.py` green.
+- **Hand-off Notes**: Google OAuth button is wired but the provider is NOT yet enabled in the dashboard — enable it under Authentication → Providers when needed (also add `localhost:5173` callback). The earlier landing/pricing + PDF-export commits are already pushed (`f46b949`/`e67918b`); this Supabase change is **uncommitted**. No paid pipeline runs.
 
 ### [2026-08-08] — OpenCode: PDF Export Rebuild — Guide & Mind map PDFs, Interactive HTML, Continuous-Flow Print, Title Collision Fix
 - **Agent**: OpenCode (CLI)

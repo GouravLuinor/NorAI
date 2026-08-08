@@ -7,8 +7,12 @@ Supports PostgreSQL (Supabase / Production) and fallback to SQLite (local dev).
 
 import os
 from typing import AsyncGenerator
+from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import declarative_base
+
+# Ensure .env vars (DATABASE_URL, etc.) are loaded when this module is imported standalone.
+load_dotenv()
 
 # Base class for ORM models
 Base = declarative_base()

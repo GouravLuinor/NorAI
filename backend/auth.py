@@ -8,6 +8,9 @@ and ensures a corresponding User and Subscription record exist in the database.
 
 import os
 from typing import Optional, Dict, Any
+from dotenv import load_dotenv
+import jwt as pyjwt
+from jwt import PyJWKClient
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,26 +22,57 @@ from backend.db.models import User, Subscription
 # HTTP Bearer authentication scheme (auto_error=False to allow anonymous optional routes)
 security = HTTPBearer(auto_error=False)
 
-SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "super-secret-jwt-token-with-at-least-32-characters")
+load_dotenv()
+
+# Real Supabase JWT secret (Settings → API → JWT Settings). Fails closed if absent
+# unless NORAI_DEV_INSECURE_AUTH=1 is explicitly set for local-only development.
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "")
+DEV_INSECURE_AUTH = os.environ.get("NORAI_DEV_INSECURE_AUTH", "") == "1"
+
+# Supabase access tokens are issued with aud "authenticated" for both
+# email/OAuth users and anonymous (signInAnonymously) sessions.
+ALLOWED_AUDIENCES = {"authenticated", "anon"}
+
+# Newer Supabase projects sign access tokens with ES256 per-project keys,
+# published at the JWKS endpoint. Cached by PyJWKClient (keyed by kid).
+_jwks_client = PyJWKClient(f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json") if SUPABASE_URL else None
 
 
 def decode_supabase_jwt(token: str) -> Optional[Dict[str, Any]]:
     """
     Decodes and validates a Supabase JWT token.
-    Attempts pyjwt decoding if available; falls back to unverified header/payload extraction in dev mode.
+
+    Verifies the signature using the token's algorithm: ES256 via the Supabase
+    JWKS public keys (current default), or HS256 via SUPABASE_JWT_SECRET (legacy).
+    Fails closed unless the signature and `aud` claim are valid.
     """
-    try:
-        import jwt
-        # Attempt decoding with secret if provided
-        try:
-            payload = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"], options={"verify_aud": False})
-            return payload
-        except Exception:
-            # Fallback to unverified payload decoding for local dev/testing without secret
-            payload = jwt.decode(token, options={"verify_signature": False})
-            return payload
-    except Exception:
+    if not token:
         return None
+    try:
+        alg = (pyjwt.get_unverified_header(token) or {}).get("alg", "")
+        key: Any
+        if alg == "ES256" and _jwks_client is not None:
+            key = _jwks_client.get_signing_key_from_jwt(token).key
+        elif alg == "HS256" and SUPABASE_JWT_SECRET:
+            key = SUPABASE_JWT_SECRET
+        elif DEV_INSECURE_AUTH:
+            # Local-only escape hatch: decode without signature verification.
+            payload = pyjwt.decode(token, options={"verify_signature": False})
+            if not payload.get("sub"):
+                return None
+            return payload
+        else:
+            return None
+        payload = pyjwt.decode(token, key, algorithms=[alg], audience=list(ALLOWED_AUDIENCES))
+    except pyjwt.PyJWTError:
+        return None
+
+    if not payload.get("sub"):
+        return None
+    if payload.get("aud") not in ALLOWED_AUDIENCES:
+        return None
+    return payload
 
 
 async def get_or_create_user_from_token(payload: Dict[str, Any], db: AsyncSession) -> User:
