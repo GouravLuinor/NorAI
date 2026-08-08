@@ -6,6 +6,12 @@ html, body, #root {
   padding: 0;
 }
 
+/* Anchor targets clear the sticky marketing header on jump-to-section */
+#how-it-works,
+#features {
+  scroll-margin-top: 5rem;
+}
+
 @theme {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'Fira Code', monospace;
@@ -82,8 +88,20 @@ html, body, #root {
   /* Type ramp (replaces arbitrary text-[9px]…text-[13.5px]) */
   --text-3xs: 0.5625rem;
   --text-2xs: 0.625rem;
+  --text-10: 0.625rem;
   --text-11: 0.6875rem;
+  --text-12: 0.75rem;
   --text-13: 0.8125rem;
+  --text-14: 0.875rem;
+  --text-15: 0.9375rem;
+  --text-16: 1rem;
+  --text-17: 1.0625rem;
+  --text-18: 1.125rem;
+  --text-20: 1.25rem;
+  --text-22: 1.375rem;
+  --text-28: 1.75rem;
+  --text-36: 2.25rem;
+  --text-44: 2.75rem;
   /* Reading-pane display size (doc H1s, Newsreader) */
   --text-hero: 1.625rem;
 }

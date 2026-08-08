@@ -107,7 +107,7 @@ export function ProcessingPage() {
   const inkHeight = activeIdx >= 0 ? `${((activeIdx + 1) / STAGES.length) * 100}%` : `${Math.min(progress, 100)}%`
 
   return (
-    <div className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center py-8 px-4 overflow-y-auto">
+    <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center py-8 px-4 overflow-y-auto">
       <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-6">

@@ -1,16 +1,40 @@
-import { useState } from 'react'
+import { useState, type KeyboardEvent } from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, ArrowRight, Play, Check, BookOpen, Layers, FileText, Brain, Video, ShieldCheck, Zap, ChevronRight, GitFork } from 'lucide-react'
+import { Sparkles, ArrowRight, Play, Check, BookOpen, Layers, FileText, Brain, Video, ShieldCheck, Zap, ChevronRight, GitFork, Menu, X } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
 
 interface LandingPageProps {
   onStartWorkspace: () => void
-  onOpenPricing: () => void
 }
 
-export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProps) {
+const TABS = [
+  { id: 'notes', label: '01 Study Notes' },
+  { id: 'tutor', label: '02 AI Tutor (RAG)' },
+  { id: 'quiz', label: '03 Assessments' },
+  { id: 'mindmap', label: '04 Mind Map' },
+] as const
+type TabId = (typeof TABS)[number]['id']
+
+export function LandingPage({ onStartWorkspace }: LandingPageProps) {
   const { user, openAuthModal } = useAuthStore()
-  const [activeTab, setActiveTab] = useState<'notes' | 'tutor' | 'quiz' | 'mindmap'>('notes')
+  const [activeTab, setActiveTab] = useState<TabId>('notes')
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const handleTabKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const ids = TABS.map((t) => t.id)
+    const idx = ids.indexOf(activeTab)
+    let next: TabId | null = null
+    if (e.key === 'ArrowRight') next = ids[(idx + 1) % ids.length]
+    else if (e.key === 'ArrowLeft') next = ids[(idx - 1 + ids.length) % ids.length]
+    else if (e.key === 'Home') next = ids[0]
+    else if (e.key === 'End') next = ids[ids.length - 1]
+    if (next) {
+      e.preventDefault()
+      setActiveTab(next)
+      document.getElementById(`wp-tab-${next}`)?.focus()
+    }
+  }
 
   const handleCTA = () => {
     if (!user) {
@@ -21,9 +45,10 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
   }
 
   return (
-    <div className="min-h-screen bg-nb text-nt font-sans selection:bg-npb selection:text-npt flex flex-col relative overflow-x-hidden">
+    <div id="main" className="min-h-screen bg-nb text-nt font-sans selection:bg-npb selection:text-npt flex flex-col relative overflow-x-hidden">
       {/* Blueprint grid background effect */}
-      <div 
+      <div
+        aria-hidden="true"
         className="absolute inset-0 pointer-events-none opacity-40 z-0"
         style={{
           backgroundImage: `linear-gradient(to right, var(--color-grid) 1px, transparent 1px), linear-gradient(to bottom, var(--color-grid) 1px, transparent 1px)`,
@@ -47,16 +72,14 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
           <nav className="hidden md:flex items-center gap-6 font-display text-11 uppercase tracking-wider text-nt2 font-medium">
             <a href="#features" className="hover:text-nt transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-nt transition-colors">How It Works</a>
-            <button onClick={onOpenPricing} className="hover:text-nt transition-colors cursor-pointer">
-              Pricing
-            </button>
+            <Link to="/pricing" className="hover:text-nt transition-colors">Pricing</Link>
           </nav>
 
           <div className="flex items-center gap-3">
             {user ? (
               <button
                 onClick={onStartWorkspace}
-                className="bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5"
+                className="bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-[background-color,transform] active:translate-y-0.5"
               >
                 <span>Workspace</span>
                 <ArrowRight size={13} />
@@ -71,14 +94,31 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
                 </button>
                 <button
                   onClick={() => openAuthModal('signup')}
-                  className="bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5"
+                  className="bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-[background-color,transform] active:translate-y-0.5"
                 >
                   <span>Start Free Trial</span>
                 </button>
               </>
             )}
+
+            <button
+              onClick={() => setMobileOpen((o) => !o)}
+              className="md:hidden p-2 -mr-1 rounded-md text-nt2 hover:text-nt hover:bg-ns2 transition-colors cursor-pointer"
+              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileOpen}
+            >
+              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
           </div>
         </div>
+
+        {mobileOpen && (
+          <div className="md:hidden bg-ns border-t border-bdr px-6 py-4 flex flex-col gap-3 font-display text-11 uppercase tracking-wider text-nt2 font-medium">
+            <a href="#features" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">Features</a>
+            <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">How It Works</a>
+            <Link to="/pricing" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">Pricing</Link>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
@@ -92,7 +132,7 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
           <span>LECTURE VIDEO → EXAM-READY STUDY SUITE</span>
         </motion.div>
 
-        <h1 className="font-serif text-4xl sm:text-6xl text-nt font-normal tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto">
+        <h1 className="font-serif text-4xl sm:text-6xl text-nt font-normal tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto text-balance">
           Turn Long Lectures Into <br />
           <span className="italic text-np font-serif">High-Grade Study Notes</span> & AI Tutor
         </h1>
@@ -104,7 +144,7 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
           <button
             onClick={handleCTA}
-            className="w-full sm:w-auto bg-np hover:bg-nph text-npfg font-display text-12 font-semibold uppercase tracking-wider px-7 py-3.5 rounded-md shadow-bp flex items-center justify-center gap-2 cursor-pointer transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-none"
+            className="w-full sm:w-auto bg-np hover:bg-nph text-npfg font-display text-12 font-semibold uppercase tracking-wider px-7 py-3.5 rounded-md shadow-bp flex items-center justify-center gap-2 cursor-pointer transition-[background-color,transform,box-shadow] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none"
           >
             <span>Try 1 Video Free (No Card)</span>
             <ArrowRight size={16} />
@@ -112,7 +152,7 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
 
           <button
             onClick={onStartWorkspace}
-            className="w-full sm:w-auto bg-ns hover:bg-ns2 border border-bdr text-nt font-display text-12 font-medium uppercase tracking-wider px-6 py-3.5 rounded-md shadow-ev1 flex items-center justify-center gap-2 cursor-pointer transition-all"
+            className="w-full sm:w-auto bg-ns hover:bg-ns2 border border-bdr text-nt font-display text-12 font-medium uppercase tracking-wider px-6 py-3.5 rounded-md shadow-ev1 flex items-center justify-center gap-2 cursor-pointer transition-colors"
           >
             <Play size={14} className="text-np fill-np" />
             <span>Launch Live Workspace</span>
@@ -134,51 +174,51 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
       </section>
 
       {/* Interactive Mockup Workspace Preview */}
-      <section className="relative z-10 px-6 mb-24 max-w-5xl mx-auto">
+      <section className="relative z-10 px-6 mb-24 max-w-5xl mx-auto w-full">
         <div className="bg-ns border border-bdr rounded-lg shadow-bp overflow-hidden">
           {/* Mockup Header */}
-          <div className="bg-ns2 border-b border-bdr px-4 py-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-nr opacity-80" />
-              <span className="w-2.5 h-2.5 rounded-full bg-na opacity-80" />
-              <span className="w-2.5 h-2.5 rounded-full bg-ng opacity-80" />
-              <span className="font-mono text-11 text-nt3 ml-2 font-medium">NorAI Workspace — MIT 8.01 Physics Lecture 04</span>
+          <div className="bg-ns2 border-b border-bdr px-4 py-2.5 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-nr opacity-80 shrink-0" />
+              <span className="w-2.5 h-2.5 rounded-full bg-na opacity-80 shrink-0" />
+              <span className="w-2.5 h-2.5 rounded-full bg-ng opacity-80 shrink-0" />
+              <span className="font-mono text-11 text-nt3 ml-2 font-medium truncate">NorAI Workspace — MIT 8.01 Physics Lecture 04</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0 hidden sm:flex">
               <span className="px-2 py-0.5 rounded bg-ngb text-ngt font-mono text-3xs font-medium uppercase">Processing Complete</span>
             </div>
           </div>
 
           {/* Workspace Tabs Bar */}
-          <div className="bg-ns3 border-b border-bdr px-4 py-2 flex items-center gap-2 font-display text-11 uppercase font-medium text-nt2">
-            <button
-              onClick={() => setActiveTab('notes')}
-              className={`px-3 py-1 rounded transition-colors ${activeTab === 'notes' ? 'bg-ns text-np font-bold shadow-xs' : 'hover:text-nt'}`}
-            >
-              01 Study Notes
-            </button>
-            <button
-              onClick={() => setActiveTab('tutor')}
-              className={`px-3 py-1 rounded transition-colors ${activeTab === 'tutor' ? 'bg-ns text-np font-bold shadow-xs' : 'hover:text-nt'}`}
-            >
-              02 AI Tutor (RAG)
-            </button>
-            <button
-              onClick={() => setActiveTab('quiz')}
-              className={`px-3 py-1 rounded transition-colors ${activeTab === 'quiz' ? 'bg-ns text-np font-bold shadow-xs' : 'hover:text-nt'}`}
-            >
-              03 Assessments
-            </button>
-            <button
-              onClick={() => setActiveTab('mindmap')}
-              className={`px-3 py-1 rounded transition-colors ${activeTab === 'mindmap' ? 'bg-ns text-np font-bold shadow-xs' : 'hover:text-nt'}`}
-            >
-              04 Mind Map
-            </button>
+          <div
+            role="tablist"
+            aria-label="Workspace preview"
+            onKeyDown={handleTabKeyDown}
+            className="bg-ns3 border-b border-bdr px-4 py-2 flex items-center gap-2 overflow-x-auto font-display text-11 uppercase font-medium text-nt2"
+          >
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                id={`wp-tab-${tab.id}`}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls="wp-panel"
+                tabIndex={activeTab === tab.id ? 0 : -1}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 py-1 rounded whitespace-nowrap transition-colors ${activeTab === tab.id ? 'bg-ns text-np font-bold shadow-xs' : 'hover:text-nt'}`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           {/* Interactive Mockup Body */}
-          <div className="p-6 min-h-[320px] font-sans text-13">
+          <div
+            id="wp-panel"
+            role="tabpanel"
+            aria-labelledby={`wp-tab-${activeTab}`}
+            className="p-6 min-h-[320px] font-sans text-13"
+          >
             {activeTab === 'notes' && (
               <div className="space-y-4">
                 <div className="border-b border-bdr pb-2">
@@ -188,7 +228,7 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
                 <p className="text-nt2 leading-relaxed">
                   The net work done on an object by external forces equals the change in its kinetic energy:
                 </p>
-                <div className="p-3 bg-ns2 border border-bdr rounded font-mono text-12 text-nt text-center my-3">
+                <div className="p-3 bg-ns2 border border-bdr rounded font-mono text-10 sm:text-12 text-nt text-center my-3 overflow-x-auto">
                   W_net = \Delta K = \frac&#123;1&#125;&#123;2&#125; m v_f^2 - \frac&#123;1&#125;&#123;2&#125; m v_i^2
                 </div>
                 <div className="flex items-center gap-3 p-2 bg-npb border border-npbr rounded text-11 text-npt">
@@ -231,8 +271,8 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
                   {['Factor of 2', 'Factor of 4 (Correct)', 'Factor of 8', 'Remains unchanged'].map((opt, i) => (
                     <div
                       key={i}
-                      className={`p-2.5 rounded border text-12 font-medium cursor-pointer transition-colors ${
-                        i === 1 ? 'bg-ngb border-ngbr text-ngt font-bold' : 'bg-ns2 border-bdr text-nt2 hover:bg-ns3'
+                      className={`p-2.5 rounded border text-12 font-medium ${
+                        i === 1 ? 'bg-ngb border-ngbr text-ngt font-bold' : 'bg-ns2 border-bdr text-nt2'
                       }`}
                     >
                       {String.fromCharCode(65 + i)}. {opt}
@@ -263,7 +303,7 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <span className="font-mono text-11 text-np uppercase tracking-wider font-semibold">Pipeline Architecture</span>
-            <h2 className="font-serif text-3xl sm:text-4xl text-nt font-normal mt-1">Four Steps From Video to Mastery</h2>
+            <h2 className="font-serif text-3xl sm:text-4xl text-nt font-normal mt-1 text-balance">Four Steps From Video to Mastery</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -306,8 +346,8 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
       {/* Features Grid */}
       <section id="features" className="relative z-10 py-20 px-6 max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <span className="font-mono text-11 text-np uppercase tracking-wider font-semibold">Architect's Feature Suite</span>
-          <h2 className="font-serif text-3xl sm:text-4xl text-nt font-normal mt-1">Everything Needed for Academic Excellence</h2>
+            <span className="font-mono text-11 text-np uppercase tracking-wider font-semibold">Architect's Feature Suite</span>
+            <h2 className="font-serif text-3xl sm:text-4xl text-nt font-normal mt-1 text-balance">Everything Needed for Academic Excellence</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -370,9 +410,7 @@ export function LandingPage({ onStartWorkspace, onOpenPricing }: LandingPageProp
             <span>© 2026 NorAI Inc. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6 font-display uppercase tracking-wider">
-            <button onClick={onOpenPricing} className="hover:text-nt transition-colors cursor-pointer">Pricing</button>
-            <a href="#privacy" className="hover:text-nt transition-colors">Privacy</a>
-            <a href="#terms" className="hover:text-nt transition-colors">Terms</a>
+            <Link to="/pricing" className="hover:text-nt transition-colors">Pricing</Link>
           </div>
         </div>
       </footer>

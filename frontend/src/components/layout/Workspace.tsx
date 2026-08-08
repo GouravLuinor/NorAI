@@ -151,6 +151,7 @@ export function Workspace() {
 
   return (
     <div
+      id="main"
       ref={workspaceRef}
       className="workspace grid h-screen bg-nb text-nt text-xs font-sans rounded-xl border border-bdr2 overflow-hidden shadow-ev3 relative bg-blueprint-grid fold-marks"
       style={{

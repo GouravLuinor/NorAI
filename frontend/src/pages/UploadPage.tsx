@@ -78,7 +78,7 @@ export function UploadPage() {
     ((inputType === 'youtube' || inputType === 'drive') && url.trim())
 
   return (
-    <div className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center py-12 px-6">
+    <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center py-12 px-6">
       <div className="w-full max-w-lg flex flex-col gap-10 relative z-10">
         
         {/* ───────────────────────────────────────────────────────────────── */}
