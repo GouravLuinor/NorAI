@@ -42,6 +42,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
   useEffect(() => {
     if (!activeLectureId || activeLectureId === 'default') return
     let active = true
+    useThreadStore.getState().resetForLectureChange()
     loadThreads().then(() => {
       if (!active) return
       const current = useThreadStore.getState().threadId

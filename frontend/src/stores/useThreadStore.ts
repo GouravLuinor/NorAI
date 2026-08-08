@@ -91,6 +91,7 @@ interface ThreadState {
   createThread: () => Promise<string>
   deleteThread: (threadId: string) => Promise<void>
   getThreadLabel: (threadId: string) => string
+  resetForLectureChange: () => void
 }
 
 const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
@@ -107,6 +108,21 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
   streamingText: '',
   _messagesCache: {},
   liveReferences: [],
+
+  resetForLectureChange: () => {
+    _loadAbortController?.abort()
+    _loadGeneration++
+    useQuizStore.getState().reset()
+    set({
+      threadId: 'default',
+      threads: ['default'],
+      messages: [],
+      liveReferences: [],
+      streamingText: '',
+      isLoading: false,
+      _messagesCache: {},
+    })
+  },
   // -------------------------------------------------------------------------
   // RC-A: setThreadId is now a PURE STATE MUTATION.
   // It does NOT call loadThreadMessages — the caller does that explicitly.
