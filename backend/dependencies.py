@@ -144,25 +144,38 @@ def invoke_tutor(
         if is_new and lecture_title:
             input_state["lecture_title"] = lecture_title
 
-        # Deduplication check: if the last human message is identical to the current 
-        # question, and an AI response follows it, skip the graph and return the cached answer.
+        # Deduplication check: if the last few human messages contain one
+        # identical to the current question, and an AI response follows it,
+        # skip the graph and return the cached answer. Scanning the tail (not
+        # just the final message) catches Ask-Nora double-fires and re-asks
+        # that land after a summary/system message.
         from langchain_core.messages import HumanMessage, AIMessage
         if not is_new and snapshot and snapshot.values:
             messages = snapshot.values.get("messages", [])
-            # Find the last human message
-            last_human = next((m for m in reversed(messages) if isinstance(m, HumanMessage)), None)
-            if last_human and last_human.content.strip() == user_question.strip():
-                # Check if there is an AI response after it
-                last_ai = next((m for m in reversed(messages) if isinstance(m, AIMessage)), None)
-                if last_ai and messages.index(last_ai) > messages.index(last_human):
-                    return {
-                        "answer":            last_ai.content,
-                        "assistant_message_id": last_ai.id,
-                        "retrieved_chunks":  snapshot.values.get("retrieved_chunks", []),
-                        "retrieved_images":  snapshot.values.get("retrieved_images", []),
-                        "chapter_id":        snapshot.values.get("chapter_id"),
-                        "thread_id":         thread_id,
-                    }
+            dedupe_window = [m for m in reversed(messages) if isinstance(m, HumanMessage)][:3]
+            for last_human in dedupe_window:
+                if last_human.content.strip() == user_question.strip():
+                    last_ai = None
+                    # Scan from the actual position of this human message
+                    # (messages.index() uses == so it can hit an earlier equal
+                    # message; track position explicitly via enumerate).
+                    seen = False
+                    for idx, m in enumerate(messages):
+                        if m is last_human:
+                            seen = True
+                            continue
+                        if seen and isinstance(m, AIMessage):
+                            last_ai = m
+                            break
+                    if last_ai:
+                        return {
+                            "answer":            last_ai.content,
+                            "assistant_message_id": last_ai.id,
+                            "retrieved_chunks":  snapshot.values.get("retrieved_chunks", []),
+                            "retrieved_images":  snapshot.values.get("retrieved_images", []),
+                            "chapter_id":        snapshot.values.get("chapter_id"),
+                            "thread_id":         thread_id,
+                        }
 
         # Phase 3: Prevent Zombie Thread Resurrections
         # Verify the thread hasn't been deleted while we were waiting in the queue.

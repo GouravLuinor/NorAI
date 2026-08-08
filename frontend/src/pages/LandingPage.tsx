@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, ArrowRight, Play, Check, BookOpen, Layers, FileText, Brain, Video, ShieldCheck, Zap, ChevronRight, HelpCircle, GitFork } from 'lucide-react'
+import { Sparkles, ArrowRight, Play, Check, BookOpen, Layers, FileText, Brain, Video, ShieldCheck, Zap, ChevronRight, GitFork } from 'lucide-react'
 import { useAuthStore } from '../stores/useAuthStore'
 
 interface LandingPageProps {

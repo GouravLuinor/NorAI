@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { ZoomIn, ZoomOut, Maximize2, Sparkles, MessageSquare, Compass, X } from 'lucide-react'
 import { useLectureStore } from '../../stores/useLectureStore'
@@ -56,6 +56,85 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
   const [layoutMode, setLayoutMode] = useState<'tree' | 'radial'>('tree')
 
   const containerRef = useRef<HTMLDivElement>(null)
+  const askInFlightRef = useRef(false)
+
+  const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+
+  const handleAskNora = useCallback(async (conceptLabel: string) => {
+    if (askInFlightRef.current) return
+    askInFlightRef.current = true
+
+    const text = `Explain the concept "${conceptLabel}" from Chapter ${chapterId} in detail with examples.`
+    const userMsg = {
+      id: genId(),
+      role: 'user' as const,
+      content: text,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    }
+    
+    // 1. Add user message and switch to Tutor mode
+    addMessage(userMsg)
+    useQuizStore.getState().setMode('tutor')
+
+    // 2. Stream response from backend Gemini API
+    const storeState = useThreadStore.getState()
+    const targetThreadId = storeState.threadId || 'default'
+    storeState.setLoading(true)
+
+    let acc = ''
+    try {
+      for await (const chunk of sendChatMessageStream(
+        targetThreadId,
+        text,
+        '',
+        undefined,
+        { messageId: userMsg.id }
+      )) {
+        if (typeof chunk === 'string') {
+          acc += chunk
+          useThreadStore.getState().setStreamingText(stripSources(acc))
+        } else if (chunk?.data) {
+          useThreadStore.getState().setStreamingText('')
+          const cleanAnswer = stripSources(acc) || 'Here is the detailed explanation for this concept.'
+          const assistantMsg = {
+            id: chunk.data.assistant_message_id || genId(),
+            role: 'assistant' as const,
+            content: cleanAnswer,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          }
+
+          // RC-FIX2: Atomic read-check-write — same guard as ChatArea/HighlightAsk.
+          // If loadThreadMessages already injected this response from the backend
+          // checkpoint, skip the append to avoid duplicates.
+          useThreadStore.setState((s) => {
+            const currentMessages = s.threadId === targetThreadId
+              ? s.messages
+              : (s._messagesCache[targetThreadId] ?? [])
+            if (currentMessages.some(m => m.role === 'assistant' && m.content === cleanAnswer)) {
+              return {}
+            }
+            const updated = [...currentMessages, assistantMsg]
+            return {
+              _messagesCache: { ...s._messagesCache, [targetThreadId]: updated },
+              ...(s.threadId === targetThreadId ? { messages: updated } : {}),
+            }
+          })
+
+          useThreadStore.getState().setLiveReferences(
+            buildReferences(chunk.data.retrieved_chunks ?? [], chunk.data.retrieved_images ?? [])
+          )
+        }
+      }
+    } catch (err) {
+      console.error('Failed to stream Nora response:', err)
+    } finally {
+      useThreadStore.getState().setLoading(false)
+      useThreadStore.getState().setStreamingText('')
+      askInFlightRef.current = false
+    }
+
+    addToast(`Asked Nora about "${conceptLabel}"`, 'success')
+  }, [chapterId, addMessage, addToast])
 
   useEffect(() => {
     let cancelled = false
@@ -174,61 +253,6 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
   }
 
   const handleMouseUp = () => setIsDragging(false)
-
-  const handleAskNora = async (conceptLabel: string) => {
-    const text = `Explain the concept "${conceptLabel}" from Chapter ${chapterId} in detail with examples.`
-    const userMsg = {
-      id: `msg-${Date.now()}`,
-      role: 'user' as const,
-      content: text,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    }
-    
-    // 1. Add user message and switch to Tutor mode
-    addMessage(userMsg)
-    useQuizStore.getState().setMode('tutor')
-
-    // 2. Stream response from backend Gemini API
-    const storeState = useThreadStore.getState()
-    const targetThreadId = storeState.threadId || 'default'
-    storeState.setLoading(true)
-
-    let acc = ''
-    try {
-      for await (const chunk of sendChatMessageStream(
-        targetThreadId,
-        text,
-        '',
-        undefined,
-        { messageId: userMsg.id }
-      )) {
-        if (typeof chunk === 'string') {
-          acc += chunk
-          useThreadStore.getState().setStreamingText(stripSources(acc))
-        } else if (chunk?.data) {
-          useThreadStore.getState().setStreamingText('')
-          const cleanAnswer = stripSources(acc)
-          const assistantMsg = {
-            id: chunk.data.assistant_message_id || `msg-${Date.now()}`,
-            role: 'assistant' as const,
-            content: cleanAnswer || 'Here is the detailed explanation for this concept.',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          }
-          useThreadStore.getState().addMessage(assistantMsg)
-          useThreadStore.getState().setLiveReferences(
-            buildReferences(chunk.data.retrieved_chunks ?? [], chunk.data.retrieved_images ?? [])
-          )
-        }
-      }
-    } catch (err) {
-      console.error('Failed to stream Nora response:', err)
-    } finally {
-      useThreadStore.getState().setLoading(false)
-      useThreadStore.getState().setStreamingText('')
-    }
-
-    addToast(`Asked Nora about "${conceptLabel}"`, 'success')
-  }
 
   return (
     <div className="flex flex-col h-full bg-nb relative overflow-hidden select-none">

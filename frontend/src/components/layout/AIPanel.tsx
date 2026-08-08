@@ -6,7 +6,7 @@ import { FlashcardsPanel } from '../flashcards/FlashcardsPanel'
 import { PersonaModal } from '../chat/PersonaModal'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToastStore } from '../../stores/useToastStore'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { SegmentedControl } from '../ui/SegmentedControl'
 import { SlidersHorizontal } from 'lucide-react'
@@ -18,17 +18,6 @@ export function AIPanel() {
   const { aiMode, setMode, startQuiz } = useQuizStore()
   const addToast = useToastStore(s => s.addToast)
   const [settingsOpen, setSettingsOpen] = useState(false)
-
-useEffect(() => {
-  if (aiMode === 'quiz') {
-    const lectureId = useLectureStore.getState().activeLectureId || undefined
-    fetchQuizQuestions(activeChapterId, lectureId).then((qs) => {
-      if (qs.length > 0) {
-        useQuizStore.getState().startQuiz(qs, activeChapterId)
-      }
-    })
-  }
-}, [activeChapterId])  // intentionally only on chapter change — NOT on aiMode
 
   let ActivePanel: React.ReactNode
   if (aiMode === 'quiz') {

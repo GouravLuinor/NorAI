@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle | Handed off to Antigravity | 2026-08-07 17:25 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **QA Review + Fix pass**: tutor memory (context_messages), missed-question correctness, quiz load path, flashcard stats, finish-attempt integrity, dead-code cleanup | 2026-08-08 12:05 UTC |
 
 ---
 
@@ -33,6 +33,32 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-08] — OpenCode: Feature-Plan QA Review + Fix Pass (tutor memory, quiz correctness, flashcard stats)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed
+- **Context**: Full review of the feature-plan implementation (committed) + the uncommitted QA pass. Most planned items were already implemented or correct; the fixes below close the real gaps found.
+- **Files Modified**:
+  - `tutor/nodes.py` — **tutor was effectively stateless**: `context_messages` was never populated, so the LLM prompt contained only the current question every turn. `load_memory_node` now rebuilds the prompt window each turn from `messages` (last 6 Human/AI messages + the most recent `_SUMMARY_PREFIX` SystemMessage). `save_memory_node` now summarizes incrementally (only turns AFTER the last summary record, triggered at 12+ new messages) instead of depending on a `context_messages` accumulator that never filled.
+  - `backend/main.py` — `get_thread` now skips `SystemMessage`s in the UI response (memory summary records would have leaked as assistant bubbles). `POST /quiz/attempts/{id}/finish` now scopes the UPDATE by `lecture_id` and returns 404 via `rowcount` when the attempt is missing; persists new optional `correct_ids_json`. `GET /quiz/attempts/{id}/missed` now uses a deterministic `_compute_missed_ids` helper: MCQ/True-False by authoritative string equality, free-text by remark **negative-marker detection** (kills the old "Incorrect. The correct answer is X" → "correct" false-positive, incl. qualifier remarks like "Good effort, though the correct answer is X"). Removed dead `_get_all_thread_ids`, duplicate `import re`, duplicate `from fastapi import Form, UploadFile`.
+  - `frontend/src/components/flashcards/FlashcardsPanel.tsx` — Reviewed / Got it / Almost / Left stats now computed from the **current deck's card keys** only (was chapter-wide `ratings` counts → "Left" showed 0 while cards were unreviewed).
+  - `frontend/src/components/layout/AIPanel.tsx` — removed the chapter-change `useEffect` that auto-started an **all-difficulty** quiz, overriding difficulty-filtered / missed-question quizzes and in-progress quizzes on chapter switch. Single quiz-load path now: segmented control ("Quiz") + AssessmentView Start Quiz.
+  - `backend/test_quiz_missed.py` [NEW] — unit tests for `_compute_missed_ids`.
+  - `tutor/test_memory_nodes.py` [NEW] — unit tests for `load_memory_node` window rebuild + `save_memory_node` incremental trigger (LLM stubbed).
+- **Verified Already-Correct (no change needed)**: retriever per-lecture `PersistentClient` caching (`_get_client`/`_get_collection_by_name` lru_cache + `test_retriever_caching.py`), `CONFIDENCE_THRESHOLD = 0.35`, lecture-switch flush (`resetForLectureChange` wired in `Sidebar.tsx`), ConceptMapView Ask-Nora dedup.
+- **Verification**: `py_compile` OK on all touched modules; `test_memory_nodes.py` (7), `test_quiz_missed.py` (7), `test_graph_topology.py`, `test_retriever_caching.py`, `test_chunker.py` all pass. Frontend `oxlint` 0 errors and `tsc -b && vite build` passes.
+- **Hand-off Notes**: No paid pipeline runs were executed. The `correct_ids_json` column is backward-compatible (migration via lazy ALTER); older attempts fall back to the deterministic remark logic.
+
+### [2026-08-08] — OpenCode: QA Fix Pass — Quiz/Flashcard Persistence 500s + Tutor Message Duplication
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed
+- **Files Modified**:
+  - `backend/main.py` — fixed `_db()` contextmanager: it took **0 args** but every caller passed a `lecture_id`, so `POST /quiz/attempts`, `/quiz/attempts/{id}/finish`, `GET /quiz/attempts`, `/quiz/attempts/{id}/missed`, `POST /flashcards/ratings`, and `GET /flashcards/ratings` all threw `TypeError` → HTTP 500. Now `_db(lecture_id="default")` routes to the per-lecture DB via `get_lecture_db_path()` (default lecture keeps root `CHECKPOINT_DB_PATH`).
+  - `backend/dependencies.py` — hardened the `invoke_tutor` dedup check: it only matched the **last** human message; now scans the last 3 human messages and returns the AI answer that **directly follows** the matched message (uses `is`-identity scan, not `messages.index()` which ==-collides on equal content).
+  - `frontend/src/components/doc/ConceptMapView.tsx` — `handleAskNora` was the only message-writer without the RC-FIX2 guard; it used `msg-${Date.now()}` ids (collision-prone) and appended the assistant message unguarded. Now has an `askInFlightRef` guard, collision-proof `genId()`, and the atomic read-check-write dedup from ChatArea/HighlightAsk. Moved `useCallback` above the early returns (was a conditional-hooks lint error).
+  - `frontend/src/App.tsx`, `LandingPage.tsx`, `PricingPage.tsx`, `AssessmentView.tsx` — removed pre-existing unused `React` imports / `HelpCircle` / `startQuiz` / `planId` that broke `tsc -b` (from the Micro-SaaS commit).
+- **Verification**: TestClient smoke test — all 6 quiz/flashcard endpoints return 200 (create/finish/list/missed/ratings upsert+get). Dedupe logic verified in isolation (last-match, 2-back match, beyond-window miss, summary-tail). `oxlint` clean (0 errors), `tsc -b && vite build` passes. `py_compile` OK.
+- **Hand-off Notes**: Quiz history / missed-question review / flashcard ratings now actually persist. Ask-Nora double-clicks no longer duplicate thread messages.
 
 ### [2026-08-08] — Antigravity: Production Micro-SaaS Foundation Implemented & Verified
 - **Agent**: Antigravity (IDE)

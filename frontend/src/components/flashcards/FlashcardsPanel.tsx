@@ -54,9 +54,9 @@ export function FlashcardsPanel() {
   }, [allCards, cardKeys, ratings, filterMissedOnly])
 
   const total = cards.length
-  const reviewed = Object.keys(ratings).length
-  const gotIt = Object.values(ratings).filter((r) => r === 'Good' || r === 'Easy').length
-  const almost = Object.values(ratings).filter((r) => r === 'Again' || r === 'Hard').length
+  const reviewed = cardKeys.filter((key) => ratings[key]).length
+  const gotIt = cardKeys.filter((key) => ratings[key] === 'Good' || ratings[key] === 'Easy').length
+  const almost = cardKeys.filter((key) => ratings[key] === 'Again' || ratings[key] === 'Hard').length
   const left = Math.max(0, allCards.length - reviewed)
 
   const goTo = useCallback((idx: number) => {

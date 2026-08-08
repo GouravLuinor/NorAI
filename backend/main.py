@@ -12,7 +12,6 @@ Fix log:
          when the thread exists in user_threads but has no LangGraph checkpoint
          yet (brand new thread that hasn't received a message).
 """
-from fastapi import Form, UploadFile
 import asyncio
 import json as json_lib
 import random
@@ -21,7 +20,7 @@ import re
 from backend.orchestrator import run_pipeline, get_or_create_task_sync
 from contextlib import contextmanager
 from pathlib import Path
-from fastapi import Form, UploadFile, Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, UploadFile
 from typing import List, Optional
 import sqlite3
 import time
@@ -85,10 +84,17 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 
 @contextmanager
-def _db():
-    """Yield a short-lived SQLite connection and commit/close on exit."""
-    CHECKPOINT_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(CHECKPOINT_DB_PATH), timeout=10.0)
+def _db(lecture_id: str = "default"):
+    """Yield a short-lived SQLite connection and commit/close on exit.
+
+    Lecture-scoped: quiz/flashcard persistence lands in the same DB as that
+    lecture's tutor checkpoints (outputs/{lecture_id}/tutor/). The global
+    'default' lecture keeps using the root CHECKPOINT_DB_PATH for backward
+    compatibility with the default tutor graph.
+    """
+    db_path = CHECKPOINT_DB_PATH if (not lecture_id or lecture_id == "default") else get_lecture_db_path(lecture_id)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path), timeout=10.0)
     try:
         conn.execute("PRAGMA journal_mode=WAL;")
         conn.execute("PRAGMA busy_timeout=5000;")
@@ -129,6 +135,19 @@ def _ensure_quiz_attempts_table(conn: sqlite3.Connection) -> None:
     )
 
 
+def _ensure_quiz_attempts_correct_ids(conn: sqlite3.Connection) -> None:
+    """Add the correct_ids_json column to quiz_attempts if it's missing.
+
+    Migration-friendly: older DBs created before this column existed won't
+    get it from CREATE TABLE IF NOT EXISTS, so we ALTER lazily and swallow
+    the duplicate-column error.
+    """
+    try:
+        conn.execute("ALTER TABLE quiz_attempts ADD COLUMN correct_ids_json TEXT")
+    except sqlite3.OperationalError:
+        pass  # column already exists
+
+
 def _ensure_flashcard_ratings_table(conn: sqlite3.Connection) -> None:
     """Create the flashcard_ratings table if it doesn't exist."""
     conn.execute(
@@ -142,36 +161,6 @@ def _ensure_flashcard_ratings_table(conn: sqlite3.Connection) -> None:
         ")"
     )
 
-
-def _get_all_thread_ids() -> list[str]:
-    """
-    BUG-7: Union of (1) user_threads and (2) LangGraph checkpoints.
-    Each source is guarded independently so a missing table never crashes.
-    Result is sorted ascending (threads are prefixed with 'thread-17…' so
-    lexicographic ≈ chronological).
-    """
-    threads: set[str] = set()
-    try:
-        with _db() as conn:
-            _ensure_user_threads_table(conn)
-
-            # Source 1: app-owned table (always safe)
-            for row in conn.execute("SELECT thread_id FROM user_threads"):
-                if row[0]:
-                    threads.add(row[0])
-
-            # Source 2: LangGraph checkpoints (may not exist / different schema)
-            try:
-                for row in conn.execute("SELECT DISTINCT thread_id FROM checkpoints"):
-                    if row[0]:
-                        threads.add(row[0])
-            except sqlite3.OperationalError:
-                pass  # table doesn't exist yet — that's fine
-
-    except Exception as exc:
-        print(f"[threads] DB error: {exc}")
-
-    return sorted(threads)
 
 # ---------------------------------------------------------------------------
 # Request / Response models
@@ -228,6 +217,7 @@ class FinishQuizAttemptRequest(BaseModel):
     evaluation: dict | None = None
     score: float = 0.0
     total: int = 0
+    correct_ids: list[str] = []
 
 class FlashcardRatingItem(BaseModel):
     card_key: str
@@ -397,7 +387,12 @@ async def get_thread(thread_id: str, lecture_id: str = "default"):
 
         result = []
         for msg in snapshot.values.get("messages", []):
-            role = "user" if msg.__class__.__name__ == "HumanMessage" else "assistant"
+            class_name = msg.__class__.__name__
+            # SystemMessages are internal (system prompt, context blocks, memory
+            # summaries) — never render them as conversation turns.
+            if class_name == "SystemMessage":
+                continue
+            role = "user" if class_name == "HumanMessage" else "assistant"
             content = msg.content
             if role == "assistant":
                 content = re.sub(r'(\*\*Sources\*\*|\n\nSources\b|Sources\s*[\:\•]|Sources\b[\s\S]*$)[\s\S]*$', '', content, flags=re.IGNORECASE).strip()
@@ -653,19 +648,24 @@ async def finish_quiz_attempt(attempt_id: str, req: FinishQuizAttemptRequest, le
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     with _db(lecture_id) as conn:
         _ensure_quiz_attempts_table(conn)
+        _ensure_quiz_attempts_correct_ids(conn)
         cursor = conn.execute(
-            "UPDATE quiz_attempts SET finished_at=?, answers_json=?, confidences_json=?, evaluation_json=?, score=?, total=? "
-            "WHERE id=?",
+            "UPDATE quiz_attempts SET finished_at=?, answers_json=?, confidences_json=?, evaluation_json=?, correct_ids_json=?, score=?, total=? "
+            "WHERE id=? AND lecture_id=?",
             (
                 now,
                 json_lib.dumps(req.answers),
                 json_lib.dumps(req.confidences),
                 json_lib.dumps(req.evaluation or {}),
+                json_lib.dumps(req.correct_ids),
                 req.score,
                 req.total,
                 attempt_id,
+                lecture_id,
             ),
         )
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Quiz attempt not found")
     return {"success": True, "attempt_id": attempt_id}
 
 
@@ -702,13 +702,75 @@ async def list_quiz_attempts(lecture_id: str = "default", chapter_id: int | None
         return {"attempts": attempts}
 
 
+_REMARK_NEGATIVE = re.compile(
+    r"\b(incorrect|incorrectly|wrong|not correct|mistake|missed|not quite|unfortunately|almost)\b"
+    r"|(but|though|however)[^.]{0,40}correct answer",
+    re.IGNORECASE,
+)
+_REMARK_POSITIVE = re.compile(
+    r"\b(correct|great|good|right|well done|excellent|accurate|nicely|perfect|you got it)\b",
+    re.IGNORECASE,
+)
+
+
+def _compute_missed_ids(questions: list, answers: list, evaluation: dict) -> list:
+    """Deterministic per-question correctness for the "Review Missed" set.
+
+    MCQ / True-False: authoritative string equality on the stored answers.
+    Free-text (ShortAnswer / Conceptual / etc.): derived from the LLM remark.
+    A remark counts as a miss when it carries a negative marker OR spells out
+    the correct answer after a qualifier ("though/but/however the correct
+    answer is …"). This replaces the old substring search that mislabelled
+    remarks like "Incorrect. The correct answer is X" as correct.
+    """
+    ans_map: dict = {}
+    for a in answers:
+        if isinstance(a, dict):
+            qid = a.get("id") or a.get("question_id")
+            if qid is not None:
+                ans_map[str(qid)] = a.get("user_answer", "")
+
+    fb_map: dict = {}
+    for fb in (evaluation or {}).get("per_question_feedback", []):
+        if isinstance(fb, dict):
+            idx = fb.get("question_number")
+            if idx is not None:
+                fb_map[int(idx)] = fb.get("remark", "")
+
+    missed_ids: list[str] = []
+    for i, q in enumerate(questions, 1):
+        if not isinstance(q, dict):
+            continue
+        qid = str(q.get("id") or q.get("question_id") or f"q-{i}")
+        qtype = str(q.get("type", "")).strip().lower()
+        user_ans = str(ans_map.get(qid) or q.get("user_answer", "")).strip()
+        correct_ans = str(q.get("answer", "")).strip()
+
+        is_correct = False
+        if qtype in ("mcq", "true/false", "true false"):
+            is_correct = user_ans != "" and user_ans.lower() == correct_ans.lower()
+        else:
+            remark = fb_map.get(i, "")
+            if remark:
+                if _REMARK_NEGATIVE.search(remark):
+                    is_correct = False
+                else:
+                    is_correct = bool(_REMARK_POSITIVE.search(remark))
+
+        if not is_correct:
+            missed_ids.append(qid)
+
+    return missed_ids
+
+
 @app.get("/quiz/attempts/{attempt_id}/missed")
 async def get_quiz_attempt_missed(attempt_id: str, lecture_id: str = "default"):
     with _db(lecture_id) as conn:
         _ensure_quiz_attempts_table(conn)
+        _ensure_quiz_attempts_correct_ids(conn)
         row = conn.execute(
-            "SELECT questions_json, evaluation_json, answers_json FROM quiz_attempts WHERE id = ?",
-            (attempt_id,),
+            "SELECT questions_json, evaluation_json, answers_json, correct_ids_json FROM quiz_attempts WHERE id = ? AND lecture_id = ?",
+            (attempt_id, lecture_id),
         ).fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Quiz attempt not found")
@@ -716,38 +778,18 @@ async def get_quiz_attempt_missed(attempt_id: str, lecture_id: str = "default"):
         questions = json_lib.loads(row[0]) if row[0] else []
         evaluation = json_lib.loads(row[1]) if row[1] else {}
         answers = json_lib.loads(row[2]) if row[2] else []
+        correct_ids = json_lib.loads(row[3]) if row[3] else []
 
-        ans_map = {}
-        for a in answers:
-            if isinstance(a, dict):
-                qid = a.get("id") or a.get("question_id")
-                if qid:
-                    ans_map[qid] = a.get("user_answer", "")
-
-        feedback = evaluation.get("per_question_feedback", [])
-        fb_map = {}
-        for fb in feedback:
-            if isinstance(fb, dict):
-                idx = fb.get("question_number")
-                if idx is not None:
-                    fb_map[idx] = fb.get("remark", "")
-
-        missed_ids = []
+        all_ids = []
         for i, q in enumerate(questions, 1):
-            qid = q.get("id") or q.get("question_id") or f"q-{i}"
-            user_ans = ans_map.get(qid) or q.get("user_answer", "")
-            correct_ans = q.get("answer", "")
+            if isinstance(q, dict):
+                all_ids.append(str(q.get("id") or q.get("question_id") or f"q-{i}"))
 
-            is_correct = False
-            if str(user_ans).strip().lower() == str(correct_ans).strip().lower() and str(user_ans).strip() != "":
-                is_correct = True
-            elif i in fb_map:
-                remark = fb_map[i].lower()
-                if "correct" in remark and "incorrect" not in remark and "not correct" not in remark:
-                    is_correct = True
-
-            if not is_correct:
-                missed_ids.append(str(qid))
+        if correct_ids:
+            correct_set = {str(cid) for cid in correct_ids}
+            missed_ids = [qid for qid in all_ids if qid not in correct_set]
+        else:
+            missed_ids = _compute_missed_ids(questions, answers, evaluation)
 
         return {"attempt_id": attempt_id, "question_ids": missed_ids}
 

@@ -20,7 +20,7 @@ const DIFFICULTY_OPTIONS: Array<{ label: string; value: QuizDifficulty | 'All' }
 
 export function AssessmentView() {
   const activeChapterId = useChapterStore(s => s.activeChapterId)
-  const { startQuiz, createAttempt } = useQuizStore()
+  const { createAttempt } = useQuizStore()
   const addToast = useToastStore(s => s.addToast)
   const lectureId = useLectureStore(s => s.activeLectureId) 
   const [viewMode, setViewMode] = useState<'questions' | 'history'>('questions')
