@@ -39,6 +39,8 @@ from config import MODEL_NAME, get_api_key, CHECKPOINT_DB_PATH
 from backend.dependencies import invoke_tutor
 from backend.lecture_registry import get_lecture
 from ingest.ingest import is_youtube_url, is_gdrive_url
+from ingest.ingest import probe_video_metadata
+from backend.estimator import estimate_pipeline
 from backend.auth import get_current_user_optional
 from backend.db.database import get_db
 from backend.db.models import User, Subscription, Lecture
@@ -1093,6 +1095,49 @@ ALLOWED_SOURCE_TYPES = {"youtube", "gdrive", "upload"}
 ALLOWED_UPLOAD_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm"}
 MAX_UPLOAD_BYTES = int(os.environ.get("NORAI_MAX_UPLOAD_BYTES", str(2 * 1024**3)))  # default 2 GB
 UPLOAD_CHUNK_BYTES = 1024 * 1024  # 1 MB
+
+@app.post("/estimate")
+async def estimate_cost(
+    source_type: str = Form(...),
+    url: str | None = Form(None),
+    duration: float | None = Form(None),
+    file: UploadFile | None = None,
+):
+    """Pre-flight estimate of Gemini calls + wall-clock time (P1.8).
+
+    Probes the source duration cheaply (yt-dlp metadata-only for YouTube,
+    ~2s; browser-reported duration for uploads), then returns the estimated
+    call/time counts plus whether the lecture fits the free trial. Fails
+    soft: when the duration can't be probed, returns {"available": false}
+    and the frontend simply hides the estimate.
+    """
+    if source_type not in ALLOWED_SOURCE_TYPES:
+        raise HTTPException(status_code=400, detail=f"Unsupported source_type {source_type!r}")
+    if source_type == "youtube":
+        if not url or not is_youtube_url(url):
+            raise HTTPException(status_code=400, detail="Invalid YouTube URL")
+        probed = probe_video_metadata(url)
+        if not probed:
+            return {"available": False, "reason": "Could not probe duration"}
+        duration_min = probed["duration_sec"] / 60.0
+        est = estimate_pipeline(duration_min, source_type="youtube")
+        est.update({"available": True, "title": probed.get("title")})
+        return est
+    if source_type == "gdrive":
+        if not url or not is_gdrive_url(url):
+            raise HTTPException(status_code=400, detail="Invalid Google Drive URL")
+        # Drive durations can't be probed without downloading — no estimate.
+        return {"available": False, "reason": "Google Drive durations are not probeable"}
+    if source_type == "upload":
+        if not file and duration is None:
+            return {"available": False, "reason": "No file or duration provided"}
+        if duration is None or duration <= 0:
+            return {"available": False, "reason": "Could not read video duration"}
+        est = estimate_pipeline(duration, source_type="upload")
+        est.update({"available": True})
+        return est
+    raise HTTPException(status_code=400, detail="Unsupported source_type")
+
 
 @app.post("/process")
 async def start_processing(

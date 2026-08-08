@@ -31,10 +31,28 @@ DEFAULT_RPM_LIMIT = 12
 
 TEMPERATURE = 0.4
 
+# ── Adaptive Chunking (P1.8) ──────────────────────────────────────────────────
+# Long lectures get larger chunks so the number of extraction LLM calls stays
+# bounded. TARGET_MAX_CHUNKS caps the target chunk count; MAX_SEGMENTS_PER_CHUNK
+# caps how large a single chunk may grow (≈ 5.5 min of audio at ~10.5 seg/min).
+TARGET_MAX_CHUNKS = 24
+MAX_SEGMENTS_PER_CHUNK = 60
+
+# ── Pre-flight Estimator (P1.8) ───────────────────────────────────────────────
+# Default segments-per-minute heuristic (measured: 88 whisper segments over a
+# 505.76s lecture ≈ 10.44 seg/min). Re-fit from real runs via calibration.
+DEFAULT_SEGS_PER_MIN = 10.5
+# Free-trial duration gate (mirrors the env override used in orchestrator).
+MAX_FREE_DURATION_MIN = int(os.environ.get("MAX_FREE_DURATION_MIN", "15"))
+
 # ── Directory & Database Paths ────────────────────────────────────────────────
 OUTPUTS_DIR = Path("outputs")
 CHECKPOINT_DIR = OUTPUTS_DIR / "tutor"
 CHECKPOINT_DB_PATH = CHECKPOINT_DIR / "checkpoints.sqlite"
+
+# Append-only JSONL recording every pipeline run's actuals + planned values.
+# The estimator re-fits its heuristics from this file (see backend/estimator.py).
+METRICS_FILE = Path(os.environ.get("NORAI_METRICS_FILE", "outputs/pipeline_metrics.jsonl"))
 
 
 def get_api_key() -> str:

@@ -2,7 +2,11 @@ import json
 import logging
 from pathlib import Path
 
-from config import DEFAULT_SEGMENTS_PER_CHUNK
+from config import (
+    DEFAULT_SEGMENTS_PER_CHUNK,
+    TARGET_MAX_CHUNKS,
+    MAX_SEGMENTS_PER_CHUNK,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,6 +42,27 @@ def load_transcript(transcript_path):
 
 
 # Chunk Creator
+
+
+def adaptive_segments_per_chunk(num_segments: int) -> int:
+    """
+    Pick the chunk size for a transcript of `num_segments` segments (P1.8).
+
+    Short lectures keep the default 15-segment chunks. Long lectures grow the
+    chunk size so the total number of chunks (and hence extraction LLM calls)
+    stays bounded: spc = ceil(segments / TARGET_MAX_CHUNKS), clamped to
+    MAX_SEGMENTS_PER_CHUNK. Pure function of segment count — mirrors the
+    estimator in backend/estimator.py so the pre-flight estimate and the actual
+    pipeline never drift.
+    """
+    if num_segments <= TARGET_MAX_CHUNKS * DEFAULT_SEGMENTS_PER_CHUNK:
+        return DEFAULT_SEGMENTS_PER_CHUNK
+    import math
+
+    return min(
+        math.ceil(num_segments / TARGET_MAX_CHUNKS),
+        MAX_SEGMENTS_PER_CHUNK,
+    )
 
 
 def create_chunks(
@@ -144,10 +169,13 @@ def save_chunks(
 def chunk_transcript(
     transcript_json_path,
     output_dir="outputs",
-    segments_per_chunk=DEFAULT_SEGMENTS_PER_CHUNK
+    segments_per_chunk=None
 ):
     """
     Main entry point for transcript chunking.
+
+    segments_per_chunk: explicit chunk size; None (default) → adaptive chunk
+    sizing from the transcript's segment count (P1.8).
     """
 
     transcript = load_transcript(
@@ -160,6 +188,15 @@ def chunk_transcript(
     logger.info(
         f"Loaded {len(segments)} segments."
     )
+
+    if segments_per_chunk is None:
+        segments_per_chunk = adaptive_segments_per_chunk(
+            len(segments)
+        )
+        logger.info(
+            f"Adaptive chunk size: {segments_per_chunk} "
+            f"segments/chunk (target ≤ {TARGET_MAX_CHUNKS} chunks)."
+        )
 
     chunks = create_chunks(
         segments,
@@ -192,7 +229,8 @@ def chunk_transcript(
     return {
         "chunks_path": str(chunk_path),
         "num_chunks": len(chunks),
-        "segments_processed": len(segments)
+        "segments_processed": len(segments),
+        "segments_per_chunk": segments_per_chunk,
     }
 
 

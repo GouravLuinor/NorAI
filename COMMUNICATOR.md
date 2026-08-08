@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P1 pipeline economics — DoD validated**: 17 API calls first run → **0 on re-run** (all stages cached); chunk drift, batched/diff-synced indexing, analysis reuse, whisper small | 2026-08-08 22:35 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P1.8 — adaptive chunking + self-calibrating pre-flight estimate (P1 fully closed)**: adaptive chunk sizing, `/estimate` endpoint, `outputs/pipeline_metrics.jsonl` feedback loop, live UploadPage estimate panel | 2026-08-08 23:10 UTC |
 
 ---
 
@@ -33,6 +33,21 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-08] — OpenCode: P1.8 adaptive chunking + self-calibrating pre-flight estimate (P1 fully closed)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed
+- **Files Created / Modified**:
+  - `config.py` — new constants: `TARGET_MAX_CHUNKS` (24), `MAX_SEGMENTS_PER_CHUNK` (60), `DEFAULT_SEGS_PER_MIN` (10.5), `MAX_FREE_DURATION_MIN`, `METRICS_FILE` (`outputs/pipeline_metrics.jsonl`, env `NORAI_METRICS_FILE`).
+  - `chunking/chunk.py` — `adaptive_segments_per_chunk(num_segments)` (pure fn; ≤ target → 15, else `min(ceil(segs/24), 60)`); `chunk_transcript` uses it by default (explicit `segments_per_chunk` still overrides) and returns it in the result.
+  - `backend/estimator.py` [NEW] — `estimate_pipeline()` (mirrors chunking + outline formulas), `load_calibration()` (median-fits ≥5 fresh runs: segs-per-min, transcription realtime, sec/call, sec/embed-batch, Pass-2 selection ratio), `record_metrics()` (JSONL append), `recalibrate()` + `--recalibrate` CLI with prediction-vs-actual error.
+  - `backend/ratelimit.py` / `tutor/embedding.py` — monotonic call / embed-batch counters (`snapshot_*`, `reset_*`) for per-run deltas.
+  - `backend/orchestrator.py` — per-run metrics: snapshots counters, times transcription + whole pipeline, captures segments/chunks/spc/chapters, records planned-vs-actual, appends entry on both success and failure (never breaks the pipeline).
+  - `ingest/ingest.py` — `probe_video_metadata()` (yt-dlp `download=False`, ~2s; YouTube only; None otherwise).
+  - `backend/main.py` — `POST /estimate` (form: `source_type`, `url`, `duration`); reuses `/process` validators; fails soft (`available:false`); Drive can't probe → soft-skip.
+  - `frontend/src/pages/UploadPage.tsx` — debounced (600ms) estimate fetch; inline panel "≈ N min · ~X API calls · ~M min · C chunks"; free-trial red warning; "self-calibrating from N runs" hint; upload duration read via hidden `<video>`. `vite.config.ts` — `/estimate` proxy added.
+- **Verification**: `chunking/test_adaptive_chunking.py` + `backend/test_estimate.py` (34 checks: estimator math matches observed 17 calls, calibration fits from fabricated JSONL, reruns excluded, `/estimate` contract incl. soft-fail paths) — all green; full existing suite green; `oxlint` 0 errors (new file clean); `tsc -b && vite build` green. Live: restarted `start-dev.sh`; probed real `bdeV_TjNfFA` via `/estimate` → title + 17 calls in ~2s; estimate panel rendered in browser (MiMo-verified screenshot), matches observed baseline.
+- **Hand-off Notes / Next Steps**: P1 is fully closed. With every real pipeline run the estimator self-calibrates from `outputs/pipeline_metrics.jsonl` (wipe-safe dev data). Run `python -m backend.estimator --recalibrate` anytime to see fitted constants + prediction error. Uncommitted — commit only if user asks. Follow-ups (not scheduled): surface the estimate on ProcessingPage, per-lecture call history UI, watch P1.7 whisper `small` realtime factor calibrating in.
 
 ### [2026-08-08] — OpenCode: P1 Pipeline Economics (code complete; DoD measurement pending)
 - **Agent**: OpenCode (CLI)

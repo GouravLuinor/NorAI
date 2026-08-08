@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, Info } from 'lucide-react'
+import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, Info, Activity, AlertTriangle } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { FOCUS_RING } from '../components/ui/shared'
@@ -13,6 +13,21 @@ interface LectureInfo {
   title: string
   created_at: string
   chapter_count: number
+}
+
+interface EstimateResult {
+  available?: boolean
+  reason?: string
+  duration_min?: number
+  estimated_chunks?: number
+  estimated_chapters?: number
+  est_calls?: number
+  est_time_min?: number
+  free_trial_ok?: boolean
+  free_trial_min?: number
+  calibrated?: boolean
+  n_calibration_runs?: number
+  title?: string
 }
 
 // Relative time via Intl.RelativeTimeFormat (locale-aware, no custom math).
@@ -37,6 +52,25 @@ function getRelativeTime(dateString: string) {
   return rtf.format(0, 'second')
 }
 
+// Read a video file's duration via a hidden <video> element (metadata probe).
+function readVideoDuration(file: File): Promise<number | null> {
+  return new Promise((resolve) => {
+    const video = document.createElement('video')
+    const objectUrl = URL.createObjectURL(file)
+    video.preload = 'metadata'
+    video.onloadedmetadata = () => {
+      const d = video.duration
+      URL.revokeObjectURL(objectUrl)
+      resolve(Number.isFinite(d) ? d : null)
+    }
+    video.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      resolve(null)
+    }
+    video.src = objectUrl
+  })
+}
+
 export function UploadPage() {
   const [inputType, setInputType] = useState<InputType>('youtube')
   const [url, setUrl] = useState('')
@@ -44,8 +78,55 @@ export function UploadPage() {
   const [dragActive, setDragActive] = useState(false)
   const [lectures, setLectures] = useState<LectureInfo[]>([])
   const [loadingLectures, setLoadingLectures] = useState(true)
+  const [estimate, setEstimate] = useState<EstimateResult | null>(null)
+  const [estLoading, setEstLoading] = useState(false)
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // ── Pre-flight estimate (P1.8) ──────────────────────────────────────────
+  // Debounced: fires ~600ms after the user stops typing / selects a file.
+  useEffect(() => {
+    let cancelled = false
+    let timeout: ReturnType<typeof setTimeout> | undefined
+
+    const sourceReady =
+      inputType === 'upload'
+        ? !!file
+        : inputType !== 'drive' && !!url.trim()
+
+    if (!sourceReady) {
+      setEstimate(null)
+      setEstLoading(false)
+      return
+    }
+
+    const run = async () => {
+      setEstLoading(true)
+      const formData = new FormData()
+      formData.append('source_type', inputType)
+      if (inputType === 'youtube') {
+        formData.append('url', url.trim())
+      } else if (inputType === 'upload' && file) {
+        const duration = await readVideoDuration(file)
+        formData.append('duration', String(duration ?? 0))
+      }
+      try {
+        const res = await fetch('/estimate', { method: 'POST', body: formData, headers: authHeaders() })
+        const data: EstimateResult = await res.json()
+        if (!cancelled) setEstimate(data)
+      } catch {
+        if (!cancelled) setEstimate({ available: false, reason: 'Could not estimate' })
+      } finally {
+        if (!cancelled) setEstLoading(false)
+      }
+    }
+
+    timeout = setTimeout(run, 600)
+    return () => {
+      cancelled = true
+      if (timeout) clearTimeout(timeout)
+    }
+  }, [inputType, url, file])
 
   useEffect(() => {
     fetch('/lectures')
@@ -189,6 +270,57 @@ export function UploadPage() {
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-nt3">
                   {inputType === 'youtube' ? <Film size={15} strokeWidth={1.5} /> : <Link2 size={15} strokeWidth={1.5} />}
                 </div>
+              </div>
+            )}
+
+            {/* Estimate Panel (P1.8) */}
+            {estLoading && (
+              <div className="mt-3 flex items-center gap-2 text-2xs text-nt3 animate-pulse">
+                <Activity size={11} strokeWidth={1.5} />
+                <span>Estimating processing cost…</span>
+              </div>
+            )}
+
+            {!estLoading && estimate?.available && (
+              <div className="mt-3 rounded-md border border-bdr2 bg-nb/60 px-3 py-2.5">
+                <div className="flex items-start gap-2">
+                  <Info size={12} strokeWidth={1.5} className="text-nt3 mt-0.5 shrink-0" />
+                  <div className="text-2xs text-nt2 leading-relaxed">
+                    {estimate.duration_min !== undefined && (
+                      <span>≈ {estimate.duration_min.toFixed(1)} min lecture</span>
+                    )}
+                    {estimate.est_calls !== undefined && (
+                      <span> · ~{estimate.est_calls} Gemini API calls</span>
+                    )}
+                    {estimate.est_time_min !== undefined && (
+                      <span> · ~{estimate.est_time_min} min processing</span>
+                    )}
+                    {estimate.estimated_chunks !== undefined && (
+                      <span className="text-nt4"> · {estimate.estimated_chunks} chunks</span>
+                    )}
+                    {estimate.calibrated && estimate.n_calibration_runs !== undefined && (
+                      <span className="block text-nt4 mt-0.5">
+                        self-calibrating from {estimate.n_calibration_runs} past runs
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {estimate.free_trial_ok === false && (
+                  <div className="mt-2 flex items-center gap-1.5 text-2xs text-red-400">
+                    <AlertTriangle size={11} strokeWidth={1.5} />
+                    <span>
+                      Over the {estimate.free_trial_min ?? 15}-minute free-trial limit — this lecture
+                      requires Starter or Pro.
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!estLoading && estimate && !estimate.available && (
+              <div className="mt-3 flex items-center gap-1.5 text-2xs text-nt4">
+                <Info size={11} strokeWidth={1.5} />
+                <span>Estimate unavailable for this source.</span>
               </div>
             )}
 

@@ -52,6 +52,21 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# P1.8: monotonically increasing count of embedding batch calls (each __call__
+# is one batchEmbedContents request). Snapshot before/after a pipeline run to
+# calibrate backend/estimator.py's embed-batch estimate.
+TOTAL_EMBED_BATCHES = 0
+
+
+def reset_embed_counter() -> None:
+    """Reset the embedding batch counter (used by tests)."""
+    global TOTAL_EMBED_BATCHES
+    TOTAL_EMBED_BATCHES = 0
+
+
+def snapshot_embed_batches() -> int:
+    return TOTAL_EMBED_BATCHES
+
 class GeminiEmbeddingFunction(EmbeddingFunction):
     """
     Chroma-compatible embedding function for gemini-embedding-2.
@@ -124,6 +139,8 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
         returns separate embeddings (not one aggregated embedding for the batch).
         """
         types = self._types
+        global TOTAL_EMBED_BATCHES
+        TOTAL_EMBED_BATCHES += 1
 
         formatted = [
             self._format_document(t) if self._role == "document" else self._format_query(t)
