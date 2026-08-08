@@ -21,12 +21,14 @@ import re
 from backend.orchestrator import run_pipeline, get_or_create_task_sync
 from contextlib import contextmanager
 from pathlib import Path
-from typing import List
-from backend.dependencies import get_lecture_db_path, _get_or_create_lecture_graph, sanitize_lecture_id, configure_sqlite
+from fastapi import Form, UploadFile, Depends, FastAPI, HTTPException, Request
+from typing import List, Optional
 import sqlite3
 import time
 import threading
-from fastapi import FastAPI, HTTPException, Request
+from backend.dependencies import get_lecture_db_path, _get_or_create_lecture_graph, sanitize_lecture_id, configure_sqlite
+
+
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -51,6 +53,16 @@ if not any(isinstance(h, logging.FileHandler) for h in root_logger.handlers):
     root_logger.addHandler(file_handler)
 
 app = FastAPI(title="NorAI Tutor API")
+
+from backend.db.database import init_db
+from backend.routers import webhooks
+
+@app.on_event("startup")
+async def on_startup():
+    await init_db()
+
+app.include_router(webhooks.router)
+
 
 # BUG-2: include every port Vite or the preview server might use
 app.add_middleware(
@@ -884,12 +896,66 @@ app.mount("/static", StaticFiles(directory="outputs"), name="static")
 
 # ── Upload & Processing ──────────────────────────────────────────────────────
 
+from backend.auth import get_current_user_optional
+from backend.db.database import get_db
+from backend.db.models import User, Subscription, Lecture
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+@app.get("/quota")
+async def get_user_quota(
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return user's active plan tier and remaining monthly lecture minutes."""
+    if not user:
+        # Default anonymous trial quota
+        return {
+            "plan_tier": "free",
+            "monthly_minutes_quota": 15,
+            "used_minutes_this_month": 0,
+            "remaining_minutes": 15,
+            "is_anonymous": True,
+        }
+
+    # Fetch user subscription
+    result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+    sub = result.scalar_one_or_none()
+    
+    quota = sub.monthly_minutes_quota if sub else 15
+    used = sub.used_minutes_this_month if sub else 0
+    remaining = max(0, quota - used)
+    plan_tier = sub.plan_tier if sub else "free"
+
+    return {
+        "user_id": user.id,
+        "email": user.email,
+        "plan_tier": plan_tier,
+        "monthly_minutes_quota": quota,
+        "used_minutes_this_month": used,
+        "remaining_minutes": remaining,
+        "is_anonymous": user.is_anonymous,
+    }
+
+
 @app.post("/process")
 async def start_processing(
     source_type: str = Form(...),
     url: str | None = Form(None),
     file: UploadFile | None = None,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
 ):
+    # Quota check for authenticated user
+    if user:
+        result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+        sub = result.scalar_one_or_none()
+        if sub and sub.used_minutes_this_month >= sub.monthly_minutes_quota:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Monthly quota of {sub.monthly_minutes_quota} lecture minutes reached. Please upgrade to Starter or Pro to continue processing.",
+            )
+
     task_id = str(uuid.uuid4())
 
     file_path = None
@@ -902,6 +968,19 @@ async def start_processing(
         with open(file_path, "wb") as f:
             content = await file.read()
             f.write(content)
+
+    # Record lecture in database if user is logged in
+    if user:
+        lecture_record = Lecture(
+            id=task_id,
+            user_id=user.id,
+            title="New Lecture",
+            source_type=source_type,
+            source_url=url or (str(file_path) if file_path else None),
+            status="processing",
+        )
+        db.add(lecture_record)
+        await db.commit()
 
     # Run pipeline in a background thread — keeps the event loop free
     thread = threading.Thread(
@@ -916,6 +995,7 @@ async def start_processing(
 @app.get("/lectures")
 async def get_lectures():
     return list_lectures()
+
 
 
 @app.get("/lectures/{lecture_id}")

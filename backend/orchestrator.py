@@ -5,12 +5,15 @@ Complete NorAI pipeline: runs every stage for a single video source,
 emitting real‑time progress via SSE queues.
 """
 
+import os
+import json as json_lib
 import asyncio
 import subprocess
 import threading
 from pathlib import Path
 from typing import Any
 from dataclasses import dataclass, field
+
 
 from backend.lecture_registry import create_lecture, update_lecture_title
 
@@ -129,6 +132,24 @@ def run_pipeline(
         video_path  = ing["video_path"]
         audio_path  = ing["audio_path"]
         meta_path   = ing["metadata_path"]
+
+        # ── Duration check (Free Trial Limit: 15 mins) ────────────────────
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                meta_data = json_lib.load(f)
+                duration_sec = float(meta_data.get("duration", 0))
+                
+            max_duration_sec = int(os.environ.get("MAX_FREE_DURATION_MIN", "15")) * 60
+            if duration_sec > max_duration_sec and os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true":
+                raise ValueError(
+                    f"Lecture duration ({duration_sec / 60:.1f} mins) exceeds the Free Trial limit "
+                    f"of {max_duration_sec / 60:.0f} minutes. Please upgrade to Starter or Pro."
+                )
+        except ValueError:
+            raise
+        except Exception as e:
+            logger.warning(f"Could not verify video duration: {e}")
+
 
         # ── Stage 2-6: Parallel Processing (Text Branch & Visual Branch) ────
         from concurrent.futures import ThreadPoolExecutor
