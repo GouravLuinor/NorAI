@@ -17,6 +17,7 @@ import json as json_lib
 import random
 import uuid
 import re
+import os
 from backend.orchestrator import run_pipeline, get_or_create_task_sync
 from contextlib import contextmanager
 from pathlib import Path
@@ -29,15 +30,20 @@ from backend.dependencies import get_lecture_db_path, _get_or_create_lecture_gra
 
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse, FileResponse
 from pydantic import BaseModel
-from fastapi.staticfiles import StaticFiles
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from backend.lecture_registry import list_lectures, get_lecture
 from config import MODEL_NAME, get_api_key, CHECKPOINT_DB_PATH
 from backend.dependencies import invoke_tutor
 from backend.lecture_registry import get_lecture
+from ingest.ingest import is_youtube_url, is_gdrive_url
+from backend.auth import get_current_user_optional
+from backend.db.database import get_db
+from backend.db.models import User, Subscription, Lecture
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 import logging
 
 # Ensure root logger outputs to both console and outputs/backend.log
@@ -61,6 +67,15 @@ async def on_startup():
     await init_db()
 
 app.include_router(webhooks.router)
+
+# Log the full detail of any unhandled exception server-side, but never leak
+# raw exception text to clients.
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logging.getLogger("norai").exception(
+        "Unhandled exception on %s %s", request.method, request.url.path
+    )
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
 # BUG-2: include every port Vite or the preview server might use
@@ -247,7 +262,8 @@ async def chat(req: ChatRequest):
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logging.getLogger("norai").exception("POST /chat failed")
+        raise HTTPException(status_code=500, detail="Internal error processing your request")
 
 
 
@@ -295,7 +311,8 @@ async def chat_stream(req: ChatRequest):
             yield f"data: {json_lib.dumps({'final': final_data})}\n\n"
             yield "data: [DONE]\n\n"
         except Exception as exc:
-            yield f"data: [ERROR] {exc}\n\n"
+            logging.getLogger("norai").exception("POST /chat/stream failed")
+            yield "data: [ERROR] An internal error occurred while streaming the answer.\n\n"
 
     return StreamingResponse(
         event_generator(),
@@ -442,7 +459,15 @@ async def delete_thread(thread_id: str, lecture_id: str = "default"):
 # ---------------------------------------------------------------------------
 
 @app.get("/quiz/questions")
-async def quiz_questions(chapter_id: int | None = None, n: int = 5, lecture_id: str = "default", difficulty: str | None = None):
+async def quiz_questions(
+    chapter_id: int | None = None,
+    n: int = 5,
+    lecture_id: str = "default",
+    difficulty: str | None = None,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    await ensure_lecture_access(lecture_id, user, db)
     info = get_lecture(lecture_id)
     base = Path(info["output_dir"]) if info else Path("outputs")
     path = base / "assessment" / f"assessment_chapter_{chapter_id}.json" if chapter_id else base / "assessment" / "assessment.json"
@@ -538,13 +563,13 @@ async def quiz_evaluate(req: QuizEvaluateRequest):
             }
         }
     except Exception as exc:
-        print(f"[quiz/evaluate] Parse error: {exc}")
+        logging.getLogger("norai").exception("POST /quiz/evaluate: LLM output failed to parse; raw output suppressed from response")
         return {
             "evaluation": {
-            "final_score": None,
+                "final_score": None,
                 "total_questions": len(req.questions),
                 "per_question_feedback": [],
-                "overall_insights": text,
+                "overall_insights": "The evaluation could not be generated. Please try submitting your answers again.",
             }
         }
 
@@ -670,7 +695,13 @@ async def finish_quiz_attempt(attempt_id: str, req: FinishQuizAttemptRequest, le
 
 
 @app.get("/quiz/attempts")
-async def list_quiz_attempts(lecture_id: str = "default", chapter_id: int | None = None):
+async def list_quiz_attempts(
+    lecture_id: str = "default",
+    chapter_id: int | None = None,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    await ensure_lecture_access(lecture_id, user, db)
     with _db(lecture_id) as conn:
         _ensure_quiz_attempts_table(conn)
         if chapter_id is not None:
@@ -764,7 +795,13 @@ def _compute_missed_ids(questions: list, answers: list, evaluation: dict) -> lis
 
 
 @app.get("/quiz/attempts/{attempt_id}/missed")
-async def get_quiz_attempt_missed(attempt_id: str, lecture_id: str = "default"):
+async def get_quiz_attempt_missed(
+    attempt_id: str,
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    await ensure_lecture_access(lecture_id, user, db)
     with _db(lecture_id) as conn:
         _ensure_quiz_attempts_table(conn)
         _ensure_quiz_attempts_correct_ids(conn)
@@ -810,7 +847,13 @@ async def upsert_flashcard_ratings(req: UpsertFlashcardRatingsRequest):
 
 
 @app.get("/flashcards/ratings")
-async def get_flashcard_ratings(lecture_id: str = "default", chapter_id: int | None = None):
+async def get_flashcard_ratings(
+    lecture_id: str = "default",
+    chapter_id: int | None = None,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    await ensure_lecture_access(lecture_id, user, db)
     with _db(lecture_id) as conn:
         _ensure_flashcard_ratings_table(conn)
         if chapter_id is not None:
@@ -829,12 +872,17 @@ async def get_flashcard_ratings(lecture_id: str = "default", chapter_id: int | N
 
 
 @app.get("/study-guide")
-async def study_guide(lecture_id: str = "default"):
+async def study_guide(
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     """Catalog the already-generated per-chapter revision notes into one doc.
 
     Pure file reads — no LLM call. Returns {"title", "chapters": [{chapter_id,
     title, markdown}]} in chapter order.
     """
+    await ensure_lecture_access(lecture_id, user, db)
     info = get_lecture(lecture_id)
     if not info:
         raise HTTPException(status_code=404, detail="Lecture not found")
@@ -880,7 +928,14 @@ async def study_guide(lecture_id: str = "default"):
 
 
 @app.get("/flashcards")
-async def flashcards(chapter_id: int | None = None, n: int | None = None, lecture_id: str = "default"):
+async def flashcards(
+    chapter_id: int | None = None,
+    n: int | None = None,
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    await ensure_lecture_access(lecture_id, user, db)
     info = get_lecture(lecture_id)
     base = Path(info["output_dir"]) if info else Path("outputs")
     path = base / "flashcards" / f"flashcards_chapter_{chapter_id}.json" if chapter_id else base / "flashcards" / "flashcards.json"
@@ -899,7 +954,13 @@ async def flashcards(chapter_id: int | None = None, n: int | None = None, lectur
 
 
 @app.get("/summary")
-async def chapter_summary(chapter_id: int, lecture_id: str = "default"):
+async def chapter_summary(
+    chapter_id: int,
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    await ensure_lecture_access(lecture_id, user, db)
     info = get_lecture(lecture_id)
     base = Path(info["output_dir"]) if info else Path("outputs")
     path = base / "revision" / f"revision_chapter_{chapter_id}.md"
@@ -909,7 +970,13 @@ async def chapter_summary(chapter_id: int, lecture_id: str = "default"):
 
 
 @app.get("/notes/{chapter_id}")
-async def study_notes(chapter_id: int, lecture_id: str = "default"):
+async def study_notes(
+    chapter_id: int,
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    await ensure_lecture_access(lecture_id, user, db)
     info = get_lecture(lecture_id)
     base = Path(info["output_dir"]) if info else Path("outputs")
     json_path = base / "notes" / f"chapter_{chapter_id}.json"
@@ -922,7 +989,13 @@ async def study_notes(chapter_id: int, lecture_id: str = "default"):
     return md_path.read_text(encoding="utf-8")
 
 @app.get("/screenshots/{chapter_id}")
-async def chapter_screenshots(chapter_id: int, lecture_id: str = "default"):
+async def chapter_screenshots(
+    chapter_id: int,
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    await ensure_lecture_access(lecture_id, user, db)
     info = get_lecture(lecture_id)
     base = Path(info["output_dir"]) if info else Path("outputs")
     path = base / "screenshots" / "selected" / f"chapter_{chapter_id}_screenshots.json"
@@ -932,17 +1005,53 @@ async def chapter_screenshots(chapter_id: int, lecture_id: str = "default"):
         data = json_lib.load(f)
     return data.get("screenshots", [])
 
-app.mount("/static", StaticFiles(directory="outputs"), name="static")
+# Only image assets may be served under /static. Everything else that lives in
+# outputs/ (transcripts, assessment answer keys, checkpoints.sqlite, Chroma
+# DBs, backend.log) is never exposed over HTTP.
+STATIC_ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"}
+
+
+def resolve_static_path(rest: str, base_dir: Optional[Path] = None) -> Path:
+    """Resolve a /static/... path against the outputs dir with a strict allowlist."""
+    base = (base_dir or Path("outputs")).resolve()
+    target = (base / rest).resolve()
+    try:
+        target.relative_to(base)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Not found")
+    if target.suffix.lower() not in STATIC_ALLOWED_EXTENSIONS or not target.is_file():
+        raise HTTPException(status_code=404, detail="Not found")
+    return target
+
+
+@app.get("/static/{rest:path}")
+async def static_artifact(rest: str):
+    return FileResponse(resolve_static_path(rest))
 
 
 
 # ── Upload & Processing ──────────────────────────────────────────────────────
 
-from backend.auth import get_current_user_optional
-from backend.db.database import get_db
-from backend.db.models import User, Subscription, Lecture
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+async def ensure_lecture_access(
+    lecture_id: str,
+    user: Optional[User],
+    db: AsyncSession,
+) -> None:
+    """Scope a lecture-scoped read to its owner when a user is authenticated.
+
+    Anonymous guests keep the current open behavior (free-trial access). The
+    legacy "default" lecture remains open to everyone. Because the frontend
+    does not yet send the Bearer token on read endpoints, this check is
+    dormant today — it engages only once a token is presented.
+    """
+    if user is None or lecture_id in (None, "", "default"):
+        return
+    result = await db.execute(
+        select(Lecture.id).where(Lecture.id == lecture_id, Lecture.user_id == user.id)
+    )
+    if result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Lecture not found")
+
 
 @app.get("/quota")
 async def get_user_quota(
@@ -980,6 +1089,11 @@ async def get_user_quota(
     }
 
 
+ALLOWED_SOURCE_TYPES = {"youtube", "gdrive", "upload"}
+ALLOWED_UPLOAD_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm"}
+MAX_UPLOAD_BYTES = int(os.environ.get("NORAI_MAX_UPLOAD_BYTES", str(2 * 1024**3)))  # default 2 GB
+UPLOAD_CHUNK_BYTES = 1024 * 1024  # 1 MB
+
 @app.post("/process")
 async def start_processing(
     source_type: str = Form(...),
@@ -988,6 +1102,20 @@ async def start_processing(
     user: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
+    # ── Input validation (before any resource is consumed) ─────────────────
+    if source_type not in ALLOWED_SOURCE_TYPES:
+        raise HTTPException(status_code=400, detail=f"Unsupported source_type {source_type!r}")
+    if source_type == "upload":
+        if not file:
+            raise HTTPException(status_code=400, detail="source_type 'upload' requires a file")
+    else:
+        if not url:
+            raise HTTPException(status_code=400, detail=f"source_type {source_type!r} requires a url")
+        if source_type == "youtube" and not is_youtube_url(url):
+            raise HTTPException(status_code=400, detail="Invalid YouTube URL")
+        if source_type == "gdrive" and not is_gdrive_url(url):
+            raise HTTPException(status_code=400, detail="Invalid Google Drive URL")
+
     # Quota check for authenticated user
     if user:
         result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
@@ -1002,14 +1130,36 @@ async def start_processing(
 
     file_path = None
     if file:
+        raw_name = Path(file.filename or "upload.mp4").name
+        ext = Path(raw_name).suffix.lower()
+        if ext not in ALLOWED_UPLOAD_EXTENSIONS:
+            raise HTTPException(
+                status_code=415,
+                detail=f"Unsupported file type {ext!r}. Allowed: {', '.join(sorted(ALLOWED_UPLOAD_EXTENSIONS))}",
+            )
+
         upload_dir = Path("outputs/uploads")
         upload_dir.mkdir(parents=True, exist_ok=True)
-        raw_name = Path(file.filename or "upload.mp4").name
         safe_filename = re.sub(r"[^a-zA-Z0-9_.-]", "_", raw_name)
         file_path = upload_dir / f"{task_id}_{safe_filename}"
+
+        # Stream-write in chunks (no full-file RAM buffer), enforcing a hard cap
+        # even when Content-Length is absent.
+        written = 0
         with open(file_path, "wb") as f:
-            content = await file.read()
-            f.write(content)
+            while True:
+                chunk = await file.read(UPLOAD_CHUNK_BYTES)
+                if not chunk:
+                    break
+                written += len(chunk)
+                if written > MAX_UPLOAD_BYTES:
+                    f.close()
+                    file_path.unlink(missing_ok=True)
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"Upload exceeds the {MAX_UPLOAD_BYTES // (1024 * 1024)} MB limit",
+                    )
+                f.write(chunk)
 
     # Record lecture in database if user is logged in
     if user:
@@ -1024,10 +1174,20 @@ async def start_processing(
         db.add(lecture_record)
         await db.commit()
 
-    # Run pipeline in a background thread — keeps the event loop free
+    # Run pipeline in a background thread — keeps the event loop free.
+    # The uploaded source file is deleted once the pipeline is done (or failed).
+    def _run_with_cleanup():
+        try:
+            run_pipeline(task_id, source_type, url, str(file_path) if file_path else None)
+        finally:
+            if file_path:
+                try:
+                    file_path.unlink(missing_ok=True)
+                except Exception:
+                    logging.getLogger("norai").exception("Failed to remove upload %s", file_path)
+
     thread = threading.Thread(
-        target=run_pipeline,
-        args=(task_id, source_type, url, str(file_path) if file_path else None),
+        target=_run_with_cleanup,
         daemon=True,
     )
     thread.start()
@@ -1041,11 +1201,16 @@ async def get_lectures():
 
 
 @app.get("/lectures/{lecture_id}")
-async def get_lecture_info(lecture_id: str):
+async def get_lecture_info(
+    lecture_id: str,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     try:
         clean_id = sanitize_lecture_id(lecture_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid lecture_id format")
+    await ensure_lecture_access(clean_id, user, db)
     info = get_lecture(clean_id)
     if not info:
         raise HTTPException(status_code=404, detail="Lecture not found")
@@ -1053,8 +1218,13 @@ async def get_lecture_info(lecture_id: str):
 
 
 @app.get("/outline")
-async def get_outline(lecture_id: str = "default"):
+async def get_outline(
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     """Return the lecture outline as JSON (for the sidebar chapter list)."""
+    await ensure_lecture_access(lecture_id, user, db)
     info = get_lecture(lecture_id)
     base = Path(info["output_dir"]) if info else Path("outputs")
     path = base / "notes" / "lecture_outline.json"
@@ -1065,8 +1235,14 @@ async def get_outline(lecture_id: str = "default"):
 
 
 @app.get("/concept-map")
-async def get_concept_map(chapter_id: int = 1, lecture_id: str = "default"):
+async def get_concept_map(
+    chapter_id: int = 1,
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     """Derive zero-LLM visual concept graph for a chapter from existing output JSONs."""
+    await ensure_lecture_access(lecture_id, user, db)
     info = get_lecture(lecture_id)
     if info and "output_dir" in info and Path(info["output_dir"]).exists():
         base = Path(info["output_dir"])

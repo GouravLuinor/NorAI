@@ -15,6 +15,7 @@ from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from backend.db.database import get_db
 from backend.db.models import User, Subscription
@@ -87,7 +88,9 @@ async def get_or_create_user_from_token(payload: Dict[str, Any], db: AsyncSessio
         )
 
     email = payload.get("email") or f"{user_id}@anonymous.norai"
-    is_anonymous = payload.get("is_anonymous", False) or email.endswith("@anonymous.norai")
+    # Trust the Supabase anon claim (signInAnonymously sessions) rather than the
+    # email suffix, which is forgeable via the email field of any signed token.
+    is_anonymous = bool(payload.get("is_anonymous", False))
     full_name = payload.get("user_metadata", {}).get("full_name") or payload.get("name")
     avatar_url = payload.get("user_metadata", {}).get("avatar_url")
 
@@ -104,7 +107,7 @@ async def get_or_create_user_from_token(payload: Dict[str, Any], db: AsyncSessio
             is_anonymous=is_anonymous,
         )
         db.add(user)
-        
+
         # Create default Free Trial Subscription
         subscription = Subscription(
             user_id=user_id,
@@ -114,6 +117,37 @@ async def get_or_create_user_from_token(payload: Dict[str, Any], db: AsyncSessio
             used_minutes_this_month=0,
         )
         db.add(subscription)
+
+        try:
+            await db.flush()
+        except IntegrityError:
+            # Two tokens with different `sub` but the same email raced on
+            # User.email unique. Roll back our insert and re-fetch the winner
+            # so auth doesn't silently degrade to anonymous.
+            await db.rollback()
+            result = await db.execute(select(User).where(User.id == user_id))
+            user = result.scalar_one_or_none()
+            if user is None:
+                result = await db.execute(select(User).where(User.email == email))
+                user = result.scalar_one_or_none()
+            if user is None:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Unable to resolve user account",
+                )
+
+    # Ensure the resolved user always has a Subscription row
+    sub_result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+    if not sub_result.scalar_one_or_none():
+        db.add(
+            Subscription(
+                user_id=user.id,
+                status="trial",
+                plan_tier="free",
+                monthly_minutes_quota=15,
+                used_minutes_this_month=0,
+            )
+        )
         await db.flush()
 
     return user
