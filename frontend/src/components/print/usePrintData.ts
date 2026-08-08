@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react'
 import { fetchQuizQuestions, type Question } from '../../stores/useQuizStore'
 import { useLectureStore } from '../../stores/useLectureStore'
-import type { PrintData } from './types'
+import type { PrintData, PrintType } from './types'
+import type { ConceptMapResponse } from '../../lib/conceptMapLayout'
 
 // Loads every chapter's print payload once. Primary path: data injected by the
 // calling window via `__PRINT_DATA__` (or the `printDataReady` event). Fallback:
 // a 500ms-window fetch of each chapter's notes/revision/assessment endpoint.
-export function usePrintData(lectureId: string, type: 'notes' | 'revision' | 'assessment') {
+export function usePrintData(lectureId: string, type: PrintType) {
   const [chapters, setChapters] = useState<any[]>([])
   const [assessmentChapters, setAssessmentChapters] = useState<{ ch: number; questions: Question[] }[]>([])
+  const [guideTitle, setGuideTitle] = useState('')
+  const [conceptMaps, setConceptMaps] = useState<{ ch: number; data: ConceptMapResponse }[]>([])
   const [loading, setLoading] = useState(true)
   const [globalError, setGlobalError] = useState<string | null>(null)
   const [numChapters, setNumChapters] = useState(6)
@@ -36,6 +39,11 @@ export function usePrintData(lectureId: string, type: 'notes' | 'revision' | 'as
       if (cancelled) return
       if (data.type === 'assessment') {
         setAssessmentChapters(data.assessmentChapters)
+      } else if (data.type === 'guide') {
+        setGuideTitle(data.title)
+        setChapters(data.chapters)
+      } else if (data.type === 'concepts') {
+        setConceptMaps(data.maps)
       } else {
         setChapters(data.chapters)
       }
@@ -63,6 +71,28 @@ export function usePrintData(lectureId: string, type: 'notes' | 'revision' | 'as
           })
           const all = await Promise.all(promises)
           if (!cancelled) setAssessmentChapters(all)
+        } else if (type === 'guide') {
+          const res = await fetch(`/study-guide?lecture_id=${lectureId}`)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const data = await res.json()
+          if (!cancelled) {
+            setGuideTitle(data.title || '')
+            setChapters(Array.isArray(data.chapters) ? data.chapters : [])
+          }
+        } else if (type === 'concepts') {
+          const promises = Array.from({ length: numChapters }, async (_, i) => {
+            const ch = i + 1
+            try {
+              const res = await fetch(`/concept-map?chapter_id=${ch}&lecture_id=${lectureId}`)
+              if (!res.ok) throw new Error(`HTTP ${res.status}`)
+              const data = await res.json()
+              return { ch, data: data as ConceptMapResponse }
+            } catch {
+              return null
+            }
+          })
+          const all = await Promise.all(promises)
+          if (!cancelled) setConceptMaps(all.filter((m): m is { ch: number; data: ConceptMapResponse } => !!m))
         } else {
           const endpoint = type === 'revision' ? '/summary' : '/notes'
           const promises = Array.from({ length: numChapters }, async (_, i) => {
@@ -104,5 +134,5 @@ export function usePrintData(lectureId: string, type: 'notes' | 'revision' | 'as
     }
   }, [type, lectureId, numChapters])
 
-  return { chapters, assessmentChapters, loading, globalError }
+  return { chapters, assessmentChapters, guideTitle, conceptMaps, loading, globalError }
 }
