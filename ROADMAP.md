@@ -98,9 +98,9 @@ NorAI has a working 18-stage multimodal pipeline, a genuinely grounded RAG tutor
 
 | # | Item | Status | Ref | Notes |
 |---|---|---|---|---|
-| P4.1 | Real job queue | ⬜ | `backend/main.py:1028-1033`, `orchestrator.py:59,117-122` | Unbounded daemon threads, in-memory progress, lost on restart, `_progress` never pruned. Move to DB-backed tasks + worker pool (Dramatiq/RQ) with per-user caps, cancellation, retry, resume. |
-| P4.2 | Cleanup on failure | ⬜ | `orchestrator.py:358-377` | Partial lecture dirs, uploads, and keyframes are left on disk on any failure; cleanup is conditional and incomplete. |
-| P4.3 | Migrations (Alembic) | ⬜ | `backend/db/database.py:57`, `main.py:138-148` | `create_all` + hand-rolled `ALTER TABLE` with swallowed errors. Adopt Alembic before schema grows. |
+| P4.1 | Real job queue | ✅ | `backend/jobs.py` (supervisor, worker pool), `main.py:1299-1311,1569-1600` | DB-backed queue (`queued→processing→completed/cancelled/failed`), supervisor claims within global + per-user caps, heartbeat-stale recovery with retry (≤3) + resume (cache-first ≈ 0 calls), `on_progress`/`should_cancel` callbacks, `PipelineCancelled`; `/process` enqueues, `/status` DB-backed, new `/cancel`. Single-process assumption noted. |
+| P4.2 | Cleanup on failure | ✅ | `jobs.py:gc_sweep`, `orchestrator.py` (transient-dir removal on every outcome) | Worker deletes the upload post-run; boot + daily GC purges stale uploads (`UPLOAD_GC_AGE_HOURS`) and DB-orphaned lecture dirs (`ORPHAN_DIR_GC_AGE_DAYS`). |
+| P4.3 | Migrations (Alembic) | ✅ | `backend/db/migrate.py`, `alembic.ini`, `migrations/versions/0001_initial`, `0002_lecture_pipeline_job_columns` | `run_migrations` on startup (idempotent); legacy `create_all` DBs absorbed + backfilled; `test_migrations.py` (13 checks) green. |
 | P4.4 | Async tutor persistence | ⬜ | `backend/dependencies.py:126`, `memory.py:19-33` | Per-lecture lock held across the whole `graph.invoke` (sync `SqliteSaver`); one slow turn blocks all chat on that lecture. Use `AsyncSqliteSaver`; evict the unbounded per-lecture graph cache (`dependencies.py:29`). |
 | P4.5 | Wire real SSE progress | ⬜ | `orchestrator.py:63-111` | SSE `_queues`/`_event_loop` are dead code — `run_coroutine_threadsafe` targets a loop that's never started. Either implement or drop the scaffolding and keep polling. |
 

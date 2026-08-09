@@ -18,14 +18,14 @@ import random
 import uuid
 import re
 import os
-from backend.orchestrator import run_pipeline, get_or_create_task_sync
+from backend import jobs
 from contextlib import contextmanager
 from pathlib import Path
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, UploadFile
 from typing import List, Optional
 import sqlite3
 import time
-import threading
+from datetime import datetime, timezone
 from backend.dependencies import get_lecture_db_path, _get_or_create_lecture_graph, sanitize_lecture_id, configure_sqlite
 
 
@@ -66,12 +66,18 @@ if not any(isinstance(h, logging.FileHandler) for h in root_logger.handlers):
 
 app = FastAPI(title="NorAI Tutor API")
 
-from backend.db.database import init_db
+from backend.db.migrate import run_migrations
 from backend.routers import webhooks
 
 @app.on_event("startup")
 async def on_startup():
-    await init_db()
+    # P4.3: versioned schema (Alembic) instead of create_all. Runs in a thread
+    # because the alembic command is synchronous; idempotent on every boot.
+    await asyncio.to_thread(run_migrations)
+    # P4.1: boot the DB-backed pipeline queue supervisor, then one GC sweep
+    # for stale uploads / orphaned lecture dirs.
+    jobs.start_supervisor()
+    await asyncio.to_thread(jobs.gc_sweep)
 
 app.include_router(webhooks.router)
 
@@ -1290,7 +1296,9 @@ async def start_processing(
                     )
                 f.write(chunk)
 
-    # Record lecture in database (auth is now required).
+    # Record lecture in database (auth is now required). Status 'queued': the
+    # P4.1 supervisor claims it, runs the pipeline in the worker pool, and owns
+    # upload cleanup + progress/status persistence.
     lecture_record = Lecture(
         id=task_id,
         user_id=user.id,
@@ -1298,32 +1306,11 @@ async def start_processing(
         source_type=source_type,
         source_url=url or (str(file_path) if file_path else None),
         duration_seconds=int(probed_sec or 0),
-        status="processing",
+        status="queued",
+        queued_at=datetime.now(timezone.utc),
     )
     db.add(lecture_record)
     await db.commit()
-
-    # Run pipeline in a background thread — keeps the event loop free.
-    # The uploaded source file is deleted once the pipeline is done (or failed).
-    def _run_with_cleanup():
-        try:
-            run_pipeline(
-                task_id, source_type, url,
-                str(file_path) if file_path else None,
-                user_id=user.id,
-            )
-        finally:
-            if file_path:
-                try:
-                    file_path.unlink(missing_ok=True)
-                except Exception:
-                    logging.getLogger("norai").exception("Failed to remove upload %s", file_path)
-
-    thread = threading.Thread(
-        target=_run_with_cleanup,
-        daemon=True,
-    )
-    thread.start()
 
     return {"task_id": task_id}
 
@@ -1579,10 +1566,31 @@ async def get_concept_map(
 
 @app.get("/process/{task_id}/status")
 async def get_task_status(task_id: str):
-    """Return current progress as a single JSON object."""
-    tp = get_or_create_task_sync(task_id)
+    """Return current progress as a single JSON object (P4.1 DB-backed)."""
+    status = await jobs.get_job_status(task_id)
+    if status is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    # Map the DB lifecycle onto the legacy {stage, message, progress} contract
+    # that ProcessingPage.tsx polls on ('complete'/'error' are terminal).
+    if status["status"] == "completed":
+        return {"stage": "complete", "message": "All done!", "progress": 100}
+    if status["status"] in ("failed", "cancelled"):
+        return {
+            "stage": "error",
+            "message": status["error_message"] or "Pipeline failed.",
+            "progress": status["progress"] or 0,
+        }
     return {
-        "stage": "complete" if tp.finished and not tp.error else tp.stage,
-        "message": tp.error or tp.message,
-        "progress": tp.percent,
+        "stage": status["stage"],
+        "message": status["message"],
+        "progress": status["progress"] or 0,
     }
+
+
+@app.post("/process/{task_id}/cancel")
+async def cancel_processing_task(task_id: str):
+    """Request cancellation of a queued/running pipeline (P4.1)."""
+    cancelled = await jobs.request_cancel(task_id)
+    if not cancelled:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"cancelled": True}

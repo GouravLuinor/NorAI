@@ -1,19 +1,23 @@
 """
 backend/orchestrator.py
 
-Complete NorAI pipeline: runs every stage for a single video source,
-emitting real‑time progress via SSE queues.
+Complete NorAI pipeline: runs every stage for a single video source.
+Runs synchronously inside a worker thread owned by the P4.1 job queue
+(backend/jobs.py). Progress is reported through the `on_progress` callback
+(which persists to the Lecture row in the DB); cancellation is signalled by
+`should_cancel` (checked between stages).
+
+P4.5 — the old SSE scaffolding (`_queues` / `run_coroutine_threadsafe` against
+a never-started event loop) is gone; the frontend polls `/process/{id}/status`,
+which now reads the DB.
 """
 
 import os
 import json as json_lib
-import asyncio
 import hashlib
-import subprocess
-import threading
+import shutil
+import time
 from pathlib import Path
-from typing import Any
-from dataclasses import dataclass, field
 
 
 from backend.lecture_registry import create_lecture, update_lecture_title
@@ -43,82 +47,36 @@ from notes.outline_generator import generate_lecture_outline
 import logging
 logger = logging.getLogger(__name__)
 
-# ── Progress tracking ───────────────────────────────────────────────────────
 
-@dataclass
-class TaskProgress:
-    task_id: str
-    stage: str = "starting"
-    message: str = "Initialising…"
-    percent: float = 0.0
-    finished: bool = False
-    error: str | None = None
-    _queues: list[asyncio.Queue] = field(default_factory=list)
-
-    def register_queue(self, q: asyncio.Queue):
-        self._queues.append(q)
-
-    def remove_queue(self, q: asyncio.Queue):
-        self._queues = [x for x in self._queues if x is not q]
+class PipelineCancelled(Exception):
+    """Raised when the user requests cancellation and a stage boundary is hit."""
 
 
-_progress: dict[str, TaskProgress] = {}
-_sync_lock = threading.Lock()
+# ── Cleanup (P4.2) ───────────────────────────────────────────────────────────
 
-# Event loop reference for thread-safe broadcasting
-_event_loop = None
-
-def _get_event_loop():
-    global _event_loop
-    if _event_loop is None or _event_loop.is_closed():
-        _event_loop = asyncio.new_event_loop()
-    return _event_loop
+# Transient dirs always removed after a run, on success OR failure.
+_TEMP_DIRS = ("videos", "audio", "screenshots/raw", "chunks", "mappings", "metadata")
 
 
-def get_or_create_task_sync(task_id: str) -> TaskProgress:
-    with _sync_lock:
-        if task_id not in _progress:
-            _progress[task_id] = TaskProgress(task_id=task_id)
-        return _progress[task_id]
+def cleanup_lecture_dir(lecture_dir: Path) -> None:
+    """Remove transient pipeline directories.
+
+    `objects/`, `visual_objects/`, `merged_objects/`, `notes/` and `tutor/`
+    are KEPT: they hold the hash-of-inputs cache markers + outputs that make
+    re-runs cost ~0 API calls (P1.3/P1.4) and give failed runs cheap retryable
+    state.
+    """
+    try:
+        for d in _TEMP_DIRS:
+            target = Path(lecture_dir) / d
+            if target.exists():
+                shutil.rmtree(target)
+        logger.info("Cleaned transient dirs under %s", lecture_dir)
+    except Exception as e:
+        logger.warning(f"Failed to clean intermediate dirs under {lecture_dir}: {e}")
 
 
-def update_progress_sync(task_id: str, stage: str, message: str, percent: float):
-    tp = get_or_create_task_sync(task_id)
-    tp.stage = stage
-    tp.message = message
-    tp.percent = percent
-    loop = _get_event_loop()
-    for q in tp._queues:
-        asyncio.run_coroutine_threadsafe(q.put({
-            "stage": stage, "message": message, "progress": percent,
-        }), loop)
-
-
-def mark_error_sync(task_id: str, message: str):
-    tp = get_or_create_task_sync(task_id)
-    tp.error = message
-    tp.finished = True
-    loop = _get_event_loop()
-    for q in tp._queues:
-        asyncio.run_coroutine_threadsafe(q.put({
-            "stage": "error", "message": message, "progress": tp.percent,
-        }), loop)
-
-
-def mark_complete_sync(task_id: str):
-    tp = get_or_create_task_sync(task_id)
-    tp.finished = True
-    loop = _get_event_loop()
-    for q in tp._queues:
-        asyncio.run_coroutine_threadsafe(q.put({
-            "stage": "complete",
-            "message": "All done! Your workspace is ready.",
-            "progress": 100,
-        }), loop)
-
-
-    
-# ── Pipeline runner (SYNCHRONOUS — runs in a background thread) ─────────────
+# ── Pipeline runner (SYNCHRONOUS — runs in a worker thread) ─────────────────
 
 def run_pipeline(
     task_id: str,
@@ -126,9 +84,17 @@ def run_pipeline(
     url: str | None = None,
     file_path: str | None = None,
     user_id: str | None = None,
+    *,
+    on_progress=None,
+    should_cancel=None,
 ):
+    """
+    Run the full pipeline for a lecture. Raises PipelineCancelled on user
+    cancellation, or the underlying exception on failure. `on_progress` is
+    called with (stage, message, percent); `should_cancel()` is polled between
+    stages.
+    """
     # P1.8: snapshot counters + clock for the metrics record.
-    import time
     _t_start = time.perf_counter()
     _llm_before = snapshot_llm_calls()
     _embed_before = snapshot_embed_batches()
@@ -161,13 +127,31 @@ def run_pipeline(
         except Exception as e:
             logger.warning(f"Failed to record pipeline metrics: {e}")
 
+    _last_percent = 0.0
+
+    def _report(stage: str, message: str, percent: float):
+        nonlocal _last_percent
+        _last_percent = percent
+        if on_progress:
+            try:
+                on_progress(stage, message, percent)
+            except Exception as e:
+                logger.warning(f"on_progress callback failed: {e}")
+
+    def _check_cancel():
+        if should_cancel and should_cancel():
+            raise PipelineCancelled("Processing was cancelled by the user.")
+
+    lecture_dir = None
+    out: str | None = None
     try:
         # ── Create lecture directory ────────────────────────────────────────
         lecture_dir = create_lecture(task_id, title="New Lecture")
         out = str(lecture_dir)
+        _check_cancel()
 
         # ── Stage 1: Ingestion ─────────────────────────────────────────────
-        update_progress_sync(task_id, "ingestion", "Downloading video…", 2)
+        _report("ingestion", "Downloading video…", 2)
         source = file_path if (source_type == "upload" and file_path) else (url or "")
         ing = process_source(source, output_dir=out)
         video_path  = ing["video_path"]
@@ -208,7 +192,8 @@ def run_pipeline(
         from concurrent.futures import ThreadPoolExecutor
 
         def _run_text_branch():
-            update_progress_sync(task_id, "transcription", "Transcribing lecture…", 8)
+            _report("transcription", "Transcribing lecture…", 8)
+            _check_cancel()
             _t_tr = time.perf_counter()
             tr = transcribe_audio(audio_path, meta_path, output_dir=out)
             _metrics["stage_seconds"]["transcription"] = round(time.perf_counter() - _t_tr, 2)
@@ -220,24 +205,28 @@ def run_pipeline(
             except Exception:
                 pass
 
-            update_progress_sync(task_id, "chunking", "Chunking transcript…", 14)
+            _report("chunking", "Chunking transcript…", 14)
+            _check_cancel()
             ch = chunk_transcript(t_json, output_dir=out)
             c_path = ch["chunks_path"]
             _metrics["num_chunks"] = ch.get("num_chunks")
             _metrics["segments_per_chunk"] = ch.get("segments_per_chunk")
 
-            update_progress_sync(task_id, "knowledge_extraction", "Extracting knowledge…", 20)
+            _report("knowledge_extraction", "Extracting knowledge…", 20)
+            _check_cancel()
             ke = extract_all_chunks(c_path, output_dir=out)
             o_dir = ke["objects_dir"]
             return c_path, o_dir
 
         def _run_visual_branch():
-            update_progress_sync(task_id, "frame_extraction", "Extracting frames…", 26)
+            _report("frame_extraction", "Extracting frames…", 26)
+            _check_cancel()
             raw_dir = str(lecture_dir / "screenshots" / "raw")
             fe = extract_frames(video_path, raw_dir)
             f_meta = fe["metadata_file"]
 
-            update_progress_sync(task_id, "scene_detection", "Detecting key scenes…", 32)
+            _report("scene_detection", "Detecting key scenes…", 32)
+            _check_cancel()
             keyframes_dir = str(lecture_dir / "screenshots" / "keyframes")
             detect_scenes(f_meta, keyframes_dir)
             kf_meta = str(Path(keyframes_dir) / "metadata.json")
@@ -250,14 +239,16 @@ def run_pipeline(
             keyframes_meta = fut_visual.result()
 
         # ── Stage 7: Chunk‑to‑Screenshot Mapping ───────────────────────────
-        update_progress_sync(task_id, "mapping", "Mapping screenshots to chunks…", 35)
+        _report("mapping", "Mapping screenshots to chunks…", 35)
+        _check_cancel()
         mappings_dir = str(lecture_dir / "mappings")
         Path(mappings_dir).mkdir(parents=True, exist_ok=True)
         mapping_path = str(Path(mappings_dir) / "chunk_screenshot_mapping.json")
         create_chunk_screenshot_mapping(chunks_path, keyframes_meta, mapping_path)
 
         # ── Stage 8: Outline Generation ───────────────────────────────────
-        update_progress_sync(task_id, "outline", "Generating lecture outline…", 40)
+        _report("outline", "Generating lecture outline…", 40)
+        _check_cancel()
         chapters_dir = str(lecture_dir / "chapters")
         notes_dir    = str(lecture_dir / "notes")
         Path(chapters_dir).mkdir(parents=True, exist_ok=True)
@@ -299,7 +290,8 @@ def run_pipeline(
             pass
 
         # ── Stage 9: Visual Knowledge (Chapter-Aligned) ───────────────────
-        update_progress_sync(task_id, "visual_knowledge", "Understanding visuals…", 46)
+        _report("visual_knowledge", "Understanding visuals…", 46)
+        _check_cancel()
         visual_objects_dir = str(lecture_dir / "visual_objects")
         try:
             process_visual_chunks(mapping_path, visual_objects_dir, outline_path=outline_path)
@@ -307,7 +299,8 @@ def run_pipeline(
             logger.error(f"Visual knowledge failed (continuing): {e}")
 
         # ── Stage 10: Knowledge Merging ────────────────--------------------
-        update_progress_sync(task_id, "knowledge_merging", "Merging knowledge…", 52)
+        _report("knowledge_merging", "Merging knowledge…", 52)
+        _check_cancel()
         merged_dir = str(lecture_dir / "merged_objects")
         try:
             merge_all_chunks(objects_dir, visual_objects_dir, merged_dir)
@@ -315,21 +308,24 @@ def run_pipeline(
             logger.error(f"Knowledge merging failed (continuing): {e}")
 
         # ── Stage 11: Chapter Building ─────────────────────────────────────
-        update_progress_sync(task_id, "chapter_building", "Building chapters…", 58)
+        _report("chapter_building", "Building chapters…", 58)
+        _check_cancel()
         try:
             build_chapters_pipeline(outline_path, merged_dir, chapters_dir)
         except Exception as e:
             logger.error(f"Chapter building failed (continuing): {e}")
 
         # ── Stage 12: Screenshot Selection ─────────────────────────────────
-        update_progress_sync(task_id, "screenshot_selection", "Selecting screenshots…", 64)
+        _report("screenshot_selection", "Selecting screenshots…", 64)
+        _check_cancel()
         try:
             select_screenshots_for_lecture(chapters_dir, out)
         except Exception as e:
             logger.error(f"Screenshot selection failed (continuing): {e}")
 
-        # ── Stages 13–16: Consolidated Artifact Generation (Notes, Revision, Assessment, Cards) ─
-        update_progress_sync(task_id, "chapter_artifacts", "Generating study notes, revision & assessment…", 75)
+        # ── Stages 13–16: Consolidated Artifact Generation ─────────────────
+        _report("chapter_artifacts", "Generating study notes, revision & assessment…", 75)
+        _check_cancel()
         try:
             generate_consolidated_chapter_artifacts(chapters_dir, outline_path, out)
         except Exception as e:
@@ -338,7 +334,8 @@ def run_pipeline(
         # REMOVED: PDFs are now generated on-demand when user clicks download
 
         # ── Stage 17: Tutor Index ──────────────────────────────────────────
-        update_progress_sync(task_id, "tutor_index", "Indexing for tutor…", 96)
+        _report("tutor_index", "Indexing for tutor…", 96)
+        _check_cancel()
         try:
             import chromadb
             from tutor.chunker import chunk_glob
@@ -397,7 +394,8 @@ def run_pipeline(
             logger.error(f"Tutor index failed (continuing): {e}")
 
         # ── Stage 18: Screenshot Index ─────────────────────────────────────
-        update_progress_sync(task_id, "screenshot_index", "Indexing screenshots…", 99)
+        _report("screenshot_index", "Indexing screenshots…", 99)
+        _check_cancel()
         try:
             import json as _json, glob as _glob
             import chromadb
@@ -461,30 +459,6 @@ def run_pipeline(
         except Exception as e:
             logger.error(f"Screenshot index failed (continuing): {e}")
 
-        # ── Stage 19: Cleanup Temporary Files ──────────────────────────────
-        update_progress_sync(task_id, "cleanup", "Cleaning up temporary files…", 99.5)
-        import shutil
-
-        lecture_dir = Path(out)
-        if (lecture_dir / "notes").exists() and (lecture_dir / "tutor" / "chroma").exists():
-            temp_dirs = [
-                "videos", "audio", "screenshots/raw", "chunks",
-                "mappings", "metadata"
-                # NOTE: "objects", "visual_objects", "merged_objects" are kept —
-                # they hold the hash-of-inputs cache markers + outputs that make
-                # re-runs cost ~0 API calls (ROADMAP P1.4/P1.3). Deleting them
-                # silently wiped the caches every run.
-            ]
-            for d in temp_dirs:
-                target = lecture_dir / d
-                if target.exists():
-                    try:
-                        shutil.rmtree(target)
-                    except Exception as e:
-                        logger.warning(f"Failed to delete intermediate directory {target}: {e}")
-        else:
-            logger.warning("Skipping cleanup: Final notes or tutor index missing. Keeping intermediates for debugging.")
-
         # ── Done ───────────────────────────────────────────────────────────
         _write_metrics(completed=True)
         # P2: persist Lecture status + meter quota minutes (success only).
@@ -500,7 +474,22 @@ def run_pipeline(
             )
         except Exception as e:
             logger.warning(f"Failed to record pipeline usage outcome: {e}")
-        mark_complete_sync(task_id)
+        _report("complete", "All done! Your workspace is ready.", 100)
+
+    except PipelineCancelled as exc:
+        _write_metrics(completed=False, error="cancelled")
+        try:
+            record_pipeline_outcome(
+                user_id=user_id,
+                lecture_id=task_id,
+                duration_sec=_metrics.get("duration_sec"),
+                completed=False,
+                error_message="cancelled",
+                output_dir=out,
+            )
+        except Exception as e:
+            logger.warning(f"Failed to record pipeline cancellation outcome: {e}")
+        raise
 
     except Exception as exc:
         _write_metrics(completed=False, error=str(exc))
@@ -512,8 +501,14 @@ def run_pipeline(
                 duration_sec=_metrics.get("duration_sec"),
                 completed=False,
                 error_message=str(exc)[:4000],
-                output_dir=out if "out" in locals() else None,
+                output_dir=out,
             )
         except Exception as e:
             logger.warning(f"Failed to record pipeline failure outcome: {e}")
-        mark_error_sync(task_id, str(exc))
+        _report("error", str(exc), _last_percent)
+        raise
+
+    finally:
+        # P4.2: transient dirs are always removed (success, failure, or cancel).
+        if lecture_dir is not None:
+            cleanup_lecture_dir(lecture_dir)
