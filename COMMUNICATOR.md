@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P1.8 — adaptive chunking + self-calibrating pre-flight estimate (P1 fully closed)**: adaptive chunk sizing, `/estimate` endpoint, `outputs/pipeline_metrics.jsonl` feedback loop, live UploadPage estimate panel | 2026-08-08 23:10 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P2 — billing & quota (P2.1–P2.5, Phase P2 closed)**: usage metering, pre-spend quota enforcement, lecture status persistence, live quota badge, billing page; fixed Vite `/billing` SPA-vs-API proxy collision + refreshQuota infinite refetch loop | 2026-08-09 08:20 UTC |
 
 ---
 
@@ -33,6 +33,23 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-09] — OpenCode: P2 billing & quota (Phase P2 closed)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed
+- **Files Created / Modified**:
+  - `backend/usage.py` [NEW] — `record_pipeline_outcome` (success/failure): meters `Subscription.used_minutes_this_month`, writes `UsageLog`, persists `Lecture` status (`completed`/`failed`) + `duration_seconds`; monthly reset via billing-period check; safe rollback.
+  - `backend/test_usage.py` [NEW] (28 assertions) + `backend/test_billing_quota.py` [NEW] (20 assertions) — `/quota` + `/billing` contracts (tier/used/remaining/checkout/manage urls), `/process` auth 401, quota-exhausted 429, free-trial-duration 429, within-quota 200, usage metering/reset/rollback.
+  - `backend/main.py` — `GET /quota` + `GET /billing` (plan, usage, subscription, Lemon Squeezy `checkout_urls`/`manage_url` from `config.py` env); `/process` now requires auth and checks quota/free-trial/duration BEFORE probe/download/spend.
+  - `config.py` — env-driven `LEMONSQUEEZY_CHECKOUT_STARTER_URL`/`PRO`/`LEMONSQUEEZY_CUSTOMER_PORTAL_URL` (null until the store exists → UI shows "See pricing").
+  - `backend/orchestrator.py` — success + failure paths both call `record_pipeline_outcome`.
+  - `frontend/src/pages/BillingPage.tsx` [NEW] + `App.tsx` `/billing` route — tier, usage bar, Starter/Pro plan cards, manage-subscription section, sign-in / error / loading states.
+  - `frontend/src/stores/useAuthStore.ts` — `refreshQuota` only emits a new `user` object when subscription fields actually change (fixes an **infinite refetch loop** that piled up `/billing`+`/quota` `[pending]` requests and froze the page on "Loading billing…").
+  - `frontend/src/components/layout/Sidebar.tsx` — quota badge wired to live `/quota` via store (was fallback values).
+  - `frontend/vite.config.ts` — `/billing` proxy with an HTML `bypass` (`/index.html`) so the SPA route and the API endpoint share the path.
+  - `ROADMAP.md` — P2.1–P2.5 ✅; `PROJECT_PROGRESS.md` — P2 entry added.
+- **Verification**: all 20 new billing + 28 new usage tests green; full existing suite green (webhooks 12, auth-email 10, upload-validation 20, static-allowlist 6, estimate 34, quiz-missed, api-contract); `oxlint` 0 errors; `tsc -b && vite build` green. Live browser end-to-end: anonymous Supabase sign-in → sidebar badge shows real 0/15 (`valuemax=15`) → sidebar Upgrade → `/billing` renders live Free Trial/trial/0-of-15 data instantly, request count stable (loop fixed).
+- **Hand-off Notes / Next Steps**: Real checkout is gated on the Lemon Squeezy store — set `LEMONSQUEEZY_CHECKOUT_STARTER_URL`/`_PRO_URL`/`LEMONSQUEEZY_CUSTOMER_PORTAL_URL` (+ webhook secret already implemented fail-closed) to go live. Uncommitted — commit only if user asks. P3 (RAG quality/evals) is the next roadmap phase.
 
 ### [2026-08-08] — OpenCode: P1.8 adaptive chunking + self-calibrating pre-flight estimate (P1 fully closed)
 - **Agent**: OpenCode (CLI)

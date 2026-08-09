@@ -35,15 +35,20 @@ from pydantic import BaseModel
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from backend.lecture_registry import list_lectures, get_lecture
-from config import MODEL_NAME, get_api_key, CHECKPOINT_DB_PATH
 from backend.dependencies import invoke_tutor
 from backend.lecture_registry import get_lecture
 from ingest.ingest import is_youtube_url, is_gdrive_url
 from ingest.ingest import probe_video_metadata
 from backend.estimator import estimate_pipeline
-from backend.auth import get_current_user_optional
+from backend.auth import get_current_user_optional, get_current_user
 from backend.db.database import get_db
 from backend.db.models import User, Subscription, Lecture
+from backend.usage import record_pipeline_outcome
+from config import (
+    MODEL_NAME, get_api_key, CHECKPOINT_DB_PATH,
+    LEMONSQUEEZY_CHECKOUT_STARTER_URL, LEMONSQUEEZY_CHECKOUT_PRO_URL,
+    LEMONSQUEEZY_CUSTOMER_PORTAL_URL,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import logging
@@ -1065,6 +1070,7 @@ async def get_user_quota(
         # Default anonymous trial quota
         return {
             "plan_tier": "free",
+            "subscription_status": "trial",
             "monthly_minutes_quota": 15,
             "used_minutes_this_month": 0,
             "remaining_minutes": 15,
@@ -1079,11 +1085,13 @@ async def get_user_quota(
     used = sub.used_minutes_this_month if sub else 0
     remaining = max(0, quota - used)
     plan_tier = sub.plan_tier if sub else "free"
+    sub_status = sub.status if sub else "trial"
 
     return {
         "user_id": user.id,
         "email": user.email,
         "plan_tier": plan_tier,
+        "subscription_status": sub_status,
         "monthly_minutes_quota": quota,
         "used_minutes_this_month": used,
         "remaining_minutes": remaining,
@@ -1092,6 +1100,50 @@ async def get_user_quota(
 
 
 ALLOWED_SOURCE_TYPES = {"youtube", "gdrive", "upload"}
+
+
+@app.get("/billing")
+async def get_billing(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the user's plan, usage, and Lemon Squeezy checkout/manage links.
+
+    Checkout / portal URLs come from env (config.py) — they are null until the
+    Lemon Squeezy store exists. `manage_url` is only offered to users who have
+    an active Lemon Squeezy subscription id.
+    """
+    result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+    sub = result.scalar_one_or_none()
+
+    plan_tier = sub.plan_tier if sub else "free"
+    sub_status = sub.status if sub else "trial"
+    quota = sub.monthly_minutes_quota if sub else 15
+    used = sub.used_minutes_this_month if sub else 0
+    remaining = max(0, quota - used)
+    ls_sub_id = (sub.lemon_squeezy_subscription_id if sub else None) or None
+
+    checkout_urls = {
+        "starter": LEMONSQUEEZY_CHECKOUT_STARTER_URL or None,
+        "pro": LEMONSQUEEZY_CHECKOUT_PRO_URL or None,
+    }
+    manage_url = LEMONSQUEEZY_CUSTOMER_PORTAL_URL or None
+
+    return {
+        "user_id": user.id,
+        "email": user.email,
+        "is_anonymous": user.is_anonymous,
+        "plan_tier": plan_tier,
+        "subscription_status": sub_status,
+        "monthly_minutes_quota": quota,
+        "used_minutes_this_month": used,
+        "remaining_minutes": remaining,
+        "lemon_squeezy_subscription_id": ls_sub_id,
+        "checkout_urls": checkout_urls,
+        "manage_url": manage_url,
+    }
+
+
 ALLOWED_UPLOAD_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm"}
 MAX_UPLOAD_BYTES = int(os.environ.get("NORAI_MAX_UPLOAD_BYTES", str(2 * 1024**3)))  # default 2 GB
 UPLOAD_CHUNK_BYTES = 1024 * 1024  # 1 MB
@@ -1144,7 +1196,8 @@ async def start_processing(
     source_type: str = Form(...),
     url: str | None = Form(None),
     file: UploadFile | None = None,
-    user: Optional[User] = Depends(get_current_user_optional),
+    duration: float | None = Form(None),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     # ── Input validation (before any resource is consumed) ─────────────────
@@ -1161,14 +1214,42 @@ async def start_processing(
         if source_type == "gdrive" and not is_gdrive_url(url):
             raise HTTPException(status_code=400, detail="Invalid Google Drive URL")
 
-    # Quota check for authenticated user
-    if user:
-        result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
-        sub = result.scalar_one_or_none()
-        if sub and sub.used_minutes_this_month >= sub.monthly_minutes_quota:
+    # ── Pre-download quota + free-trial enforcement (P2.2) ─────────────────
+    # Check FIRST, then consume resources. The orchestrator's post-download
+    # duration gate stays as a defense-in-depth backstop.
+    result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+    sub = result.scalar_one_or_none()
+    quota = sub.monthly_minutes_quota if sub else 15
+    used = sub.used_minutes_this_month if sub else 0
+    if used >= quota:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Monthly quota of {quota} lecture minutes reached. Please upgrade to Starter or Pro to continue processing.",
+        )
+
+    probed_sec = None
+    if source_type == "youtube":
+        probed = probe_video_metadata(url)
+        if probed:
+            probed_sec = probed["duration_sec"]
+    elif source_type == "upload" and duration and duration > 0:
+        probed_sec = duration * 60.0
+
+    if probed_sec:
+        import math as _math
+        needed = _math.ceil(probed_sec / 60.0)
+        free_limit_min = int(os.environ.get("MAX_FREE_DURATION_MIN", "15"))
+        if probed_sec > free_limit_min * 60:
             raise HTTPException(
                 status_code=429,
-                detail=f"Monthly quota of {sub.monthly_minutes_quota} lecture minutes reached. Please upgrade to Starter or Pro to continue processing.",
+                detail=f"Lecture duration ({probed_sec / 60:.1f} mins) exceeds the free-trial limit "
+                       f"of {free_limit_min} minutes. Please upgrade to Starter or Pro.",
+            )
+        if used + needed > quota:
+            raise HTTPException(
+                status_code=429,
+                detail=f"This lecture needs ~{needed} of your {quota} monthly minutes "
+                       f"({used} already used). Please upgrade to continue.",
             )
 
     task_id = str(uuid.uuid4())
@@ -1206,24 +1287,28 @@ async def start_processing(
                     )
                 f.write(chunk)
 
-    # Record lecture in database if user is logged in
-    if user:
-        lecture_record = Lecture(
-            id=task_id,
-            user_id=user.id,
-            title="New Lecture",
-            source_type=source_type,
-            source_url=url or (str(file_path) if file_path else None),
-            status="processing",
-        )
-        db.add(lecture_record)
-        await db.commit()
+    # Record lecture in database (auth is now required).
+    lecture_record = Lecture(
+        id=task_id,
+        user_id=user.id,
+        title="New Lecture",
+        source_type=source_type,
+        source_url=url or (str(file_path) if file_path else None),
+        duration_seconds=int(probed_sec or 0),
+        status="processing",
+    )
+    db.add(lecture_record)
+    await db.commit()
 
     # Run pipeline in a background thread — keeps the event loop free.
     # The uploaded source file is deleted once the pipeline is done (or failed).
     def _run_with_cleanup():
         try:
-            run_pipeline(task_id, source_type, url, str(file_path) if file_path else None)
+            run_pipeline(
+                task_id, source_type, url,
+                str(file_path) if file_path else None,
+                user_id=user.id,
+            )
         finally:
             if file_path:
                 try:

@@ -72,11 +72,11 @@ NorAI has a working 18-stage multimodal pipeline, a genuinely grounded RAG tutor
 
 | # | Item | Status | Ref | Notes |
 |---|---|---|---|---|
-| P2.1 | Increment usage metering | ⬜ | `auth.py:114`, `main.py:958,968` | `used_minutes_this_month` is never incremented anywhere; `UsageLog` never written; `Lecture.duration_seconds` never set. Meter at pipeline end. |
-| P2.2 | Enforce quota before download | ⬜ | `backend/main.py:992`, `orchestrator.py:137-151` | Anonymous users skip quota; free-trial gate runs *after* full download. Check first, then consume resources. |
-| P2.3 | Persist lecture DB status | ⬜ | `main.py:1015-1025` | `Lecture.status` set to `"processing"` but never updated to `completed/failed`. |
-| P2.4 | Live quota badge + `/quota` call | ⬜ | `frontend/src/components/Sidebar.tsx:207-225` | Badge is hardcoded ("Free Trial", "Used: 0 / 15 mins"); frontend never calls `/quota` and never sends the Bearer token for it. |
-| P2.5 | Billing page + subscription state UI | ⬜ | — | Surface plan, usage, and Lemon Squeezy checkout/manage links. |
+| P2.1 | Increment usage metering | ✅ | `usage.py`, `orchestrator.py:488-518` | `record_pipeline_outcome` meters success minutes into `Subscription.used_minutes_this_month` + writes `UsageLog`; `Lecture.duration_seconds` set from probe. |
+| P2.2 | Enforce quota before download | ✅ | `main.py:1218-1253` | `GET /quota` + `/process` gate: anonymous & free users share the 15-min free trial; 429 before any Gemini/download spend; duration-aware `used + needed > quota` check. |
+| P2.3 | Persist lecture DB status | ✅ | `main.py:1297`, `orchestrator.py:491-518` | `Lecture.status` set to `completed`/`failed` + `duration_seconds` via `record_pipeline_outcome`. |
+| P2.4 | Live quota badge + `/quota` call | ✅ | `Sidebar.tsx:55-57,231-266`, `useAuthStore.ts:67-108` | Badge reads live `/quota`; sends Bearer token via `authHeaders()`. Note: `refreshQuota` only emits a new `user` object when subscription fields change (prevents effect refetch loop). |
+| P2.5 | Billing page + subscription state UI | ✅ | `frontend/src/pages/BillingPage.tsx`, `main.py:1105-1144` | `/billing` returns plan/usage/status + Lemon Squeezy `checkout_urls`/`manage_url`; page renders tier, usage bar, plan actions, manage link. Vite proxies `/billing` with an HTML bypass so the SPA route and API share the path. |
 
 ---
 

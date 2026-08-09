@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { FOCUS_RING } from '../components/ui/shared'
 import { authHeaders } from '../lib/authHeaders'
+import { useAuthStore } from '../stores/useAuthStore'
 
 type InputType = 'youtube' | 'upload' | 'drive'
 
@@ -80,6 +81,7 @@ export function UploadPage() {
   const [loadingLectures, setLoadingLectures] = useState(true)
   const [estimate, setEstimate] = useState<EstimateResult | null>(null)
   const [estLoading, setEstLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -100,6 +102,7 @@ export function UploadPage() {
       return
     }
 
+    setSubmitError(null)
     const run = async () => {
       setEstLoading(true)
       const formData = new FormData()
@@ -146,13 +149,33 @@ export function UploadPage() {
     formData.append('source_type', inputType)
     if (inputType === 'upload' && file) {
       formData.append('file', file)
+      const duration = await readVideoDuration(file)
+      if (duration) formData.append('duration', String(duration / 60))
     } else {
       formData.append('url', url)
     }
 
-    const res = await fetch('/process', { method: 'POST', body: formData, headers: authHeaders() })
-    const { task_id } = await res.json()
-    navigate(`/process/${task_id}`)
+    try {
+      const res = await fetch('/process', { method: 'POST', body: formData, headers: authHeaders() })
+      if (!res.ok) {
+        let detail = `Failed to start processing (HTTP ${res.status})`
+        try {
+          const body = await res.json()
+          if (typeof body.detail === 'string') detail = body.detail
+        } catch {
+          /* non-JSON error body — keep the generic message */
+        }
+        if (res.status === 401) {
+          useAuthStore.getState().openAuthModal('login')
+        }
+        setSubmitError(detail)
+        return
+      }
+      const { task_id } = await res.json()
+      navigate(`/process/${task_id}`)
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : 'Network error starting processing')
+    }
   }
 
   const canSubmit =
@@ -321,6 +344,13 @@ export function UploadPage() {
               <div className="mt-3 flex items-center gap-1.5 text-2xs text-nt4">
                 <Info size={11} strokeWidth={1.5} />
                 <span>Estimate unavailable for this source.</span>
+              </div>
+            )}
+
+            {submitError && (
+              <div className="mt-3 flex items-start gap-1.5 text-2xs text-red-400 rounded-md border border-red-900/40 bg-red-950/20 px-3 py-2">
+                <AlertTriangle size={11} strokeWidth={1.5} className="mt-0.5 shrink-0" />
+                <span>{submitError}</span>
               </div>
             )}
 

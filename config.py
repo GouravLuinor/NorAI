@@ -45,6 +45,13 @@ DEFAULT_SEGS_PER_MIN = 10.5
 # Free-trial duration gate (mirrors the env override used in orchestrator).
 MAX_FREE_DURATION_MIN = int(os.environ.get("MAX_FREE_DURATION_MIN", "15"))
 
+# ── Lemon Squeezy billing (P2.5) ──────────────────────────────────────────────
+# Env-driven checkout / customer-portal URLs surfaced by GET /billing.
+# Leave unset until the store exists — /billing returns null for them.
+LEMONSQUEEZY_CHECKOUT_STARTER_URL = os.environ.get("LEMONSQUEEZY_CHECKOUT_STARTER_URL", "")
+LEMONSQUEEZY_CHECKOUT_PRO_URL = os.environ.get("LEMONSQUEEZY_CHECKOUT_PRO_URL", "")
+LEMONSQUEEZY_CUSTOMER_PORTAL_URL = os.environ.get("LEMONSQUEEZY_CUSTOMER_PORTAL_URL", "")
+
 # ── Directory & Database Paths ────────────────────────────────────────────────
 OUTPUTS_DIR = Path("outputs")
 CHECKPOINT_DIR = OUTPUTS_DIR / "tutor"
