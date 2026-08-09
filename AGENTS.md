@@ -7,7 +7,7 @@ NorAI: turns a lecture video into study notes, revision notes, assessments, flas
 ## Layout
 
 - `config.py` — single source of truth for pipeline constants, model name, output dirs, and `get_api_key()`. Pipeline modules import defaults from here.
-- `backend/` — FastAPI app. `main.py` (all routes inline; `backend/routers/` is empty and unused) + `orchestrator.py` (runs the full 18-stage pipeline async, emits progress via SSE).
+- `backend/` — FastAPI app. `main.py` (all routes inline; `backend/routers/` is empty and unused) + `orchestrator.py` (runs the full 18-stage pipeline synchronously inside a `backend/jobs.py` worker thread; progress is persisted to the Lecture DB row and polled by the frontend — no SSE).
 - `tutor/` — RAG tutor: `graph.py`, `nodes.py`, `nodes_retrieval.py`, `retriever.py`, `embedding.py` (custom Chroma embedding fn for gemini-embedding-2), `memory.py`, `quiz_nodes.py`. Has its own `config.py` (re-exports root config) and `retrieval_config.py`.
 - One pipeline-stage dir each: `ingest/`, `transcription/`, `chunking/`, `extract/`, `visual/`, `notes/`, `revision_notes/`, `assessment/`, `flashcards/`, `retrieval/`, `vectordb/`.
 - `frontend/` — React + TypeScript. `src/stores/` (Zustand), `src/pages/`, `src/components/`, `src/types/`.
@@ -44,7 +44,7 @@ Tests: there is NO test framework/pytest. Tests are standalone `test_*.py` scrip
 ## Conventions / gotchas
 
 - All pipeline stages do real LLM/API calls against Gemini (paid/token-metered). Don't run the full pipeline casually or repeatedly for testing — check with the user first.
-- Screenshot/index generation and flashcards often run in subprocesses; lecture IDs propagate via output dirs, not shared globals. Keep lecture isolation when editing.
+- Lecture IDs propagate via output dirs, not shared globals; there is no `subprocess` usage anywhere — the pipeline runs in a job-queue worker thread. Keep lecture isolation when editing.
 - `outputs/` and `.tmp/` are regenerable intermediates — never commit them.
 - Personal opencode scripting notes live in `opencode-guide/` (gitignored) — not project docs.
 

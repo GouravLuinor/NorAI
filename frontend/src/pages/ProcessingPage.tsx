@@ -46,8 +46,11 @@ export function ProcessingPage() {
   useEffect(() => {
     if (!taskId) return
 
-    let pollTimer: ReturnType<typeof setInterval> | null = null
-    let cancelled = false
+    const controller = new AbortController()
+    const BASE_DELAY_MS = 1500
+    const MAX_DELAY_MS = 10000
+    let timer: ReturnType<typeof setTimeout> | null = null
+    let delay = BASE_DELAY_MS
 
     const processEventData = (data: ProcessEvent) => {
       const stage = data.stage
@@ -82,28 +85,45 @@ export function ProcessingPage() {
       setMessage(data.message || '')
     }
 
+    const scheduleNext = () => {
+      timer = setTimeout(poll, delay)
+    }
+
     const poll = async () => {
-      if (cancelled) return
       try {
-        const res = await fetch(`/process/${taskId}/status`)
+        const res = await fetch(`/process/${taskId}/status`, { signal: controller.signal })
+        if (res.status === 404) {
+          // Task no longer exists (e.g. GC'd) — nothing left to poll for.
+          setErrored(true)
+          setMessage('Error: This processing task no longer exists.')
+          return
+        }
+        if (!res.ok) {
+          // Transient server failure — back off and retry.
+          delay = Math.min(delay * 2, MAX_DELAY_MS)
+          scheduleNext()
+          return
+        }
+        delay = BASE_DELAY_MS
         const data = await res.json()
         processEventData(data)
-        if (data.stage === 'complete' || data.stage === 'error') {
-          if (pollTimer) clearInterval(pollTimer)
-        }
-      } catch {
-        // polling continues; transient network errors should not break the flow
+        if (data.stage === 'complete' || data.stage === 'error') return
+        scheduleNext()
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return
+        // Network error — back off and keep trying.
+        delay = Math.min(delay * 2, MAX_DELAY_MS)
+        scheduleNext()
       }
     }
 
     poll()
-    pollTimer = setInterval(poll, 1500)
 
     return () => {
-      cancelled = true
-      if (pollTimer) clearInterval(pollTimer)
+      controller.abort()
+      if (timer) clearTimeout(timer)
     }
-  }, [taskId, finished])
+  }, [taskId])
 
   const activeIdx = activeStage ? STAGES.findIndex(s => s.key === activeStage) : -1
   const inkHeight = activeIdx >= 0 ? `${((activeIdx + 1) / STAGES.length) * 100}%` : `${Math.min(progress, 100)}%`

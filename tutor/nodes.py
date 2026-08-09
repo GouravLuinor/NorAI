@@ -188,7 +188,7 @@ def verify_citations_node(state: dict, config: RunnableConfig) -> dict:
 
 
 # ── generate_answer (Phase 3: context injection) ───────────────────────────────
-def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
+async def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
     """
     Core LLM node. Builds the full prompt, calls Gemini, records the answer.
 
@@ -278,7 +278,7 @@ def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
         google_api_key=get_api_key(),
     )
 
-    response = llm.invoke(prompt_messages)
+    response = await llm.ainvoke(prompt_messages)
         
     # Extract text if the response is a list of blocks (handling 'thinking' models)
     if isinstance(response.content, list):
@@ -307,7 +307,7 @@ def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
 
 # ── save_memory (incremental summarization) ───────────────────────────────────
 
-def save_memory_node(state: dict, config: RunnableConfig) -> dict:
+async def save_memory_node(state: dict, config: RunnableConfig) -> dict:
     """
     Phase 5 / P3.6: condense old turns into a summary record and REMOVE the
     original messages from the persisted transcript once enough NEW turns have
@@ -373,7 +373,7 @@ def save_memory_node(state: dict, config: RunnableConfig) -> dict:
             temperature=0.0,
             google_api_key=get_api_key(),
         )
-        response = llm.invoke([
+        response = await llm.ainvoke([
             SystemMessage(content=_SUMMARIZE_SYSTEM),
             HumanMessage(content=transcript_str),
         ])

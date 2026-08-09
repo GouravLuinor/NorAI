@@ -26,7 +26,7 @@ from typing import List, Optional
 import sqlite3
 import time
 from datetime import datetime, timezone
-from backend.dependencies import get_lecture_db_path, _get_or_create_lecture_graph, sanitize_lecture_id, configure_sqlite
+from backend.dependencies import get_lecture_db_path, _aget_or_create_lecture_graph, sanitize_lecture_id, configure_sqlite
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,7 +35,7 @@ from pydantic import BaseModel
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from backend.lecture_registry import list_lectures, get_lecture
-from backend.dependencies import invoke_tutor
+from backend.dependencies import ainvoke_tutor
 from backend.lecture_registry import get_lecture
 from ingest.ingest import is_youtube_url, is_gdrive_url
 from ingest.ingest import probe_video_metadata
@@ -264,8 +264,7 @@ class UpsertFlashcardRatingsRequest(BaseModel):
 @app.post("/chat")
 async def chat(req: ChatRequest):
     try:
-        result = await asyncio.to_thread(
-            invoke_tutor,
+        result = await ainvoke_tutor(
             thread_id=req.thread_id,
             user_question=req.user_question,
             lecture_title=req.lecture_title,
@@ -286,8 +285,7 @@ async def chat(req: ChatRequest):
 async def chat_stream(req: ChatRequest):
     async def event_generator():
         try:
-            result = await asyncio.to_thread(
-                invoke_tutor,
+            result = await ainvoke_tutor(
                 thread_id=req.thread_id,
                 user_question=req.user_question,
                 lecture_title=req.lecture_title,
@@ -411,9 +409,9 @@ async def create_thread_endpoint(request: Request, lecture_id: str = "default"):
 async def get_thread(thread_id: str, lecture_id: str = "default"):
     """Return the full message history for a thread in a specific lecture."""
     try:
-        graph, _ = _get_or_create_lecture_graph(lecture_id)
+        graph, _ = await _aget_or_create_lecture_graph(lecture_id)
         config = {"configurable": {"thread_id": thread_id}}
-        snapshot = graph.get_state(config)
+        snapshot = await graph.aget_state(config)
         if not snapshot or not snapshot.values:
             return {"thread_id": thread_id, "messages": []}
 
