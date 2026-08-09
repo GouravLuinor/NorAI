@@ -77,10 +77,20 @@ class Lecture(Base):
     source_type: Mapped[str] = mapped_column(String(32), default="upload")  # 'youtube', 'gdrive', 'upload'
     source_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     duration_seconds: Mapped[int] = mapped_column(Integer, default=0)
-    status: Mapped[str] = mapped_column(String(32), default="processing")  # 'processing', 'completed', 'failed'
+    status: Mapped[str] = mapped_column(String(32), default="processing")  # 'queued', 'processing', 'completed', 'failed', 'cancelled'
     
     output_dir: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # P4.1 — DB-backed job queue fields (updated by the pipeline worker).
+    stage: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    stage_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    progress: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    heartbeat_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    queued_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    cancel_requested: Mapped[bool] = mapped_column(Boolean, default=False)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)

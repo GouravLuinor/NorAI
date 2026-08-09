@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P3 — RAG/tutor hardening (P3.1–P3.8, Phase P3 code complete)**: golden-QA evals, hybrid BM25+RRF search, verified citations, context expansion, cross-turn chapter state, RemoveMessage memory hardening, low-context statuses, confidence-gated references | 2026-08-09 13:00 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P4 — Job durability & data layer (P4.1–P4.3)**: DB-backed pipeline job queue + worker pool (supervisor, retry/resume, cancellation, heartbeat recovery), upload/orphan GC, Alembic migrations. P4.4 (async tutor persistence) + P4.5 (SSE) still open | 2026-08-09 14:40 UTC |
 
 ---
 
@@ -33,6 +33,19 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-09] — OpenCode: P4.1–P4.3 job durability, GC & Alembic migrations (Phase P4 partial)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed (offline-verified; no paid pipeline runs)
+- **Files Created / Modified**:
+  - `backend/jobs.py` [NEW] — DB-backed job queue + in-process worker pool. Supervisor thread (idempotent `start_supervisor`, called at app startup) polls the DB: `_recover_stale_once` re-queues/fails `processing` jobs with stale heartbeats, `_claim_queued_once` claims `queued` jobs within global + per-user concurrency caps, `_run_job` runs the pipeline in a bounded `ThreadPoolExecutor` with a heartbeat thread, `on_progress`/`should_cancel` callbacks, `PipelineCancelled` → `cancelled`, retry-with-backoff → `failed` at `PIPELINE_MAX_ATTEMPTS`, upload cleanup after run. `request_cancel` (persists flag + in-memory), `get_job_status` (async, for `/status`), `gc_sweep` (stale uploads + DB-orphaned lecture dirs, boot + daily).
+  - `backend/main.py` — `/process` now enqueues (`status="queued"` + `queued_at`, no raw thread, no upload cleanup ownership); `GET /process/{id}/status` is DB-backed and maps the lifecycle onto the legacy `{stage,message,progress}` poll contract (`completed→stage:"complete"`, `failed/cancelled→stage:"error"`, else live stage) so `ProcessingPage.tsx` is unchanged; new `POST /process/{id}/cancel` → `request_cancel`; startup calls `jobs.start_supervisor()` + `gc_sweep()`. Removed `get_or_create_task_sync`/`run_pipeline` imports + unused `threading`.
+  - `config.py` — P4.1 queue constants (`MAX_CONCURRENT_PIPELINES`, `MAX_PER_USER_PIPELINES`, `PIPELINE_POLL_INTERVAL_SEC`, `PIPELINE_STUCK_TIMEOUT_SEC`, `PIPELINE_HEARTBEAT_INTERVAL_SEC`, `PIPELINE_MAX_ATTEMPTS`, `UPLOAD_GC_AGE_HOURS`, `ORPHAN_DIR_GC_AGE_DAYS`).
+  - `backend/db/models.py` + `__init__.py` — `Lecture` gains `stage`, `stage_message`, `progress`, `attempts`, `heartbeat_at`, `queued_at`, `started_at`, `cancel_requested`; `__init__` re-exports `run_migrations`.
+  - `backend/orchestrator.py` — `run_pipeline(..., on_progress=None, should_cancel=None)` + `PipelineCancelled`; transient dirs removed on every outcome (P4.2).
+  - Alembic infra: `alembic.ini` [NEW], `backend/db/migrate.py` [NEW] (`run_migrations`), `migrations/` [NEW] (`0001_initial`, `0002_lecture_pipeline_job_columns` with legacy `create_all` absorption + backfill), `requirements.txt` +`alembic`, `backend/test_migrations.py` [NEW] (13 checks).
+- **Verification**: `py_compile` OK on all touched modules; `backend/test_migrations.py` — 13/13 green (fresh, legacy, idempotent); temp-DB smoke test of the full queue lifecycle (queued status → claim → stale-heartbeat recovery → cancel request → thread-side progress persistence → unknown-id 404/False) green — this caught + fixed a real bug where `_recover_stale_once`/`_claim_queued_once` called `.execute()` on the session *factory* (supervisor would crash on first pass). `import backend.main` OK, all three `/process*` routes registered. Frontend untouched (`ProcessingPage.tsx` poll contract preserved).
+- **Hand-off Notes / Next Steps**: Uncommitted — commit only if user asks. P4.4 (async tutor persistence) + P4.5 (SSE) remain open; supervisor is single-worker-assumption (needs a DB claim-lock if uvicorn `--workers > 1`). `rank-bm25`/`alembic` are new runtime deps — `pip install -r requirements.txt` in fresh envs. P4 DoD (restart survival) not validated with a paid live run — do that when a pipeline run is next consented.
 
 ### [2026-08-09] — OpenCode: Phase P3 retrieval/tutor hardening (P3.1–P3.8, code complete)
 - **Agent**: OpenCode (CLI)
