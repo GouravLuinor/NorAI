@@ -22,6 +22,8 @@ from backend.lecture_registry import create_lecture, update_lecture_title
 from backend.ratelimit import snapshot_llm_calls
 from tutor.embedding import snapshot_embed_batches
 from backend.estimator import estimate_pipeline, record_metrics
+# P2: persist Lecture status + meter quota minutes for the owning user.
+from backend.usage import record_pipeline_outcome
 
 # ── All pipeline imports ────────────────────────────────────────────────────
 from ingest.ingest import process_source
@@ -123,6 +125,7 @@ def run_pipeline(
     source_type: str,
     url: str | None = None,
     file_path: str | None = None,
+    user_id: str | None = None,
 ):
     # P1.8: snapshot counters + clock for the metrics record.
     import time
@@ -133,6 +136,7 @@ def run_pipeline(
         "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "lecture_id": task_id,
         "source_type": source_type,
+        "title": None,
         "duration_sec": None,
         "num_segments": None,
         "segments_per_chunk": None,
@@ -289,6 +293,7 @@ def run_pipeline(
             with open(outline_path, encoding="utf-8") as f:
                 outline_data = _json.load(f)
             real_title = outline_data.get("lecture_title", "Untitled Lecture")
+            _metrics["title"] = real_title
             update_lecture_title(task_id, real_title)
         except Exception:
             pass
@@ -482,8 +487,33 @@ def run_pipeline(
 
         # ── Done ───────────────────────────────────────────────────────────
         _write_metrics(completed=True)
+        # P2: persist Lecture status + meter quota minutes (success only).
+        try:
+            record_pipeline_outcome(
+                user_id=user_id,
+                lecture_id=task_id,
+                duration_sec=_metrics.get("duration_sec"),
+                completed=True,
+                title=_metrics.get("title"),
+                output_dir=out,
+                llm_calls=_metrics.get("llm_calls", 0),
+            )
+        except Exception as e:
+            logger.warning(f"Failed to record pipeline usage outcome: {e}")
         mark_complete_sync(task_id)
 
     except Exception as exc:
         _write_metrics(completed=False, error=str(exc))
+        # P2: persist Lecture status='failed' (no quota metering on failure).
+        try:
+            record_pipeline_outcome(
+                user_id=user_id,
+                lecture_id=task_id,
+                duration_sec=_metrics.get("duration_sec"),
+                completed=False,
+                error_message=str(exc)[:4000],
+                output_dir=out if "out" in locals() else None,
+            )
+        except Exception as e:
+            logger.warning(f"Failed to record pipeline failure outcome: {e}")
         mark_error_sync(task_id, str(exc))

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
 import { LandingPage } from './pages/LandingPage'
 import { PricingPage } from './pages/PricingPage'
+import { BillingPage } from './pages/BillingPage'
 import { UploadPage } from './pages/UploadPage'
 import { ProcessingPage } from './pages/ProcessingPage'
 import { Workspace } from './components/layout/Workspace'
@@ -40,6 +41,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingRouteWrapper />} />
           <Route path="/pricing" element={<PricingRouteWrapper />} />
+          <Route path="/billing" element={<BillingPage />} />
           <Route path="/app" element={<UploadPage />} />
           <Route path="/process/:taskId" element={<ProcessingPage />} />
           <Route path="/workspace" element={<Workspace />} />

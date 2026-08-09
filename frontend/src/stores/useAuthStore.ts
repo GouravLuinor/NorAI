@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabaseClient'
+import { authHeaders } from '../lib/authHeaders'
 
 export interface UserProfile {
   id: string
@@ -13,9 +14,19 @@ export interface UserProfile {
   usedMinutesThisMonth?: number
 }
 
+export interface QuotaInfo {
+  plan_tier: 'free' | 'starter' | 'pro'
+  subscription_status: string
+  monthly_minutes_quota: number
+  used_minutes_this_month: number
+  remaining_minutes: number
+  is_anonymous: boolean
+}
+
 interface AuthState {
   user: UserProfile | null
   token: string | null
+  quota: QuotaInfo | null
   isAuthModalOpen: boolean
   authModalTab: 'login' | 'signup'
   openAuthModal: (tab?: 'login' | 'signup') => void
@@ -23,6 +34,7 @@ interface AuthState {
   setSession: (token: string, user: UserProfile) => void
   logout: () => Promise<void>
   initAuth: () => Promise<void>
+  refreshQuota: () => Promise<void>
 }
 
 const mapSession = (session: Session | null) => {
@@ -40,9 +52,10 @@ const mapSession = (session: Session | null) => {
   }
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
+  quota: null,
   isAuthModalOpen: false,
   authModalTab: 'login',
 
@@ -51,9 +64,49 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setSession: (token, user) => set({ token, user, isAuthModalOpen: false }),
 
+  refreshQuota: async () => {
+    const { token } = get()
+    if (!token) {
+      set({ quota: null })
+      return
+    }
+    try {
+      const res = await fetch('/quota', { headers: authHeaders() })
+      if (!res.ok) {
+        set({ quota: null })
+        return
+      }
+      const quota: QuotaInfo = await res.json()
+      const current = get().user
+      // Only create a new `user` object when subscription fields actually
+      // changed. A fresh reference every call would re-trigger effects that
+      // depend on `user` (e.g. BillingPage) -> infinite refetch loop.
+      if (
+        current &&
+        (current.subscriptionTier !== quota.plan_tier ||
+          current.monthlyQuotaMinutes !== quota.monthly_minutes_quota ||
+          current.usedMinutesThisMonth !== quota.used_minutes_this_month)
+      ) {
+        set({
+          quota,
+          user: {
+            ...current,
+            subscriptionTier: quota.plan_tier,
+            monthlyQuotaMinutes: quota.monthly_minutes_quota,
+            usedMinutesThisMonth: quota.used_minutes_this_month,
+          },
+        })
+      } else {
+        set({ quota })
+      }
+    } catch {
+      set({ quota: null })
+    }
+  },
+
   logout: async () => {
     await supabase.auth.signOut()
-    set({ token: null, user: null })
+    set({ token: null, user: null, quota: null })
   },
 
   initAuth: async () => {
@@ -64,6 +117,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     supabase.auth.onAuthStateChange((_event, session) => {
       const next = mapSession(session)
       set({ ...next, isAuthModalOpen: false })
+      if (next.token) {
+        void get().refreshQuota()
+      } else {
+        set({ quota: null })
+      }
     })
+
+    if (token) {
+      await get().refreshQuota()
+    }
   },
 }))

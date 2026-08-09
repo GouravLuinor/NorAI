@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Check, ArrowRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
+import { useAuthStore } from '../stores/useAuthStore'
 import type { ProcessEvent } from '../types'
 
 interface StageInfo {
@@ -60,6 +61,7 @@ export function ProcessingPage() {
         setProgress(100)
         setMessage('All done! Your workspace is ready.')
         setFinished(true)
+        useAuthStore.getState().refreshQuota()
         return
       }
       if (stage === 'error') {

@@ -30,6 +30,14 @@ export default defineConfig({
       '/study-guide': 'http://localhost:8000',
       '/concept-map': 'http://localhost:8000',
       '/quota': 'http://localhost:8000',
+      // /billing is BOTH an SPA route and an API endpoint: bypass the proxy for
+      // HTML navigations (serve the app), proxy JSON fetches (Accept: */*) to
+      // the backend.
+      '/billing': {
+        target: 'http://localhost:8000',
+        bypass: (req) =>
+          (req.headers.accept ?? '').includes('text/html') ? '/index.html' : undefined,
+      },
     },
   },
 })

@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from 'react'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useThreadStore, getOrCreateLabel } from '../../stores/useThreadStore'
 import { useLectureStore } from '../../stores/useLectureStore'
+import { useAuthStore } from '../../stores/useAuthStore'
 import { PanelLeftClose, Trash2 } from 'lucide-react'
 import { useToastStore } from '../../stores/useToastStore'
 import { ThemeToggle } from '../ui/ThemeToggle'
@@ -9,6 +10,20 @@ import { Button } from '../ui/Button'
 import { IconButton } from '../ui/IconButton'
 import { FOCUS_RING } from '../ui/shared'
 import { useNavigate } from 'react-router-dom'
+import type { QuotaInfo } from '../../stores/useAuthStore'
+
+
+const planLabel = (tier?: string) =>
+  tier === 'pro' ? 'Pro Student' : tier === 'starter' ? 'Starter' : 'Free Trial'
+
+const quotaUsed = (q: QuotaInfo | null) => q?.used_minutes_this_month ?? 0
+
+const quotaPct = (q: QuotaInfo | null) => {
+  const max = Math.max(1, q?.monthly_minutes_quota ?? 1)
+  const used = q?.used_minutes_this_month ?? 0
+  const pct = Math.min(100, Math.round((used / max) * 100))
+  return `${pct}%`
+}
 
 
 interface SidebarProps {
@@ -37,7 +52,16 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
   const loadLectures        = useLectureStore(s => s.loadLectures)
   const navigate = useNavigate()
 
+  // Quota badge (P2.4): live data from GET /quota.
+  const quota          = useAuthStore(s => s.quota)
+  const refreshQuota   = useAuthStore(s => s.refreshQuota)
+  const authToken      = useAuthStore(s => s.token)
+
   const switchCooldownRef = useRef(false)
+
+  useEffect(() => {
+    if (authToken) void refreshQuota()
+  }, [authToken, refreshQuota])
 
   useEffect(() => {
     if (!activeLectureId || activeLectureId === 'default') return
@@ -207,19 +231,36 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
         <div className="px-3.5 py-2">
           <div className="p-2 rounded-lg bg-ns2 border border-bdr text-11 font-sans">
             <div className="flex items-center justify-between mb-1">
-              <span className="font-semibold text-nt text-10 uppercase tracking-wider">Free Trial</span>
+              <span className="font-semibold text-nt text-10 uppercase tracking-wider">
+                {planLabel(quota?.plan_tier)}
+              </span>
               <button
-                onClick={() => navigate('/pricing')}
+                onClick={() => navigate('/billing')}
                 className="text-10 text-np font-medium hover:underline cursor-pointer"
               >
-                Upgrade
+                {quota && quota.plan_tier !== 'free' ? 'Manage' : 'Upgrade'}
               </button>
             </div>
-            <div className="w-full bg-ns4 h-1.5 rounded-full overflow-hidden mb-1">
-              <div className="bg-np h-full rounded-full w-1/4"></div>
+            <div
+              className="w-full bg-ns4 h-1.5 rounded-full overflow-hidden mb-1"
+              role="progressbar"
+              aria-valuenow={quotaUsed(quota)}
+              aria-valuemin={0}
+              aria-valuemax={Math.max(1, quota?.monthly_minutes_quota ?? 1)}
+              aria-label="Monthly lecture minutes used"
+            >
+              <div
+                className="bg-np h-full rounded-full transition-all duration-300"
+                style={{ width: quotaPct(quota) }}
+              />
             </div>
             <div className="text-10 text-nt3 flex justify-between">
-              <span>Used: 0 / 15 mins</span>
+              <span>
+                Used: {quota?.used_minutes_this_month ?? 0} / {quota?.monthly_minutes_quota ?? 15} mins
+              </span>
+              {quota && quota.plan_tier === 'free' && (
+                <span className="text-nt4">Free trial</span>
+              )}
             </div>
           </div>
         </div>
