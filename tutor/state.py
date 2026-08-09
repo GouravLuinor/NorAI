@@ -91,3 +91,9 @@ class ChatState(TypedDict):
     retrieved_chunks: list
     retrieved_images: list
     answer: str
+    # P3.3: post-verified Sources citations from the latest answer.
+    verified_citations: list
+    # P3.7: retrieval outcome — "ok" | "empty" | "error"
+    retrieval_status: str
+    # P3.5: chapter explicitly referenced in a previous turn (persisted)
+    last_chapter_id: int | None

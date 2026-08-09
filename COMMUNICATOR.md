@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P2 — billing & quota (P2.1–P2.5, Phase P2 closed)**: usage metering, pre-spend quota enforcement, lecture status persistence, live quota badge, billing page; fixed Vite `/billing` SPA-vs-API proxy collision + refreshQuota infinite refetch loop | 2026-08-09 08:20 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P3 — RAG/tutor hardening (P3.1–P3.8, Phase P3 code complete)**: golden-QA evals, hybrid BM25+RRF search, verified citations, context expansion, cross-turn chapter state, RemoveMessage memory hardening, low-context statuses, confidence-gated references | 2026-08-09 13:00 UTC |
 
 ---
 
@@ -33,6 +33,23 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-09] — OpenCode: Phase P3 retrieval/tutor hardening (P3.1–P3.8, code complete)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed (offline-verified; no paid pipeline runs)
+- **Files Created / Modified**:
+  - `tutor/evals/` [NEW] — `golden_sets.py`, `metrics.py` (MRR/hit-rate), `runner.py`, `test_evals.py` (P3.1).
+  - `tutor/bm25.py` [NEW] (P3.2) + `tutor/retriever.py` — hybrid dense+BM25 RRF fusion (60/40), chunks carry `chunk_id`/`relevant`/`distance`; `tutor/test_hybrid.py` [NEW]. `requirements.txt` gained `rank-bm25`.
+  - `tutor/citations.py` [NEW] + `verify_citations_node` (`tutor/nodes.py`) + graph edge `generate_answer → verify_citations → save_memory` (`tutor/graph.py`) + backend `verified_citations` in stream + thread snapshot (`backend/dependencies.py`, `backend/main.py`) + frontend `VerifiedCitation` type + `buildReferences` verified-only path (`frontend/src/types/index.ts`, `frontend/src/lib/references.ts`, 4 call sites) — P3.3.
+  - `tutor/context_expand.py` [NEW] + `tutor/test_context_expand.py` [NEW] — P3.4.
+  - `tutor/nodes_retrieval.py` — `detect_chapter_node` writes `last_chapter_id`, anaphoric follow-up re-scoping, chapter hint in rewrite prompt; `tutor/test_chapter_tracking.py` [NEW] — P3.5.
+  - `tutor/nodes.py` — `save_memory_node` returns `RemoveMessage`s for summarised turns (bounded checkpoint store) + `_recent_window` char-budget (8000); `test_memory_nodes.py` updated — P3.6.
+  - `tutor/nodes_retrieval.py`, `tutor/nodes.py`, `tutor/prompts.py` — `retrieval_status` ("ok"/"empty"/"error") + `confidence_tag` strong/weak + `_RETRIEVAL_ERROR_NOTE` + `build_context_block(status=...)`; `tutor/test_low_confidence.py` [NEW] — P3.7.
+  - P3.8 frontend confidence-gating confirmed present (`references.ts` `isConfident` + rawText fallback gating).
+  - Docs: `ROADMAP.md` P3.1–P3.8 ✅ + P3 goal line; `PROJECT_PROGRESS.md` P3 entry; `COMMUNICATOR.md`.
+- **Verification**: all offline Python tests green — evals, hybrid, citations, context_expand, chapter_tracking, memory_nodes, low_confidence, graph_topology (now asserts the P3.3 edge chain), chunker. `tsc -b && vite build` green; `oxlint` 0 errors (only pre-existing warnings).
+- **Hand-off Notes / Next Steps**: Uncommitted — commit only if user asks. Adaptive top-k still open inside P3.2; P4 (job durability/data layer) is the next roadmap phase. `rank-bm25` is a new runtime dep — remember to `pip install -r requirements.txt` in any fresh env.
+
 
 ### [2026-08-09] — OpenCode: P2 billing & quota (Phase P2 closed)
 - **Agent**: OpenCode (CLI)

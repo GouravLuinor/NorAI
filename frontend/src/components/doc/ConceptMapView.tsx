@@ -106,7 +106,7 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
           })
 
           useThreadStore.getState().setLiveReferences(
-            buildReferences(chunk.data.retrieved_chunks ?? [], chunk.data.retrieved_images ?? [])
+            buildReferences(chunk.data.retrieved_chunks ?? [], chunk.data.retrieved_images ?? [], '', chunk.data.verified_citations ?? [])
           )
         }
       }

@@ -11,14 +11,17 @@ Design:
   • If an index doesn't exist yet (build scripts haven't been run), raises
     a clear IndexNotBuiltError rather than a cryptic Chroma exception.
 
-RetrievedChunk schema (study notes):
+RetrievedChunk schema (study notes, P3.2 hybrid):
     {
         "text":         str,
         "heading":      str,
         "heading_path": str,
         "chapter_id":   int | None,
         "source":       str,
-        "distance":     float,   # cosine distance (lower = more similar)
+        "distance":     float,    # cosine distance (lower = more similar); None
+                                  # if the chunk only matched via BM25
+        "chunk_id":     str,      # stable Chroma id (used for verified citations, P3.3)
+        "relevant":     bool,     # distance <= CONFIDENCE_THRESHOLD (P3.8 gating)
     }
 
 RetrievedImage schema (screenshots):
@@ -45,7 +48,12 @@ from tutor.retrieval_config import (
     TOP_K,
     SCREENSHOT_COLLECTION_NAME,
     TOP_K_IMAGES,
+    ADAPTIVE_TOP_K_CANDIDATES,
+    MIN_RESULTS,
+    RRF_K,
+    CONFIDENCE_THRESHOLD,
 )
+from tutor.bm25 import BM25Okapi, tokenize, reciprocal_rank_fusion
 
 
 class IndexNotBuiltError(RuntimeError):
@@ -99,6 +107,75 @@ def _get_screenshot_collection(chroma_dir: Optional[str] = None):
     return _get_collection_by_name(SCREENSHOT_COLLECTION_NAME, role="query", chroma_dir=chroma_dir)
 
 
+# ── Hybrid lexical index (BM25) ───────────────────────────────────────────────
+
+@lru_cache(maxsize=10)
+def _get_bm25_corpus(chroma_dir: Optional[str] = None):
+    """
+    Lazy BM25 corpus over every document in the notes collection, cached per
+    chroma_dir. Built once per process — cheap relative to the embed cost.
+    Returns {"ids", "docs", "texts", "metadatas"} aligned index-wise.
+    """
+    collection = _get_notes_collection(chroma_dir=chroma_dir)
+    got = collection.get(include=["documents", "metadatas"])
+    ids = list(got.get("ids", []))
+    documents = got.get("documents", []) or []
+    metadatas = got.get("metadatas", []) or []
+    docs = [tokenize(d) for d in documents]
+    bm25 = BM25Okapi(docs) if docs else None
+    return {"ids": ids, "docs": docs, "texts": documents, "metadatas": metadatas, "bm25": bm25}
+
+
+def _chunk_from_doc(doc_id: str, text: str, meta: dict, distance: Optional[float]) -> dict:
+    """Build a RetrievedChunk dict, computing the P3.8 `relevant` flag."""
+    return {
+        "text": text,
+        "heading": meta.get("heading", ""),
+        "heading_path": meta.get("heading_path", ""),
+        "chapter_id": meta.get("chapter_id") or None,
+        "source": meta.get("source", ""),
+        "distance": distance,
+        "chunk_id": doc_id,
+        "relevant": distance is not None and distance <= CONFIDENCE_THRESHOLD,
+        "context": "",
+    }
+
+
+def _attach_context(chunks: list[dict]) -> list[dict]:
+    """P3.4: attach parent/sibling section context from the source .md file.
+    Best-effort: unreadable/missing files leave context empty."""
+    from tutor.context_expand import expand_context
+
+    for c in chunks:
+        try:
+            c["context"] = expand_context(c)
+        except Exception:
+            c["context"] = ""
+    return chunks
+
+
+def _rrf_merge(
+    cosine_ids: list[str],
+    bm25_ids: list[str],
+    by_id: dict,
+    k: int,
+    min_results: int = MIN_RESULTS,
+) -> list[dict]:
+    """
+    Fuse cosine + BM25 rankings with Reciprocal Rank Fusion, then adaptively trim:
+    drop results above CONFIDENCE_THRESHOLD unless fewer than min_results remain
+    (kept as weak context, flagged relevant=False).
+    """
+    fused_ids = reciprocal_rank_fusion([cosine_ids, bm25_ids], k=k)
+    chunks = [by_id[did] for did in fused_ids if did in by_id]
+
+    strong = [c for c in chunks if c["relevant"]]
+    if len(strong) >= min_results:
+        return strong
+    # Not enough strong matches: keep the best few as weak context
+    return chunks[:min_results]
+
+
 # ── Public API ─────────────────────────────────────────────────────────────────
 
 def retrieve(
@@ -106,18 +183,26 @@ def retrieve(
     chapter_id: Optional[int] = None,
     k: int = TOP_K,
     output_dir: Optional[str] = None,
+    hybrid: bool = True,
+    candidates: int = ADAPTIVE_TOP_K_CANDIDATES,
 ) -> list[dict]:
     """
     Query the study-notes index and return the top-k most relevant chunks.
 
+    P3.2 hybrid: cosine (Chroma) candidates and BM25 candidates are fused with
+    Reciprocal Rank Fusion; results are then confidence-trimmed (P3.8).
+
     Args:
         query:      The user's question (or rewritten query).
         chapter_id: If set, restrict results to this chapter.
-        k:          Number of results to return.
+        k:          Number of results to return (upper bound).
         output_dir: If set, use this directory's Chroma index instead of default.
+        hybrid:     Enable BM25 + RRF fusion (default True).
+        candidates: Candidate pool size per system for fusion.
 
     Returns:
-        List of RetrievedChunk dicts, ordered by ascending cosine distance.
+        List of RetrievedChunk dicts (with chunk_id + relevant), ordered by
+        descending fused relevance. Length is between MIN_RESULTS and k.
 
     Raises:
         IndexNotBuiltError: if the notes index hasn't been built yet.
@@ -129,31 +214,52 @@ def retrieve(
     if chapter_id is not None:
         where = {"chapter_id": {"$eq": chapter_id}}
 
+    n_results = candidates if hybrid else max(k, candidates)
     results = collection.query(
         query_texts=[query],
-        n_results=k,
+        n_results=n_results,
         where=where,
         include=["documents", "metadatas", "distances"],
     )
 
-    chunks: list[dict] = []
-    for doc, meta, dist in zip(
+    cosine_ids = list(results["ids"][0])
+    by_id: dict = {}
+    for doc_id, doc, meta, dist in zip(
+        cosine_ids,
         results["documents"][0],
         results["metadatas"][0],
         results["distances"][0],
     ):
-        chunks.append(
-            {
-                "text": doc,
-                "heading": meta.get("heading", ""),
-                "heading_path": meta.get("heading_path", ""),
-                "chapter_id": meta.get("chapter_id") or None,
-                "source": meta.get("source", ""),
-                "distance": dist,
-            }
-        )
+        by_id[doc_id] = _chunk_from_doc(doc_id, doc, meta, dist)
 
-    return chunks
+    if not hybrid:
+        return _attach_context([by_id[did] for did in cosine_ids if did in by_id][:k])
+
+    # BM25 candidates (optionally chapter-filtered to mirror the cosine where)
+    bm25_corpus = _get_bm25_corpus(chroma_dir=chroma_dir)
+    bm25_ids: list[str] = []
+    if bm25_corpus["bm25"] is not None:
+        q_tokens = tokenize(query)
+        scores = bm25_corpus["bm25"].get_scores(q_tokens)
+        ranked = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
+        for i in ranked:
+            if scores[i] <= 0:
+                continue
+            meta = bm25_corpus["metadatas"][i] or {}
+            if chapter_id is not None and (meta.get("chapter_id") or None) != chapter_id:
+                continue
+            doc_id = bm25_corpus["ids"][i]
+            bm25_ids.append(doc_id)
+            if doc_id not in by_id:
+                by_id[doc_id] = _chunk_from_doc(
+                    doc_id,
+                    bm25_corpus["texts"][i],
+                    meta,
+                    None,
+                )
+
+    merged = _rrf_merge(cosine_ids, bm25_ids, by_id, k=RRF_K)
+    return _attach_context(merged[:k])
 
 
 def retrieve_images(

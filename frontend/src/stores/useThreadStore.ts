@@ -224,6 +224,7 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
       messages: Array<{ id: string; role: string; content: string }>
       last_retrieved_chunks?: RetrievedChunk[]
       last_retrieved_images?: RetrievedImage[]
+      verified_citations?: import('../types').VerifiedCitation[]
     }>(
       `/threads/${threadId}?lecture_id=${getLectureId()}`,
       { signal: controller.signal },
@@ -256,7 +257,7 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
 
       let refs = s.liveReferences;
       if (isCurrentThread) {
-        refs = buildReferences(data?.last_retrieved_chunks ?? [], data?.last_retrieved_images ?? []);
+        refs = buildReferences(data?.last_retrieved_chunks ?? [], data?.last_retrieved_images ?? [], '', data?.verified_citations ?? []);
       }
 
       return {

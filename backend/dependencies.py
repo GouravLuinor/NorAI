@@ -173,6 +173,7 @@ def invoke_tutor(
                             "assistant_message_id": last_ai.id,
                             "retrieved_chunks":  snapshot.values.get("retrieved_chunks", []),
                             "retrieved_images":  snapshot.values.get("retrieved_images", []),
+                            "verified_citations": snapshot.values.get("verified_citations", []),
                             "chapter_id":        snapshot.values.get("chapter_id"),
                             "thread_id":         thread_id,
                         }
@@ -205,6 +206,7 @@ def invoke_tutor(
             "assistant_message_id": assistant_message_id,
             "retrieved_chunks":  result.get("retrieved_chunks", []),
             "retrieved_images":  result.get("retrieved_images", []),
+            "verified_citations": result.get("verified_citations", []),
             "chapter_id":        result.get("chapter_id"),
             "thread_id":         thread_id,
         }

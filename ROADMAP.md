@@ -84,13 +84,13 @@ NorAI has a working 18-stage multimodal pipeline, a genuinely grounded RAG tutor
 
 | # | Item | Status | Ref | Notes |
 |---|---|---|---|---|
-| P3.1 | Golden-QA eval suite | ⬜ | `tutor/` (none exists) | No MRR/hit-rate benchmarks anywhere. Build per-lecture golden sets + MRR/hit-rate tracking; calibrate `CONFIDENCE_THRESHOLD = 0.35` (`retrieval_config.py:48`) with data. |
-| P3.2 | Hybrid search + reranking | ⬜ | `tutor/retriever.py:128-137` | Cosine-only, fixed `top_k=5/2`. Add BM25/lexical component and/or cheap reranker; adaptive top-k. |
-| P3.3 | Verified citations | ⬜ | `prompts.py:191-205`, `nodes.py:206-213` | Citations are model-generated section names, never post-checked against retrieved chunks. Return chunk IDs from the graph and verify cited sections. |
-| P3.4 | Chunk context expansion | ⬜ | `tutor/chunker.py:126-136` | Hits are atomic leaves; no parent-section/sibling pull. Add context window around matches. |
-| P3.5 | Cross-turn chapter state | ⬜ | `tutor/nodes_retrieval.py:78-122` | Chapter detection is regex-only and not carried across turns. |
-| P3.6 | Fix memory degradation | ⬜ | `tutor/nodes.py:30-31,95-111,251-326` | Transcript grows unboundedly (summaries added, turns never removed); 6-turn window is token-blind; only newest summary kept. Add token budgets + trimming + rolling re-summarization. |
-| P3.7 | Graceful low-context handling | ⬜ | `nodes_retrieval.py:247-252`, `nodes.py:189-193` | Retrieval failure returns `[]` with only a prompt-level disclaimer; low-confidence is all-or-nothing (4 good + 1 bad chunks → no flag). |
+| P3.1 | Golden-QA eval suite | ✅ | `tutor/evals/` | Per-lecture golden sets (`golden_sets.py`), MRR/hit-rate runner (`runner.py`), calibration + regression tests (`test_evals.py`). |
+| P3.2 | Hybrid search + reranking | ✅ | `tutor/bm25.py`, `retriever.py` | Rank-BM25 lexical index + cosine dense, RRF fusion, `chunk_id`/`relevant` returned; `test_hybrid.py`. (Adaptive top-k not yet done.) |
+| P3.3 | Verified citations | ✅ | `tutor/citations.py`, `nodes.py:verify_citations_node`, `graph.py`, `backend/main.py`, `frontend` | Deterministic post-check of cited section names against retrieved chunk IDs; unverified citations never render (`test_citations.py`). |
+| P3.4 | Chunk context expansion | ✅ | `tutor/context_expand.py` | Pulls parent-section + siblings around leaf hits (`test_context_expand.py`). |
+| P3.5 | Cross-turn chapter state | ✅ | `tutor/nodes_retrieval.py`, `state.py` | `last_chapter_id` persisted; anaphoric follow-ups re-scope retrieval (`test_chapter_tracking.py`). |
+| P3.6 | Fix memory degradation | ✅ | `tutor/nodes.py` | Summarised turns now removed via `RemoveMessage` (bounded store) + char-budget prompt window (`test_memory_nodes.py`). |
+| P3.7 | Graceful low-context handling | ✅ | `nodes_retrieval.py`, `nodes.py`, `prompts.py` | `retrieval_status` ("ok"/"empty"/"error") + per-chunk `confidence_tag` ("strong"/"weak") + `_RETRIEVAL_ERROR_NOTE` (`test_low_confidence.py`). |
 
 ---
 
@@ -138,7 +138,7 @@ NorAI has a working 18-stage multimodal pipeline, a genuinely grounded RAG tutor
 - **P0**: no unauthenticated read of any lecture artifact; webhook rejects unsigned events in prod; uploads size/type-capped; SSRF blocked.
 - **P1**: a 22-min lecture's pipeline runs ≤ 25% of current cost/latency; re-running a finished lecture with unchanged inputs costs ~0 API calls. **Validated 2026-08-08** on an ~8-min YouTube lecture: first run = **17 Gemini calls** (15 generateContent + 2 embed batches — extraction was 6 chunks at 15 seg/chunk vs ~40 at the old 5, selector Pass 1 reused the visual analysis, embeds batched 20/call), re-run of the same lecture id = **0 Gemini calls** (every paid stage cache-hit: extraction, outline, visual analysis, screenshot selection, notes artifacts; both Chroma indexes diff-synced with added 0 / removed 0).
 - **P2**: quota is enforced before any Gemini spend for anonymous + paid users; lecture status is accurate; badge reflects real usage.
-- **P3**: golden-QA MRR/hit-rate tracked per lecture; citations verified against retrieved chunk IDs; ≥1 improvement to retrieval from P3.2–P3.5 proven by evals.
+- **P3**: golden-QA MRR/hit-rate tracked per lecture (✅ eval suite + hybrid BM25 in place; calibration threshold sweep covered in `test_evals.py`); citations verified against retrieved chunk IDs (✅); ≥1 improvement to retrieval from P3.2–P3.5 proven by evals (hybrid RRF — `test_hybrid.py` + golden-set regressions).
 - **P4**: pipeline survives a backend restart; failed runs leave no orphaned dirs; schema changes are versioned.
 - **P5**: CI green on every push; clean-install works from `.env.example`; frontend ships split bundles and reports render errors.
 - **P6**: streaming is token-level; a flashcard deck exports to Anki; every citation can seek the video.

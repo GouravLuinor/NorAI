@@ -35,6 +35,11 @@ def test_graph_topology():
     assert ("retrieve", "generate_answer") in edges, "Missing edge: retrieve -> generate_answer"
     assert ("retrieve_images", "generate_answer") in edges, "Missing edge: retrieve_images -> generate_answer"
 
+    # P3.3: answer → citation verification → memory → END
+    assert ("generate_answer", "verify_citations") in edges, "Missing edge: generate_answer -> verify_citations"
+    assert ("verify_citations", "save_memory") in edges, "Missing edge: verify_citations -> save_memory"
+    assert ("save_memory", "__end__") in edges, "Missing edge: save_memory -> END"
+
     print("PASS test_graph_topology")
 
 

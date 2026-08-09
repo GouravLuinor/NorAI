@@ -133,7 +133,7 @@ const handleSend = useCallback(async (text: string) => {
 
         // 4. Build references (only show if still on the target thread)
         if (activeThreadRef.current === targetThreadId) {
-          setLiveReferences(buildReferences(data.retrieved_chunks ?? [], data.retrieved_images ?? []))
+          setLiveReferences(buildReferences(data.retrieved_chunks ?? [], data.retrieved_images ?? [], '', data.verified_citations ?? []))
         }
       }
     } catch (err: any) {
