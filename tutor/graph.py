@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, START, END
 from tutor.state import ChatState
-from tutor.nodes import load_memory_node, generate_answer_node, save_memory_node
+from tutor.nodes import load_memory_node, generate_answer_node, save_memory_node, verify_citations_node
 from tutor.nodes_retrieval import (
     rewrite_query_node, retrieve_node, retrieve_images_node, detect_chapter_node
 )
@@ -20,6 +20,7 @@ def build_graph(checkpointer, output_dir=None):
     builder.add_node("retrieve", 
         lambda state, config: retrieve_node(state, config, output_dir))
     builder.add_node("generate_answer", generate_answer_node)
+    builder.add_node("verify_citations", verify_citations_node)   # P3.3
     builder.add_node("save_memory", save_memory_node)
     builder.add_node("execute_command", 
         lambda state, config: execute_command(state, config, output_dir))
@@ -86,7 +87,8 @@ def build_graph(checkpointer, output_dir=None):
     builder.add_edge("rewrite_query", "retrieve_images")
     builder.add_edge("retrieve", "generate_answer")
     builder.add_edge("retrieve_images", "generate_answer")
-    builder.add_edge("generate_answer", "save_memory")
+    builder.add_edge("generate_answer", "verify_citations")   # P3.3
+    builder.add_edge("verify_citations", "save_memory")
     builder.add_edge("save_memory", END)
 
     return builder.compile(checkpointer=checkpointer)

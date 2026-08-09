@@ -104,7 +104,7 @@ export function HighlightAsk() {
 
       // ── Build references from the response ──────────────────────────────
       useThreadStore.getState().setLiveReferences(
-        buildReferences(data.retrieved_chunks ?? [], data.retrieved_images ?? [])
+        buildReferences(data.retrieved_chunks ?? [], data.retrieved_images ?? [], '', data.verified_citations ?? [])
       )
 
       const cleanAnswer = data.answer.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()

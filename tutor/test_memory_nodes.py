@@ -17,6 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage  # noqa: E402
+from langgraph.graph.message import RemoveMessage  # noqa: E402
 
 from tutor.nodes import (  # noqa: E402
     load_memory_node,
@@ -24,15 +25,17 @@ from tutor.nodes import (  # noqa: E402
     _SUMMARY_PREFIX,
     _SUMMARY_RETAIN_RECENT,
     _SUMMARY_TRIGGER_MSG_COUNT,
+    _recent_window,
 )
 
 
 def _conversation(num_turns: int):
-    """Build num_turns Human/AI message pairs."""
+    """Build num_turns Human/AI message pairs with explicit ids (the checkpointer
+    assigns ids in production; explicit ids make RemoveMessage testable)."""
     msgs = []
     for i in range(num_turns):
-        msgs.append(HumanMessage(content=f"question {i}"))
-        msgs.append(AIMessage(content=f"answer {i}"))
+        msgs.append(HumanMessage(content=f"question {i}", id=f"h{i}"))
+        msgs.append(AIMessage(content=f"answer {i}", id=f"a{i}"))
     return msgs
 
 
@@ -110,16 +113,66 @@ def test_save_fires_above_trigger_and_preserves_recent():
     finally:
         lgg.ChatGoogleGenerativeAI = original
 
-    assert len(out["messages"]) == 1
-    summary = out["messages"][0]
-    assert isinstance(summary, SystemMessage)
+    # P3.6: summarised messages are removed (RemoveMessage) + one summary record.
+    removals = [m for m in out["messages"] if isinstance(m, RemoveMessage)]
+    summaries = [m for m in out["messages"] if isinstance(m, SystemMessage)]
+    assert len(removals) == 8        # 14 messages - 6 recent = 8 old ones removed
+    assert len(summaries) == 1
+    summary = summaries[0]
     assert summary.content.startswith(_SUMMARY_PREFIX)
     assert "test summary" in summary.content
+
+    # RemoveMessages must target the OLD messages, not the recent ones.
+    old_ids = {m.id for m in state["messages"][:8]}
+    removal_ids = {rm.id for rm in removals}
+    assert removal_ids == old_ids
 
     # The summary prompt must contain the oldest turns but not the recent ones
     prompt_text = captured["prompt"][1].content
     assert "question 0" in prompt_text
     assert "question 6" not in prompt_text  # newest turn is in the recent window
+
+
+# ── P3.6: token/char budget window ────────────────────────────────────────────
+
+def test_recent_window_short_messages_keeps_fixed_count():
+    turns = [HumanMessage(content=f"q {i}") for i in range(20)]
+    window = _recent_window(turns)
+    assert len(window) == _SUMMARY_RETAIN_RECENT
+    assert window[0].content == "q 14"
+
+
+def test_recent_window_long_message_shrinks_window():
+    # One huge message must shrink the retained window well below the fixed count.
+    turns = [
+        HumanMessage(content="x" * 4000),
+        HumanMessage(content="y" * 4000),
+        HumanMessage(content="z" * 4000),
+    ]
+    window = _recent_window(turns)
+    assert len(window) < _SUMMARY_RETAIN_RECENT
+    assert len(window) >= 1
+    assert window[-1].content == "z" * 4000  # newest always kept
+
+
+def test_recent_window_keeps_at_least_newest():
+    turns = [HumanMessage(content="a" * 99999)]
+    window = _recent_window(turns)
+    assert len(window) == 1
+    assert window[0].content == "a" * 99999
+
+
+def test_load_window_respects_char_budget():
+    msgs = []
+    for i in range(4):
+        msgs.append(HumanMessage(content="short q"))
+        msgs.append(AIMessage(content="a" * 3000))
+    out = load_memory_node({"messages": msgs}, _config())
+    context = out["context_messages"]
+    # 3000-char answers barely fit twice in the 8000-char budget, so far fewer
+    # than _SUMMARY_RETAIN_RECENT messages are retained.
+    assert len(context) < _SUMMARY_RETAIN_RECENT
+    assert context[-1].content == "a" * 3000
 
 
 def test_save_does_not_resummarise_same_content():

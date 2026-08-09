@@ -317,7 +317,10 @@ _CONTEXT_HEADER = (
     "question. Integrate textual and visual information naturally into a single "
     "explanation rather than treating them separately. Cite only the study note "
     "sections that actually contributed to your answer using the Sources format "
-    "described in the system prompt."
+    "described in the system prompt. When citing a section, use its EXACT heading "
+    "text exactly as it appears in the numbered list above (e.g. \"The Role of "
+    "Prompt Engineering\") — your citations are checked against those passages "
+    "after you answer, so never invent or paraphrase a section name."
 )
 
 _NO_CONTEXT_NOTE = (
@@ -336,6 +339,15 @@ _LOW_CONFIDENCE_NOTE = (
     "to your answer.]"
 )
 
+# P3.7: retrieval infrastructure failed (index not built / Chroma error) — the
+# model must not pretend it searched the lecture.
+_RETRIEVAL_ERROR_NOTE = (
+    "[The lecture index could not be queried right now (retrieval error), so "
+    "no lecture resources are available. Do NOT fabricate lecture content or "
+    "add a Sources section. Briefly note that lecture retrieval is "
+    "unavailable, then answer from general knowledge if you can.]"
+)
+
 
 
 def build_system_prompt(lecture_title: str, mode: str = "default") -> str:
@@ -346,7 +358,7 @@ def build_system_prompt(lecture_title: str, mode: str = "default") -> str:
 
 
 
-def build_context_block(chunks: list[dict], low_confidence: bool = False) -> str:
+def build_context_block(chunks: list[dict], low_confidence: bool = False, status: str = "ok") -> str:
     """
     Format retrieved_chunks into a CONTEXT block for prompt injection.
 
@@ -354,14 +366,24 @@ def build_context_block(chunks: list[dict], low_confidence: bool = False) -> str
         chunks: list of RetrievedChunk dicts from retriever.retrieve().
         low_confidence: If True, use a disclaimer that tells the model the
                        passages may not contain the exact answer.
+        status: P3.7 retrieval outcome — "ok", "empty", or "error". "error"
+                injects _RETRIEVAL_ERROR_NOTE (infrastructure failure) instead
+                of pretending nothing was found.
 
     Returns:
         A formatted string with context passages, or a no-context note if empty.
     """
     if not chunks:
+        if status == "error":
+            return f"--- CONTEXT ---\n{_RETRIEVAL_ERROR_NOTE}\n--- END CONTEXT ---"
         return f"--- CONTEXT ---\n{_NO_CONTEXT_NOTE}\n--- END CONTEXT ---"
 
-    header = _LOW_CONFIDENCE_NOTE if low_confidence else _CONTEXT_HEADER
+    if status == "error":
+        header = _RETRIEVAL_ERROR_NOTE
+    elif low_confidence:
+        header = _LOW_CONFIDENCE_NOTE
+    else:
+        header = _CONTEXT_HEADER
 
     lines = ["--- CONTEXT ---", header, ""]
     for i, chunk in enumerate(chunks, 1):

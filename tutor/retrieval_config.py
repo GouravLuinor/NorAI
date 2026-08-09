@@ -36,6 +36,22 @@ NOTES_GLOB = "outputs/notes/chapter_*.md"
 # ── Retrieval ─────────────────────────────────────────────────────────────────
 TOP_K = 5  # chunks returned per query
 
+# ── Phase 3 (P3.2): hybrid search ─────────────────────────────────────────────
+# Cosine (Chroma) and BM25 each return this many candidates; the two ranked
+# lists are merged with Reciprocal Rank Fusion (RRF_K = fusion constant).
+ADAPTIVE_TOP_K_CANDIDATES = 20
+RRF_K = 60
+# After fusion, results above CONFIDENCE_THRESHOLD are dropped unless fewer than
+# MIN_RESULTS would remain (kept as weak context, flagged relevant=False so they
+# never surface as references — P3.8).
+MIN_RESULTS = 2
+
+# ── Phase 3 (P3.4): chunk context expansion ──────────────────────────────────
+# When a leaf chunk is a hit, retrieve() augments it with the surrounding parent
+# section + sibling text (read from the source .md at query time — zero re-embed
+# cost). Cap the expanded context to keep prompts token-friendly.
+MAX_CONTEXT_CHARS = 1400
+
 # ── Rate limiting ─────────────────────────────────────────────────────────────
 # gemini-embedding-2 free tier: varies; add a small sleep between batch calls
 # during indexing to stay safely under limits.

@@ -204,6 +204,7 @@ class ChatResponse(BaseModel):
     answer: str
     retrieved_chunks: list
     retrieved_images: list
+    verified_citations: list = []   # P3.3
     chapter_id: int | None
     thread_id: str
 
@@ -312,6 +313,7 @@ async def chat_stream(req: ChatRequest):
                 "assistant_message_id": result.get("assistant_message_id"),
                 "retrieved_chunks": result.get("retrieved_chunks", []),
                 "retrieved_images": result.get("retrieved_images", []),
+                "verified_citations": result.get("verified_citations", []),
                 "chapter_id": result.get("chapter_id"),
                 "thread_id": result.get("thread_id"),
             }
@@ -434,7 +436,8 @@ async def get_thread(thread_id: str, lecture_id: str = "default"):
             "thread_id": thread_id,
             "messages": result,
             "last_retrieved_chunks": last_retrieved_chunks,
-            "last_retrieved_images": last_retrieved_images
+            "last_retrieved_images": last_retrieved_images,
+            "verified_citations": snapshot.values.get("verified_citations", []),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

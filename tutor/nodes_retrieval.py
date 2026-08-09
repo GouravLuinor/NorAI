@@ -26,6 +26,14 @@ Why keep it as a separate node (not inline in retrieve)?
     stability. If we ever want to add a "query routing" node (decide whether to
     retrieve at all), or run rewrite + retrieve in parallel branches, we can
     rewire the graph without touching the rewrite or retrieve implementations.
+
+Phase 3.5 — cross-turn chapter state:
+    detect_chapter_node also writes `last_chapter_id` to the graph state whenever
+    the user names a chapter explicitly. On later turns an anaphoric follow-up
+    ("what about that?", "explain it", "why is that?") re-uses the remembered
+    chapter, so retrieval stays scoped to the chapter the student is in the
+    middle of. A brand-new question without anaphora goes back to a full-index
+    search, so genuinely cross-chapter questions are never blocked.
 """
 
 from __future__ import annotations
@@ -36,7 +44,7 @@ from typing import Any
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from .retriever import IndexNotBuiltError, retrieve, retrieve_images
-from .retrieval_config import TOP_K, TOP_K_IMAGES
+from .retrieval_config import TOP_K, TOP_K_IMAGES, CONFIDENCE_THRESHOLD
 logger = logging.getLogger(__name__)
 
 # How many recent messages to include as context for the rewrite prompt.
@@ -78,9 +86,28 @@ _FLASHCARD_PATTERN = re.compile(r"\b(" + "|".join(_FLASHCARD_KEYWORDS) + r")\b",
 _CHAPTER_REGEXES = [
     (re.compile(r"\bchapter\s+(\d+)\b", re.IGNORECASE), lambda m: int(m.group(1))),
     (re.compile(r"\bch(?:apter|apte|apt|ap)[.\s]*(\d+)\b", re.IGNORECASE), lambda m: int(m.group(1))),
-    (re.compile(r"\b(?:in|from)\s+the\s+(\w+)\s+chapter\b", re.IGNORECASE),
+    (re.compile(r"\bch\s*(\d+)\b", re.IGNORECASE), lambda m: int(m.group(1))),
+    (re.compile(r"\bthe\s+(\w+)\s+chapter\b", re.IGNORECASE),
      lambda m: _WORD_TO_NUM.get(m.group(1).lower())),
 ]
+
+# P3.5: anaphoric follow-ups resolve against the last explicitly-referenced
+# chapter. Conservative phrase list — a bare noun (e.g. "What is a stack?") is
+# NOT anaphoric, so genuinely new cross-chapter questions stay unfiltered.
+_ANAPHORIC_RE = re.compile(
+    r"^\s*("
+    r"what about|how about|"
+    r"what does that|what is that|what are those|what do you mean|"
+    r"why is that|why does that|why do(es)? (it|they|those|that)|"
+    r"how does (it|that|this)|how is that|"
+    r"explain (that|this|it|more)|elaborate( on)? (that|this|it)|"
+    r"tell me more|more (about|on) (that|this|it)|"
+    r"can you (explain|clarify|go over|repeat) (that|this|it)|"
+    r"does (that|this|it)|is (that|this|it)|"
+    r"and what happens (next|then)|what does it (do|mean)"
+    r")\b",
+    re.IGNORECASE,
+)
 
 
 def _extract_chapter_id(text: str) -> int | None:
@@ -94,17 +121,35 @@ def _extract_chapter_id(text: str) -> int | None:
     return None
 
 
+def _is_anaphoric(question: str) -> bool:
+    """True when the question is a follow-up to prior context (so it should keep
+    the last explicitly-referenced chapter's retrieval scope)."""
+    return bool(_ANAPHORIC_RE.match(question.strip()))
+
+
 def detect_chapter_node(state: dict, config: RunnableConfig) -> dict:
     question = state.get("user_question", "")
-    result = {
-        "chapter_id": None,
+    explicit = _extract_chapter_id(question)
+    last_chapter = state.get("last_chapter_id")
+
+    # P3.5 cross-turn state:
+    #  - explicit ref → scope THIS turn + remember it as last_chapter_id.
+    #  - anaphoric follow-up with a remembered chapter → reuse it.
+    #  - otherwise → full-index search (no filter), keep last_chapter_id.
+    if explicit is not None:
+        chapter_id = explicit
+    elif last_chapter is not None and _is_anaphoric(question):
+        chapter_id = last_chapter
+    else:
+        chapter_id = None
+
+    result: dict = {
+        "chapter_id": chapter_id,
         "is_command": False,
         "command_type": "",          # "quiz", "summary", or "flashcards"
     }
-
-    chapter_id = _extract_chapter_id(question)
-    if chapter_id is not None:
-        result["chapter_id"] = chapter_id
+    if explicit is not None:
+        result["last_chapter_id"] = explicit
 
     if _QUIZ_PATTERN.search(question):
         result["is_command"] = True
@@ -173,8 +218,15 @@ def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
             history_lines.append(f"Tutor: {m.content}")
     history_str = "\n".join(history_lines) if history_lines else "(no prior conversation)"
 
+    # P3.5: keep the chapter scope visible to the rewriter so anaphoric
+    # follow-ups stay resolvable even after the question is de-referenced.
+    active_chapter = state.get("chapter_id") or state.get("last_chapter_id")
+    chapter_hint = ""
+    if active_chapter:
+        chapter_hint = f"\nThe student is currently focused on chapter {active_chapter}."
+
     rewrite_prompt = (
-        f"Conversation so far:\n{history_str}\n\n"
+        f"Conversation so far:\n{history_str}{chapter_hint}\n\n"
         f"Student's latest question: {question}\n\n"
         f"Rewritten search query:"
     )
@@ -223,33 +275,36 @@ def retrieve_node(state: dict, config: RunnableConfig, output_dir=None) -> dict:
     LangGraph node: query Chroma with the (rewritten) user_question, populate
     retrieved_chunks.
 
-    Reads:  state['user_question'], state['lecture_title'] (unused for now,
-            but available for chapter_id filtering in future)
-    Writes: state['retrieved_chunks']
+    Reads:  state['user_question'], state['chapter_id']
+    Writes: state['retrieved_chunks'], state['retrieval_status']
 
-    Chapter filtering:
-        Currently NOT filtering by chapter_id — we search the full index.
-        Rationale: the user may ask cross-chapter questions, and we don't yet
-        have a reliable way to infer which chapter they're asking about from the
-        question alone. Add chapter_id filtering here once we have a routing
-        signal (e.g. the user says "in chapter 3...").
+    P3.7 graceful low-context:
+      - retrieval_status ∈ {"ok", "empty", "error"} drives the note the answer
+        node injects (see prompts.build_context_block).
+      - Each chunk is tagged "strong"/"weak" by whether its distance beats
+        CONFIDENCE_THRESHOLD, so downstream code and the UI can tell well-
+        grounded chunks from loose matches.
     """
     question = state.get("search_query") or state.get("user_question", "")
     if not question:
         logger.warning("retrieve_node: no user_question, returning empty chunks")
-        return {"retrieved_chunks": []}
+        return {"retrieved_chunks": [], "retrieval_status": "empty"}
 
     try:
         chapter_id = state.get("chapter_id")  # Phase 5: chapter routing
         chunks = retrieve(query=question, chapter_id=chapter_id, k=TOP_K, output_dir=output_dir)
         logger.debug(f"retrieve_node: {len(chunks)} chunks for query {question!r}")
-        return {"retrieved_chunks": chunks}
+        for c in chunks:
+            c["confidence_tag"] = (
+                "strong" if c.get("distance", 1.0) <= CONFIDENCE_THRESHOLD else "weak"
+            )
+        return {"retrieved_chunks": chunks, "retrieval_status": "ok" if chunks else "empty"}
     except IndexNotBuiltError as exc:
         # Fail gracefully: answer without context rather than crashing the graph.
         # The generate_answer_node checks for empty retrieved_chunks and adjusts
         # its prompt accordingly.
         logger.error(f"retrieve_node: index not built — {exc}")
-        return {"retrieved_chunks": []}
+        return {"retrieved_chunks": [], "retrieval_status": "error"}
     except Exception as exc:
         logger.error(f"retrieve_node: unexpected error — {exc}")
-        return {"retrieved_chunks": []}
+        return {"retrieved_chunks": [], "retrieval_status": "error"}
