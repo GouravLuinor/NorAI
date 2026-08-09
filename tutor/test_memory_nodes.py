@@ -11,6 +11,7 @@ Run:
     python tutor/test_memory_nodes.py
 """
 
+import asyncio
 import sys
 from pathlib import Path
 
@@ -85,7 +86,7 @@ def test_load_drops_scratch_system_messages():
 
 def test_save_noop_below_trigger():
     state = {"messages": _conversation(5)}  # 10 messages <= 12
-    out = save_memory_node(state, _config())
+    out = asyncio.run(save_memory_node(state, _config()))
     assert out == {}
 
 
@@ -103,13 +104,13 @@ def test_save_fires_above_trigger_and_preserves_recent():
         def __init__(self, **kwargs):
             self._invoke = fake_llm
 
-        def invoke(self, prompt_messages):
+        async def ainvoke(self, prompt_messages):
             return self._invoke(prompt_messages)
 
     original = lgg.ChatGoogleGenerativeAI
     lgg.ChatGoogleGenerativeAI = FakeLLM  # type: ignore[assignment]
     try:
-        out = save_memory_node(state, _config())
+        out = asyncio.run(save_memory_node(state, _config()))
     finally:
         lgg.ChatGoogleGenerativeAI = original
 
@@ -183,7 +184,7 @@ def test_save_does_not_resummarise_same_content():
     msgs.append(HumanMessage(content="question 7"))
     msgs.append(AIMessage(content="answer 7"))
     state = {"messages": msgs}
-    out = save_memory_node(state, _config())
+    out = asyncio.run(save_memory_node(state, _config()))
     assert out == {}  # only 2 new turns since the summary
 
 
@@ -194,7 +195,10 @@ if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):
             try:
-                fn()
+                if asyncio.iscoroutinefunction(fn):
+                    asyncio.run(fn())
+                else:
+                    fn()
                 print(f"PASS {name}")
             except Exception:
                 failures += 1

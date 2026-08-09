@@ -171,7 +171,7 @@ def quiz_store_answer(state: dict, config: RunnableConfig) -> dict:
         # Don't send any feedback message – keep the interaction silent
     }
 
-def quiz_llm_evaluate(state: dict, config: RunnableConfig) -> dict:
+async def quiz_llm_evaluate(state: dict, config: RunnableConfig) -> dict:
     """
     Final LLM evaluation: send all questions + user answers to the LLM,
     get back a structured evaluation with a final score, per‑question
@@ -240,7 +240,7 @@ def quiz_llm_evaluate(state: dict, config: RunnableConfig) -> dict:
             temperature=0.2,
             google_api_key=get_api_key(),
         )
-        response = llm.invoke([HumanMessage(content=evaluation_prompt)])
+        response = await llm.ainvoke([HumanMessage(content=evaluation_prompt)])
         feedback = response.content
         if isinstance(feedback, list):
             feedback = " ".join(

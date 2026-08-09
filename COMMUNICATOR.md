@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P4 — Job durability & data layer (P4.1–P4.3)**: DB-backed pipeline job queue + worker pool (supervisor, retry/resume, cancellation, heartbeat recovery), upload/orphan GC, Alembic migrations. P4.4 (async tutor persistence) + P4.5 (SSE) still open | 2026-08-09 14:40 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P4 — Job durability & data layer (P4.1–P4.5 complete + P4 DoD validated offline)**: DB-backed job queue + worker pool, GC, Alembic migrations, async tutor persistence (AsyncSqliteSaver), SSE scaffolding dropped + poller hardened | 2026-08-09 15:30 UTC |
 
 ---
 
@@ -33,6 +33,24 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-09] — OpenCode: P4.4–P4.5 tutor async persistence + progress transport + P4 DoD offline validation (Phase P4 complete)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed (all offline; no paid pipeline runs)
+- **Files Created / Modified**:
+  - `tutor/memory.py` — new `get_async_checkpointer()` (`AsyncSqliteSaver.from_conn_string`, WAL + busy_timeout); sync `get_checkpointer` kept for CLI/tests. (P4.4)
+  - `tutor/nodes.py`, `tutor/nodes_retrieval.py`, `tutor/quiz_nodes.py` — LLM-touching graph nodes converted to `async` + `await llm.ainvoke(...)`: `generate_answer_node`, `save_memory_node`, `rewrite_query_node`, `quiz_llm_evaluate`. (P4.4)
+  - `backend/dependencies.py` — rewritten around async `ainvoke_tutor`: per-lecture `asyncio.Lock`, LRU graph cache bounded at `config.TUTOR_MAX_CACHED_GRAPHS` (32, conns closed on eviction), zombie-thread guard, lazy default graph (`_aget_default_graph` — no more build at import). Sync `invoke_tutor`/`_init_default_graph` removed. (P4.4)
+  - `backend/main.py` — `/chat`, `/chat/stream`, `/threads/{id}` now `await ainvoke_tutor(...)`; `get_thread` uses `aget_state`. (P4.4)
+  - `tutor/cli.py` — async via `asyncio.run`; uses async checkpointer + `ainvoke`/`aget_state`. (P4.4)
+  - `config.py` — `TUTOR_MAX_CACHED_GRAPHS = 32` (`NORAI_TUTOR_MAX_CACHED_GRAPHS` env). (P4.4)
+  - `tutor/test_memory_nodes.py` (updated for async node contract), `tutor/test_async_persistence.py` [NEW] (3 checks: cross-turn persistence + thread isolation, LRU eviction closes conns, per-lecture serialization). (P4.4)
+  - `backend/orchestrator.py` — dead SSE scaffolding (`_queues`/`run_coroutine_threadsafe`) removed; docstring updated (P4.5 decision: keep polling).
+  - `frontend/src/pages/ProcessingPage.tsx` — poller hardened: AbortController on unmount, exponential backoff 1.5s→10s (reset on success), 404 → terminal error, `finished` dropped from effect deps (extra-request bug). (P4.5)
+  - `backend/test_jobs_restart.py` [NEW] — P4 DoD offline restart-survival test (19 checks): temp SQLite DB + stubbed pipeline; stale `processing` → recovered → re-queued (attempts+1) → re-claimed → resumes to `completed`; exhausted attempts → `failed`; fresh-heartbeat untouched; failure-retry semantics.
+  - Docs: `ROADMAP.md` (P4.4/P4.5/P5.7 ✅, P4 DoD line, stale-docs note removed), `AGENTS.md` (SSE + subprocess claims fixed), `PROJECT_PROGRESS.md` (P4.4–P4.5 entry), `COMMUNICATOR.md`.
+- **Verification**: all 11 offline tutor tests green (`test_async_persistence`, `test_memory_nodes`, `test_graph_topology`, `test_chapter_tracking`, `test_low_confidence`, `test_citations`, `test_hybrid`, `test_chunker`, `test_context_expand`, `test_retriever_caching`, `test_build_index_batching`); `backend/test_jobs_restart.py` 19/19 green, stable across 3 runs (no aiosqlite thread leaks); `import backend.main` smoke OK (all routes registered; no tutor graph build at import); frontend `oxlint` (0 in ProcessingPage) + `tsc -b` green.
+- **Hand-off Notes / Next Steps**: Uncommitted — commit + push to `origin/fix/threads-and-pdf` only if user asks. P4 fully closed (P4.1–P4.5 + offline DoD). Remaining open item from P4.1 notes: supervisor is single-worker-assumption — needs a DB claim-lock if uvicorn `--workers > 1`. Next roadmap phase: P5 (Observability, Dependency hygiene, CI, Docker, frontend typed API client, bundle, tests).
 
 ### [2026-08-09] — OpenCode: P4.1–P4.3 job durability, GC & Alembic migrations (Phase P4 partial)
 - **Agent**: OpenCode (CLI)

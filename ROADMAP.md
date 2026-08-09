@@ -101,8 +101,8 @@ NorAI has a working 18-stage multimodal pipeline, a genuinely grounded RAG tutor
 | P4.1 | Real job queue | ✅ | `backend/jobs.py` (supervisor, worker pool), `main.py:1299-1311,1569-1600` | DB-backed queue (`queued→processing→completed/cancelled/failed`), supervisor claims within global + per-user caps, heartbeat-stale recovery with retry (≤3) + resume (cache-first ≈ 0 calls), `on_progress`/`should_cancel` callbacks, `PipelineCancelled`; `/process` enqueues, `/status` DB-backed, new `/cancel`. Single-process assumption noted. |
 | P4.2 | Cleanup on failure | ✅ | `jobs.py:gc_sweep`, `orchestrator.py` (transient-dir removal on every outcome) | Worker deletes the upload post-run; boot + daily GC purges stale uploads (`UPLOAD_GC_AGE_HOURS`) and DB-orphaned lecture dirs (`ORPHAN_DIR_GC_AGE_DAYS`). |
 | P4.3 | Migrations (Alembic) | ✅ | `backend/db/migrate.py`, `alembic.ini`, `migrations/versions/0001_initial`, `0002_lecture_pipeline_job_columns` | `run_migrations` on startup (idempotent); legacy `create_all` DBs absorbed + backfilled; `test_migrations.py` (13 checks) green. |
-| P4.4 | Async tutor persistence | ⬜ | `backend/dependencies.py:126`, `memory.py:19-33` | Per-lecture lock held across the whole `graph.invoke` (sync `SqliteSaver`); one slow turn blocks all chat on that lecture. Use `AsyncSqliteSaver`; evict the unbounded per-lecture graph cache (`dependencies.py:29`). |
-| P4.5 | Wire real SSE progress | ⬜ | `orchestrator.py:63-111` | SSE `_queues`/`_event_loop` are dead code — `run_coroutine_threadsafe` targets a loop that's never started. Either implement or drop the scaffolding and keep polling. |
+| P4.4 | Async tutor persistence | ✅ | `tutor/memory.py:58` (`get_async_checkpointer`), `backend/dependencies.py:82,161` (`_aget_or_create_lecture_graph`, `ainvoke_tutor`) | Tutor turns no longer block the event loop: chat nodes are `async` (`tutor/nodes.py`, `nodes_retrieval.py`, `quiz_nodes.py`) on `AsyncSqliteSaver` (WAL + busy_timeout), per-lecture `asyncio.Lock`, LRU graph cache bounded at `TUTOR_MAX_CACHED_GRAPHS` (32; conns closed on eviction); `/chat`, `/chat/stream`, `/threads/{id}` all `await`. Verified offline by `tutor/test_async_persistence.py` (3 checks). |
+| P4.5 | Progress transport (SSE vs polling) | ✅ | `orchestrator.py:1-13`, `frontend/src/pages/ProcessingPage.tsx` | Decision: drop the dead SSE scaffolding, keep polling + harden the poller. `_queues`/`run_coroutine_threadsafe` scaffolding removed; progress flows via DB-backed `/process/{id}/status`. Poller hardened: AbortController on unmount, exponential backoff 1.5s→10s (reset on success), 404 → terminal error, `finished` dropped from effect deps (extra-request bug). oxlint + `tsc -b` green. |
 
 ---
 
@@ -116,7 +116,7 @@ NorAI has a working 18-stage multimodal pipeline, a genuinely grounded RAG tutor
 | P5.4 | Docker + deploy config | ⬜ | none | `Dockerfile` + compose for local parity; document prod uvicorn/gunicorn + static hosting of `frontend/dist`. |
 | P5.5 | Frontend: typed API client | ⬜ | `src/types/index.ts` (32 lines), `apiFetch` returns `null`, 15 `any` sites | Generate types from FastAPI (`openapi-typescript`); single fetch wrapper with auth headers + abort controllers; enable `strict: true`. |
 | P5.6 | Frontend: bundle & resilience | ⬜ | 1.34 MB single chunk; no error boundary; `MessageBubble` re-parses markdown on every stream token | Route-level code-splitting, KaTeX lazy load, `React.memo` + Zustand selectors, app-level error boundary + Suspense. |
-| P5.7 | Frontend: polling → SSE | ⬜ | `ProcessingPage.tsx:83-104` | 1.5s fixed poll, no backoff/abort, latent extra-request bug on `finished` flip. Replace with real SSE once P4.5 lands; add abort + backoff regardless. |
+| P5.7 | Frontend: polling → SSE | ✅ | `ProcessingPage.tsx:83-104` | Real SSE dropped by decision (P4.5) — polling kept. Poller hardening landed in P4.5: AbortController, exponential backoff 1.5s→10s, 404 → terminal error, `finished` removed from effect deps. |
 | P5.8 | Frontend tests + API contract tests | ⬜ | no `*.test.*`, `backend/test_api_contract.py` is a live-server probe | Vitest/RTL for components; move contract tests to a framework; add `/process`, `/chat`, and auth negative cases. |
 
 ---
@@ -139,11 +139,10 @@ NorAI has a working 18-stage multimodal pipeline, a genuinely grounded RAG tutor
 - **P1**: a 22-min lecture's pipeline runs ≤ 25% of current cost/latency; re-running a finished lecture with unchanged inputs costs ~0 API calls. **Validated 2026-08-08** on an ~8-min YouTube lecture: first run = **17 Gemini calls** (15 generateContent + 2 embed batches — extraction was 6 chunks at 15 seg/chunk vs ~40 at the old 5, selector Pass 1 reused the visual analysis, embeds batched 20/call), re-run of the same lecture id = **0 Gemini calls** (every paid stage cache-hit: extraction, outline, visual analysis, screenshot selection, notes artifacts; both Chroma indexes diff-synced with added 0 / removed 0).
 - **P2**: quota is enforced before any Gemini spend for anonymous + paid users; lecture status is accurate; badge reflects real usage.
 - **P3**: golden-QA MRR/hit-rate tracked per lecture (✅ eval suite + hybrid BM25 in place; calibration threshold sweep covered in `test_evals.py`); citations verified against retrieved chunk IDs (✅); ≥1 improvement to retrieval from P3.2–P3.5 proven by evals (hybrid RRF — `test_hybrid.py` + golden-set regressions).
-- **P4**: pipeline survives a backend restart; failed runs leave no orphaned dirs; schema changes are versioned.
+- **P4**: pipeline survives a backend restart (✅ offline via `backend/test_jobs_restart.py`, 19 checks: stale recovery → re-queue → re-claim → resume-to-complete, exhausted→failed, live-heartbeat untouched, failure-retry semantics); failed runs leave no orphaned dirs; schema changes are versioned.
 - **P5**: CI green on every push; clean-install works from `.env.example`; frontend ships split bundles and reports render errors.
 - **P6**: streaming is token-level; a flashcard deck exports to Anki; every citation can seek the video.
 
 ## Notes on stale docs
 
-- `AGENTS.md` claims pipeline stages "run in subprocesses" and progress "emits via SSE" — neither is true (no `subprocess` usage; `orchestrator.py:11` imports it unused; SSE machinery is dead). Update alongside P4.
 - `SAAS_ROADMAP.md` marks webhook verification, quota enforcement, and conversion gates as ✅ — those are non-functional per P0.2/P2. Reconcile the two docs when this roadmap advances.

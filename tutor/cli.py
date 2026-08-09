@@ -1,10 +1,11 @@
 """
 cli.py
 
-Minimal command-line chat loop for exercising the Phase 1/2 tutor
-graph directly — not a production interface, just a way to actually
-run the graph turn-by-turn and watch memory persist (and stay
-isolated per thread) rather than trusting it on paper.
+Minimal command-line chat loop for exercising the tutor graph directly —
+not a production interface, just a way to actually run the graph
+turn-by-turn and watch memory persist (and stay isolated per thread)
+rather than trusting it on paper. Async since the graph's LLM nodes are
+`async def` (P4.4).
 
 Usage:
     python -m tutor.cli
@@ -18,19 +19,21 @@ Commands inside the loop:
 Anything else is sent to the tutor as a question.
 """
 
+import asyncio
+
 from langchain_core.messages import AIMessage, HumanMessage
 
 from tutor.config import CHECKPOINT_DB_PATH, logger
 from tutor.graph import build_graph
-from tutor.memory import get_checkpointer
+from tutor.memory import get_async_checkpointer
 
 
 def _make_config(thread_id: str) -> dict:
     return {"configurable": {"thread_id": thread_id}}
 
 
-def run_cli():
-    print("NorAI Tutor — Phase 1/2 CLI")
+async def run_cli():
+    print("NorAI Tutor CLI")
     print(f"Checkpoint DB: {CHECKPOINT_DB_PATH}")
     print("Commands: /thread <id>   /history   /quit")
     print()
@@ -41,7 +44,7 @@ def run_cli():
 
     thread_id = input("Starting thread_id (e.g. 'conv-a'): ").strip() or "default"
 
-    with get_checkpointer() as checkpointer:
+    async with get_async_checkpointer() as checkpointer:
         graph = build_graph(checkpointer)
 
         print(f"\nOn thread '{thread_id}'. Ask a question, or use a /command.\n")
@@ -67,7 +70,7 @@ def run_cli():
 
             if user_input == "/history":
                 config = _make_config(thread_id)
-                snapshot = graph.get_state(config)
+                snapshot = await graph.aget_state(config)
                 messages = snapshot.values.get("messages", []) if snapshot.values else []
                 if not messages:
                     print("(no history yet on this thread)\n")
@@ -83,7 +86,7 @@ def run_cli():
             # On a brand-new thread, ChatState has no lecture_title yet —
             # checking get_state lets us seed it once rather than
             # re-passing it (and risking overwriting it) on every turn.
-            snapshot = graph.get_state(config)
+            snapshot = await graph.aget_state(config)
             is_new_thread = not snapshot.values
 
             input_state = {
@@ -105,7 +108,7 @@ def run_cli():
                 input_state["is_command"] = False
 
             try:
-                result = graph.invoke(input_state, config)
+                result = await graph.ainvoke(input_state, config)
             except Exception as e:
                 logger.error(f"Graph invocation failed: {e}")
                 print(f"(error: {e})\n")
@@ -127,5 +130,6 @@ def run_cli():
                     if last_msg:
                         print(f"[{thread_id}] Tutor: {last_msg.content}\n")
 
+
 if __name__ == "__main__":
-    run_cli()
+    asyncio.run(run_cli())

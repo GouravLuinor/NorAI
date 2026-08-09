@@ -189,7 +189,7 @@ def retrieve_images_node(state: dict, config: RunnableConfig, output_dir=None) -
     
     return {"retrieved_images": retrieved_images}
 
-def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
+async def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
     """
     LangGraph node: rewrite state['user_question'] into a retrieval-optimised query.
 
@@ -245,7 +245,7 @@ def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
         return {"search_query": question, "retrieved_chunks": [], "retrieved_images": []}
 
     try:
-        response = llm.invoke(
+        response = await llm.ainvoke(
             [SystemMessage(content=_REWRITE_SYSTEM), HumanMessage(content=rewrite_prompt)]
         )
         content = response.content

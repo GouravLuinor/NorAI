@@ -57,6 +57,12 @@ OUTPUTS_DIR = Path("outputs")
 CHECKPOINT_DIR = OUTPUTS_DIR / "tutor"
 CHECKPOINT_DB_PATH = CHECKPOINT_DIR / "checkpoints.sqlite"
 
+# ── Tutor Graph Cache (P4.4) ──────────────────────────────────────────────────
+# Each lecture caches its own compiled graph + AsyncSqliteSaver connection in
+# backend/dependencies.py. Cap the cache (LRU) so long-lived processes don't
+# leak an unbounded number of open sqlite connections / compiled graphs.
+TUTOR_MAX_CACHED_GRAPHS = int(os.environ.get("NORAI_TUTOR_MAX_CACHED_GRAPHS", "32"))
+
 # ── Pipeline Job Queue (P4.1) ─────────────────────────────────────────────────
 # DB-backed queue + in-process worker pool (backend/jobs.py). Env-overridable.
 MAX_CONCURRENT_PIPELINES = int(os.environ.get("NORAI_MAX_CONCURRENT_PIPELINES", "1"))

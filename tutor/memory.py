@@ -1,11 +1,12 @@
 """
 memory.py
 
-Wraps SqliteSaver setup. SqliteSaver.from_conn_string is itself a
-context manager (`with SqliteSaver.from_conn_string(path) as cp: ...`)
-— get_checkpointer() here is a thin wrapper so callers (graph.py,
-cli.py) don't need to know the connection-string path or import
-langgraph.checkpoint.sqlite directly.
+Wraps SqliteSaver / AsyncSqliteSaver setup.
+
+- `get_checkpointer()`  — synchronous SqliteSaver (kept for the CLI/tests).
+- `get_async_checkpointer()` — AsyncSqliteSaver for the backend, where a
+  turn must never block the event loop and concurrent turns on different
+  lectures share the process safely (P4.4).
 
 SECURITY NOTE: langgraph-checkpoint-sqlite's own README flags that
 checkpoint deserialization should be restricted to known-safe types
@@ -15,50 +16,17 @@ is ever compromised/tampered with. Set here, once, before any
 SqliteSaver is constructed — not something to skip just because this
 is "only" a local SQLite file for now; Postgres migration later
 doesn't remove the need for this.
-
-KNOWN LIMITATION — NOT YET ADDRESSED, DO NOT FORGET:
-SqliteSaver is synchronous and does not handle concurrent writes
-across multiple threads/async tasks safely — this is stated directly
-in its own docstring ("meant for lightweight, synchronous use cases...
-does not scale to multiple threads"). It is fine for THIS package's
-current use (a single-process CLI test harness, one graph.invoke()
-call at a time, fully sequential) — there is no concurrent access
-happening here. It will NOT be fine the moment this becomes a real
-backend serving multiple students/sessions concurrently (e.g. a web
-server handling several requests at once), even though each student
-has their own thread_id — the danger isn't thread_id collisions
-(those are already isolated, see graph.py's tests), it's multiple OS
-threads/async tasks hitting the same underlying sqlite3.Connection at
-once, which sqlite3 connections aren't safe for without serialization
-SqliteSaver doesn't provide.
-
-THE FIX, WHEN THAT TIME COMES: swap to
-langgraph.checkpoint.sqlite.aio.AsyncSqliteSaver. This is NOT a
-drop-in swap — it requires:
-  - `async with AsyncSqliteSaver.from_conn_string(...) as cp:` instead
-    of `with SqliteSaver.from_conn_string(...) as cp:`
-  - graph.ainvoke()/.astream() instead of .invoke()/.stream() everywhere
-  - generate_answer_node (and any future node making an LLM call)
-    becoming `async def` and using `llm.ainvoke(...)` instead of
-    `llm.invoke(...)` — calling the sync .invoke() inside an async
-    node would block the event loop during the Gemini call, defeating
-    the entire point of going async
-  - cli.py's run_cli() becoming an async function, run via asyncio.run()
-
-Deliberately NOT done yet (confirmed with the user) because there is
-no real concurrency to fix yet — this is the single thing to revisit
-first when this package grows beyond a solo-dev CLI into anything
-serving more than one request at a time.
 """
 
 import os
 
 os.environ.setdefault("LANGGRAPH_STRICT_MSGPACK", "true")
 
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 from pathlib import Path
 
 from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from tutor.config import CHECKPOINT_DB_PATH
 
@@ -66,8 +34,8 @@ from tutor.config import CHECKPOINT_DB_PATH
 @contextmanager
 def get_checkpointer(db_path: str | Path = CHECKPOINT_DB_PATH):
     """
-    Yields a SqliteSaver checkpointer backed by db_path, creating the
-    parent directory if needed. Use as:
+    Yields a synchronous SqliteSaver checkpointer backed by db_path,
+    creating the parent directory if needed. Use as:
 
         with get_checkpointer() as checkpointer:
             graph = build_graph(checkpointer)
@@ -83,4 +51,29 @@ def get_checkpointer(db_path: str | Path = CHECKPOINT_DB_PATH):
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     with SqliteSaver.from_conn_string(str(db_path)) as checkpointer:
+        yield checkpointer
+
+
+@asynccontextmanager
+async def get_async_checkpointer(db_path: str | Path = CHECKPOINT_DB_PATH):
+    """
+    Yields an AsyncSqliteSaver checkpointer backed by db_path (P4.4).
+
+    AsyncSqliteSaver uses a single aiosqlite connection and serialises
+    writes internally, so it is safe for concurrent access from multiple
+    async tasks (unlike the sync SqliteSaver). As with the sync variant,
+    the checkpointer must stay open for the graph's lifetime — the
+    backend holds it in the per-lecture graph cache and closes it when
+    the entry is evicted.
+
+    Use as:
+
+        async with get_async_checkpointer(db_path) as checkpointer:
+            graph = build_graph(checkpointer)
+            result = await graph.ainvoke(state, config)
+    """
+    db_path = Path(db_path)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    async with AsyncSqliteSaver.from_conn_string(str(db_path)) as checkpointer:
         yield checkpointer
