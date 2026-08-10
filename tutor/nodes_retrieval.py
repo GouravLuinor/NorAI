@@ -232,13 +232,12 @@ async def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
     )
 
     try:
-        from langchain_google_genai import ChatGoogleGenerativeAI  # type: ignore
-        from config import get_api_key
+        from tutor.llm import make_chat_llm
 
-        llm = ChatGoogleGenerativeAI(
+        llm = make_chat_llm(
+            node="rewrite_query_node",
             model=_get_model_from_config(),
             temperature=0.0,  # rewrite should be deterministic
-            google_api_key=get_api_key(),
         )
     except Exception as exc:
         logger.warning(f"rewrite_query_node: LLM init failed ({exc}), using raw question")

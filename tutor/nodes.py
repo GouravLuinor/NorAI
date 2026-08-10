@@ -18,9 +18,8 @@ import logging
 from pathlib import Path
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.graph.message import RemoveMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.runnables import RunnableConfig
-from tutor.config import MODEL_NAME, TEMPERATURE, get_api_key
+from tutor.config import TEMPERATURE
 from .prompts import build_system_prompt, build_context_block, build_image_context_block
 from .retrieval_config import CONFIDENCE_THRESHOLD
 
@@ -272,11 +271,8 @@ async def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
     ]
 
     # ── LLM call ───────────────────────────────────────────────────────────────
-    llm = ChatGoogleGenerativeAI(
-        model=MODEL_NAME,
-        temperature=TEMPERATURE,
-        google_api_key=get_api_key(),
-    )
+    from tutor.llm import make_chat_llm
+    llm = make_chat_llm(node="generate_answer_node", temperature=TEMPERATURE)
 
     response = await llm.ainvoke(prompt_messages)
         
@@ -365,14 +361,8 @@ async def save_memory_node(state: dict, config: RunnableConfig) -> dict:
 
     # Summarise via LLM
     try:
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        from tutor.config import TEMPERATURE, get_api_key, MODEL_NAME
-
-        llm = ChatGoogleGenerativeAI(
-            model=MODEL_NAME,
-            temperature=0.0,
-            google_api_key=get_api_key(),
-        )
+        from tutor.llm import make_chat_llm
+        llm = make_chat_llm(node="save_memory_node", temperature=0.0)
         response = await llm.ainvoke([
             SystemMessage(content=_SUMMARIZE_SYSTEM),
             HumanMessage(content=transcript_str),

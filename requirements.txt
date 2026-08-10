@@ -1,18 +1,30 @@
-langchain
-langchain-core
-langchain-google-genai
-langchain-community
-yt-dlp
-ffmpeg-python
-openai-whisper
-langchain
-langchain-community
-sentence-transformers
-opencv-python
-google-generativeai
-pydantic
-python-dotenv
-alembic
-chromadb
-streamlit
-reportlab
+# ── NorAI runtime dependencies (P5.2: exact-pinned, only what the code imports) ──
+# Regenerate/audit via:  venv/bin/pip list  &&  pip check
+#
+# Pinned to the versions verified in the local venv. Do NOT use `>=` ranges —
+# pin exact versions so clean installs (and CI) match the tested environment.
+
+# Gemini SDK (the ONLY genai SDK used — `from google import genai`)
+google-genai==2.8.0
+# LangChain tutor runtime (nodes.py, nodes_retrieval.py, quiz_nodes.py)
+langchain-google-genai==4.2.5
+langchain-core==1.4.6
+
+# Pipeline
+yt-dlp==2026.6.9
+ffmpeg-python==0.2.0
+faster-whisper==1.2.1
+opencv-python==4.13.0.92
+chromadb==0.6.0
+
+# Web framework + data
+fastapi==0.138.1
+uvicorn==0.49.0
+python-multipart==0.0.32
+pydantic==2.13.4
+python-dotenv==1.2.2
+sqlalchemy==2.0.50
+aiosqlite==0.22.1
+asyncpg==0.31.0
+alembic==1.19.1
+pyjwt==2.13.0

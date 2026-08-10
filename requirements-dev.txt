@@ -1,0 +1,5 @@
+# ── NorAI dev/test-only dependencies (not needed to run the app) ──
+-r requirements.txt
+
+# In-process ASGI contract tests (backend/test_api_contract.py) — P5.8
+httpx==0.28.1

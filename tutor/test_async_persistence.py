@@ -23,7 +23,7 @@ from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import langchain_google_genai as lgg  # noqa: E402
+import tutor.llm as tllm  # noqa: E402
 
 from tutor.graph import build_graph  # noqa: E402
 from tutor.memory import get_async_checkpointer  # noqa: E402
@@ -67,13 +67,13 @@ class FakeLLM:
 
 
 def _patch_llm():
-    original = lgg.ChatGoogleGenerativeAI
-    lgg.ChatGoogleGenerativeAI = FakeLLM  # type: ignore[assignment]
+    original = tllm.make_chat_llm
+    tllm.make_chat_llm = lambda **kwargs: FakeLLM(**kwargs)  # type: ignore[assignment]
     return original
 
 
 def _restore_llm(original):
-    lgg.ChatGoogleGenerativeAI = original  # type: ignore[assignment]
+    tllm.make_chat_llm = original
 
 
 _turn_counter = 0
