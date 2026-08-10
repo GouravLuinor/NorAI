@@ -92,7 +92,7 @@ def test_save_noop_below_trigger():
 
 def test_save_fires_above_trigger_and_preserves_recent():
     state = {"messages": _conversation(7)}  # 14 messages > 12
-    import langchain_google_genai as lgg
+    import tutor.llm as tllm
 
     captured = {}
 
@@ -107,12 +107,12 @@ def test_save_fires_above_trigger_and_preserves_recent():
         async def ainvoke(self, prompt_messages):
             return self._invoke(prompt_messages)
 
-    original = lgg.ChatGoogleGenerativeAI
-    lgg.ChatGoogleGenerativeAI = FakeLLM  # type: ignore[assignment]
+    original = tllm.make_chat_llm
+    tllm.make_chat_llm = lambda **kwargs: FakeLLM(**kwargs)  # type: ignore[assignment]
     try:
         out = asyncio.run(save_memory_node(state, _config()))
     finally:
-        lgg.ChatGoogleGenerativeAI = original
+        tllm.make_chat_llm = original
 
     # P3.6: summarised messages are removed (RemoveMessage) + one summary record.
     removals = [m for m in out["messages"] if isinstance(m, RemoveMessage)]

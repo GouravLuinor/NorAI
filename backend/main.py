@@ -32,7 +32,6 @@ from backend.dependencies import get_lecture_db_path, _aget_or_create_lecture_gr
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse, FileResponse
 from pydantic import BaseModel
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from backend.lecture_registry import list_lectures, get_lecture
 from backend.dependencies import ainvoke_tutor
@@ -44,8 +43,9 @@ from backend.auth import get_current_user_optional, get_current_user
 from backend.db.database import get_db
 from backend.db.models import User, Subscription, Lecture
 from backend.usage import record_pipeline_outcome
+from tutor.llm import make_chat_llm
 from config import (
-    MODEL_NAME, get_api_key, CHECKPOINT_DB_PATH,
+    CHECKPOINT_DB_PATH,
     LEMONSQUEEZY_CHECKOUT_STARTER_URL, LEMONSQUEEZY_CHECKOUT_PRO_URL,
     LEMONSQUEEZY_CUSTOMER_PORTAL_URL,
 )
@@ -53,21 +53,31 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import logging
 
-# Ensure root logger outputs to both console and outputs/backend.log
-log_file = Path("outputs/backend.log")
-log_file.parent.mkdir(parents=True, exist_ok=True)
-file_handler = logging.FileHandler(log_file, encoding="utf-8")
-file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s"))
+# P5.1: structured JSON logging (console + rotating outputs/backend.log).
+from backend.logging_config import setup_logging, bind, clear_context
 
-root_logger = logging.getLogger()
-root_logger.setLevel(logging.INFO)
-if not any(isinstance(h, logging.FileHandler) for h in root_logger.handlers):
-    root_logger.addHandler(file_handler)
+setup_logging()
 
 app = FastAPI(title="NorAI Tutor API")
 
 from backend.db.migrate import run_migrations
 from backend.routers import webhooks
+
+
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    """P5.1: tag every request with a request_id (accept/echo X-Request-ID)."""
+    request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:16]
+    bind(request_id=request_id)
+    try:
+        response = await call_next(request)
+    except Exception:
+        clear_context()
+        raise
+    response.headers["X-Request-ID"] = request_id
+    clear_context()
+    return response
+
 
 @app.on_event("startup")
 async def on_startup():
@@ -264,6 +274,7 @@ class UpsertFlashcardRatingsRequest(BaseModel):
 @app.post("/chat")
 async def chat(req: ChatRequest):
     try:
+        bind(lecture_id=req.lecture_id, thread_id=req.thread_id)
         result = await ainvoke_tutor(
             thread_id=req.thread_id,
             user_question=req.user_question,
@@ -283,6 +294,8 @@ async def chat(req: ChatRequest):
 
 @app.post("/chat/stream")
 async def chat_stream(req: ChatRequest):
+    bind(lecture_id=req.lecture_id, thread_id=req.thread_id)
+
     async def event_generator():
         try:
             result = await ainvoke_tutor(
@@ -547,11 +560,7 @@ async def quiz_evaluate(req: QuizEvaluateRequest):
         prompt_lines.append("")
     prompt_lines.append("Respond with the JSON object now.")
 
-    llm = ChatGoogleGenerativeAI(
-        model=MODEL_NAME,
-        temperature=0.2,
-        google_api_key=get_api_key(),
-    )
+    llm = make_chat_llm(node="quiz_evaluate", temperature=0.2)
     response = llm.invoke([
         SystemMessage(content="You are a helpful tutor. Always respond with valid JSON."),
         HumanMessage(content="\n".join(prompt_lines)),
@@ -618,7 +627,7 @@ async def quiz_explain(req: QuizExplainRequest):
     except IndexNotBuiltError:
         return {"source": None, "message": "No lecture index available for citation."}
     except Exception as exc:
-        print(f"[quiz/explain] retrieval error: {exc}")
+        logging.getLogger("norai").exception("quiz/explain retrieval error")
         return {"source": None, "message": "Could not retrieve a source for this question."}
 
     top = chunks[0] if chunks else None

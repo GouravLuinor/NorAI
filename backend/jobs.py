@@ -251,6 +251,8 @@ def _heartbeat(lecture_id: str, stop: threading.Event):
 
 def _run_job(lecture_id: str):
     """Execute one lecture's pipeline in the executor; then finalise status."""
+    from backend.logging_config import bind, clear_context
+    bind(task_id=lecture_id, lecture_id=lecture_id)
     try:
         job = asyncio.run(_load_lecture(lecture_id))
         if job is None:
@@ -287,8 +289,10 @@ def _run_job(lecture_id: str):
                     Path(file_path).unlink(missing_ok=True)
                 except Exception as e:
                     logger.warning("Failed to delete upload %s: %s", file_path, e)
+            clear_context()
     except Exception as exc:
         logger.exception("Job runner crashed for %s: %s", lecture_id, exc)
+        clear_context()
 
 
 def _handle_failure(lecture_id: str, exc: Exception):

@@ -232,13 +232,11 @@ async def quiz_llm_evaluate(state: dict, config: RunnableConfig) -> dict:
     evaluation_prompt = "\n".join(prompt_lines)
 
     try:
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        from tutor.config import TEMPERATURE, get_api_key, MODEL_NAME
+        from tutor.llm import make_chat_llm
 
-        llm = ChatGoogleGenerativeAI(
-            model=MODEL_NAME,
+        llm = make_chat_llm(
+            node="quiz_llm_evaluate",
             temperature=0.2,
-            google_api_key=get_api_key(),
         )
         response = await llm.ainvoke([HumanMessage(content=evaluation_prompt)])
         feedback = response.content
