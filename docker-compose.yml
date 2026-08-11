@@ -1,0 +1,20 @@
+# ── NorAI — local parity compose (P5.4) ──────────────────────────────────────
+# Runs the single container with the repo-root .env (GEMINI_API_KEY, DATABASE_URL,
+# LEMONSQUEEZY_*, etc.) and a named volume for generated outputs.
+#
+# Usage:
+#   docker compose up --build
+#   # backend: http://localhost:8000/docs  ·  app: http://localhost:8000/
+
+services:
+  app:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - norai_outputs:/app/outputs
+
+volumes:
+  norai_outputs:
