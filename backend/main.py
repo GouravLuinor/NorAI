@@ -79,6 +79,39 @@ async def request_id_middleware(request: Request, call_next):
     return response
 
 
+# ── SPA static serving (P5.4) ─────────────────────────────────────────────────
+# When a production build of the frontend exists (frontend/dist), the backend
+# serves it directly so a single container runs the whole app. Registered as a
+# middleware + catch-all route so the API routes below still take precedence.
+
+SPA_DIST_DIR = Path(os.environ.get("NORAI_SPA_DIST", "frontend/dist")).resolve()
+
+
+def _spa_index() -> Optional[Path]:
+    candidate = SPA_DIST_DIR / "index.html"
+    return candidate if candidate.is_file() else None
+
+
+# SPA client-side routes (everything Vite's history-mode router owns).
+SPA_HTML_ROUTES = {"/", "/pricing", "/billing"}
+SPA_HTML_PREFIXES = ("/app", "/workspace", "/process/", "/print")
+
+
+@app.middleware("http")
+async def spa_middleware(request: Request, call_next):
+    """Serve index.html for HTML navigations to client-side routes, mirroring
+    the Vite dev proxy's /billing bypass. API fetches send Accept: */* (never
+    text/html), so they still hit the JSON routes."""
+    if request.method == "GET" and _spa_index() is not None:
+        accept = request.headers.get("accept", "")
+        path = request.url.path
+        if "text/html" in accept and (
+            path in SPA_HTML_ROUTES or path.startswith(SPA_HTML_PREFIXES)
+        ):
+            return FileResponse(SPA_DIST_DIR / "index.html")
+    return await call_next(request)
+
+
 @app.on_event("startup")
 async def on_startup():
     # P4.3: versioned schema (Alembic) instead of create_all. Runs in a thread
@@ -1601,3 +1634,19 @@ async def cancel_processing_task(task_id: str):
     if not cancelled:
         raise HTTPException(status_code=404, detail="Task not found")
     return {"cancelled": True}
+
+# ── SPA fallback (P5.4) ───────────────────────────────────────────────────────
+# Serve built frontend assets under /assets etc. when a production build is
+# present; everything else is handled by the API routes + spa_middleware.
+
+@app.get("/{path:path}", include_in_schema=False)
+async def spa_assets(path: str):
+    if _spa_index() is not None:
+        candidate = (SPA_DIST_DIR / path).resolve()
+        try:
+            candidate.relative_to(SPA_DIST_DIR)
+        except ValueError:
+            raise HTTPException(status_code=404, detail="Not found")
+        if candidate.is_file():
+            return FileResponse(candidate)
+    raise HTTPException(status_code=404, detail="Not found")

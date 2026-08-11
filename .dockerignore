@@ -1,0 +1,42 @@
+# ── NorAI .dockerignore ──────────────────────────────────────────────────────
+# Keep the build context (and thus the image) free of local state, venv, and
+# regenerable artifacts.
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.*.production
+*.pem
+*.key
+credentials.json
+token.json
+
+# Generated outputs / data (mounted as a volume in compose)
+outputs/
+transcripts/
+uploads/
+*.sqlite
+*.sqlite3
+*.db
+backend.log
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.tmp/
+
+# VCS / tooling
+.git/
+.gitignore
+opencode-guide/
+*.md.swp

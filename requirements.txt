@@ -9,6 +9,8 @@ google-genai==2.8.0
 # LangChain tutor runtime (nodes.py, nodes_retrieval.py, quiz_nodes.py)
 langchain-google-genai==4.2.5
 langchain-core==1.4.6
+langgraph==1.2.4
+langgraph-checkpoint-sqlite==3.1.0
 
 # Pipeline
 yt-dlp==2026.6.9
@@ -16,6 +18,11 @@ ffmpeg-python==0.2.0
 faster-whisper==1.2.1
 opencv-python==4.13.0.92
 chromadb==0.6.0
+# Direct imports in ingest/ingest.py, visual/scene_detector.py, notes/screenshot_selector.py
+gdown==6.1.0
+numpy==2.4.6
+pillow==12.2.0
+imagehash==4.3.2
 
 # Web framework + data
 fastapi==0.138.1
