@@ -1,14 +1,11 @@
 import { useState, useEffect } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeHighlight from 'rehype-highlight'
 import { Bookmark, Clock, Lightbulb, Code, List, FileText } from 'lucide-react'
 import { ChapterScreenshots } from './ChapterScreenshots'
 import React from 'react'
-import remarkMath from 'remark-math'
-import rehypeKatex from 'rehype-katex'
 import { useLectureStore } from '../../stores/useLectureStore'
-import { docMarkdownComponents, headingToId } from '../../lib/markdown'
+import { apiFetchRaw } from '../../lib/http'
+import { headingToId } from '../../lib/markdown'
+import { Markdown } from '../ui/Markdown'
 import { Card, CardHeader } from '../ui/Card'
 import { FOCUS_RING } from '../ui/shared'
 import { PartialContentBadge } from '../ui/PartialContentBadge'
@@ -209,7 +206,7 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
     setLoading(true)
     setPartiallyGenerated(false)
 
-    fetch(`/notes/${chapterIdStr}?lecture_id=${lectureId}`, { signal: controller.signal })
+    apiFetchRaw(`/notes/${chapterIdStr}?lecture_id=${lectureId}`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) throw new Error('Not found')
         const contentType = res.headers.get('content-type') || ''
@@ -226,10 +223,10 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
       .then((data) => {
         if (typeof data === 'object' && data !== null && 'sections' in data) {
           // 100% Deterministic Structured JSON Payload
-          setTitle(data.title || `Chapter ${chapterIdStr}`)
-          const parsedSecs: SectionItem[] = (data.sections || []).map((sec: any) => ({
-            heading: sec.title || '',
-            body: (sec.content_markdown || '').replace(/!\[.*?\]\(.*?\)/g, '').trim(),
+          setTitle((data as { title?: string }).title || `Chapter ${chapterIdStr}`)
+          const parsedSecs: SectionItem[] = ((data as { sections?: Array<Record<string, unknown>> }).sections || []).map((sec) => ({
+            heading: (sec.title as string) || '',
+            body: ((sec.content_markdown as string) || '').replace(/!\[.*?\]\(.*?\)/g, '').trim(),
             cardType: sec.section_type as CardType
           }))
           setSections(parsedSecs)
@@ -286,13 +283,7 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
         if (!body) return null
 
         const innerContent = (
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeHighlight, rehypeKatex]}
-            components={docMarkdownComponents}
-          >
-            {body}
-          </ReactMarkdown>
+          <Markdown variant="doc">{body}</Markdown>
         )
 
         const sectionId = heading ? headingToId(heading) : `sec-preamble-${idx}`

@@ -39,8 +39,8 @@ export function DocPanel() {
     try {
       await exportInteractiveMindmap(lectureId)
       addToast('Interactive mind map downloaded', 'success')
-    } catch (err: any) {
-      addToast(`Export failed: ${err?.message || 'unknown error'}`, 'error')
+    } catch (err: unknown) {
+      addToast(`Export failed: ${err instanceof Error ? err.message : 'unknown error'}`, 'error')
     }
   }
 

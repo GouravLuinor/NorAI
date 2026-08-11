@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabaseClient'
-import { authHeaders } from '../lib/authHeaders'
+import { apiFetch } from '../lib/http'
 
 export interface UserProfile {
   id: string
@@ -71,12 +71,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return
     }
     try {
-      const res = await fetch('/quota', { headers: authHeaders() })
-      if (!res.ok) {
+      const quota = await apiFetch<QuotaInfo>('/quota')
+      if (!quota) {
         set({ quota: null })
         return
       }
-      const quota: QuotaInfo = await res.json()
       const current = get().user
       // Only create a new `user` object when subscription fields actually
       // changed. A fresh reference every call would re-trigger effects that

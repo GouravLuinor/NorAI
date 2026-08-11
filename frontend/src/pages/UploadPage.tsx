@@ -4,7 +4,7 @@ import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, 
 import { Button } from '../components/ui/Button'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { FOCUS_RING } from '../components/ui/shared'
-import { authHeaders } from '../lib/authHeaders'
+import { apiFetchRaw } from '../lib/http'
 import { useAuthStore } from '../stores/useAuthStore'
 
 type InputType = 'youtube' | 'upload' | 'drive'
@@ -114,7 +114,8 @@ export function UploadPage() {
         formData.append('duration', String(duration ?? 0))
       }
       try {
-        const res = await fetch('/estimate', { method: 'POST', body: formData, headers: authHeaders() })
+        const res = await apiFetchRaw('/estimate', { method: 'POST', body: formData })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data: EstimateResult = await res.json()
         if (!cancelled) setEstimate(data)
       } catch {
@@ -132,7 +133,7 @@ export function UploadPage() {
   }, [inputType, url, file])
 
   useEffect(() => {
-    fetch('/lectures')
+    apiFetchRaw('/lectures')
       .then((res) => res.json())
       .then((data: LectureInfo[]) => {
         setLectures(data.slice(0, 5)) // Take max 5 most recent
@@ -156,7 +157,7 @@ export function UploadPage() {
     }
 
     try {
-      const res = await fetch('/process', { method: 'POST', body: formData, headers: authHeaders() })
+      const res = await apiFetchRaw('/process', { method: 'POST', body: formData })
       if (!res.ok) {
         let detail = `Failed to start processing (HTTP ${res.status})`
         try {

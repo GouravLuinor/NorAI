@@ -4,6 +4,7 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { sendChatMessageStream } from '../../lib/chatApi'
 import { buildReferences } from '../../lib/references'
+import type { Reference } from '../../types'
 import { useTutorSettingsStore } from '../../stores/useTutorSettingsStore'
 import { MessageBubble } from './MessageBubble'
 import { ReferencesPanel } from './ReferencesPanel'
@@ -136,8 +137,8 @@ const handleSend = useCallback(async (text: string) => {
           setLiveReferences(buildReferences(data.retrieved_chunks ?? [], data.retrieved_images ?? [], '', data.verified_citations ?? []))
         }
       }
-    } catch (err: any) {
-      if (err?.name === 'AbortError') return
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return
       console.error('Chat error:', err)
       if (activeThreadRef.current === targetThreadId) {
         addMessage({
@@ -195,7 +196,7 @@ const handleSend = useCallback(async (text: string) => {
     attemptScroll()
   }, [liveReferences])
 
-  const handleScreenshotClick = useCallback((ref: any) => {
+  const handleScreenshotClick = useCallback((ref: Reference) => {
     const cleanPath = (ref.section || '').replace(/^outputs\//, '')
     setLightbox({ src: `/static/${cleanPath}`, caption: ref.title || '' })
   }, [])

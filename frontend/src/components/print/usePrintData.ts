@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
 import { fetchQuizQuestions, type Question } from '../../stores/useQuizStore'
 import { useLectureStore } from '../../stores/useLectureStore'
-import type { PrintData, PrintType } from './types'
+import { apiFetchRaw, apiGet } from '../../lib/http'
+import type { PrintData, PrintType, PrintChapterPayload } from './types'
 import type { ConceptMapResponse } from '../../lib/conceptMapLayout'
 
 // Loads every chapter's print payload once. Primary path: data injected by the
 // calling window via `__PRINT_DATA__` (or the `printDataReady` event). Fallback:
 // a 500ms-window fetch of each chapter's notes/revision/assessment endpoint.
 export function usePrintData(lectureId: string, type: PrintType) {
-  const [chapters, setChapters] = useState<any[]>([])
+  const [chapters, setChapters] = useState<PrintChapterPayload[]>([])
   const [assessmentChapters, setAssessmentChapters] = useState<{ ch: number; questions: Question[] }[]>([])
   const [guideTitle, setGuideTitle] = useState('')
   const [conceptMaps, setConceptMaps] = useState<{ ch: number; data: ConceptMapResponse }[]>([])
@@ -23,8 +24,7 @@ export function usePrintData(lectureId: string, type: PrintType) {
   }, [lectureId, setActiveLecture])
 
   useEffect(() => {
-    fetch(`/outline?lecture_id=${lectureId}`)
-      .then(r => r.json())
+    apiGet<{ chapters?: unknown[] }>(`/outline?lecture_id=${lectureId}`)
       .then(data => {
         const count = data.chapters?.length || 6
         setNumChapters(count)
@@ -72,9 +72,9 @@ export function usePrintData(lectureId: string, type: PrintType) {
           const all = await Promise.all(promises)
           if (!cancelled) setAssessmentChapters(all)
         } else if (type === 'guide') {
-          const res = await fetch(`/study-guide?lecture_id=${lectureId}`)
-          if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          const data = await res.json()
+          const data = await apiGet<{ title?: string; chapters?: PrintChapterPayload[] }>(
+            `/study-guide?lecture_id=${lectureId}`,
+          )
           if (!cancelled) {
             setGuideTitle(data.title || '')
             setChapters(Array.isArray(data.chapters) ? data.chapters : [])
@@ -83,10 +83,10 @@ export function usePrintData(lectureId: string, type: PrintType) {
           const promises = Array.from({ length: numChapters }, async (_, i) => {
             const ch = i + 1
             try {
-              const res = await fetch(`/concept-map?chapter_id=${ch}&lecture_id=${lectureId}`)
-              if (!res.ok) throw new Error(`HTTP ${res.status}`)
-              const data = await res.json()
-              return { ch, data: data as ConceptMapResponse }
+              const data = await apiGet<ConceptMapResponse>(
+                `/concept-map?chapter_id=${ch}&lecture_id=${lectureId}`,
+              )
+              return { ch, data }
             } catch {
               return null
             }
@@ -101,27 +101,29 @@ export function usePrintData(lectureId: string, type: PrintType) {
               const url = type === 'revision'
                 ? `${endpoint}?chapter_id=${ch}&lecture_id=${lectureId}`
                 : `${endpoint}/${ch}?lecture_id=${lectureId}`
-              const res = await fetch(url)
+              const res = await apiFetchRaw(url)
               if (!res.ok) throw new Error(`HTTP ${res.status}`)
               const contentType = res.headers.get('content-type') || ''
               if (contentType.includes('application/json')) {
-                return await res.json()
+                return (await res.json()) as PrintChapterPayload
               }
               const raw = await res.text()
               try {
-                return JSON.parse(raw)
+                return JSON.parse(raw) as PrintChapterPayload
               } catch {
-                return raw
+                return raw as PrintChapterPayload
               }
-            } catch (err: any) {
-              return `# Chapter ${ch}\n\n*Content not yet generated or failed to load. (${err.message})*`
+            } catch (err) {
+              const message = err instanceof Error ? err.message : String(err)
+              return `# Chapter ${ch}\n\n*Content not yet generated or failed to load. (${message})*`
             }
           })
           const texts = await Promise.all(promises)
           if (!cancelled) setChapters(texts)
         }
-      } catch (err: any) {
-        if (!cancelled) setGlobalError(err.message || 'An unexpected error occurred.')
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        if (!cancelled) setGlobalError(message || 'An unexpected error occurred.')
       } finally {
         if (!cancelled) setLoading(false)
       }

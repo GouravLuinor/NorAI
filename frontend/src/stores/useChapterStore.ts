@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { apiGet } from '../lib/http'
 
 interface Chapter {
   id: number
@@ -26,19 +27,19 @@ export const useChapterStore = create<ChapterState>((set) => ({
   setDocTab: (tab) => set({ activeDocTab: tab }),
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
 
-loadChapters: async (lectureId: string) => {
+  loadChapters: async (lectureId: string) => {
     try {
-      const res = await fetch(`/outline?lecture_id=${lectureId}&_t=${Date.now()}`)
-      if (!res.ok) throw new Error('Outline not found')
-      const outline = await res.json()
-      const chs = outline.chapters || []
-      
+      const outline = await apiGet<{ chapters?: { chapter_id?: number; id?: number; title?: string }[] }>(
+        `/outline?lecture_id=${lectureId}&_t=${Date.now()}`,
+      )
+      const chs = outline?.chapters || []
+
       if (chs.length === 0) {
         set({ chapters: [], activeChapterId: 1 })
         return
       }
 
-      const chapters: Chapter[] = chs.map((ch: { chapter_id?: number; id?: number; title?: string }) => ({
+      const chapters: Chapter[] = chs.map((ch) => ({
         id: ch.chapter_id || ch.id || 1,
         title: ch.title || `Chapter ${ch.chapter_id || ch.id}`,
       }))

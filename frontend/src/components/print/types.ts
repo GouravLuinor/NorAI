@@ -1,14 +1,21 @@
 import type { Question } from '../../stores/useQuizStore'
 import type { ConceptMapResponse } from '../../lib/conceptMapLayout'
 
+/** A raw chapter payload as produced by the backend endpoints: structured JSON
+ * ({ title, sections }), a JSON-encoded string, plain markdown, or a guide
+ * chapter object ({ markdown }). parseChapterContent() normalizes all of them. */
+export type PrintChapterPayload =
+  | string
+  | { title?: string; markdown?: string; sections?: unknown[] }
+
 export interface PrintDataNotes {
   type: 'notes' | 'revision'
-  chapters: any[]
+  chapters: PrintChapterPayload[]
 }
 export interface PrintDataGuide {
   type: 'guide'
   title: string
-  chapters: any[]
+  chapters: PrintChapterPayload[]
 }
 export interface PrintDataConcepts {
   type: 'concepts'

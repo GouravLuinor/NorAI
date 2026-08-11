@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { ChevronDown, ChevronUp, Image as ImageIcon } from 'lucide-react'
 import { Lightbox } from '../ui/Lightbox'
 import { FOCUS_RING } from '../ui/shared'
-import { useLectureStore } from '../../stores/useLectureStore'  
+import { useLectureStore } from '../../stores/useLectureStore'
+import { apiGet } from '../../lib/http'
 
 interface Screenshot {
   path: string
@@ -28,9 +29,8 @@ export function ChapterScreenshots({
 
   useEffect(() => {
     if (!chapterId) return
-    fetch(`/screenshots/${chapterId}?lecture_id=${lectureId}`) 
-      .then((res) => res.json())
-      .then((data) => setScreenshots(data))
+    apiGet<Screenshot[]>(`/screenshots/${chapterId}?lecture_id=${lectureId}`)
+      .then((data) => setScreenshots(data ?? []))
       .catch(() => setScreenshots([]))
   }, [chapterId, lectureId])  
 

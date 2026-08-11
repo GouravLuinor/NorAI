@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, ExternalLink, Sparkles, CreditCard } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
-import { authHeaders } from '../lib/authHeaders'
+import { apiGet } from '../lib/http'
 import { Button } from '../components/ui/Button'
 
 interface BillingData {
@@ -53,16 +53,12 @@ export function BillingPage() {
       setData(null)
       return
     }
-    fetch('/billing', { headers: authHeaders() })
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return (await res.json()) as BillingData
-      })
+    apiGet<BillingData>('/billing')
       .then((d) => {
         if (active) setData(d)
       })
       .catch((e) => {
-        if (active) setError(String(e.message || e))
+        if (active) setError(String(e instanceof Error ? e.message : e))
       })
     return () => {
       active = false
