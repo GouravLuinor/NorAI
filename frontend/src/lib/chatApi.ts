@@ -1,31 +1,13 @@
 import type { ChatResponse } from '../types'
 import { getLectureId, generateThreadTitle, isDefaultLabel, setThreadLabel } from './threadStorage'
 import { authHeaders } from './authHeaders'
+import { apiFetch, ApiError, apiGet, apiPost, apiDelete, API_BASE } from './http'
 
-// API_BASE is intentionally NOT used inside apiFetch — all internal store
-// calls use bare relative paths so the Vite dev proxy routes them correctly.
-// It IS used in the exported sendChatMessage helpers for production builds.
-export const API_BASE =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || ''
-
-export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T | null> {
-  try {
-    const res = await fetch(path, { ...options, headers: { ...authHeaders(), ...options?.headers } })
-    const ct = res.headers.get('content-type') || ''
-    if (!ct.includes('application/json')) {
-      console.warn(`apiFetch: non-JSON response for ${path} (${res.status})`)
-      return null
-    }
-    if (!res.ok) {
-      console.error(`apiFetch ${path} ${res.status}:`, await res.json().catch(() => ({})))
-      return null
-    }
-    return res.json() as Promise<T>
-  } catch (err: unknown) {
-    if (err instanceof Error && err.name !== 'AbortError') console.error(`apiFetch error for ${path}:`, err)
-    return null
-  }
-}
+// API_BASE comes from ./http (shared single source). It is intentionally NOT
+// used inside apiFetch — all internal store calls use bare relative paths so
+// the Vite dev proxy routes them correctly. It IS used in the exported
+// sendChatMessage helpers for production builds.
+export { apiFetch, apiGet, apiPost, apiDelete, ApiError, API_BASE }
 
 function ensureLabel(threadId: string, userQuestion: string) {
   if (isDefaultLabel(threadId)) {

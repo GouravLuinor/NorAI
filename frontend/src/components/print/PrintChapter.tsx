@@ -1,24 +1,12 @@
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
-import rehypeHighlight from 'rehype-highlight'
-import rehypeKatex from 'rehype-katex'
 import { ChapterScreenshots } from '../doc/ChapterScreenshots'
-import { printMarkdownComponents } from '../../lib/markdown'
 import { PrintSectionCard } from './PrintSectionCard'
 import { getCardType } from './cardClassifier'
 import { parseChapterContent } from './parseChapter'
+import { Markdown } from '../ui/Markdown'
+import type { PrintChapterPayload } from './types'
 
 function PrintMarkdown({ children }: { children: string }) {
-  return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm, remarkMath]}
-      rehypePlugins={[rehypeHighlight, rehypeKatex]}
-      components={printMarkdownComponents}
-    >
-      {children}
-    </ReactMarkdown>
-  )
+  return <Markdown variant="print">{children}</Markdown>
 }
 
 export function PrintChapter({
@@ -27,7 +15,7 @@ export function PrintChapter({
   showScreenshots = false,
   continuous = false,
 }: {
-  item: any
+  item: PrintChapterPayload
   ch: number
   showScreenshots?: boolean
   continuous?: boolean

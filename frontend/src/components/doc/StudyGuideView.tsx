@@ -1,12 +1,8 @@
 import { useState, useEffect } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeHighlight from 'rehype-highlight'
-import remarkMath from 'remark-math'
-import rehypeKatex from 'rehype-katex'
 import { BookMarked } from 'lucide-react'
 import { useLectureStore } from '../../stores/useLectureStore'
-import { revisionMarkdownComponents } from '../../lib/markdown'
+import { apiGet } from '../../lib/http'
+import { Markdown } from '../ui/Markdown'
 import { Card, CardHeader } from '../ui/Card'
 
 interface GuideChapter {
@@ -30,11 +26,7 @@ export function StudyGuideView() {
     const controller = new AbortController()
     setLoading(true)
     setError('')
-    fetch(`/study-guide?lecture_id=${lectureId}`, { signal: controller.signal })
-      .then(async (res) => {
-        if (!res.ok) throw new Error('Not found')
-        return res.json()
-      })
+    apiGet<{ title?: string; chapters?: GuideChapter[] }>(`/study-guide?lecture_id=${lectureId}`, { signal: controller.signal })
       .then((data) => {
         setTitle(data.title || '')
         setChapters(Array.isArray(data.chapters) ? data.chapters : [])
@@ -82,13 +74,7 @@ export function StudyGuideView() {
             <CardHeader icon={<BookMarked size={13} strokeWidth={1.5} />}>
               {ch.title}
             </CardHeader>
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm, remarkMath]}
-              rehypePlugins={[rehypeHighlight, rehypeKatex]}
-              components={revisionMarkdownComponents}
-            >
-              {ch.markdown}
-            </ReactMarkdown>
+            <Markdown variant="revision">{ch.markdown}</Markdown>
           </Card>
         </section>
       ))}

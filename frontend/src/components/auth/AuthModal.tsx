@@ -41,8 +41,8 @@ export function AuthModal() {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
         if (signInError) throw signInError
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to authenticate. Please check your credentials.')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to authenticate. Please check your credentials.')
     } finally {
       setLoading(false)
     }
@@ -57,8 +57,8 @@ export function AuthModal() {
         options: { redirectTo: window.location.origin },
       })
       if (oAuthError) throw oAuthError
-    } catch (err: any) {
-      setError(err.message || 'Google sign-in is not configured yet.')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Google sign-in is not configured yet.')
       setLoading(false)
     }
   }
@@ -69,8 +69,8 @@ export function AuthModal() {
     try {
       const { error: guestError } = await supabase.auth.signInAnonymously()
       if (guestError) throw guestError
-    } catch (err: any) {
-      setError(err.message || 'Unable to start a guest session.')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unable to start a guest session.')
       setLoading(false)
     }
   }

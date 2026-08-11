@@ -8,6 +8,7 @@ import { useToastStore } from '../../stores/useToastStore'
 import { useThreadStore } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { sendChatMessageStream } from '../../lib/chatApi'
+import { apiGet } from '../../lib/http'
 import { buildReferences } from '../../lib/references'
 import {
   layoutConceptMap,
@@ -124,9 +125,8 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    fetch(`/concept-map?chapter_id=${chapterId}&lecture_id=${lectureId}`)
-      .then((res) => res.json())
-      .then((resData: ConceptMapResponse) => {
+    apiGet<ConceptMapResponse>(`/concept-map?chapter_id=${chapterId}&lecture_id=${lectureId}`)
+      .then((resData) => {
         if (cancelled) return
         setData(resData)
         if (resData.nodes && resData.nodes.length > 0) {

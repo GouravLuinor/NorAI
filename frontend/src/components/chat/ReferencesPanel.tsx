@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import type { Reference } from '../../types'
 import { Bookmark, ChevronUp, FileText, Image } from 'lucide-react'
 import { FOCUS_RING } from '../ui/shared'
@@ -9,7 +9,7 @@ interface ReferencesPanelProps {
   onScreenshotClick?: (ref: Reference) => void
 }
 
-export function ReferencesPanel({ references, onReferenceClick, onScreenshotClick }: ReferencesPanelProps) {
+export const ReferencesPanel = memo(function ReferencesPanel({ references, onReferenceClick, onScreenshotClick }: ReferencesPanelProps) {
   const [collapsed, setCollapsed] = useState(true)
 
   return (
@@ -69,4 +69,4 @@ export function ReferencesPanel({ references, onReferenceClick, onScreenshotClic
       </div>
     </div>
   )
-}
+})

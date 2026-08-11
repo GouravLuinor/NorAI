@@ -4,6 +4,7 @@ import { Check, ArrowRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { useAuthStore } from '../stores/useAuthStore'
+import { apiFetchRaw } from '../lib/http'
 import type { ProcessEvent } from '../types'
 
 interface StageInfo {
@@ -91,7 +92,7 @@ export function ProcessingPage() {
 
     const poll = async () => {
       try {
-        const res = await fetch(`/process/${taskId}/status`, { signal: controller.signal })
+        const res = await apiFetchRaw(`/process/${taskId}/status`, { signal: controller.signal })
         if (res.status === 404) {
           // Task no longer exists (e.g. GC'd) — nothing left to poll for.
           setErrored(true)

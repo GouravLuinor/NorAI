@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { apiGet } from '../lib/http'
 
 interface LectureState {
   activeLectureId: string | null
@@ -12,8 +13,11 @@ export const useLectureStore = create<LectureState>((set) => ({
   lectures: [],
   setActiveLecture: (id) => set({ activeLectureId: id }),
   loadLectures: async () => {
-    const res = await fetch('/lectures')
-    const data = await res.json()
-    set({ lectures: data })
+    try {
+      const data = await apiGet<{ lecture_id: string; title: string }[]>('/lectures')
+      set({ lectures: data ?? [] })
+    } catch {
+      set({ lectures: [] })
+    }
   },
 }))

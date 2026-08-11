@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeHighlight from 'rehype-highlight'
 import { Bookmark, GitBranch, Clock, Lightbulb, AlertTriangle, Code, List, FileText, FlaskConical } from 'lucide-react'
-import remarkMath from 'remark-math'
-import rehypeKatex from 'rehype-katex'
 import { useLectureStore } from '../../stores/useLectureStore'
-import { revisionMarkdownComponents, headingToId } from '../../lib/markdown'
+import { apiFetchRaw } from '../../lib/http'
+import { headingToId } from '../../lib/markdown'
+import { Markdown } from '../ui/Markdown'
 import { Card, CardHeader } from '../ui/Card'
 import { FOCUS_RING } from '../ui/shared'
 import { PartialContentBadge } from '../ui/PartialContentBadge'
@@ -223,7 +220,7 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
     setLoading(true)
     setPartiallyGenerated(false)
 
-    fetch(`/summary?chapter_id=${chapterIdStr}&lecture_id=${lectureId}`, { signal: controller.signal })
+    apiFetchRaw(`/summary?chapter_id=${chapterIdStr}&lecture_id=${lectureId}`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) throw new Error('Not found')
         const rawText = await res.text()
@@ -279,13 +276,7 @@ export function RevisionView({ chapterId }: { chapterId: number | null }) {
         if (!body) return null
 
         const innerContent = (
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeHighlight, rehypeKatex]}
-            components={revisionMarkdownComponents}
-          >
-            {body}
-          </ReactMarkdown>
+          <Markdown variant="revision">{body}</Markdown>
         )
 
         const sectionId = heading ? headingToId(heading) : `sec-preamble-${idx}`

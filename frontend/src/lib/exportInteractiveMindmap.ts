@@ -1,27 +1,22 @@
 import type { ConceptMapResponse } from './conceptMapLayout'
+import { apiFetch } from './http'
 
 // Builds a fully self-contained interactive HTML mind map (inline CSS + vanilla
 // JS, no external deps) and triggers a browser download. The interactive file
 // is the "live" counterpart to the static vector PDF export — pan/zoom via
 // pointer + wheel, clickable nodes with description cards, per-chapter tabs.
 export async function exportInteractiveMindmap(lectureId: string): Promise<void> {
-  const outlineRes = await fetch(`/outline?lecture_id=${lectureId}`)
+  const outline = await apiFetch<{ chapters?: unknown[] }>(`/outline?lecture_id=${lectureId}`)
   let numChapters = 6
-  try {
-    const o = await outlineRes.json()
-    numChapters = o.chapters?.length || 6
-  } catch {
-    /* default to 6 */
-  }
+  if (outline?.chapters) numChapters = outline.chapters.length || 6
 
   const maps: ConceptMapResponse[] = []
   for (let i = 1; i <= numChapters; i++) {
     try {
-      const res = await fetch(`/concept-map?chapter_id=${i}&lecture_id=${lectureId}`)
-      if (res.ok) {
-        const data = await res.json()
-        if (Array.isArray(data.nodes) && data.nodes.length > 0) maps.push(data)
-      }
+      const data = await apiFetch<ConceptMapResponse>(
+        `/concept-map?chapter_id=${i}&lecture_id=${lectureId}`,
+      )
+      if (data && Array.isArray(data.nodes) && data.nodes.length > 0) maps.push(data)
     } catch {
       /* skip chapters without a map */
     }

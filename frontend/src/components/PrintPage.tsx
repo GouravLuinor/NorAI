@@ -60,7 +60,12 @@ function PrintPageContent() {
             <p className="text-xs text-nt3">Compiled from this lecture's revision notes.</p>
           </div>
           {chapters.map((item, idx) => (
-            <PrintChapter key={idx} item={item.markdown ?? item} ch={idx + 1} continuous />
+            <PrintChapter
+              key={idx}
+              item={typeof item === 'string' ? item : item.markdown ?? item}
+              ch={idx + 1}
+              continuous
+            />
           ))}
         </>
       )}

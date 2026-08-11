@@ -1,8 +1,6 @@
 import { create } from 'zustand'
 import { getLectureId } from '../lib/threadStorage'
-
-const API_BASE =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || ''
+import { apiGet, apiPost, API_BASE } from '../lib/http'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -139,8 +137,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     const lectureId = getLectureId()
     get().startQuiz(questions, chapterId, difficulty)
     try {
-      const res = await fetch(`${API_BASE}/quiz/attempts`, {
-        method: 'POST',
+      const data = await apiPost<{ attempt_id: string }>(`${API_BASE}/quiz/attempts`, {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           lecture_id: lectureId,
@@ -149,12 +146,9 @@ export const useQuizStore = create<QuizState>((set, get) => ({
           questions,
         }),
       })
-      if (res.ok) {
-        const data = await res.json()
-        const attemptId = data.attempt_id
-        set({ attemptId })
-        return attemptId
-      }
+      const attemptId = data.attempt_id
+      set({ attemptId })
+      return attemptId
     } catch (err) {
       console.warn('[QuizStore] Failed to create attempt record:', err)
     }
@@ -196,17 +190,19 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       user_answer: answers[i] || '',
     }))
     try {
-      await fetch(`${API_BASE}/quiz/attempts/${attemptId}/finish?lecture_id=${encodeURIComponent(lectureId)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          answers: answersPayload,
-          confidences,
-          evaluation,
-          score: evaluation.final_score ?? score,
-          total: questions.length,
-        }),
-      })
+      await apiPost<{ success: boolean }>(
+        `${API_BASE}/quiz/attempts/${attemptId}/finish?lecture_id=${encodeURIComponent(lectureId)}`,
+        {
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            answers: answersPayload,
+            confidences,
+            evaluation,
+            score: evaluation.final_score ?? score,
+            total: questions.length,
+          }),
+        },
+      )
     } catch (err) {
       console.warn('[QuizStore] Failed to finish attempt record:', err)
     }
@@ -237,14 +233,14 @@ export async function fetchQuizQuestions(
   if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
   if (lectureId) params.set('lecture_id', lectureId)
   if (difficulty) params.set('difficulty', difficulty)
-  const res = await fetch(`${API_BASE}/quiz/questions?${params}`)
-  if (!res.ok) throw new Error('Failed to load quiz questions')
-  const data = await res.json()
-  const raw = Array.isArray(data) ? data : data && Array.isArray(data.questions) ? data.questions : []
-  return (raw as Array<Record<string, unknown>>).map((q) => ({
+  const data = await apiGet<Question[] | { questions: Question[]; incomplete?: boolean }>(
+    `${API_BASE}/quiz/questions?${params}`,
+  )
+  const raw = Array.isArray(data) ? data : data?.questions ?? []
+  return raw.map((q) => ({
     ...q,
-    id: (q.id as number) ?? (q.question_id as number),
-  })) as Question[]
+    id: (q as Question & { question_id?: number }).question_id ?? q.id,
+  }))
 }
 
 /** Whether this chapter's assessment came back partially generated. */
@@ -256,9 +252,9 @@ export async function fetchQuizIncomplete(
   if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
   if (lectureId) params.set('lecture_id', lectureId)
   try {
-    const res = await fetch(`${API_BASE}/quiz/questions?${params}`)
-    if (!res.ok) return false
-    const data = await res.json()
+    const data = await apiGet<{ questions?: unknown; incomplete?: boolean }>(
+      `${API_BASE}/quiz/questions?${params}`,
+    )
     return Boolean(data && typeof data === 'object' && 'incomplete' in data ? data.incomplete : false)
   } catch {
     return false
@@ -271,13 +267,10 @@ export async function evaluateQuiz(
   confidences: string[],
 ): Promise<QuizEvaluation> {
   const elapsed = Math.round((Date.now() - startTime) / 1000)
-  const res = await fetch(`${API_BASE}/quiz/evaluate`, {
-    method: 'POST',
+  const data = await apiPost<{ evaluation: QuizEvaluation }>(`${API_BASE}/quiz/evaluate`, {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ questions, elapsed_seconds: elapsed, confidences }),
   })
-  if (!res.ok) throw new Error('Evaluation failed')
-  const data = await res.json()
   return data.evaluation as QuizEvaluation
 }
 
@@ -287,13 +280,11 @@ export async function explainQuizQuestion(
   lectureId: string,
   chapterId?: number | null,
 ): Promise<QuizCitation> {
-  const res = await fetch(`${API_BASE}/quiz/explain`, {
-    method: 'POST',
+  const data = await apiPost<QuizCitation>(`${API_BASE}/quiz/explain`, {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question, lecture_id: lectureId, chapter_id: chapterId ?? null }),
   })
-  if (!res.ok) throw new Error('Explain failed')
-  return (await res.json()) as QuizCitation
+  return data
 }
 
 export async function fetchGeneratedFlashcards(
@@ -303,9 +294,9 @@ export async function fetchGeneratedFlashcards(
   const params = new URLSearchParams()
   if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
   if (lectureId) params.set('lecture_id', lectureId)
-  const res = await fetch(`${API_BASE}/flashcards?${params}`)
-  if (!res.ok) throw new Error('Failed to load flashcards')
-  const data = await res.json()
+  const data = await apiGet<Flashcard[] | { flashcards: Flashcard[] }>(
+    `${API_BASE}/flashcards?${params}`,
+  )
   if (Array.isArray(data)) return data
   if (data && Array.isArray(data.flashcards)) return data.flashcards
   return []
@@ -317,22 +308,26 @@ export async function fetchQuizAttempts(
 ): Promise<QuizAttempt[]> {
   const params = new URLSearchParams({ lecture_id: lectureId })
   if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
-  const res = await fetch(`${API_BASE}/quiz/attempts?${params}`)
-  if (!res.ok) return []
-  const data = await res.json()
-  return (data.attempts || []) as QuizAttempt[]
+  try {
+    const data = await apiGet<{ attempts?: QuizAttempt[] }>(`${API_BASE}/quiz/attempts?${params}`)
+    return data?.attempts || []
+  } catch {
+    return []
+  }
 }
 
 export async function fetchQuizMissed(
   attemptId: string,
   lectureId: string,
 ): Promise<string[]> {
-  const res = await fetch(
-    `${API_BASE}/quiz/attempts/${attemptId}/missed?lecture_id=${encodeURIComponent(lectureId)}`
-  )
-  if (!res.ok) return []
-  const data = await res.json()
-  return (data.question_ids || []).map(String)
+  try {
+    const data = await apiGet<{ attempt_id: string; question_ids: string[] | number[] }>(
+      `${API_BASE}/quiz/attempts/${attemptId}/missed?lecture_id=${encodeURIComponent(lectureId)}`,
+    )
+    return (data?.question_ids || []).map(String)
+  } catch {
+    return []
+  }
 }
 
 export async function persistFlashcardRatings(
@@ -341,8 +336,7 @@ export async function persistFlashcardRatings(
   chapterId?: number,
 ): Promise<boolean> {
   try {
-    const res = await fetch(`${API_BASE}/flashcards/ratings`, {
-      method: 'POST',
+    await apiPost<{ success: boolean }>(`${API_BASE}/flashcards/ratings`, {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         lecture_id: lectureId,
@@ -350,7 +344,7 @@ export async function persistFlashcardRatings(
         ratings,
       }),
     })
-    return res.ok
+    return true
   } catch {
     return false
   }
@@ -363,10 +357,10 @@ export async function fetchFlashcardRatings(
   try {
     const params = new URLSearchParams({ lecture_id: lectureId })
     if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
-    const res = await fetch(`${API_BASE}/flashcards/ratings?${params}`)
-    if (!res.ok) return {}
-    const data = await res.json()
-    return (data.ratings || {}) as Record<string, string>
+    const data = await apiGet<{ ratings?: Record<string, string> }>(
+      `${API_BASE}/flashcards/ratings?${params}`,
+    )
+    return data?.ratings || {}
   } catch {
     return {}
   }

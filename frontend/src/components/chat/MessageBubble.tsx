@@ -1,12 +1,10 @@
-import ReactMarkdown from 'react-markdown'
-import remarkMath from 'remark-math'
-import rehypeKatex from 'rehype-katex'
+import { memo } from 'react'
 import type { Message } from '../../stores/useThreadStore'
-import { chatMarkdownComponents } from '../../lib/markdown'
+import { Markdown } from '../ui/Markdown'
 
 import { stripSources } from './ChatArea'
 
-export function MessageBubble({ message }: { message: Message }) {
+export const MessageBubble = memo(function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user'
   const displayContent = isUser ? message.content : stripSources(message.content)
 
@@ -34,13 +32,7 @@ export function MessageBubble({ message }: { message: Message }) {
             <p className="whitespace-pre-wrap">{message.content}</p>
           ) : (
             <div className="prose-chat">
-              <ReactMarkdown
-                remarkPlugins={[remarkMath]}
-                rehypePlugins={[rehypeKatex]}
-                components={chatMarkdownComponents}
-              >
-                {displayContent}
-              </ReactMarkdown>
+              <Markdown variant="chat">{displayContent}</Markdown>
             </div>
           )}
         </div>
@@ -50,4 +42,4 @@ export function MessageBubble({ message }: { message: Message }) {
       </div>
     </div>
   )
-}
+})
