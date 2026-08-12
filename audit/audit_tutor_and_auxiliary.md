@@ -1,5 +1,18 @@
 # Part 5 — LangGraph Subsystem, RAG/Vector Search, Auxiliary Pipelines & Frontend Audit
 
+> **Resolution status (updated Aug 2026):** most findings below have since been
+> fixed by the P1/P3/P5 hardening passes. **Resolved:** 1.1 (graph re-sequenced
+> so `rewrite_query` runs before the text/image retrieval split — enforced by
+> `tutor/test_graph_topology.py`), 1.2 (`rewrite_query_node` now clears
+> `retrieved_images` alongside `retrieved_chunks`), 2.1 (per-lecture retriever
+> client caching), 2.3 (`CONFIDENCE_THRESHOLD` is now 0.35 with strong/weak
+> confidence tags, P3.7), 3.2 (adaptive chunking supersedes the fixed
+> `DEFAULT_SEGMENTS_PER_CHUNK`, P1.8), 4.1 (lecture-switch flush verified).
+> **Superseded by design:** 3.2's "one segment count" concern is moot under
+> adaptive chunking. 1.3 (`start_normal`) remains as the conditional routing
+> node — harmless. Read the original analysis below as historical context; see
+> `tutor/test_*.py` + `backend/test_*.py` for the verification suites.
+
 This is Part 5 of the comprehensive NorAI codebase audit. It provides a deep, line-by-line review of the AI Tutor subsystem (`tutor/`), vector search & retrieval pipelines (`retriever.py`, `embedding.py`), auxiliary pipeline compilers (`chapter_builder.py`, `chunk.py`), and frontend state synchronization (`useThreadStore.ts`).
 
 ---

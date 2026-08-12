@@ -1,7 +1,6 @@
 # 🧠 NorAI
 
 ### From lecture video to an interactive learning workspace.
-
 **NorAI is an end-to-end multimodal AI platform that transforms
 long-form lectures into structured study notes, revision material,
 assessments, flashcards, important visual references, and a
@@ -14,19 +13,9 @@ lecture-grounded AI tutor.**
 [![Gemini](https://img.shields.io/badge/Gemini-Multimodal_AI-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Agent_Workflows-1C3C3C?style=for-the-badge)](https://www.langchain.com/langgraph)
 [![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector_Store-FF6B35?style=for-the-badge)](https://www.trychroma.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth_+_Postgres-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 
-[![Status](https://img.shields.io/badge/Status-Active_Development-orange?style=flat-square)](#-development-status)
-[![PRs
-Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=flat-square)](#-contributing)
-
-**Lecture In → Understanding → Structure → Practice → Recall →
-Conversation**
-
-[✨ Features](#-what-norai-does) · [🎬 Demo](#-demo) · [⚙️
-Architecture](#️-system-architecture) · [🔄
-Pipeline](#-18-stage-processing-pipeline) · [🚀
-Setup](#-getting-started) · [🗺️ Roadmap](#️-roadmap)
-------------------------------------------------------------------------
+**Lecture In → Understanding → Structure → Practice → Recall → Conversation**
 
 ## ✨ What is NorAI?
 
@@ -39,127 +28,68 @@ visuals are considered together.
 
 Most lecture tools reduce that complexity to:
 
-``` text
+```
 Video → Transcript → Summary
 ```
 
 NorAI takes a different approach:
 
-``` text
+```
 Lecture Video
      ↓
 Speech + Visual Understanding
-     ↓
 Structured Knowledge
-     ↓
 Dynamic Chapters
-     ↓
 Notes + Revision + Assessment + Flashcards
-     ↓
 Lecture-Grounded AI Tutor
 ```
 
 > **NorAI does not just summarize a lecture. It reconstructs it into a
 > structured, interactive learning system.**
 
-------------------------------------------------------------------------
-
-## 🎬 Demo
-
-> Add a short 10--20 second GIF showing: **lecture input → live
-> processing → workspace → tutor interaction**.
-
-```{=html}
-<p align="center">
-```
-`<img src="docs/assets/norai-demo.gif" alt="NorAI end-to-end demo" width="900" />`{=html}
-```{=html}
-</p>
-```
-
-------------------------------------------------------------------------
-
 ## 🌟 What NorAI Does
 
-  -----------------------------------------------------------------------
-  Feature                             What it does
-  ----------------------------------- -----------------------------------
-  📝 **Study Notes**                  Detailed, chapter-aware notes
-                                      generated from structured lecture
-                                      knowledge
-
-  ⚡ **Revision Notes**               High-density summaries designed for
-                                      rapid review
-
-  🧪 **Assessments**                  Chapter-specific MCQ, True/False,
-                                      short-answer, and scenario-style
-                                      questions
-
-  🃏 **Flashcards**                   Recall cards with concise answers,
-                                      explanations, and confidence
-                                      ratings
-
-  🖼️ **Important Visuals**            Relevant lecture frames mapped back
-                                      to concepts and note sections
-
-  🤖 **AI Tutor**                     Retrieval-grounded Q&A over
-                                      lecture-specific notes and visual
-                                      context
-
-  💬 **Persistent Threads**           Lecture-scoped tutor conversations
-                                      with saved history
-
-  ✨ **Highlight & Ask**              Select text in study material and
-                                      ask the tutor directly
-
-  🔍 **Document Search**              Search generated learning material
-                                      inside the workspace
-
-  📄 **PDF Export**                   On-demand, print-ready study,
-                                      revision, and assessment documents
-
-  📚 **Multi-Lecture Workspace**      Isolated artifacts, state,
-                                      retrieval indexes, and
-                                      conversations per lecture
-  -----------------------------------------------------------------------
-
-------------------------------------------------------------------------
+| Feature | What it does |
+|---|---|
+| 📝 **Study Notes** | Detailed, chapter-aware notes generated from structured lecture knowledge |
+| ⚡ **Revision Notes** | High-density summaries designed for rapid review |
+| 🧪 **Assessments** | Chapter-specific MCQ, True/False, short-answer, and scenario-style questions |
+| 🃏 **Flashcards** | Recall cards with concise answers, explanations, and confidence ratings |
+| 🖼️ **Important Visuals** | Relevant lecture frames mapped back to concepts and note sections |
+| 🤖 **AI Tutor** | Retrieval-grounded Q&A over lecture-specific notes and visual context |
+| 💬 **Persistent Threads** | Lecture-scoped tutor conversations with saved history |
+| ✨ **Highlight & Ask** | Select text in study material and ask the tutor directly |
+| 🔍 **Document Search** | Search generated learning material inside the workspace |
+| 📄 **PDF Export** | On-demand, print-ready study, revision, and assessment documents |
+| 📚 **Multi-Lecture Workspace** | Isolated artifacts, state, retrieval indexes, and conversations per lecture |
 
 ## 🧠 Why NorAI is Different
 
 ### 1. Multimodal by design
-
 Lectures are not audio files with decorative video. NorAI separately
 processes spoken explanations, timestamped transcript segments, code
 visible on screen, slides, diagrams, whiteboard content, interfaces,
 demonstrations, and other educationally important frames.
 
 ### 2. Dynamic lecture structure
-
 NorAI does **not** assume every lecture has a fixed number of chapters.
 The outline stage determines lecture title, chapter count, boundaries,
 titles, focus concepts, and source chunk membership.
 
 ### 3. Lecture-scoped retrieval
-
-Every lecture gets isolated artifacts and retrieval context. Tutor
-answers are grounded in the active lecture instead of a shared global
-knowledge pool.
+Every lecture gets isolated artifacts, a per-lecture Chroma index, and a
+per-lecture tutor graph. Tutor answers are grounded in the active lecture
+instead of a shared global knowledge pool — and citations are **verified**
+before they are shown (a deterministic post-check drops fabricated ones).
 
 ### 4. Built for active learning
-
-``` text
 Understand → Revise → Test → Recall → Ask
-```
-
 Notes, revision, assessments, flashcards, and tutoring live in one
 connected workspace.
 
-------------------------------------------------------------------------
-
 ## 🏗️ System Architecture
 
-``` text
+```
 ┌────────────────────────────────────────────────────────────────────┐
 │                    React + TypeScript Frontend                     │
 │                                                                    │
@@ -171,249 +101,144 @@ connected workspace.
                                │ REST + Polling
 ┌──────────────────────────────▼─────────────────────────────────────┐
 │                         FastAPI Backend                            │
-│  Lecture APIs  │  Pipeline Status  │  Educational APIs  │ Tutor   │
-└──────────────────────────────┬─────────────────────────────────────┘
-                               │
-┌──────────────────────────────▼─────────────────────────────────────┐
-│                    Async Pipeline Orchestrator                     │
-│ Ingest → Transcribe → Extract → Vision → Merge → Structure        │
-│        → Notes → Revision → Assessment → Flashcards → Index       │
-└───────────────────┬────────────────────────────┬───────────────────┘
-                    │                            │
-          ┌─────────▼─────────┐        ┌─────────▼────────────────┐
-          │ Lecture Artifacts │        │ Retrieval / Tutor Layer │
-          │ Notes, Revision   │        │ LangGraph, ChromaDB     │
-          │ Assessments       │        │ Embeddings              │
-          │ Flashcards        │        │ Note + Screenshot RAG   │
-          │ Screenshots       │        │ Persistent Memory       │
-          └───────────────────┘        └──────────────────────────┘
+│  Auth (Supabase JWT/JWKS)  │  APIs  │  Webhooks  │  Tutor / Quota  │
+│                                                                   │
+│                 DB-Backed Job Queue (backend/jobs.py)             │
+│                 supervisor thread + bounded worker pool            │
+│                 sync pipeline runs inside a worker thread          │
+│  Ingest → Transcribe → Extract → Visual → Outline → Merge →       │
+│  Chapters → Notes/Revision/Assessment/Flashcards → Index          │
+└──────────────┬────────────────────────────┬────────────────────────┘
+               │                            │
+      ┌────────▼─────────┐        ┌─────────▼────────────────┐
+      │ Supabase Postgres │        │ Retrieval / Tutor Layer │
+      │ users, lectures,  │        │ LangGraph, ChromaDB     │
+      │ subscriptions,    │        │ Hybrid BM25 + dense     │
+      │ usage_logs,       │        │ Verified citations       │
+      │ webhook_events    │        │ Persistent threads       │
+      └───────────────────┘        └──────────────────────────┘
 ```
 
-------------------------------------------------------------------------
+The pipeline itself is **fully synchronous** and runs inside a worker
+thread owned by a **DB-backed job queue** (`backend/jobs.py`): `POST
+/process` enqueues a `Lecture` row (`status="queued"`), a supervisor
+thread claims it within global + per-user concurrency caps, and the job
+survives restarts — a stale heartbeat re-queues the job and, because
+every stage is cache-first, recovery is near-free. Progress is persisted
+to the DB and **polled** by the frontend (no SSE).
 
 ## 🔄 18-Stage Processing Pipeline
 
-  ------------------------------------------------------------------------
-                         Stage Process               Purpose
-  ---------------------------- --------------------- ---------------------
-                            01 Ingestion         Resolve source and
-                                                     create lecture-scoped
-                                                     media artifacts
+| # | Stage | What happens |
+|---|---|---|
+| 1 | **Ingestion** | Resolve source (YouTube via `yt-dlp`, Drive via `gdown`, or upload) and create lecture-scoped media artifacts |
+| 2 | **Transcription** | Faster-Whisper converts audio into timestamped transcript segments |
+| 3 | **Chunking** | Adaptive chunking builds context-preserving transcript chunks |
+| 4 | **Knowledge Extraction** | Per-chunk Gemini structured extraction: concepts, explanations, formulas, code, relationships |
+| 5 | **Frame Extraction** | OpenCV samples the lecture's visual stream (runs in parallel with 2–4) |
+| 6 | **Scene Detection** | Pixel-diff threshold dedup reduces frames to meaningful keyframes |
+| 7 | **Chunk ↔ Screenshot Mapping** | Associates transcript chunks with relevant visuals by timestamp |
+| 8 | **Dynamic Outline Generation** | LLM infers title, 3–6 chapters, boundaries, and focus concepts |
+| 9 | **Visual Understanding** | Gemini multimodal reads chapter-batched keyframes → `visual_objects/` |
+| 10 | **Knowledge Merging** | Fuses textual + visual knowledge into merged objects |
+| 11 | **Chapter Building** | Aggregates merged objects into typed chapters (no LLM) |
+| 12 | **Screenshot Selection** | Two-pass quality scoring → perceptual-hash dedup → top-K ranking |
+| 13–16 | **Consolidated Chapter Artifacts** | **One Gemini call per chapter** produces study notes + revision + assessment + flashcards (`MergedChapterArtifactsModel`) — stages 13–16 are a single consolidated call |
+| 17 | **Tutor Index** | Diff-syncs embeddings of `notes/chapter_*.md` into the per-lecture Chroma `norai_notes` collection (content-hashed ids) |
+| 18 | **Screenshot Index** | Indexes screenshot captions into `screenshot_captions` (diff-sync) |
+| — | **Cleanup** | Deletes transient dirs on success, failure, or cancel |
 
-                            02 Transcription     Convert audio into
-                                                     timestamped
-                                                     transcript segments
-
-                            03 Chunking          Build
-                                                     context-preserving
-                                                     transcript chunks
-
-                            04 **Knowledge           Extract concepts,
-                               Extraction**          explanations,
-                                                     formulas, code, and
-                                                     relationships
-
-                            05 Frame Extraction  Sample the lecture's
-                                                     visual stream
-
-                            06 Scene Detection   Reduce redundant
-                                                     frames and preserve
-                                                     meaningful scene
-                                                     changes
-
-                            07 **Chunk ↔ Screenshot  Associate transcript
-                               Mapping**             chunks with relevant
-                                                     visuals
-
-                            08 **Visual              Analyze selected
-                               Understanding**       frames with
-                                                     multimodal AI
-
-                            09 Knowledge Merging Fuse textual and
-                                                     visual knowledge
-
-                            10 **Outline             Infer title, chapter
-                               Generation**          count, boundaries,
-                                                     and focus concepts
-
-                            11 Chapter Building  Materialize
-                                                     chapter-specific
-                                                     knowledge
-
-                            12 Study Notes       Generate detailed
-                                                     chapter-aware notes
-
-                            13 **Screenshot          Select educationally
-                               Selection**           important visuals
-
-                            14 Revision Notes    Generate compact
-                                                     revision material
-
-                            15 Assessment        Generate
-                                                     chapter-specific
-                                                     questions and answer
-                                                     data
-
-                            16 Flashcards        Convert assessment
-                                                     knowledge into recall
-                                                     cards
-
-                            17 Tutor Index       Embed lecture notes
-                                                     into a persistent
-                                                     retrieval index
-
-                            18 Screenshot Index  Index selected visual
-                                                     explanations for
-                                                     tutor retrieval
-  ------------------------------------------------------------------------
-
-------------------------------------------------------------------------
+Because every expensive stage is **hash-of-inputs cached** (P1) and the
+index is diff-synced, re-running a lecture costs ~0 Gemini calls.
 
 ## 🔬 Inside the Multimodal Pipeline
 
 ### 🎙️ Speech Understanding
-
 NorAI uses **Faster-Whisper** and preserves timestamp-aware transcript
 segments.
 
-``` text
-Audio → Timestamped Transcript → Context-Preserving Chunks → Structured Knowledge
-```
+`Audio → Timestamped Transcript → Context-Preserving Chunks → Structured Knowledge`
 
 ### 📸 Visual Understanding
-
-``` text
-Video → Frame Extraction → Scene Detection → Keyframes
-      → Temporal Chunk Mapping → Multimodal Analysis
-```
+`Video → Frame Extraction → Scene Detection → Keyframes → Temporal Chunk Mapping → Multimodal Analysis`
 
 Visual analysis can capture code snippets, diagrams, formulas, slides,
 architecture drawings, UI demonstrations, and worked examples.
 
 ### 🧬 Knowledge Fusion
 
-``` text
+```
 Spoken Knowledge ─────────┐
                           ├──► Unified Lecture Knowledge
 Visual Knowledge ─────────┘
 ```
 
 ### 🧭 Dynamic Outline Generation
-
 The lecture outline is generated from processed knowledge itself. A
 lecture can become four chapters, six chapters, or another structure
 depending on content.
 
-``` json
-{
-  "lecture_title": "Example Lecture",
-  "chapters": [
-    {
-      "chapter_id": 1,
-      "title": "Foundations",
-      "focus_concepts": ["Concept A", "Concept B"],
-      "start_chunk": 0,
-      "end_chunk": 3,
-      "chunk_ids": [0, 1, 2, 3]
-    }
-  ]
-}
-```
-
-------------------------------------------------------------------------
-
 ## 🤖 Lecture-Grounded AI Tutor
 
-``` text
+```
 User Question
       ↓
-Lecture-Scoped Retrieval
-      ↓
+Lecture-Scoped Hybrid Retrieval (BM25 + dense, RRF-fused)
 Relevant Note Chunks + Screenshot Context + Conversation State
       ↓
-Grounded Tutor Response
+Grounded Tutor Response (verified citations)
 ```
 
 The tutor layer includes:
 
--   **LangGraph** for stateful AI workflows
--   **ChromaDB** for persistent vector retrieval
--   lecture-specific note indexes
--   screenshot-caption retrieval
--   persistent conversation threads
--   active lecture identity
--   contextual tools and commands
+- **LangGraph** for stateful AI workflows (with **async** nodes on an
+  `AsyncSqliteSaver` checkpointer so turns don't block the event loop)
+- **ChromaDB** for persistent vector retrieval, plus **BM25** for lexical
+  search fused via **RRF** (reciprocal rank fusion)
+- lecture-specific note indexes and screenshot-caption retrieval
+- persistent conversation threads per lecture
+- verified citations — only sources that pass a deterministic post-check
+  are shown; low-confidence retrieval answers say so explicitly
+- contextual tools, commands, and quiz-in-chat
 
 ### ✨ Highlight & Ask
-
-``` text
-Study Notes → Select Text → Highlight & Ask → Tutor with selected context
-```
-
-------------------------------------------------------------------------
+`Study Notes → Select Text → Highlight & Ask → Tutor with selected context`
 
 ## 🖥️ Learning Workspace
 
-```{=html}
-<p align="center">
-```
-`<img src="docs/assets/workspace.png" alt="NorAI learning workspace" width="900" />`{=html}
-```{=html}
-</p>
-```
 ### 📝 Study Notes
-
 Chapter-aware content with card-based sections, callouts, tables,
 syntax-highlighted code, mathematical notation, and selected lecture
 visuals.
 
 ### ⚡ Revision Notes
-
 Condensed material for exam revision, interview preparation, pre-class
 review, and quick concept refresh.
 
 ### 🧪 Assessment
-
 Generated Multiple Choice, True/False, Short Answer, and Scenario-Based
 questions.
 
 ### 🃏 Flashcards
-
 Cards contain a front, back, explanation, and `Again` / `Hard` / `Good`
 / `Easy` confidence ratings with review statistics.
 
-------------------------------------------------------------------------
-
 ## 📚 Multi-Lecture by Design
 
-Workspace routes are lecture-specific:
+Workspace routes are lecture-specific: `/workspace/{lectureId}`.
 
-``` text
-/workspace/{lectureId}
+Artifacts are isolated under `outputs/`:
+
 ```
-
-Artifacts are isolated:
-
-``` text
 outputs/
 ├── lectures.json
 ├── <lecture-id-a>/
-│   ├── audio/
-│   ├── videos/
-│   ├── metadata/
-│   ├── transcripts/
-│   ├── chunks/
-│   ├── objects/
-│   ├── visual_objects/
-│   ├── merged_objects/
-│   ├── mappings/
-│   ├── chapters/
-│   ├── notes/
-│   ├── revision/
-│   ├── assessment/
-│   ├── flashcards/
+│   ├── videos/ · audio/ · metadata/
+│   ├── transcripts/ · chunks/ · objects/ · visual_objects/
+│   ├── merged_objects/ · mappings/ · chapters/
+│   ├── notes/ · revision/ · assessment/ · flashcards/
 │   ├── screenshots/
-│   └── tutor/
+│   └── tutor/  (chroma index + graph checkpoints)
 └── <lecture-id-b>/
     └── ...
 ```
@@ -422,406 +247,273 @@ Lecture identity propagates through routes, Zustand stores, backend
 requests, documents, assessments, flashcards, screenshots, tutor
 indexes, conversation threads, and PDF generation.
 
-------------------------------------------------------------------------
-
 ## 📄 On-Demand PDF Generation
 
-NorAI supports downloadable Study Notes, Revision Notes, and
-Assessments.
-
-``` text
-User clicks PDF
-      ↓
-Backend gathers lecture-specific data
-      ↓
-Print data injected into React print page
-      ↓
-Browser renders document and images
-      ↓
-PDF generated on demand
-```
-
-PDFs are generated when requested rather than during every pipeline run.
-
-------------------------------------------------------------------------
+NorAI supports downloadable Study Notes, Revision Notes, Assessments,
+guide PDFs, and concept maps — generated on demand via the browser print
+pipeline (React renders a print page, CSS `@page` rules drive pagination,
+`window.print()` produces the PDF). PDFs are generated when requested
+rather than during every pipeline run.
 
 ## 🛠️ Tech Stack
 
-  -----------------------------------------------------------------------
-  Layer                   Technology              Role
-  ----------------------- ----------------------- -----------------------
-  **Frontend**            React, TypeScript       Interactive learning
-                                                  workspace
-
-  **Build Tooling**       Vite                    Frontend development
-                                                  and bundling
-
-  **Styling**             Tailwind CSS            UI system
-
-  **State**               Zustand                 Lecture, chapter, and
-                                                  workspace state
-
-  **Routing**             React Router            Lecture-aware
-                                                  navigation
-
-  **Documents**           React Markdown, KaTeX   Markdown and math
-                                                  rendering
-
-  **Backend**             FastAPI, Uvicorn        APIs and pipeline
-                                                  integration
-
-  **Pipeline**            Python 3.12             Core orchestration
-
-  **AI**                  Google Gemini           Text generation and
-                                                  multimodal
-                                                  understanding
-
-  **AI Workflows**        LangChain, LangGraph    Model integration and
-                                                  stateful tutor flows
-
-  **Speech**              Faster-Whisper          Lecture transcription
-
-  **Vector Store**        ChromaDB                Persistent semantic
-                                                  retrieval
-
-  **Visual Processing**   OpenCV                  Frame and image
-                                                  processing
-
-  **Media**               FFmpeg                  Audio/video processing
-
-  **Video Sources**       yt-dlp                  Online video ingestion
-
-  **Storage**             File system, SQLite,    Artifacts, conversation
-                          ChromaDB                state, vectors
-  -----------------------------------------------------------------------
-
-> Exact model choices can evolve while NorAI is under active
-> development.
-
-------------------------------------------------------------------------
+| Layer | Technology | Role |
+|---|---|---|
+| **Frontend** | React 19, TypeScript | Interactive learning workspace |
+| **Build Tooling** | Vite 8 | Frontend development and bundling |
+| **Styling** | Tailwind CSS 4 | UI system (design tokens) |
+| **State** | Zustand | Lecture, chapter, and workspace state |
+| **Routing** | React Router | Lecture-aware navigation |
+| **Documents** | React Markdown, KaTeX | Markdown and math rendering |
+| **Backend** | FastAPI, Uvicorn | APIs, webhooks, quota, pipeline integration |
+| **Job Queue** | DB-backed (SQLAlchemy) | Durable pipeline scheduling (P4) |
+| **AI** | Google Gemini (`gemini-3.1-flash-lite`) | Text generation and multimodal understanding |
+| **AI Workflows** | LangGraph | Stateful tutor flows |
+| **Speech** | Faster-Whisper | Lecture transcription |
+| **Vector Store** | ChromaDB + BM25 | Hybrid (RRF-fused) retrieval |
+| **Visual Processing** | OpenCV | Frame and image processing |
+| **Media** | FFmpeg | Audio/video processing |
+| **Video Sources** | yt-dlp, gdown | Online video ingestion |
+| **Auth + DB** | Supabase | JWT auth (JWKS), Postgres storage |
+| **Schema** | Alembic | Versioned migrations (P4.3) |
+| **Storage** | File system, Supabase Postgres, ChromaDB, SQLite | Artifacts, app data, vectors, checkpoints |
 
 ## 🗂️ Repository Structure
 
-``` text
+```
 NorAI/
+├── config.py                     # single source of truth (model, dirs, quota, API key)
+├── cache_util.py                 # hash-of-inputs caching markers (P1.4)
 ├── backend/
-│   ├── main.py
-│   ├── orchestrator.py
-│   ├── lecture_registry.py
-│   ├── generate_pdfs.py
-│   └── routers/
-├── ingest/
-├── transcription/
-├── chunking/
-├── extract/
-│   ├── extractor.py
-│   └── merger.py
-├── visual/
-│   ├── extract_frames.py
-│   ├── scene_detector.py
-│   ├── mapper.py
-│   └── visual_extractor.py
-├── notes/
-│   ├── outline_generator.py
-│   ├── outline_reviewer.py
-│   ├── chapter_builder.py
-│   ├── chapter_clusterer.py
-│   ├── chapter_structurer.py
-│   ├── notes_generator.py
-│   └── screenshot_selector.py
-├── revision_notes/
-├── assessment/
-├── flashcards/
-│   └── generate_flashcards.py
-├── tutor/
-│   ├── graph.py
-│   ├── state.py
-│   ├── nodes.py
-│   ├── nodes_retrieval.py
-│   ├── retriever.py
-│   ├── embedding.py
-│   ├── memory.py
-│   ├── quiz_nodes.py
-│   └── tools.py
-├── retrieval/
-├── embeddings/
-├── vectordb/
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   └── vite.config.ts
-├── docs/
-├── outputs/
-├── PROJECT_PROGRESS.md
+│   ├── main.py                   # all routes (incl. /process, /chat, /quota, /billing)
+│   ├── orchestrator.py           # sync 18-stage pipeline (runs in job worker thread)
+│   ├── jobs.py                   # DB-backed job queue + supervisor (P4.1)
+│   ├── auth.py                   # Supabase JWT/JWKS verification (fail-closed)
+│   ├── usage.py                  # usage metering + quota rollover (P2)
+│   ├── estimator.py              # self-calibrating cost/time estimator (P1.8)
+│   ├── ratelimit.py              # RPM limiter for Gemini calls
+│   ├── db/                       # async SQLAlchemy engine, models, migrations
+│   ├── routers/                  # (webhooks router used; rest empty)
+│   └── test_*.py                 # standalone offline test suites
+├── ingest/  transcription/  chunking/
+├── extract/  visual/  notes/
+├── revision_notes/  assessment/  flashcards/
+├── tutor/                        # RAG tutor: graph, nodes, retriever, bm25,
+│                                 # embedding, memory, quiz_nodes, citations, llm
+├── migrations/  +  alembic.ini   # versioned schema migrations (P4.3)
+├── frontend/                     # React 19 + TS (src/, public/, vite.config.ts)
+├── scripts/
+│   ├── start-dev.sh              # idempotent dev servers (backend + frontend)
+│   └── run-tests.sh              # runs all offline test_*.py suites
+├── Dockerfile  +  docker-compose.yml   # single-container deploy (P5.4)
+├── .github/workflows/ci.yml      # CI: offline tests + lint + build (P5.3)
+├── outputs/                      # ALL generated artifacts (gitignored)
+├── PROJECT_PROGRESS.md  ROADMAP.md  COMMUNICATOR.md
+├── AGENTS.md  NOTES.md  audit/
 └── requirements.txt
 ```
-
-------------------------------------------------------------------------
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-
--   Python 3.12+
--   Node.js 18+
--   npm
--   FFmpeg
--   Git
--   Google Gemini API key
+- Python 3.12+
+- Node.js 20.19+ (Vite 8 requirement; install via nvm if needed)
+- npm
+- FFmpeg
+- Git
+- Google Gemini API key (`GEMINI_API_KEY`)
+- A Supabase project (for auth + Postgres; optional to run the pipeline alone)
 
 ### 1. Clone
-
-``` bash
+```bash
 git clone <YOUR_REPOSITORY_URL>
 cd NorAI
 ```
 
-### 2. Create Python environment
-
-``` bash
+### 2. Create the Python environment
+```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-Windows PowerShell:
-
-``` powershell
-.\venv\Scripts\Activate.ps1
-```
-
 ### 3. Install Python dependencies
-
-``` bash
+```bash
 pip install -r requirements.txt
 ```
 
 ### 4. Configure environment
-
-Create `.env`:
-
-``` env
-GEMINI_API_KEY=your_api_key_here
+```bash
+cp .env.example .env   # then fill in:
+# GEMINI_API_KEY=...
+# SUPABASE_URL=...  VITE_SUPABASE_URL=...  VITE_SUPABASE_ANON_KEY=...
+# DATABASE_URL=postgresql://...   (Supabase session pooler)
+# LEMONSQUEEZY_WEBHOOK_SECRET=...
 ```
-
-> Never commit secrets or API keys.
+> Never commit secrets or API keys — `.env` is gitignored.
 
 ### 5. Install frontend dependencies
-
-``` bash
-cd frontend
-npm install
-cd ..
+```bash
+cd frontend && npm install && cd ..
 ```
 
-### 6. Start backend
+### 6. Start the dev servers
+```bash
+scripts/start-dev.sh start     # both backend (:8000) + frontend (:5173), daemonized
+scripts/start-dev.sh status    # check health; stop to shut down
+```
+or manually: `venv/bin/python -m uvicorn backend.main:app --reload --port 8000`
+(backend, from repo root) and `cd frontend && npm run dev` (frontend).
 
-``` bash
-uvicorn backend.main:app --reload --port 8000
+API docs: http://localhost:8000/docs
+
+### 7. Run the tests
+```bash
+scripts/run-tests.sh           # all offline backend test_*.py suites
+cd frontend && npm run test    # Vitest frontend suites
+npm run build                  # tsc -b + vite build (CI parity)
 ```
 
-API docs:
-
-``` text
-http://localhost:8000/docs
-```
-
-### 7. Start frontend
-
-``` bash
-cd frontend
-npm run dev
-```
-
-Open:
-
-``` text
-http://localhost:5173
-```
-
-------------------------------------------------------------------------
+**Quotas:** Free trial = 1 video of ≤15 minutes. Starter = 300
+minutes/month. Pro = 1500 minutes/month. Usage is metered per completed
+lecture and enforced *before* any Gemini spend.
 
 ## 🧪 Development Status
 
-NorAI is under **active development**.
+NorAI is under **active development** — the SaaS foundation (auth,
+billing, job durability) is complete; content features continue to grow.
 
 ### Implemented
-
--   [x] Lecture video ingestion
--   [x] Audio extraction
--   [x] Faster-Whisper transcription
--   [x] Timestamp-aware chunking
--   [x] Structured knowledge extraction
--   [x] Frame extraction
--   [x] Scene detection
--   [x] Chunk-to-screenshot mapping
--   [x] Multimodal visual understanding
--   [x] Text + visual knowledge merging
--   [x] Dynamic lecture outline generation
--   [x] Dynamic chapter construction
--   [x] Study notes generation
--   [x] Revision notes generation
--   [x] Assessment generation
--   [x] Flashcard generation
--   [x] Important screenshot selection
--   [x] Multi-lecture artifact isolation
--   [x] Lecture registry
--   [x] FastAPI integration
--   [x] React + TypeScript workspace
--   [x] Lecture switching
--   [x] Processing progress tracking
--   [x] Lecture-specific ChromaDB indexes
--   [x] Screenshot-context retrieval
--   [x] Persistent tutor threads
--   [x] Highlight & Ask
--   [x] Document search
--   [x] On-demand PDF generation
-
-------------------------------------------------------------------------
+- [x] Lecture video ingestion (YouTube / Drive / upload)
+- [x] Faster-Whisper transcription with timestamped segments
+- [x] Adaptive chunking + structured knowledge extraction
+- [x] Multimodal visual understanding (frames, scenes, mapping, analysis)
+- [x] Dynamic outline generation + chapter construction
+- [x] Study notes, revision notes, assessment, flashcards (one call/chapter)
+- [x] Important screenshot selection + screenshot-caption retrieval
+- [x] Multi-lecture artifact isolation + lecture registry
+- [x] React + TypeScript workspace with progress polling
+- [x] Lecture-specific ChromaDB indexes, hybrid retrieval, verified citations
+- [x] Persistent tutor threads + Highlight & Ask + document search
+- [x] On-demand PDF generation (notes, revision, assessment, guide, mind-map)
+- [x] Supabase auth (JWKS verification) + Postgres persistence
+- [x] Lemon Squeezy webhooks, usage metering, quota enforcement, billing page
+- [x] DB-backed job queue with restart recovery (P4)
+- [x] P0–P5 hardening: security, pipeline economics, retrieval evals, CI, Docker, tests
 
 ## 🧩 Engineering Challenges
 
-NorAI is also a practical exploration of real-world AI systems
-engineering:
+NorAI is also a practical exploration of real-world AI systems engineering:
 
--   orchestrating long-running multi-stage AI pipelines
--   preventing blocking workloads from starving API progress endpoints
--   coordinating frontend polling with backend task state
--   isolating artifacts across lectures
--   preventing cross-lecture frontend state leakage
--   handling malformed JSON from LLM responses
--   retrying failed structured generation
--   mapping timestamped transcript chunks to visual keyframes
--   merging textual and visual knowledge
--   dynamically determining chapter counts
--   keeping screenshots available in browser-rendered PDFs
--   generating flashcards in lecture-scoped subprocesses
--   propagating output directories across subprocess boundaries
--   maintaining lecture-specific vector indexes
--   indexing screenshot explanations separately from notes
--   tolerating optional-stage failures without discarding the full
-    pipeline
--   rendering Markdown, code, tables, and math consistently
--   preserving tutor conversation state
-
-------------------------------------------------------------------------
+- orchestrating long-running multi-stage AI pipelines without starving API progress endpoints
+- making the pipeline durable: DB-backed job queue, heartbeat-stale recovery, retry-with-backoff
+- persisting async LangGraph state (AsyncSqliteSaver) so chat turns don't block the event loop
+- migrating schema with Alembic (`create_all` → versioned migrations, legacy DB absorption)
+- verifying Supabase JWTs via JWKS across HS256 → ES256 key rotation
+- securing and de-duplicating payment webhooks (HMAC, fail-closed, idempotency)
+- enforcing quota before any LLM spend, and self-calibrating cost estimates from real metrics
+- isolating artifacts and retrieval indexes per lecture, preventing cross-lecture state leaks
+- handling malformed JSON from LLM responses and retrying structured generation
+- mapping timestamped transcript chunks to visual keyframes and fusing text + visual knowledge
+- dynamically determining chapter counts and boundaries
+- cutting re-run cost to ~0 with hash-of-inputs caching + diff-synced vector indexing
+- tuning print CSS for exactly-one-page-per-chapter PDFs and keeping screenshots in the print
+- rendering Markdown, KaTeX math, code, and callouts consistently
+- keeping a streaming chat responsive (React memo composition + SSE chunking)
+- hardening the frontend: strict TypeScript, code-splitting, error boundaries, AbortController polling
+- testing without a framework: standalone offline `test_*.py` suites + Vitest + offline API contract tests
 
 ## 🧭 Design Principles
 
-1.  **Ground everything in the lecture** --- generated material should
-    remain connected to source content.
-2.  **Treat visuals as knowledge** --- a lecture is not just a
-    transcript.
-3.  **Keep lectures isolated** --- artifacts, indexes, conversations,
-    and frontend state follow lecture identity.
-4.  **Prefer dynamic structure** --- different lectures require
-    different chapter boundaries and counts.
-5.  **Design for partial failure** --- one optional stage should not
-    destroy all successful work.
-6.  **Build for learning, not summarization** --- help learners
-    understand, revise, test, recall, and ask.
-
-------------------------------------------------------------------------
+1. **Ground everything in the lecture** — generated material stays connected to source content.
+2. **Treat visuals as knowledge** — a lecture is not just a transcript.
+3. **Keep lectures isolated** — artifacts, indexes, conversations, and frontend state follow lecture identity.
+4. **Prefer dynamic structure** — different lectures need different chapter boundaries and counts.
+5. **Design for partial failure** — one optional stage should not destroy all successful work.
+6. **Build for learning, not summarization** — help learners understand, revise, test, recall, and ask.
 
 ## 🗺️ Roadmap
 
 ### Near Term
-
--   [ ] Authentication and user profiles
--   [ ] Production-grade background job queue
--   [ ] Pipeline resume and recovery
--   [ ] Cloud object storage
--   [ ] Dockerized deployment
--   [ ] Better mobile responsiveness
--   [ ] Structured-output hardening for LLM stages
--   [ ] Processing observability and cost analytics
--   [ ] Improved tutor citations and source navigation
--   [ ] Automated integration tests for full lecture runs
+- [x] Authentication and user profiles (Supabase, JWKS)
+- [x] Production-grade background job queue with resume/recovery
+- [x] Structured-output hardening for LLM stages (typed models + retries)
+- [x] Processing observability and cost analytics (structured logs, metering, estimator)
+- [x] Verified tutor citations and source navigation
+- [x] Dockerized single-container deployment + CI
+- [ ] Automated integration tests for full lecture runs (offline suites exist; live end-to-end pending)
+- [ ] Cloud object storage
+- [ ] Better mobile responsiveness
 
 ### Future
-
--   [ ] Cross-lecture knowledge retrieval
--   [ ] Course-level organization
--   [ ] Spaced repetition scheduling
--   [ ] Adaptive expertise tracking
--   [ ] Personalized revision plans
--   [ ] Weak-concept detection
--   [ ] Learning analytics
--   [ ] Knowledge graph visualization
--   [ ] Collaborative study rooms
--   [ ] Multilingual lecture workflows
--   [ ] Adaptive assessments
-
-------------------------------------------------------------------------
+- [ ] Cross-lecture knowledge retrieval
+- [ ] Course-level organization
+- [ ] Spaced repetition scheduling
+- [ ] Adaptive expertise tracking
+- [ ] Personalized revision plans
+- [ ] Weak-concept detection
+- [ ] Learning analytics
+- [ ] Knowledge graph visualization
+- [ ] Collaborative study rooms
+- [ ] Multilingual lecture workflows
+- [ ] Adaptive assessments
 
 ## 📊 Performance & Cost
 
 Pipeline runtime and model usage depend on lecture duration, transcript
-chunk count, extracted keyframes, visual-analysis retries, selected
-model, API rate limits, local hardware, and network conditions.
-
-For that reason, this README intentionally avoids promising fixed
-processing times or fixed API costs.
+chunk count, extracted keyframes, visual-analysis retries, model choice,
+API rate limits, local hardware, and network conditions. `POST /estimate`
+gives a per-lecture prediction of Gemini calls and wall-clock minutes,
+self-calibrated from real recorded metrics (P1.8).
 
 > Add reproducible benchmarks here with lecture duration, hardware,
 > model, frame count, and pipeline configuration.
-
-------------------------------------------------------------------------
 
 ## 🤝 Contributing
 
 Contributions, bug reports, experiments, and architecture discussions
 are welcome.
 
-``` bash
+```bash
 git checkout -b feature/your-feature
 git add .
 git commit -m "Add your feature"
 git push origin feature/your-feature
 ```
 
-Then open a Pull Request.
-
-Especially valuable areas include retrieval quality, multimodal
-evaluation, structured generation reliability, frontend UX,
-accessibility, pipeline recovery, testing, observability, and
-deployment.
-
-------------------------------------------------------------------------
+Then open a Pull Request. Especially valuable areas include retrieval
+quality, multimodal evaluation, structured generation reliability,
+frontend UX, accessibility, pipeline recovery, testing, observability,
+and deployment.
 
 ## 🔐 Security Notes
 
-Before public deployment:
+Already applied:
+- API keys live in environment variables; `.env` is never committed
+- Webhook signature verification is **fail-closed** (unset secret → 503, mismatch → 401)
+- Uploaded files are validated and size-limited; uploads are SSRF-gated (domain allowlist)
+- JWT auth is fail-closed (ES256 via JWKS, HS256 fallback); anonymous-by-default for dev
+- Global + per-user concurrency caps; quota enforced before any LLM spend
+- Error sanitization: raw details go to logs, clients get generic responses
+- Single-container image builds from pinned deps
 
--   keep API keys in environment variables
--   never commit `.env`
--   validate uploaded files
--   enforce upload size limits
--   add authentication and authorization
--   add production rate limiting
--   isolate user-owned lecture artifacts
--   review generated content before high-stakes use
-
-------------------------------------------------------------------------
-
+Keep in mind for public deployment:
+- add production rate limiting at the edge
+- review generated content before high-stakes use
+- tighten CORS beyond the dev allowlist
 
 ## 👨‍💻 Author
 
-Built by **Gourav Kumar Singh**
+Built by **Gourav Kumar Singh**.
 
 NorAI explores the intersection of:
-
--   Artificial Intelligence
--   Multimodal Learning
--   Retrieval-Augmented Generation
--   Full-Stack Engineering
--   Educational Technology
-
-------------------------------------------------------------------------
+- Artificial Intelligence
+- Multimodal Learning
+- Retrieval-Augmented Generation
+- Full-Stack Engineering
+- Educational Technology
 
 ## ⭐ If NorAI interests you, consider starring the repository.
 
 **From passive watching to active learning.**
 
 `Video → Understanding → Structure → Practice → Recall → Conversation`
-
-Built through iteration, experimentation, and a lot of debugging.

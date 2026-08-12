@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P4 — Job durability & data layer (P4.1–P4.5 complete + P4 DoD validated offline)**: DB-backed job queue + worker pool, GC, Alembic migrations, async tutor persistence (AsyncSqliteSaver), SSE scaffolding dropped + poller hardened | 2026-08-09 15:30 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P5 — Foundation (P5.1–P5.8 complete)**: observability, dep hygiene, CI, Docker, typed API client, bundle/resilience, Vitest + offline contract tests | 2026-08-12 00:00 UTC |
 
 ---
 
@@ -33,6 +33,31 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-12] — OpenCode: doc-repo cleanup (retire dead docs → NOTES.md)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed
+- **Files Created / Modified**:
+  - `NOTES.md` [NEW] — aggregated developer notes: pipeline fix log (from `context.md` §3), pricing tiers + Q1–Q6 decisions + launch blocker (from `SAAS_ROADMAP.md`), open items, forward-ideas pointer.
+  - Deleted: `frontend/README.md` (Vite boilerplate), `NorAI_feature_plan.md` (phases A–F all shipped), `context.md` (stale; fix log extracted), `SAAS_ROADMAP.md` (launch track shipped; decisions extracted).
+  - Docs: `AGENTS.md` (Docs section → NOTES.md), `PROJECT_PROGRESS.md` (Pointers + prose refs), `README.md` (repo tree), `ROADMAP.md` (launch-track relationship note + stale-docs note), `COMMUNICATOR.md`.
+- **Verification**: no dangling refs to deleted files in tracked docs (historical log mentions left intact); NOTES.md references live docs only.
+- **Hand-off Notes / Next Steps**: earlier log entries below reference the retired files — treat those as history. Open items unchanged (see NOTES.md §3): gemini paid tier preflight, P0.4a Bearer-on-reads, job-queue multi-worker claim-lock, P6 retention.
+
+### [2026-08-12] — OpenCode: P5 foundation complete (P5.1–P5.8) + doc-repo sync pass
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed (all offline; no paid pipeline runs)
+- **Files Created / Modified**:
+  - `backend/logging_config.py` [NEW], `backend/main.py` (request-id middleware), `tutor/llm.py` [NEW], `backend/jobs.py` — **P5.1 observability**: structured JSON logs (console + rotating `outputs/backend.log`), contextvars `request_id`/`lecture_id`/`thread_id`, per-call Gemini token usage → `outputs/llm_calls.jsonl`.
+  - `requirements.txt` / `requirements-dev.txt` / `.env.example` — **P5.2** exact-pinned deps trimmed to real imports; `.env.example` committed.
+  - `.github/workflows/ci.yml`, `scripts/run-tests.sh` — **P5.3 CI** over all offline `test_*.py` + frontend lint/build/test; offline-test fix (lazy `make_chat_llm` imports so patched tests never hit the real API — verified 67 offline tests pass with a garbage key).
+  - `Dockerfile`, `docker-compose.yml`, `.dockerignore`, `frontend/.npmrc`, `requirements.txt` (6 new pins) — **P5.4** single-container image (SPA served by FastAPI) built + smoke-verified; fixed `npm ci` ERESOLVE via `legacy-peer-deps=true` + boot-time `ModuleNotFoundError`s (`gdown`, `langgraph-checkpoint-sqlite`).
+  - `frontend/src/lib/http.ts` [NEW], `frontend/src/types/api.ts`, `tsconfig.app.json` (`strict: true`) — **P5.5** typed API client, all `any` removed.
+  - `frontend/src/App.tsx`, `src/components/ui/Markdown.tsx` [NEW], `src/components/AppErrorBoundary.tsx` [NEW] — **P5.6** route code-splitting (entry chunk 1,353 → 364 kB), shared renderer, app-level error boundary, memoized chat components.
+  - `vitest.config.ts`, `src/test/setup.ts`, 38 Vitest/RTL tests, `backend/test_api_contract_offline.py` [NEW], `test` script — **P5.8** frontend tests + in-process offline contract test (15 checks).
+  - Docs: `PROJECT_PROGRESS.md` (P5.1–P5.8 entries), `ROADMAP.md` (Phase P5 rows ✅), `README.md` (rebuilt from corrupted repeated-header state; 18-stage table re-ordered to real code order, storage/tree/prereqs/roadmap/security corrected), `TUTORIAL.md` (Part 2 section renumber + new 2.10/2.11, execution-model/Stage-13/QA sections updated, 1.13 pipeline economics), `SAAS_ROADMAP.md` (arch + threads claims fixed), `NotebookLM_competitive_analysis.md` (✅ shipped annotations), `audit/audit_tutor_and_auxiliary.md` (resolution-status banner), `COMMUNICATOR.md`.
+- **Verification**: `scripts/run-tests.sh` (all offline backend suites incl. new contract test), `npm run build` + `oxlint` + `npm run test` green; Docker image boots and serves SPA; no paid pipeline runs.
+- **Hand-off Notes / Next Steps**: P5 fully closed. Open items to hand off: P0.4a frontend Bearer-on-reads (deliberately deferred — lecture-claim story needed), job-queue multi-worker DB claim-lock (`uvicorn --workers > 1`), live end-to-end lecture integration test (offline suites exist).
 
 ### [2026-08-09] — OpenCode: P4.4–P4.5 tutor async persistence + progress transport + P4 DoD offline validation (Phase P4 complete)
 - **Agent**: OpenCode (CLI)

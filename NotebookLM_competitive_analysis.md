@@ -4,6 +4,8 @@ Research date: Aug 2026. NorAI's identity is kept central throughout: a **focuse
 
 > **Note up front:** NotebookLM was renamed **"Gemini Notebook"** on July 16, 2026 — same product, same features (source: [Glasp 2026 guide](https://glasp.co/articles/notebooklm-2026), [NotebookLM Guide release tracker](https://notebooklm-guide.com/notebooklm-updates/)). Referenced below as NotebookLM for familiarity. All NotebookLM claims are drawn from cited sources; where Google hasn't published internals, the implementation description is flagged as **informed speculation**.
 
+> **Shipment status (updated Aug 2026):** since this analysis was written, NorAI has shipped the top adoption items — **A (Socratic Study mode) and F (custom tutor persona)** are live in the tutor (`ChatState.study_mode` + `persona_instructions`, `SOCRATIC_SYSTEM_PROMPT`, Study segment + `PersonaModal` in the AI panel), **D (per-chapter concept/mind map)** is live in the workspace (Phase D concept map, static-SVG export), and **B's missed-question correctness + flashcard stats** landed in the `a12a387` QA pass. Remaining open items are C/E (difficulty/quantity knobs, explain-with-citation, Study Guide report) and the moat work (embedded video player + timestamp seeking). Marked with **✅ shipped** below.
+
 ---
 
 ## Part 1 — NotebookLM Feature Inventory (current, cited)
@@ -94,22 +96,22 @@ Research date: Aug 2026. NorAI's identity is kept central throughout: a **focuse
 
 ### Qualifying (all three criteria met)
 
-**A. Socratic "Study mode" for the tutor (≡ Learning Guide)** — *Low effort, high value.*
+**A. Socratic "Study mode" for the tutor (≡ Learning Guide)** — *Low effort, high value.* **✅ shipped** — live as `ChatState.study_mode` + `SOCRATIC_SYSTEM_PROMPT` with a Study segment in the AI panel (Phase 1 of the parity roadmap).
 Maps onto: `tutor/nodes.py` `build_context_block` (already injects a SystemMessage) + `tutor/graph.py`. Add a per-thread/lecture "study mode" flag; when on, swap in a Socratic system prompt ("don't answer directly; probe with open-ended questions, check understanding, step through the problem; ground everything in retrieved chunks/screenshots"). Frontend: one more mode in `AIPanel.tsx:15` mode switcher. No new subsystem — a prompt-persona over the existing RAG, the same thing NotebookLM does ([notebooklm-to-pdf chat settings](https://notebooklm-to-pdf.com/blog/notebooklm-chat-settings)).
 
-**B. Study-session persistence for flashcards + quizzes ("Got it/Missed it", review-missed-only, results history)** — *Low-Medium, high value.*
+**B. Study-session persistence for flashcards + quizzes ("Got it/Missed it", review-missed-only, results history)** — *Low-Medium, high value.* **✅ partially shipped** — missed-question correctness (`/quiz/attempts/{id}/missed`, deterministic `_compute_missed_ids`) and per-deck flashcard stats landed in `a12a387`; full persistence in the checkpoints DB + review-missed-only UI + quiz history remain open.
 Maps onto: `FlashcardsPanel.tsx:19` currently keeps Again/Hard/Good/Easy ratings as in-memory component state; `useQuizStore.ts` is in-memory only and `reset`s on mode switch. Persist ratings/scores per lecture in the existing `outputs/<id>/tutor/checkpoints.sqlite` (already used for tutor memory via `tutor/memory.py`), keyed by card/question id. Then add "Only cards you missed" re-practice (NotebookLM's exact mechanic: [Google Help](https://support.google.com/notebooklm/answer/16958963)) and a quiz history/results list. This delivers the retention loop NorAI's roadmap already flags (README/PROJECT_PROGRESS mention SRS) and matches what users call out as the useful part of NotebookLM's study tools ([notebooklm-to-pdf](https://notebooklm-to-pdf.com/blog/notebooklm-flashcards-quiz)). No true SRS scheduler needed — NotebookLM doesn't have one either.
 
 **C. Difficulty + quantity selectors on quiz/flashcard generation & filtering** — *Low.*
 Maps onto: assessment JSON already carries `difficulty` (`assessment_chapter_N.json`); `notes_generator.py:843` fixes the count at 3 in the consolidated prompt. Add user-facing difficulty selection passed as a prompt knob to the existing consolidated-artifact call (and/or filter existing banks), plus the UI selector. Matches NotebookLM's difficulty/quantity controls ([Google Help](https://support.google.com/notebooklm/answer/16958963)).
 
-**D. Mind Map / concept map per chapter (≡ NotebookLM Mind Map)** — *Medium, the highest-leverage visual feature.*
+**D. Mind Map / concept map per chapter (≡ NotebookLM Mind Map)** — *Medium, the highest-leverage visual feature.* **✅ shipped** — the Phase D concept map is live in the workspace (floatable cards, node→scoped-question), and Part 6 exports it to static SVG + interactive HTML. Still open: per-chapter triples derived from merged objects, click-to-seek.
 Maps onto: NorAI already has the structured raw material — `notes/lecture_outline.json`, `Chapter.focus_concepts/topics/concepts`, and per-chunk `KnowledgeObject` concepts (`notes/chapter_models.py`). Add one small extraction stage: an LLM call producing concept→relation→concept triples per chapter from existing merged objects (or derive the graph structure from `chapter_id → concepts` without a net-new pipeline subsystem), emit `outputs/<id>/conceptmap/chapter_N.json`, and render with a lightweight graph lib in the doc panel. NotebookLM's Mind Map is the most-praised "see the shape of your material" feature and fits the single-lecture study flow perfectly (node click → scoped question) ([Google Help](https://support.google.com/notebooklm/answer/16212283?hl=en), [XDA](https://www.xda-developers.com/notebooklms-mind-map-feature-everyone-sleeps-on/)).
 
 **E. "Explain with citation" on quiz answers + Study Guide (exam-style Q&A) report** — *Low-Medium.*
 Maps onto: quiz explanations already render inline and the backend `/quiz/evaluate` already exists; add a per-answer source reference by returning the retrieved chunks (the tutor's `retrieved_chunks` mechanism in `backend/main.py:171/189`) for the question's concept and rendering it in `ReferencesPanel`. Study Guide = a "questions you should be able to answer" document generated with a new schema variant of `MergedChapterArtifactsModel` (which already contains `assessment_questions` and `revision_summary`) — mostly a prompt/format tweak on the existing per-chapter generator (`notes/notes_generator.py:953`).
 
-**F. Custom tutor persona ("Configure Chat")** — *Low.*
+**F. Custom tutor persona ("Configure Chat")** — *Low.* **✅ shipped** — per-lecture persona persists via `useTutorSettingsStore` (localStorage) with a `PersonaModal`; injected as a SystemMessage ahead of `build_context_block`.
 Maps onto: a per-lecture free-text instructions field persisted in the existing checkpoints DB, injected as a SystemMessage in `tutor/nodes.py` ahead of `build_context_block`. Frontend: a small settings modal. Same mechanism NotebookLM ships ([Google blog Oct 2025](https://blog.google/innovation-and-ai/models-and-research/google-labs/notebooklm-custom-personas-engine-upgrade/)).
 
 ### Considered and rejected (one-line reasons)
@@ -146,11 +148,11 @@ Maps onto: a per-lecture free-text instructions field persisted in the existing 
 ## Part 4 — Recommended Roadmap
 
 **Adopt from NotebookLM (ranked by effort→value):**
-1. **Socratic Study mode** (Learning Guide equivalent) — Low effort, directly strengthens the tutor's exam-prep role. (A)
-2. **Flashcard/quiz session persistence + "review missed only"** (light, no full SRS — NotebookLM doesn't have one either) — Low-Medium; the retention loop. (B)
-3. **Concept/Mind Map per chapter** — Medium; the single most-praised NotebookLM study feature, cheap here because the concept graph already exists in `Chapter`/`merged_objects`. (D)
-4. **Difficulty/quantity controls + per-answer "explain with citation" + Study Guide (Q&A) report** — Low-Medium; closes the interaction gap on artifacts NorAI already generates. (C/E)
-5. **Custom tutor persona ("Configure Chat")** — Low; quick, cheap customization win. (F)
+1. **Socratic Study mode** (Learning Guide equivalent) — **✅ shipped** (Study segment in the AI panel).
+2. **Flashcard/quiz session persistence + "review missed only"** (light, no full SRS — NotebookLM doesn't have one either) — **partially shipped** (missed-question correctness + per-deck stats in `a12a387`); persistence + review-missed-only UI still open. (B)
+3. **Concept/Mind Map per chapter** — **✅ shipped** (Phase D concept map; the concept graph already existed in `Chapter`/`merged_objects`). (D)
+4. **Difficulty/quantity controls + per-answer "explain with citation" + Study Guide (Q&A) report** — Low-Medium; **open** — closes the interaction gap on artifacts NorAI already generates. (C/E)
+5. **Custom tutor persona ("Configure Chat")** — **✅ shipped** (`PersonaModal` + `useTutorSettingsStore`). (F)
 
 **Double down on the moat (differentiate, don't chase parity):**
 1. **Timestamp- and screenshot-anchored study experience** — add an embedded video player to the workspace and make tutor citations / notes / flashcards seek to the exact video moment and show the exact frame. NorAI already has the time-aligned data (chunks, screenshot mapping, `retrieved_chunks`/`retrieved_images`); this converts latent advantage #5 and differentiator #3 into a headline feature NotebookLM can't match (transcript-only video).

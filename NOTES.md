@@ -1,37 +1,12 @@
-# NorAI — Project & Rebuild Context
+# NorAI — Developer Notes, Decisions & Lessons
 
-## 1. Project Overview
-**NorAI** is an automated educational processing pipeline that converts raw lecture videos and audio into structured, multi-modal study materials:
-- **Comprehensive Study Notes** (`.md` and `.json` with formulas, diagrams, OCR, and concepts)
-- **Revision Notes / Cheat Sheets** (concise exam takeaways and core concept breakdowns)
-- **Quiz Assessments** (MCQs, short answer, conceptual questions)
-- **Flashcards** (automated 0-call JSON transformation from assessments)
-- **AI Chat Tutor** (RAG-based conversational assistant)
+Single place for the durable bits that outlived their original docs: the pipeline fix log (formerly `context.md`), the product/launch decisions (formerly `SAAS_ROADMAP.md`), and pointers to open work. Everything here cross-references live docs instead of duplicating them.
 
 ---
 
-## 2. Rebuild Roadmap & Progress Status
+## 1. Pipeline Problem Registry & Fix Log
 
-### Tier 0: Concurrency & Performance ✅
-- Audio transcription and chunking run concurrently with video keyframe extraction and scene detection.
-
-### Tier 1: Model Migration & Schema Enforcement ✅
-- Migrated all LLM endpoints to `gemini-3.1-flash-lite`.
-- Enforced strict Pydantic `response_schema` across all JSON-generating calls.
-
-### Tier 2: Latency & Cost Optimization ✅
-- **Task 2.0 (Files API Parallelization)**: Concurrently uploads screenshot candidate batches using `ThreadPoolExecutor`.
-- **Task 2.1 (Chapter Visual Batching)**: Replaced ~40 per-chunk visual LLM calls with chapter-aligned batch calls (1 call per chapter).
-- **Task 2.3 (Consolidated Chapter Artifacts)**: Combined study notes, revision notes, and quiz assessments into 1 consolidated LLM call per chapter (0-call flashcard derivation).
-
-### Tier 3: Quality, Prompt Engineering & UI Determinism ✅
-- **Prompt Engineering Overhaul**: Upgraded extraction, visual, and note prompts for domain-aware extraction, UI noise rejection, and density-based word count scaling.
-- **Pydantic Structured Section Cards**: Enforced `StudyNoteSection` schema (`section_type`, `title`, `content_markdown`) for 100% deterministic card rendering across web and PDF print views.
-- **Lecture Title & Thread Auto-Sync**: 3-tier title fallback hierarchy and ChatGPT-style auto-renaming on first chat question.
-
----
-
-## 3. Tier 2 & Tier 3 Problem Registry & Fix Log
+Historical bug → root-cause → fix table from the Tier 2/Tier 3 rebuild (kept because every row documents a real failure mode worth not repeating). Stage ordering in these rows predates the current 18-stage pipeline — the authoritative execution order lives in `backend/orchestrator.py` + `config.py`.
 
 | # | Component / File | Issue Description | Root Cause | Fix Applied |
 |---|---|---|---|---|
@@ -54,24 +29,43 @@
 
 ---
 
-## 4. Current Standing & Architecture Rules
+## 2. Product & Launch Decisions
 
-1. **Pipeline Execution Order**:
-   1. Stage 1–4: Concurrent Audio Transcription + Video Keyframe Extraction & Scene Detection.
-   2. Stage 5: Text Knowledge Extraction (per-chunk parallel).
-   3. Stage 6: Lecture Outline Generation & Chapter Clustering.
-   4. Stage 7: Chapter-Aligned Visual Extraction (Task 2.1 — 1 call per chapter).
-   5. Stage 8: Keyframe Screenshot Mapping & Selection.
-   6. Stage 9: Knowledge Merging (combines text + visual objects per chunk).
-   7. Stage 10: Chapter Building & Consolidated Artifact Generation (Task 2.3 — 1 call per chapter).
-2. **Schema & Fallback Guarantees**:
-   - Every LLM endpoint uses Pydantic `response_schema`.
-   - Every stage implements 3-retry graceful degradation writing fallback output with `"incomplete": true`.
-   - Notes generate dual outputs: `chapter_{id}.json` (for 100% deterministic UI card rendering) and `chapter_{id}.md` (for RAG tutor vector indexing & PDF text export).
+Decisions from the Micro-SaaS foundation work; the launch-track roadmap doc they lived in is retired (shipment complete).
+
+**Base architecture (decided):** FastAPI backend (main + sync 18-stage pipeline in `backend/orchestrator.py`, run inside the DB-backed job queue `backend/jobs.py`) + React 19 / TypeScript Vite SPA. **Supabase Postgres** is the app DB (users, subscriptions, lectures, usage_logs, webhook_events); ChromaDB holds vectors; SQLite holds per-lecture LangGraph checkpoints under `outputs/<id>/tutor/`; artifact dirs + `outputs/lectures.json` on disk. Model default: `gemini-3.1-flash-lite`.
+
+**Pricing tiers & quotas:**
+
+| Tier | Price | Included Quota | Notes |
+|---|---|---|---|
+| **Free Trial** | $0 | 1 video (≤15 mins) | Full feature access on 1 lecture |
+| **Starter** | $9 – $11 / mo | 5 Lecture-Hours / mo (~300 min, ≈15–20 lectures) | Full Pipeline, Flashcards, Quiz, Tutor |
+| **Pro Student** | $23 – $29 / mo | 25 Lecture-Hours / mo (~1500 min, ≈80–100 lectures) | Priority processing, extended tutor history |
+
+**Decision log (Q1–Q6):**
+- **Q1 — App topology:** single unified Vite React 19 SPA (`frontend/`) for both landing and workspace.
+- **Q2 — Target audience:** students & university course capture ("turn any lecture into study notes in seconds").
+- **Q3 — Free-trial conversion:** full output access on 1 video (≤15 min) → paywall on video #2.
+- **Q4 — Quota metric:** user-facing "Lecture Minutes / Hours" + internal Gemini token cost logging (metering in `backend/usage.py`).
+- **Q5 — DB cutover:** clean-slate Postgres schema — no migration needed for gitignored `outputs/` dev data.
+- **Q6 — Tutor threads schema:** per-lecture checkpoints on disk via LangGraph `AsyncSqliteSaver` (`outputs/<id>/tutor/checkpoints.sqlite`, WAL + busy_timeout) instead of centralized Postgres `user_threads`/`tutor_messages` tables — durable, isolated, trivially tied to lecture identity; threaded through the async graph cache.
+
+**Stack choices:** Supabase Auth (JWT, ES256 via JWKS) · Lemon Squeezy as merchant of record (handles global VAT/GST; HMAC-SHA256 webhooks, fail-closed) · ChromaDB embeddings via `gemini-embedding-2` (768 dims).
 
 ---
 
-## 5. Next Action Items
-1. Run server: `uvicorn backend.main:app --reload --reload-exclude "outputs/*"`
-2. Upload lecture video and verify full pipeline execution.
-3. Validate deterministic card rendering in Web UI and PDF export.
+## 3. Open Items
+
+Forward-looking work — details live in the referenced docs:
+
+- **Gemini paid-tier preflight (launch blocker).** Upgrade the Google AI Studio API from the free tier (15 RPM / 500 RPD) to pay-as-you-go Tier 1 before public launch.
+- **P0.4a — frontend auth on reads (deferred).** Ownership scoping (`ensure_lecture_access`) only 404s foreign lectures when a token is presented; the frontend sends no token on artifact reads (`default` access). Deliberately not wired yet — see `ROADMAP.md` Phase P0.
+- **Job-queue multi-worker claim-lock.** The DB-backed job queue currently assumes a single worker; running `--workers > 1` needs a claim-lock so two workers can't process the same lecture. See `backend/jobs.py`.
+- **P6 retention (engineering backlog).** Token-level streaming, Anki flashcard export, video-seekable citations, and the rest of the P6 list in `ROADMAP.md`.
+
+---
+
+## 4. Forward Feature Ideas
+
+`NotebookLM_competitive_analysis.md` carries the forward moat ideas (flashcard history-driven study, quiz analytics, etc.) — consult it when scoping new features.
