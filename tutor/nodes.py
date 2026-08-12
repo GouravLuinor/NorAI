@@ -271,17 +271,27 @@ async def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
     ]
 
     # ── LLM call ───────────────────────────────────────────────────────────────
+    # P6.1: stream the answer via llm.astream so a graph-level
+    # `astream_events(version="v2")` actually surfaces per-token
+    # `on_chat_model_stream` events from generate_answer_node. The chunked text
+    # is accumulated here for the committed state; the tokens the user sees come
+    # from the event stream, not this string.
     from tutor.llm import make_chat_llm
     llm = make_chat_llm(node="generate_answer_node", temperature=TEMPERATURE)
 
-    response = await llm.ainvoke(prompt_messages)
-        
-    # Extract text if the response is a list of blocks (handling 'thinking' models)
-    if isinstance(response.content, list):
-        text_blocks = [block["text"] for block in response.content if isinstance(block, dict) and "text" in block]
-        answer_text = "\n".join(text_blocks)
-    else:
-        answer_text = response.content
+    # Extract text if the chunk content is a list of blocks (handling
+    # 'thinking' models): append the block's "text" fragments in stream order.
+    text_parts: list[str] = []
+    async for chunk in llm.astream(prompt_messages):
+        content = chunk.content
+        if isinstance(content, str):
+            if content:
+                text_parts.append(content)
+        elif isinstance(content, list):
+            for block in content:
+                if isinstance(block, dict) and block.get("text"):
+                    text_parts.append(block["text"])
+    answer_text = "".join(text_parts)
 
     logger.debug(f"generate_answer_node: answered ({len(answer_text)} chars)")
 

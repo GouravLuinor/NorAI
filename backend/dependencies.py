@@ -385,7 +385,11 @@ async def astream_tutor_tokens(
             # Only surface tokens the answer generator produced — the
             # summarizer / query rewriter / quiz evaluator LLM calls are
             # internal and must not appear in the visible answer stream.
-            if event.get("metadata", {}).get("langgraph_node") != "generate_answer_node":
+            # NOTE: the graph node is registered as "generate_answer" (not
+            # "generate_answer_node") — match the node name exactly or every
+            # streamed event is dropped and the whole answer is re-emitted via
+            # the no-stream fallback (P6.1 live-TTFT regression).
+            if event.get("metadata", {}).get("langgraph_node") != "generate_answer":
                 continue
             text = _chunk_text(event.get("data", {}).get("chunk"))
             if text:

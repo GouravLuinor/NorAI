@@ -47,8 +47,11 @@ def _restore_llm(original):
 
 
 class _PlainFakeLLM:
-    """ainvoke-only fake (NOT a BaseChatModel) — never emits stream events,
-    so the graph still answers but no on_chat_model_stream events fire."""
+    """Fake with ainvoke + astream but NOT a BaseChatModel — it yields the
+    whole answer as one streamed chunk, yet LangChain's tracer never emits
+    on_chat_model_stream events for it, so the graph answers while
+    astream_tutor_tokens sees no token events (the quiz/command fallback
+    path: one whole-answer frame)."""
 
     calls = 0
 
@@ -58,6 +61,10 @@ class _PlainFakeLLM:
     async def ainvoke(self, messages):
         _PlainFakeLLM.calls += 1
         return SimpleNamespace(content=_GEN_ANSWER)
+
+    async def astream(self, messages):
+        _PlainFakeLLM.calls += 1
+        yield SimpleNamespace(content=_GEN_ANSWER)
 
 
 @asynccontextmanager

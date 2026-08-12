@@ -36,15 +36,18 @@
 
 ### P6.1 — OpenCode: real token streaming (`/chat/stream`)
 - **Agent**: OpenCode (CLI)
-- **Status**: Completed (offline-verified; no paid pipeline runs)
+- **Status**: Completed — **live-verified against real Gemini (1 paid turn)**
 - **Files Created / Modified**:
-  - `backend/dependencies.py` — new `astream_tutor_tokens()` async generator: drives the graph with `astream_events(version="v2")`, yields only `on_chat_model_stream` events filtered on `metadata["langgraph_node"] == "generate_answer_node"`, builds the `{final: ...}` payload from the committed state. Extracted helpers: `_cached_turn()` (identity-scan dedupe, shared with `ainvoke_tutor` so `/chat` + `/chat/stream` never diverge), `_content_text()` (Gemini thinking-block lists), `_chunk_text()` (chunk payloads). Same per-lecture lock + zombie guard as `ainvoke_tutor`.
+  - `backend/dependencies.py` — `astream_tutor_tokens()` async generator: drives the graph with `astream_events(version="v2")`, yields `on_chat_model_stream` events filtered on `metadata["langgraph_node"] == "generate_answer"`, builds the `{final: ...}` payload from the committed state. Extracted helpers: `_cached_turn()`, `_content_text()`, `_chunk_text()`. Same per-lecture lock + zombie guard as `ainvoke_tutor`.
   - `backend/main.py` — `/chat/stream` iterates `astream_tutor_tokens`; fake 24-char re-chunk loop deleted. Wire contract (`{t}` / `{final}` / `[DONE]` / `[ERROR]`) unchanged.
   - `tutor/llm.py` — `UsageLoggingChatLLM.astream` override: passes chunks through, logs aggregate usage from the final chunk's `usage_metadata`.
-  - `tutor/test_tutor_streaming.py` [NEW] — 5 offline checks (real token reassembly via `GenericFakeChatModel`, node-filtering, no-stream fallback, dedupe=0 extra LLM calls, zombie-thread guard).
+  - `tutor/nodes.py` — **P6.1 fix (live-test catch):** `generate_answer_node` calls `llm.astream(...)` and accumulates chunk text (was `llm.ainvoke(...)` → `astream_events` emitted the finished answer as one huge chunk; TTFT was still "full answer wait").
+  - `backend/dependencies.py` — **P6.1 fix (live-test catch):** stream-event node filter matches `"generate_answer"` (the registered node name; was `"generate_answer_node"` → every event dropped, whole answer re-emitted via the no-stream fallback).
+  - `tutor/test_tutor_streaming.py` [NEW] — 5 offline checks (real token reassembly, node-filtering, no-stream fallback, dedupe, zombie guard).
+  - `tutor/test_async_persistence.py` — `FakeLLM` gained `astream` (node contract change).
   - Docs: `ROADMAP.md` (P6.1 ✅), `PROJECT_PROGRESS.md`, `COMMUNICATOR.md`.
-- **Verification**: `python tutor/test_tutor_streaming.py` → 5/5 PASS; `test_chunker`, `test_async_persistence`, `test_api_contract_offline`, tutor graph/memory/chapter/low-confidence suites all green; `py_compile` clean. `backend/test_api_contract.py` shows one **pre-existing unrelated** `/study-guide` 404 (confirmed by stashing main.py — not from this change).
-- **Hand-off Notes / Next Steps**: Behavior notes for hand-off — dedupe hits stream the cached answer as a single `t` frame (no re-invoke); quiz/command turns with no LLM stream fall back to one whole-answer frame. Frontend untouched. Uncommitted — commit only if the user asks. Next P6 candidates: P6.2 (SM-2 + Anki export), P6.3 (click-to-video). Live TTFT check (real Gemini) recommended before closing out P6.1 — budget one tutor chat turn.
+- **Verification**: **Live Gemini turn 2026-08-12** on lecture `1c4400c1-...` (LAN lecture, chroma present): 11 incremental token frames, TTFT **9.74s** (lower bound incl. dense+BM25 retrieval + query rewrite + image retrieval), whole answer reassembles, `{final}` carries 2 verified citations + assistant_message_id. Before the two fixes above the identical turn emitted ONE 983-char frame after a 10.5s wait. Offline suite: `test_tutor_streaming.py` 5/5, `test_async_persistence` 3/3, `scripts/run-tests.sh` 31/31, `py_compile` clean.
+- **Hand-off Notes / Next Steps**: Frontend untouched (SSE contract unchanged). Live check used a fresh thread (`/chat` dedupe + zombie guards intact). Next P6 candidates: P6.2 (SM-2 + Anki export), P6.3 (click-to-video). Uncommitted — commit only if the user asks.
 
 ### [2026-08-12] — OpenCode: Pipeline performance follow-up (whisper VAD + greedy beam, rate-limiter env knob)
 - **Agent**: OpenCode (CLI)
