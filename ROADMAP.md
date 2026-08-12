@@ -125,7 +125,7 @@ NorAI has a working 18-stage multimodal pipeline, a genuinely grounded RAG tutor
 
 | # | Item | Status | Ref | Notes |
 |---|---|---|---|---|
-| P6.1 | Real token streaming | ⬜ | `backend/main.py:275-286` | `/chat/stream` computes the full answer then re-chunks it in fake 24-char frames. Use LangGraph `astream_events`. |
+| P6.1 | Real token streaming | ✅ | `backend/dependencies.py:300` (`astream_tutor_tokens`), `backend/main.py:328` (`/chat/stream`) | `/chat/stream` streams the generate_answer_node LLM tokens via LangGraph `astream_events(version="v2")` (filtered on `langgraph_node`) instead of fake 24-char re-chunks. Runs under the same per-lecture lock + dedupe/zombie guards as `ainvoke_tutor`; `tutor/llm.py` `UsageLoggingChatLLM.astream` logs streamed usage. Wire contract unchanged. Verified offline by `tutor/test_tutor_streaming.py` (5 checks). |
 | P6.2 | Spaced repetition (SM-2) + Anki export | ⬜ | `flashcards/` (0-LLM transform) | Flashcards are ideal for an SM-2 scheduler (persist reps/interval/ease) + `.apkg` export — the retention engine for a study app. |
 | P6.3 | Click-to-video grounding | ⬜ | `chunking/chunk.py` (timestamps preserved) | Chunks carry segment IDs; store timestamps and let citations/notes jump the player to the exact moment. |
 | P6.4 | Multi-lecture organization + sharing | ⬜ | single namespace today | Course collections, public/private share links, per-course tutor contexts. |

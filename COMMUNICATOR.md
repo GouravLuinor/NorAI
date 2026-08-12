@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **Pipeline perf follow-up (P1.7.1)**: whisper VAD+greedy beam (−48% pipeline wall-clock on 8-min video, verified) | 2026-08-12 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P6.1 real token streaming**: `/chat/stream` streams generate_answer_node tokens via `astream_events` v2, verified offline | 2026-08-12 UTC |
 
 ---
 
@@ -33,6 +33,18 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### P6.1 — OpenCode: real token streaming (`/chat/stream`)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed (offline-verified; no paid pipeline runs)
+- **Files Created / Modified**:
+  - `backend/dependencies.py` — new `astream_tutor_tokens()` async generator: drives the graph with `astream_events(version="v2")`, yields only `on_chat_model_stream` events filtered on `metadata["langgraph_node"] == "generate_answer_node"`, builds the `{final: ...}` payload from the committed state. Extracted helpers: `_cached_turn()` (identity-scan dedupe, shared with `ainvoke_tutor` so `/chat` + `/chat/stream` never diverge), `_content_text()` (Gemini thinking-block lists), `_chunk_text()` (chunk payloads). Same per-lecture lock + zombie guard as `ainvoke_tutor`.
+  - `backend/main.py` — `/chat/stream` iterates `astream_tutor_tokens`; fake 24-char re-chunk loop deleted. Wire contract (`{t}` / `{final}` / `[DONE]` / `[ERROR]`) unchanged.
+  - `tutor/llm.py` — `UsageLoggingChatLLM.astream` override: passes chunks through, logs aggregate usage from the final chunk's `usage_metadata`.
+  - `tutor/test_tutor_streaming.py` [NEW] — 5 offline checks (real token reassembly via `GenericFakeChatModel`, node-filtering, no-stream fallback, dedupe=0 extra LLM calls, zombie-thread guard).
+  - Docs: `ROADMAP.md` (P6.1 ✅), `PROJECT_PROGRESS.md`, `COMMUNICATOR.md`.
+- **Verification**: `python tutor/test_tutor_streaming.py` → 5/5 PASS; `test_chunker`, `test_async_persistence`, `test_api_contract_offline`, tutor graph/memory/chapter/low-confidence suites all green; `py_compile` clean. `backend/test_api_contract.py` shows one **pre-existing unrelated** `/study-guide` 404 (confirmed by stashing main.py — not from this change).
+- **Hand-off Notes / Next Steps**: Behavior notes for hand-off — dedupe hits stream the cached answer as a single `t` frame (no re-invoke); quiz/command turns with no LLM stream fall back to one whole-answer frame. Frontend untouched. Uncommitted — commit only if the user asks. Next P6 candidates: P6.2 (SM-2 + Anki export), P6.3 (click-to-video). Live TTFT check (real Gemini) recommended before closing out P6.1 — budget one tutor chat turn.
 
 ### [2026-08-12] — OpenCode: Pipeline performance follow-up (whisper VAD + greedy beam, rate-limiter env knob)
 - **Agent**: OpenCode (CLI)

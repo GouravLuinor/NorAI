@@ -34,7 +34,7 @@ from fastapi.responses import StreamingResponse, JSONResponse, FileResponse
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from backend.lecture_registry import list_lectures, get_lecture
-from backend.dependencies import ainvoke_tutor
+from backend.dependencies import ainvoke_tutor, astream_tutor_tokens
 from backend.lecture_registry import get_lecture
 from ingest.ingest import is_youtube_url, is_gdrive_url
 from ingest.ingest import probe_video_metadata
@@ -331,43 +331,22 @@ async def chat_stream(req: ChatRequest):
 
     async def event_generator():
         try:
-            result = await ainvoke_tutor(
+            # P6.1: REAL token streaming. astream_tutor_tokens drives the graph
+            # with astream_events and yields the incremental tokens produced by
+            # generate_answer_node, then a single {final: ...} payload with the
+            # committed turn's metadata. The wire contract (data: {t} chunks,
+            # data: {final}, data: [DONE]) is unchanged, so the frontend's
+            # reassembly is untouched — only time-to-first-token changes.
+            async for frame in astream_tutor_tokens(
                 thread_id=req.thread_id,
                 user_question=req.user_question,
                 lecture_title=req.lecture_title,
-                lecture_id=req.lecture_id,        # ← added
+                lecture_id=req.lecture_id,
                 message_id=req.message_id,
                 study_mode=req.study_mode,
                 persona_instructions=req.persona_instructions,
-            )
-            answer = result.get("answer", "")
-
-            # Stream the already-computed answer in small chunks instead of
-            # per-character (old 15ms/char throttle regressed latency on long
-            # answers). Chunks are JSON-wrapped so embedded newlines survive the
-            # SSE line framing; the frontend reassembles them exactly.
-            STEP = 24
-            i = 0
-            n = len(answer)
-            while i < n:
-                end = min(i + STEP, n)
-                if end < n:
-                    nxt = answer.find(" ", end)
-                    if nxt != -1 and nxt - end < 12:
-                        end = nxt + 1
-                yield f"data: {json_lib.dumps({'t': answer[i:end]})}\n\n"
-                await asyncio.sleep(0.002)
-                i = end
-
-            final_data = {
-                "assistant_message_id": result.get("assistant_message_id"),
-                "retrieved_chunks": result.get("retrieved_chunks", []),
-                "retrieved_images": result.get("retrieved_images", []),
-                "verified_citations": result.get("verified_citations", []),
-                "chapter_id": result.get("chapter_id"),
-                "thread_id": result.get("thread_id"),
-            }
-            yield f"data: {json_lib.dumps({'final': final_data})}\n\n"
+            ):
+                yield f"data: {json_lib.dumps(frame)}\n\n"
             yield "data: [DONE]\n\n"
         except Exception as exc:
             logging.getLogger("norai").exception("POST /chat/stream failed")
