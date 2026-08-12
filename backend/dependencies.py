@@ -142,6 +142,75 @@ def get_lecture_db_path(lecture_id: str) -> Path:
 # Public API — invoke the tutor for a specific lecture (async, P4.4)
 # ---------------------------------------------------------------------------
 
+def _content_text(content) -> str:
+    """Extract plain text from a message's .content (str or Gemini content-block list)."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = [
+            b.get("text", "") if isinstance(b, dict) else str(b)
+            for b in content
+        ]
+        return "".join(parts)
+    return str(content) if content else ""
+
+
+def _chunk_text(chunk) -> str:
+    """Extract the incremental text from an on_chat_model_stream chunk.
+
+    The chunk is an AIMessageChunk whose .content may be a plain string OR a
+    list of content blocks (Gemini 'thinking' models return {"text": ...}
+    blocks). Empty chunks (chunk_position="last") yield "".
+    """
+    content = getattr(chunk, "content", "")
+    if isinstance(content, list):
+        parts = [
+            b.get("text", "")
+            for b in content
+            if isinstance(b, dict) and b.get("text")
+        ]
+        return "".join(parts)
+    return content if isinstance(content, str) else (str(content) if content else "")
+
+
+def _cached_turn(snapshot, user_question: str, thread_id: str) -> dict | None:
+    """If the current question was already answered, return the cached turn dict.
+
+    Scans the last 3 HumanMessages (skipping summary/system messages) and finds
+    the AI message that IMMEDIATELY follows each one (identity scan, not
+    messages.index(), which ==-collides on equal content). Mirrors the dedup
+    check used by ainvoke_tutor so /chat and /chat/stream never diverge.
+    """
+    from langchain_core.messages import HumanMessage, AIMessage
+
+    if not (snapshot and snapshot.values):
+        return None
+    messages = snapshot.values.get("messages", [])
+    dedupe_window = [m for m in reversed(messages) if isinstance(m, HumanMessage)][:3]
+    for last_human in dedupe_window:
+        if last_human.content.strip() == user_question.strip():
+            last_ai = None
+            seen = False
+            for idx, m in enumerate(messages):
+                if m is last_human:
+                    seen = True
+                    continue
+                if seen and isinstance(m, AIMessage):
+                    last_ai = m
+                    break
+            if last_ai:
+                return {
+                    "answer":              _content_text(last_ai.content),
+                    "assistant_message_id": last_ai.id,
+                    "retrieved_chunks":  snapshot.values.get("retrieved_chunks", []),
+                    "retrieved_images":  snapshot.values.get("retrieved_images", []),
+                    "verified_citations": snapshot.values.get("verified_citations", []),
+                    "chapter_id":        snapshot.values.get("chapter_id"),
+                    "thread_id":         thread_id,
+                }
+    return None
+
+
 def _thread_exists(db_path: Path, thread_id: str) -> bool:
     """True when the thread should be allowed to continue. Runs in a worker
     thread (blocking sqlite3 read) so it never blocks the event loop."""
@@ -212,34 +281,9 @@ async def ainvoke_tutor(
         # skip the graph and return the cached answer. Scanning the tail (not
         # just the final message) catches Ask-Nora double-fires and re-asks
         # that land after a summary/system message.
-        from langchain_core.messages import HumanMessage, AIMessage
-        if not is_new and snapshot and snapshot.values:
-            messages = snapshot.values.get("messages", [])
-            dedupe_window = [m for m in reversed(messages) if isinstance(m, HumanMessage)][:3]
-            for last_human in dedupe_window:
-                if last_human.content.strip() == user_question.strip():
-                    last_ai = None
-                    # Scan from the actual position of this human message
-                    # (messages.index() uses == so it can hit an earlier equal
-                    # message; track position explicitly via enumerate).
-                    seen = False
-                    for idx, m in enumerate(messages):
-                        if m is last_human:
-                            seen = True
-                            continue
-                        if seen and isinstance(m, AIMessage):
-                            last_ai = m
-                            break
-                    if last_ai:
-                        return {
-                            "answer":            last_ai.content,
-                            "assistant_message_id": last_ai.id,
-                            "retrieved_chunks":  snapshot.values.get("retrieved_chunks", []),
-                            "retrieved_images":  snapshot.values.get("retrieved_images", []),
-                            "verified_citations": snapshot.values.get("verified_citations", []),
-                            "chapter_id":        snapshot.values.get("chapter_id"),
-                            "thread_id":         thread_id,
-                        }
+        cached = _cached_turn(snapshot, user_question, thread_id)
+        if cached:
+            return cached
 
         # P3: Prevent Zombie Thread Resurrections — verify the thread hasn't
         # been deleted while we were waiting in the queue.
@@ -266,3 +310,118 @@ async def ainvoke_tutor(
             "chapter_id":        result.get("chapter_id"),
             "thread_id":         thread_id,
         }
+
+
+async def astream_tutor_tokens(
+    thread_id: str,
+    user_question: str,
+    lecture_title: str = "",
+    lecture_id: str | None = None,
+    message_id: str | None = None,
+    study_mode: str = "default",
+    persona_instructions: str = "",
+):
+    """
+    REAL token streaming for a single tutor turn (P6.1).
+
+    Async generator yielding frames on the /chat/stream SSE wire contract:
+        {"t": "<token>"}      — incremental text from generate_answer_node
+        {"final": {...}}      — same final payload ainvoke_tutor returns
+
+    The graph is streamed with `astream_events(version="v2")`; only
+    `on_chat_model_stream` events from the `generate_answer_node` LLM are
+    surfaced, so the summarization / query-rewrite / quiz-evaluate LLM calls
+    never leak into the visible stream. Runs under the same per-lecture lock
+    (and zombie/dedupe guards) as `ainvoke_tutor`, so /chat and /chat/stream
+    can never interleave turns on the same thread.
+    """
+    # Treat 'default' like "no lecture" — same as ainvoke_tutor.
+    lecture_id = lecture_id if lecture_id and lecture_id != "default" else None
+
+    if lecture_id:
+        graph, lock = await _aget_or_create_lecture_graph(lecture_id)
+    else:
+        graph = await _aget_default_graph()
+        lock = _default_turn_lock
+
+    async with lock:
+        config = {"configurable": {"thread_id": thread_id}}
+
+        # First message in the thread?
+        is_new = True
+        try:
+            snapshot = await graph.aget_state(config)
+            is_new = not snapshot or not snapshot.values
+        except Exception:
+            snapshot = None
+            is_new = True
+
+        input_state: dict = {
+            "thread_id": thread_id,
+            "user_question": user_question,
+            "message_id": message_id,
+            "study_mode": study_mode,
+            "persona_instructions": persona_instructions,
+        }
+        if is_new and lecture_title:
+            input_state["lecture_title"] = lecture_title
+
+        # Dedupe: if already answered, stream the cached answer once then stop.
+        cached = _cached_turn(snapshot, user_question, thread_id)
+        if cached:
+            yield {"t": cached["answer"]}
+            yield {"final": cached}
+            return
+
+        # Prevent zombie-thread resurrections (same guard as ainvoke_tutor).
+        db_path = get_lecture_db_path(lecture_id) if lecture_id else CHECKPOINT_DB_PATH
+        if not await asyncio.to_thread(_thread_exists, db_path, thread_id):
+            raise ValueError(f"Thread {thread_id} was deleted.")
+
+        streamed_any = False
+        async for event in graph.astream_events(input_state, config, version="v2"):
+            if event.get("event") != "on_chat_model_stream":
+                continue
+            # Only surface tokens the answer generator produced — the
+            # summarizer / query rewriter / quiz evaluator LLM calls are
+            # internal and must not appear in the visible answer stream.
+            if event.get("metadata", {}).get("langgraph_node") != "generate_answer_node":
+                continue
+            text = _chunk_text(event.get("data", {}).get("chunk"))
+            if text:
+                streamed_any = True
+                yield {"t": text}
+
+        # Read the committed final state to build the payload (the graph
+        # checkpointer has already written the completed turn).
+        final_state: dict = {}
+        try:
+            final_snap = await graph.aget_state(config)
+            if final_snap and final_snap.values:
+                final_state = final_snap.values
+        except Exception:
+            final_state = {}
+
+        answer = _content_text(final_state.get("answer", ""))
+
+        # Quiz / command paths answer without an LLM stream — emit the whole
+        # answer as a single frame so the frontend still has text to render.
+        if not streamed_any and answer:
+            yield {"t": answer}
+
+        messages = final_state.get("messages", [])
+        assistant_message_id = None
+        if messages:
+            from langchain_core.messages import AIMessage
+            last_ai = next((m for m in reversed(messages) if isinstance(m, AIMessage)), None)
+            if last_ai:
+                assistant_message_id = last_ai.id
+
+        yield {"final": {
+            "assistant_message_id": assistant_message_id,
+            "retrieved_chunks":  final_state.get("retrieved_chunks", []),
+            "retrieved_images":  final_state.get("retrieved_images", []),
+            "verified_citations": final_state.get("verified_citations", []),
+            "chapter_id":        final_state.get("chapter_id"),
+            "thread_id":         thread_id,
+        }}

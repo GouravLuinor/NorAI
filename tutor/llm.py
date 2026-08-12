@@ -57,7 +57,13 @@ def log_llm_call(
 
 
 class UsageLoggingChatLLM(ChatGoogleGenerativeAI):
-    """ChatGoogleGenerativeAI that records per-call Gemini usage to JSONL."""
+    """ChatGoogleGenerativeAI that records per-call Gemini usage to JSONL.
+
+    P6.1: also overrides `astream` so real token streaming (graph
+    `astream_events`) still logs aggregated usage for the streamed call. Token
+    chunks are passed through untouched — only the LAST chunk (which carries the
+    response's usage_metadata) triggers a log write.
+    """
 
     def __init__(self, node: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -89,6 +95,22 @@ class UsageLoggingChatLLM(ChatGoogleGenerativeAI):
         except Exception:  # noqa: BLE001
             logger.debug("llm usage logging failed", exc_info=True)
         return response
+
+    async def astream(self, input, config=None, **kwargs: Any) -> Any:
+        async for chunk in super().astream(input, config=config, **kwargs):
+            try:
+                # The final streamed chunk carries the aggregated usage_metadata.
+                usage = getattr(chunk, "usage_metadata", None)
+                if usage:
+                    log_llm_call(
+                        node=self._llm_node,
+                        model=getattr(self, "model", MODEL_NAME),
+                        prompt_tokens=usage.get("prompt_token_count"),
+                        completion_tokens=usage.get("candidates_token_count"),
+                    )
+            except Exception:  # noqa: BLE001
+                logger.debug("llm usage logging failed", exc_info=True)
+            yield chunk
 
 
 def make_chat_llm(
