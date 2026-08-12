@@ -2,7 +2,7 @@
 
 > Senior-engineer review of the full stack (backend, 18-stage pipeline, RAG tutor, frontend, infra), converted into an actionable, phased plan. Findings cite `file:line` — verify against source before starting an item.
 >
-> **Relationship to `SAAS_ROADMAP.md`**: that doc is the *launch track* (landing, auth, DB, trial, payments, pricing). This doc is the *engineering hardening track* — it covers the critical security/correctness gaps, pipeline economics, RAG quality, durability, and foundation work the launch track depends on. Several items marked ✅ there are actually non-functional (see Phase P0).
+> **Relationship to `NOTES.md` §2**: that section records the *launch track* decisions (landing, auth, DB, trial, payments, pricing). This doc is the *engineering hardening track* — it covers the critical security/correctness gaps, pipeline economics, RAG quality, durability, and foundation work the launch track depends on. Several items marked ✅ on the launch track were initially non-functional (see Phase P0).
 
 ## Executive summary
 
@@ -145,4 +145,4 @@ NorAI has a working 18-stage multimodal pipeline, a genuinely grounded RAG tutor
 
 ## Notes on stale docs
 
-- `SAAS_ROADMAP.md` marks webhook verification, quota enforcement, and conversion gates as ✅ — those are non-functional per P0.2/P2. Reconcile the two docs when this roadmap advances.
+- The launch-track roadmap was retired once shipped; its pricing/decision log lives in `NOTES.md` §2, and its engineering hardening items were reconciled with this doc's P0–P2 statuses (`PROJECT_PROGRESS.md`).
