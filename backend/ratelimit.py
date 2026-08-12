@@ -1,6 +1,7 @@
 import time
 import threading
 import random
+import os
 
 from config import DEFAULT_RPM_LIMIT
 
@@ -29,9 +30,12 @@ class RPMRateLimiter:
                 time.sleep(sleep_time)
 
 
-# Shared global rate limiter singleton across all pipeline modules
-# Honours config.DEFAULT_RPM_LIMIT (single source of truth).
-_limiter = RPMRateLimiter(max_calls=DEFAULT_RPM_LIMIT, window_seconds=60.0)
+# Shared global rate limiter singleton across all pipeline modules.
+# Honors config.DEFAULT_RPM_LIMIT (single source of truth), overridable per
+# deployment via NORAI_RPM_LIMIT — raise it only if the API key's tier allows
+# (e.g. paid Gemini tier). Lower is always safe.
+_eff_rpm = int(os.environ.get("NORAI_RPM_LIMIT", str(DEFAULT_RPM_LIMIT)))
+_limiter = RPMRateLimiter(max_calls=_eff_rpm, window_seconds=60.0)
 rate_limiter = _limiter
 
 # P1.8: monotonically increasing count of rate-limited LLM calls. Every Gemini

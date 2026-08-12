@@ -23,6 +23,11 @@ logger = logging.getLogger(__name__)
 DEFAULT_MODEL_SIZE = os.environ.get("NORAI_WHISPER_MODEL", "small")
 DEFAULT_DEVICE = "cpu"
 DEFAULT_COMPUTE_TYPE = "int8"
+# Speed vs. quality (P1.7 follow-up): VAD keeps whisper from decoding silence
+# and beam_size=1 (greedy) is 2-5x faster than beam 5 on CPU with minimal
+# quality loss on lecture audio. Both env-overridable like NORAI_WHISPER_MODEL.
+DEFAULT_VAD_FILTER = os.environ.get("NORAI_WHISPER_VAD_FILTER", "true").lower() == "true"
+DEFAULT_BEAM_SIZE = int(os.environ.get("NORAI_WHISPER_BEAM_SIZE", "1"))
 
 # Module-level cache: model_size -> WhisperModel. WhisperModel.transcribe is
 # thread-safe, so sharing one instance across concurrent pipelines is safe.
@@ -285,7 +290,9 @@ def transcribe_audio(
     audio_path: str,
     metadata_path: str,
     output_dir: str = "outputs",
-    model_size: str = DEFAULT_MODEL_SIZE
+    model_size: str = DEFAULT_MODEL_SIZE,
+    vad_filter: bool = DEFAULT_VAD_FILTER,
+    beam_size: int = DEFAULT_BEAM_SIZE,
 ) -> dict:
 
     logger.info(
@@ -308,7 +315,8 @@ def transcribe_audio(
 
         whisper_segments, info = model.transcribe(
             audio_path,
-            beam_size=5
+            beam_size=beam_size,
+            vad_filter=vad_filter
         )
 
         segments = generate_segments(
