@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P5 — Foundation (P5.1–P5.8 complete)**: observability, dep hygiene, CI, Docker, typed API client, bundle/resilience, Vitest + offline contract tests | 2026-08-12 00:00 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **Pipeline perf follow-up (P1.7.1)**: whisper VAD+greedy beam (−48% pipeline wall-clock on 8-min video, verified) | 2026-08-12 UTC |
 
 ---
 
@@ -33,6 +33,18 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-12] — OpenCode: Pipeline performance follow-up (whisper VAD + greedy beam, rate-limiter env knob)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed (2 consented standalone pipeline runs on the 8:26 YouTube video `bdeV_TjNfFA`)
+- **Context**: An 8-min video showed a ~14-min UI estimate. Traced (not threads): the uncalibrated estimator's pessimistic `est_time_min` default, slower whisper `small` transcription (upgrade from `base` in `bddaa9b`), and all LLM stages serialized through ONE global 12-RPM limiter (also `bddaa9b`). Thread counts were verified unchanged (extract=4, orchestrator=2).
+- **Files Created / Modified**:
+  - `transcription/transcribe.py` — whisper `vad_filter=True` (default) + `beam_size=1` (greedy; was 5), env knobs `NORAI_WHISPER_VAD_FILTER` / `NORAI_WHISPER_BEAM_SIZE`.
+  - `backend/ratelimit.py` — RPM limit now env-overridable via `NORAI_RPM_LIMIT` (default 12).
+  - `transcription/test_transcribe_config.py` — extended to cover the new VAD/beam knobs (subprocess env isolation).
+  - Docs: `PROJECT_PROGRESS.md` (P1 entry perf follow-up), `NOTES.md` (§1 fix-log row 17), `COMMUNICATOR.md`.
+- **Verification**: Baseline vs fixed measured standalone (same video, `PYTHONPATH=. venv/bin/python`): transcription **104.4s → 60.7s (−42%)**, pipeline **399.6s → 207.2s (6.7→3.5 min, −48%)**, LLM calls **19 → 15 (−21%)**; transcript quality preserved (88/89 segments). `test_transcribe_config.py` all green; `python -m backend.estimator --recalibrate` now fits from 2 fresh runs (transcription realtime 0.16 vs default 1.0). Measurement dirs `outputs/perf-baseline-*` cleaned up.
+- **Hand-off Notes / Next Steps**: Uncommitted — commit only if user asks. The 14-min estimate was estimator-default pessimism, now calibrating from real runs; `--recalibrate` again after ≥5 fresh runs. To go even faster on CPU later: whisper `medium` stays too slow; consider `NORAI_WHISPER_VAD_FILTER=false` only if VAD ever drops speech. The global 12-RPM limiter is the next throughput ceiling (raise via `NORAI_RPM_LIMIT` only on a paid tier).
 
 ### [2026-08-12] — OpenCode: doc-repo cleanup (retire dead docs → NOTES.md)
 - **Agent**: OpenCode (CLI)

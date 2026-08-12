@@ -19,6 +19,8 @@ ROOT = str(Path(__file__).parent.parent)
 def _import_transcribe(extra_env=None):
     env = dict(os.environ)
     env.pop("NORAI_WHISPER_MODEL", None)
+    env.pop("NORAI_WHISPER_VAD_FILTER", None)
+    env.pop("NORAI_WHISPER_BEAM_SIZE", None)
     if extra_env:
         env.update(extra_env)
     code = (
@@ -26,6 +28,8 @@ def _import_transcribe(extra_env=None):
         "import transcription.transcribe as t\n"
         "print(t.DEFAULT_MODEL_SIZE)\n"
         "print(len(t._MODEL_CACHE))\n"
+        "print(t.DEFAULT_VAD_FILTER)\n"
+        "print(t.DEFAULT_BEAM_SIZE)\n"
     ) % ROOT
     return subprocess.run(
         [sys.executable, "-c", code], capture_output=True, text=True, env=env
@@ -38,13 +42,21 @@ def test_default_model_is_small():
     lines = r.stdout.strip().splitlines()
     assert lines[0] == "small", f"default model expected 'small', got {lines[0]!r}"
     assert lines[1] == "0", "model cache should start empty"
+    assert lines[2] == "True", f"VAD filter should default on, got {lines[2]!r}"
+    assert lines[3] == "1", f"beam_size should default to 1, got {lines[3]!r}"
     print("PASS test_default_model_is_small")
 
 
 def test_env_override_takes_effect():
-    r = _import_transcribe({"NORAI_WHISPER_MODEL": "tiny"})
+    r = _import_transcribe(
+        {"NORAI_WHISPER_MODEL": "tiny", "NORAI_WHISPER_VAD_FILTER": "false",
+         "NORAI_WHISPER_BEAM_SIZE": "3"}
+    )
     assert r.returncode == 0, r.stderr
-    assert r.stdout.strip().splitlines()[0] == "tiny"
+    lines = r.stdout.strip().splitlines()
+    assert lines[0] == "tiny"
+    assert lines[2] == "False", "VAD override should apply"
+    assert lines[3] == "3", "beam_size override should apply"
     print("PASS test_env_override_takes_effect")
 
 
