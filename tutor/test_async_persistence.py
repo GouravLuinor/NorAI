@@ -48,7 +48,8 @@ def _reset_llm_stats(delay: float = 0.0):
 
 
 class FakeLLM:
-    """Replaces ChatGoogleGenerativeAI. `ainvoke` only (P4.4 nodes are async)."""
+    """Replaces ChatGoogleGenerativeAI. `ainvoke` + `astream` (P4.4 nodes are
+    async; generate_answer_node streams since P6.1)."""
 
     def __init__(self, **kwargs):
         pass
@@ -62,6 +63,18 @@ class FakeLLM:
             if _LLM_DELAY:
                 await asyncio.sleep(_LLM_DELAY)
             return SimpleNamespace(content="stub tutor answer")
+        finally:
+            _LLM_ACTIVE -= 1
+
+    async def astream(self, messages):
+        global _LLM_ACTIVE, _LLM_MAX_ACTIVE, _LLM_CALLS
+        _LLM_ACTIVE += 1
+        _LLM_MAX_ACTIVE = max(_LLM_MAX_ACTIVE, _LLM_ACTIVE)
+        _LLM_CALLS += 1
+        try:
+            if _LLM_DELAY:
+                await asyncio.sleep(_LLM_DELAY)
+            yield SimpleNamespace(content="stub tutor answer")
         finally:
             _LLM_ACTIVE -= 1
 
