@@ -119,6 +119,12 @@ def extract_knowledge_object(
         chunk_id=
             chunk["chunk_id"],
 
+        start=
+            float(chunk.get("start", 0)),
+
+        end=
+            float(chunk.get("end", 0)),
+
         transcript=
             chunk["text"],
 

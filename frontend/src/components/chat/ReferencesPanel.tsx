@@ -1,7 +1,9 @@
 import { memo, useState } from 'react'
 import type { Reference } from '../../types'
-import { Bookmark, ChevronUp, FileText, Image } from 'lucide-react'
+import { Bookmark, ChevronUp, FileText, Image, Play } from 'lucide-react'
 import { FOCUS_RING } from '../ui/shared'
+import { useVideoStore } from '../../stores/useVideoStore'
+import { formatTimestamp } from '../../lib/video'
 
 interface ReferencesPanelProps {
   references: Reference[]
@@ -11,6 +13,10 @@ interface ReferencesPanelProps {
 
 export const ReferencesPanel = memo(function ReferencesPanel({ references, onReferenceClick, onScreenshotClick }: ReferencesPanelProps) {
   const [collapsed, setCollapsed] = useState(true)
+  // P6.3: each note reference can jump the video to its chapter's start.
+  const videoEmbeddable = useVideoStore((s) => s.embeddable)
+  const chapterStart = useVideoStore((s) => s.chapterStart)
+  const requestSeek = useVideoStore((s) => s.requestSeek)
 
   return (
     <div
@@ -43,27 +49,41 @@ export const ReferencesPanel = memo(function ReferencesPanel({ references, onRef
       <div inert={collapsed} className="space-y-0.5 max-h-[240px] overflow-y-auto">
         {references.map((ref) => {
           const isScreenshot = ref.type === 'screenshot'
+          const seekSec = videoEmbeddable && !isScreenshot ? chapterStart(ref.chapterId) : null
           return (
-            <button
-              key={ref.id}
-              type="button"
-              onClick={() => {
-                if (isScreenshot) {
-                  onScreenshotClick?.(ref)
-                } else {
-                  onReferenceClick?.(ref.sectionId)
-                }
-              }}
-              className={`w-full flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer hover:bg-ns3 transition text-left ${FOCUS_RING}`}
-            >
-              {isScreenshot ? (
-                <Image size={12} strokeWidth={1.5} className="text-nt3 shrink-0" />
-              ) : (
-                <FileText size={12} strokeWidth={1.5} className="text-nt3 shrink-0" />
+            <div key={ref.id} className="group flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  if (isScreenshot) {
+                    onScreenshotClick?.(ref)
+                  } else {
+                    onReferenceClick?.(ref.sectionId)
+                  }
+                }}
+                className={`flex-1 flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer hover:bg-ns3 transition text-left ${FOCUS_RING}`}
+              >
+                {isScreenshot ? (
+                  <Image size={12} strokeWidth={1.5} className="text-nt3 shrink-0" />
+                ) : (
+                  <FileText size={12} strokeWidth={1.5} className="text-nt3 shrink-0" />
+                )}
+                <span className="text-2xs text-nt2 flex-1 truncate">{ref.title}</span>
+                <span className="text-3xs text-nt3 shrink-0">{ref.section}</span>
+              </button>
+              {seekSec != null && (
+                <button
+                  type="button"
+                  title={`Jump the video to ${formatTimestamp(seekSec)}`}
+                  aria-label={`Play ${ref.section} in the lecture video`}
+                  onClick={() => requestSeek(seekSec)}
+                  className={`flex items-center gap-1 px-1.5 py-1 rounded-sm bg-ns3 border border-bdr text-3xs text-nt3 hover:text-nt hover:border-nt4 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition cursor-pointer shrink-0 ${FOCUS_RING}`}
+                >
+                  <Play size={9} strokeWidth={1.5} />
+                  {formatTimestamp(seekSec)}
+                </button>
               )}
-              <span className="text-2xs text-nt2 flex-1 truncate">{ref.title}</span>
-              <span className="text-3xs text-nt3 shrink-0">{ref.section}</span>
-            </button>
+            </div>
           )
         })}
       </div>

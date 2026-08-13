@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Bookmark, Clock, Lightbulb, Code, List, FileText } from 'lucide-react'
+import { Bookmark, Clock, Lightbulb, Code, List, FileText, Play } from 'lucide-react'
 import { ChapterScreenshots } from './ChapterScreenshots'
 import React from 'react'
 import { useLectureStore } from '../../stores/useLectureStore'
+import { useVideoStore } from '../../stores/useVideoStore'
+import { formatTimestamp } from '../../lib/video'
 import { apiFetchRaw } from '../../lib/http'
 import { headingToId } from '../../lib/markdown'
 import { Markdown } from '../ui/Markdown'
@@ -193,6 +195,15 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
   const chapterIdStr = chapterId != null ? String(chapterId) : null
   const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
 
+  // P6.3: chapter-level video seek target.
+  const videoEmbeddable = useVideoStore(s => s.embeddable)
+  const videoMap = useVideoStore(s => s.map)
+  const seekToChapter = useVideoStore(s => s.seekToChapter)
+  const chapterTime = chapterId != null
+    ? videoMap?.chapters.find((c) => c.chapter_id === chapterId)
+    : undefined
+  const showSeekChip = videoEmbeddable && chapterTime?.start_sec != null
+
   useEffect(() => {
     if (!chapterIdStr) {
       setTitle('')
@@ -271,9 +282,22 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
   return (
     <div className="flex-1 overflow-y-auto doc-content px-8 py-7 pb-15 scroll-smooth">
       {title && (
-        <h1 className="font-serif text-hero font-medium text-nt tracking-tight mb-6 leading-snug">
-          {title}
-        </h1>
+        <div className="flex items-center gap-3 mb-6">
+          <h1 className="font-serif text-hero font-medium text-nt tracking-tight leading-snug">
+            {title}
+          </h1>
+          {showSeekChip && chapterTime?.start_sec != null && (
+            <button
+              type="button"
+              title={`Jump the video to ${formatTimestamp(chapterTime.start_sec)}`}
+              onClick={() => seekToChapter(chapterId as number)}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded-sm bg-ns2 border border-bdr text-2xs text-nt3 hover:text-nt hover:border-nt4 transition cursor-pointer shrink-0 ${FOCUS_RING}`}
+            >
+              <Play size={10} strokeWidth={1.5} className="text-np" />
+              Watch · {formatTimestamp(chapterTime.start_sec)}
+            </button>
+          )}
+        </div>
       )}
 
       {partiallyGenerated && <PartialContentBadge className="mb-6" />}

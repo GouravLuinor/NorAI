@@ -8,6 +8,8 @@ class ExternalKnowledgeItem(BaseModel):
 
 class KnowledgeObject(BaseModel):
     chunk_id: int
+    start: float
+    end: float
     topic: str
     transcript: str
     lecture_notes: str
