@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { getLectureId } from '../lib/threadStorage'
-import { apiGet, apiPost, API_BASE } from '../lib/http'
+import { apiGet, apiPost, apiFetchRaw, API_BASE } from '../lib/http'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -32,6 +32,24 @@ export interface Flashcard {
   front: string
   back: string
   explanation?: string
+}
+
+/** SM-2 scheduling state for one card (P6.2), persisted server-side per (lecture, chapter, card). */
+export interface FlashcardSchedule {
+  rating: string
+  easiness: number
+  reps: number
+  interval_days: number
+  due_at: string
+  due_in_days: number
+  last_reviewed_at: string
+}
+
+export type FlashcardScheduleMap = Record<string, FlashcardSchedule>
+
+export interface FlashcardRatingsResponse {
+  ratings: Record<string, string>
+  schedule: FlashcardScheduleMap
 }
 
 export type QuizDifficulty = 'Easy' | 'Medium' | 'Hard'
@@ -334,9 +352,9 @@ export async function persistFlashcardRatings(
   ratings: Array<{ card_key: string; rating: string }>,
   lectureId: string,
   chapterId?: number,
-): Promise<boolean> {
+): Promise<FlashcardScheduleMap | null> {
   try {
-    await apiPost<{ success: boolean }>(`${API_BASE}/flashcards/ratings`, {
+    const data = await apiPost<{ schedule?: FlashcardScheduleMap }>(`${API_BASE}/flashcards/ratings`, {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         lecture_id: lectureId,
@@ -344,24 +362,47 @@ export async function persistFlashcardRatings(
         ratings,
       }),
     })
-    return true
+    return data?.schedule || null
   } catch {
-    return false
+    return null
   }
 }
 
 export async function fetchFlashcardRatings(
   lectureId: string,
   chapterId?: number,
-): Promise<Record<string, string>> {
+): Promise<FlashcardRatingsResponse> {
   try {
     const params = new URLSearchParams({ lecture_id: lectureId })
     if (chapterId !== undefined) params.set('chapter_id', String(chapterId))
-    const data = await apiGet<{ ratings?: Record<string, string> }>(
-      `${API_BASE}/flashcards/ratings?${params}`,
-    )
-    return data?.ratings || {}
+    const data = await apiGet<FlashcardRatingsResponse>(`${API_BASE}/flashcards/ratings?${params}`)
+    return {
+      ratings: data?.ratings || {},
+      schedule: data?.schedule || {},
+    }
   } catch {
-    return {}
+    return { ratings: {}, schedule: {} }
+  }
+}
+
+/** Download the lecture's full deck as an Anki `.apkg` file (P6.2). */
+export async function downloadFlashcardsApkg(lectureId: string): Promise<boolean> {
+  try {
+    const res = await apiFetchRaw(
+      `${API_BASE}/flashcards/export?lecture_id=${encodeURIComponent(lectureId)}`,
+    )
+    if (!res.ok) return false
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `norai-flashcards-${lectureId}.apkg`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+    return true
+  } catch {
+    return false
   }
 }
