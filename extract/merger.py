@@ -233,11 +233,25 @@ def merge_objects(
         "start":
             visual_object.get(
                 "start"
+            )
+            if visual_object.get(
+                "start"
+            ) is not None
+            else knowledge_object.get(
+                "start",
+                0
             ),
 
         "end":
             visual_object.get(
                 "end"
+            )
+            if visual_object.get(
+                "end"
+            ) is not None
+            else knowledge_object.get(
+                "end",
+                0
             )
     }
 

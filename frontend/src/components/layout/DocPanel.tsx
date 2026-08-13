@@ -9,6 +9,7 @@ import { ConceptMapView } from '../doc/ConceptMapView'
 import { SearchBar } from '../doc/SearchBar'
 import { useToastStore } from '../../stores/useToastStore'
 import { HighlightAsk } from '../doc/HighlightAsk'
+import { VideoPlayer } from '../video/VideoPlayer'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { Button } from '../ui/Button'
 import { SegmentedControl } from '../ui/SegmentedControl'
@@ -45,7 +46,7 @@ export function DocPanel() {
   }
 
   return (
-    <main className="flex flex-col min-w-0 min-h-0 border-r border-bdr bg-nb flex-1">
+    <main className="relative flex flex-col min-w-0 min-h-0 border-r border-bdr bg-nb flex-1">
       {/* Top bar */}
       <div className="flex items-center px-4 h-[38px] border-b border-bdr bg-ns gap-0.5 shrink-0">
         <SegmentedControl
@@ -92,6 +93,9 @@ export function DocPanel() {
           <SearchBar isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
         </div>
       </div>
+
+      {/* P6.3: collapsible YouTube player docked above the doc content */}
+      <VideoPlayer />
 
       {/* Content */}
       {activeDocTab === 'concepts' ? (

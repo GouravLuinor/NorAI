@@ -34,6 +34,7 @@ from fastapi.responses import StreamingResponse, JSONResponse, Response, FileRes
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from backend.lecture_registry import list_lectures, get_lecture
+from backend.video_map import build_video_map
 from backend.dependencies import ainvoke_tutor, astream_tutor_tokens
 from backend.lecture_registry import get_lecture
 from ingest.ingest import is_youtube_url, is_gdrive_url
@@ -1487,7 +1488,29 @@ async def get_lecture_info(
     info = get_lecture(clean_id)
     if not info:
         raise HTTPException(status_code=404, detail="Lecture not found")
+    # P6.3: merge DB source fields so the frontend knows whether a YouTube
+    # embed is possible (the registry itself only stores id/title/output_dir).
+    row = (
+        await db.execute(select(Lecture).where(Lecture.id == clean_id))
+    ).scalar_one_or_none()
+    info["source_type"] = row.source_type if row else None
+    info["source_url"] = row.source_url if row else None
+    info["status"] = row.status if row else None
+    info["duration_seconds"] = row.duration_seconds if row else None
     return info
+
+
+@app.get("/video-map")
+async def get_video_map(
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    """P6.3: per-lecture seek map (chapter + chunk timestamps) for click-to-video."""
+    await ensure_lecture_access(lecture_id, user, db)
+    info = get_lecture(lecture_id)
+    base = Path(info["output_dir"]) if info else Path("outputs")
+    return build_video_map(base)
 
 
 @app.get("/outline")

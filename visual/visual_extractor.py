@@ -580,6 +580,8 @@ def save_visual_object(
 
 class VisualObjectItem(BaseModel):
     chunk_id: int
+    start: float = 0.0
+    end: float = 0.0
     visual_notes: str
     important_information: list[str]
     ocr_text: str
@@ -690,8 +692,11 @@ Return a JSON matching ChapterVisualKnowledgeModel.
             
             # Save visual objects for each chunk in chapter
             processed_chunk_ids = set()
+            chunk_times = {c["chunk_id"]: c for c in chapter_chunks}
             for vo in batch_result.visual_objects:
                 obj_dict = vo.model_dump()
+                obj_dict["start"] = chunk_times.get(vo.chunk_id, {}).get("start", 0.0)
+                obj_dict["end"] = chunk_times.get(vo.chunk_id, {}).get("end", 0.0)
                 obj_dict["source_screenshots"] = chunk_image_map.get(vo.chunk_id, [])
                 obj_dict["object_type"] = "visual_object"
                 obj_dict["generated_by"] = MODEL_NAME

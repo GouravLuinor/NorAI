@@ -3,12 +3,14 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { useThreadStore, getOrCreateLabel } from '../../stores/useThreadStore'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { useAuthStore } from '../../stores/useAuthStore'
-import { PanelLeftClose, Trash2 } from 'lucide-react'
+import { PanelLeftClose, Trash2, Play } from 'lucide-react'
 import { useToastStore } from '../../stores/useToastStore'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { Button } from '../ui/Button'
 import { IconButton } from '../ui/IconButton'
 import { FOCUS_RING } from '../ui/shared'
+import { useVideoStore } from '../../stores/useVideoStore'
+import { formatTimestamp } from '../../lib/video'
 import { useNavigate } from 'react-router-dom'
 import type { QuotaInfo } from '../../stores/useAuthStore'
 
@@ -51,6 +53,11 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
   const setActiveLecture    = useLectureStore(s => s.setActiveLecture)
   const loadLectures        = useLectureStore(s => s.loadLectures)
   const navigate = useNavigate()
+
+  // P6.3: video seek targets for chapter rows.
+  const videoEmbeddable  = useVideoStore(s => s.embeddable)
+  const videoMap         = useVideoStore(s => s.map)
+  const seekToChapter    = useVideoStore(s => s.seekToChapter)
 
   // Quota badge (P2.4): live data from GET /quota.
   const quota          = useAuthStore(s => s.quota)
@@ -164,25 +171,40 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
           {/* Chapter list */}
           <div className="spec-label mb-1.5">02. Chapters</div>
           <ul className="space-y-0.5">
-            {chapters.map((ch) => (
-              <li key={ch.id}>
-                <button
-                  type="button"
-                  onClick={() => setChapter(ch.id)}
-                  aria-current={activeChapterId === ch.id ? 'true' : undefined}
-                  className={`w-full flex items-center gap-2 px-1.5 py-1.5 rounded-md text-left text-11 transition ${FOCUS_RING} ${
-                    activeChapterId === ch.id
-                      ? 'bg-npb text-nt font-medium'
-                      : 'text-nt3 hover:bg-ns2 hover:text-nt2'
-                  }`}
-                >
-                  <span className="text-3xs font-medium w-3.5 text-nt4">
-                    {String(ch.id).padStart(2, '0')}
-                  </span>
-                  <span className="truncate">{ch.title}</span>
-                </button>
-              </li>
-            ))}
+            {chapters.map((ch) => {
+              const chTime = videoMap?.chapters.find((c) => c.chapter_id === ch.id)
+              const showSeek = videoEmbeddable && chTime?.start_sec != null
+              return (
+                <li key={ch.id} className="group relative">
+                  <button
+                    type="button"
+                    onClick={() => setChapter(ch.id)}
+                    aria-current={activeChapterId === ch.id ? 'true' : undefined}
+                    className={`w-full flex items-center gap-2 px-1.5 py-1.5 rounded-md text-left text-11 transition ${FOCUS_RING} ${
+                      activeChapterId === ch.id
+                        ? 'bg-npb text-nt font-medium'
+                        : 'text-nt3 hover:bg-ns2 hover:text-nt2'
+                    }`}
+                  >
+                    <span className="text-3xs font-medium w-3.5 text-nt4">
+                      {String(ch.id).padStart(2, '0')}
+                    </span>
+                    <span className="truncate">{ch.title}</span>
+                  </button>
+                  {showSeek && (
+                    <button
+                      type="button"
+                      title={`Jump the video to ${formatTimestamp(chTime.start_sec)}`}
+                      aria-label={`Play chapter ${ch.id} in the lecture video`}
+                      onClick={() => seekToChapter(ch.id)}
+                      className={`absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-ns3 border border-bdr text-3xs text-nt3 hover:text-nt hover:border-nt4 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition cursor-pointer ${FOCUS_RING}`}
+                    >
+                      <Play size={9} strokeWidth={1.5} /> {formatTimestamp(chTime.start_sec)}
+                    </button>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         </div>
 

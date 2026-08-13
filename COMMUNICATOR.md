@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P6.2 flashcards QA**: SM-2 scheduling + Anki export verified live; fixed filtered-deck badge + blank-card-after-rating bugs in `FlashcardsPanel` | 2026-08-12 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P6.3 click-to-video grounding**: YouTube player + seek map (`/video-map`), chapter/citation seek links; pipeline fix so timestamps persist; **UX change**: always-visible video bar replaced by a floating "Watch video" button + docked player | 2026-08-13 UTC |
 
 ---
 
@@ -33,6 +33,41 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### P6.3 — OpenCode: first live pipeline run + 2 timestamp-persistence bug fixes
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed — **live end-to-end run** of `https://youtu.be/tEORX_PevRM` (13.6 min, ~8 min wall time, guest auth, ~21–24 Gemini calls). Full pipeline green: 24 chunks, 24/24 knowledge objects (one 503 auto-retried), 4 chapters, artifacts, tutor + screenshot indexes, cleanup.
+- **Bug 1 — visual objects dropped timestamps:** `VisualObjectItem` (P6.3-relevant) had no `start`/`end`, so LLM-produced visual objects saved without them (only `create_empty_visual_object` fallbacks carried times) → merged objects read `None` → only 4/24 chunks seekable. Fixed: added `start`/`end` to `VisualObjectItem` (`visual/visual_extractor.py`) and stamped `obj_dict["start"]`/`["end"]` from the chunk mapping in `process_chapter_visual_batch`.
+- **Bug 2 — no fallback in the merger:** `merge_objects` (`extract/merger.py`) read `visual_object.get("start")` with no fallback; now falls back to `knowledge_object` start/end when visual times are absent. This also let the lecture be backfilled via a deterministic zero-LLM re-merge (24 merged objects all carrying times afterwards).
+- **Live verification:** `/video-map` → 4 chapters contiguous 0→814.72s + 24 chunk times; `/lectures/{id}` → `youtube`/`completed`/815s; player bar "streams from YouTube", embed loads (`/embed/tEORX_PevRM`), sidebar + notes seek chips (0:00/3:34/7:00/10:24), clicking ch-3 seek delivered to the live player (`pendingSeek` null, `player` registered), zero app console errors.
+- **UX change (per user request):** the always-visible `Lecture video` bar is gone. `VideoPlayer` now renders `null` unless the lecture is embeddable (youtube + completed + videoId), shows a floating **"Watch video"** button (absolute bottom-right of the DocPanel, anchored via `relative` on `DocPanel` `<main>`), and opens a docked player only on click. Any seek (`requestSeek`/`seekToChapter`) sets `open: true` so chapter/citation links auto-reveal the player. Non-embeddable lectures (upload/legacy/processing) render nothing. Frontend suite 67/67 (new `open`/`togglePlayer`/auto-open + floating-button tests), `tsc -b && vite build` ✅, oxlint clean for the touched files. Live-verified in browser on `bf7e8248-…` (fresh load: no bar/iframe, button bottom-right; click opens 558×314 embed; close destroys it; ch-3 seek auto-opens; legacy `1c4400c1-…` renders nothing).
+- **Files Modified**: `visual/visual_extractor.py`, `extract/merger.py`, `frontend/src/stores/useVideoStore.ts`, `frontend/src/components/video/VideoPlayer.tsx`, `frontend/src/components/layout/DocPanel.tsx`, `frontend/src/components/video/VideoPlayer.test.tsx`, `frontend/src/stores/useVideoStore.test.ts`; docs `ROADMAP.md`, `PROJECT_PROGRESS.md`, `COMMUNICATOR.md`.
+- **Verification**: `scripts/run-tests.sh` 34/34 (incl. `visual/test_visual_cache.py`), `python backend/test_video_map.py` ✅.
+- **Hand-off Notes / Next Steps**: Uncommitted — commit only if the user asks. Lesson recorded: extractor/visual caches key off input hashes, so existing lectures are NOT backfilled automatically — the merger fallback makes stale merged objects fixable offline with zero LLM calls. Next: P6.4, P6.5, or exact-moment chunk seeks. Open items unchanged (NOTES.md §3).
+
+### P6.3 — OpenCode: click-to-video grounding (YouTube player + chapter/citation seek)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed — backend + frontend unit tests green; live smoke test of `/video-map` + graceful degradation in browser (no paid pipeline run)
+- **Files Created**:
+  - `backend/video_map.py` — pure seek-map builder: `build_video_map(output_dir)` reads `merged_objects/chunk_*.json` (`start`/`end` sec) + `notes/lecture_outline.json` (`chunk_ids`), returns `{chapters:[{chapter_id,title,chunk_ids,start_sec,end_sec}], chunks:[{chunk_id,start_sec,end_sec}]}`; str|Path tolerant, missing files → empty map.
+  - `backend/test_video_map.py` — standalone offline tests (all pass).
+  - `frontend/src/lib/video.ts` — `formatTimestamp`, `extractYoutubeVideoId`.
+  - `frontend/src/lib/video.test.ts`, `frontend/src/stores/useVideoStore.test.ts`, `frontend/src/components/video/VideoPlayer.test.tsx` — Vitest suites.
+  - `frontend/src/types/youtube.d.ts` — minimal ambient `window.YT` IFrame Player types.
+  - `frontend/src/stores/useVideoStore.ts` — per-lecture source info + seek map + player handle; `load` fetches `/lectures/{id}` + `/video-map`; `requestSeek` buffers a pending target until `registerPlayer` (player creation in `VideoPlayer` drains it); `seekToChapter`/`chapterStart`; `embeddable = sourceType==='youtube' && status==='completed' && videoId != null`.
+  - `frontend/src/components/video/VideoPlayer.tsx` — floating "Watch video" button (bottom-right of DocPanel) + docked player, opened on click or by any seek (`requestSeek`/`seekToChapter` set `open: true`); lazy-loads YouTube IFrame API on open; creates/destroys `YT.Player` around a host div; renders nothing unless embeddable (youtube + completed + videoId); non-embeddable lectures render nothing at all; onError banner for private/removed videos.
+- **Files Modified**:
+  - `backend/main.py` — `/lectures/{lecture_id}` merges DB `source_type`/`source_url`/`status`/`duration_seconds`; new `GET /video-map?lecture_id=` (uses `ensure_lecture_access` + `get_lecture`, same pattern as `/outline`).
+  - `frontend/src/components/layout/DocPanel.tsx` — mounts `<VideoPlayer />` above doc content.
+  - `frontend/src/components/layout/Sidebar.tsx` — chapter rows get a hover seek chip (`▶ m:ss`) → `seekToChapter` when the chapter has a timestamp.
+  - `frontend/src/components/doc/NotesView.tsx` — "Watch · m:ss" chip next to chapter `<h1>` → `seekToChapter`.
+  - `frontend/src/components/chat/ReferencesPanel.tsx` — note-reference rows get a hover seek chip (`chapterStart(ref.chapterId)`); rows restructured to avoid nested buttons; screenshots excluded.
+  - `frontend/vite.config.ts` — **fix**: `/video-map` added to the proxy allowlist (was falling through to the SPA → text/html error in apiFetch).
+  - `extract/models.py` + `extract/extractor.py` — **pipeline fix**: `KnowledgeObject` now persists chunk `start`/`end` (were dropped, so `merge_objects_without_visual` always wrote 0 and with-visual merged objects were the only ones carrying timestamps). New/refreshed runs now carry timestamps into `merged_objects/`; cached existing lectures are NOT backfilled (`.extract.sha256` cache key is input-hash only) — acceptable, graceful degradation.
+  - Docs: `ROADMAP.md` (P6.3 ✅ + DoD line), `PROJECT_PROGRESS.md` (same note as here), `COMMUNICATOR.md`.
+- **Design decisions**: player streams from YouTube (local video is transient — already deleted post-run by `orchestrator.py` `_TEMP_DIRS`); citations map to chapters via `chapterFromChunkId` chunk-id prefix (`ch{chapter_id}__`) so no backend citation enrichment was needed; seek granularity is chapter-level best-effort (chunk-level exact-moment seek = future follow-up).
+- **Verification**: `python backend/test_video_map.py` ✅; `scripts/run-tests.sh` 34/34 ✅; `test_api_contract_offline.py` 15/15 ✅; frontend `tsc -b && vite build` ✅; `oxlint` clean (only pre-existing warnings); `npm run test` 67/67 ✅ (latest suite includes floating-button/dock + `open`/auto-open behavior; later UX change to floating button superseded the original bar). Live: synthetic lecture fixture confirmed `/video-map` returns computed chapter start/end; browser reload of lecture `1c4400c1-…` (no DB row → not embeddable) renders with no player and zero console errors.
+- **Hand-off Notes / Next Steps**: Uncommitted — commit only if the user asks. Next P6 candidates: P6.4 (multi-lecture org/sharing), P6.5 (usage/cost dashboard), or exact-moment chunk-level seeks. Open items unchanged (NOTES.md §3): gemini paid-tier preflight, P0.4a Bearer-on-reads, job-queue multi-worker claim-lock, P4 DoD live run.
 
 ### P6.2 — OpenCode: flashcards QA pass + 2 FlashcardsPanel bug fixes (SM-2/Anki deck)
 - **Agent**: OpenCode (CLI)
