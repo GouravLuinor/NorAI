@@ -39,6 +39,12 @@ export default defineConfig({
         bypass: (req) =>
           (req.headers.accept ?? '').includes('text/html') ? '/index.html' : undefined,
       },
+      // /usage is BOTH an SPA route and an API endpoint — same bypass trick.
+      '/usage': {
+        target: 'http://localhost:8000',
+        bypass: (req) =>
+          (req.headers.accept ?? '').includes('text/html') ? '/index.html' : undefined,
+      },
     },
   },
 })

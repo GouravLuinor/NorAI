@@ -36,6 +36,8 @@ PIPELINE_COLUMNS = {
     "stage", "stage_message", "progress", "attempts",
     "heartbeat_at", "queued_at", "started_at", "cancel_requested",
 }
+# P6.5: cost-dashboard columns added to usage_logs.
+USAGE_COLUMNS = {"model", "calls"}
 
 
 def _conn(db_path: str) -> sqlite3.Connection:
@@ -56,7 +58,7 @@ def _column_names(db_path: str, table: str) -> set:
     return {r[1] for r in rows}
 
 
-_MIG_HEAD = "0002_job_queue_columns"
+_MIG_HEAD = "0003_usage_log_columns"
 
 
 def _version(db_path: str):
@@ -104,6 +106,10 @@ check(
         r[1] for r in _conn(_FRESH_DB).execute("SELECT type,name FROM sqlite_master WHERE type='index'").fetchall()
     },
 )
+check(
+    "fresh: usage_logs has P6.5 columns",
+    USAGE_COLUMNS <= _column_names(_FRESH_DB, "usage_logs"),
+)
 
 # ── 2. Pre-Alembic DB (old create_all schema) ───────────────────────────────
 with _conn(_LEGACY_DB) as c:
@@ -136,6 +142,10 @@ check(
     "legacy: pipeline columns added",
     PIPELINE_COLUMNS <= _column_names(_LEGACY_DB, "lectures"),
 )
+check(
+    "legacy: usage_logs gained P6.5 columns",
+    USAGE_COLUMNS <= _column_names(_LEGACY_DB, "usage_logs"),
+)
 with _conn(_LEGACY_DB) as c:
     row = c.execute("SELECT attempts, cancel_requested FROM lectures WHERE id='legacy-1'").fetchone()
 check(
@@ -149,6 +159,10 @@ check("idempotent: re-upgrade is a no-op", True)
 check(
     "idempotent: columns intact after re-upgrade",
     PIPELINE_COLUMNS <= _column_names(_LEGACY_DB, "lectures"),
+)
+check(
+    "idempotent: P6.5 usage columns intact",
+    USAGE_COLUMNS <= _column_names(_LEGACY_DB, "usage_logs"),
 )
 check(
     "idempotent: only one alembic_version row",

@@ -82,6 +82,7 @@ async def _record_outcome(
     output_dir: Optional[str],
     llm_calls: int = 0,
     est_cost_usd: Optional[float] = None,
+    stage_usage: Optional[list[dict]] = None,
 ) -> None:
     """Single-session write of the pipeline outcome (called via asyncio.run)."""
     async with async_sessionmaker(
@@ -118,15 +119,33 @@ async def _record_outcome(
             sub.used_minutes_this_month = (sub.used_minutes_this_month or 0) + minutes
             session.add(sub)
 
-        if minutes or llm_calls:
+        # P6.5: one UsageLog row per pipeline stage. Falls back to a single
+        # coarse "pipeline" row when no per-stage ledger data is available.
+        stages = stage_usage or (
+            [
+                {
+                    "stage": "pipeline",
+                    "model": None,
+                    "input_tokens": 0,
+                    "output_tokens": 0,
+                    "calls": llm_calls,
+                    "cost_usd": float(est_cost_usd or 0.0),
+                }
+            ]
+            if minutes or llm_calls
+            else []
+        )
+        for s in stages:
             session.add(
                 UsageLog(
                     user_id=user_id,
                     lecture_id=lecture_id,
-                    stage="pipeline",
-                    input_tokens=0,
-                    output_tokens=0,
-                    estimated_cost_usd=float(est_cost_usd or 0.0),
+                    stage=s.get("stage", "pipeline"),
+                    input_tokens=int(s.get("input_tokens", 0) or 0),
+                    output_tokens=int(s.get("output_tokens", 0) or 0),
+                    estimated_cost_usd=float(s.get("cost_usd", 0.0) or 0.0),
+                    model=s.get("model"),
+                    calls=int(s.get("calls", 1) or 0),
                 )
             )
 
@@ -143,6 +162,7 @@ def record_pipeline_outcome(
     output_dir: Optional[str] = None,
     llm_calls: int = 0,
     est_cost_usd: Optional[float] = None,
+    stage_usage: Optional[list[dict]] = None,
 ) -> None:
     """Sync entry point for the pipeline worker thread. Never raises."""
     if not user_id:
@@ -160,7 +180,114 @@ def record_pipeline_outcome(
                 output_dir=output_dir,
                 llm_calls=llm_calls,
                 est_cost_usd=est_cost_usd,
+                stage_usage=stage_usage,
             )
         )
     except Exception as exc:  # pragma: no cover - defensive
         logger.exception("usage: failed to record pipeline outcome for %s: %s", lecture_id, exc)
+
+
+async def _flush_tutor_turn(
+    user_id: str,
+    lecture_id: str,
+    stage: str,
+    model: Optional[str],
+    input_tokens: int,
+    output_tokens: int,
+    calls: int,
+    cost_usd: float,
+) -> None:
+    """Write a single tutor-stage UsageLog row for one chat turn (asyncio.run)."""
+    async with async_sessionmaker(
+        bind=create_async_engine(DATABASE_URL, poolclass=NullPool, **_ENGINE_KWARGS),
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autoflush=False,
+    )() as session:
+        lecture = await session.get(Lecture, lecture_id)
+        if lecture is None or lecture.user_id != user_id:
+            logger.info(
+                "usage: lecture %s not owned by user %s — skipping tutor usage", lecture_id, user_id
+            )
+            return
+        session.add(
+            UsageLog(
+                user_id=user_id,
+                lecture_id=lecture_id,
+                stage=stage,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                estimated_cost_usd=cost_usd,
+                model=model,
+                calls=calls,
+            )
+        )
+        await session.commit()
+
+
+async def record_tutor_turn_async(
+    user_id: Optional[str],
+    lecture_id: str,
+    stage: str = "tutor",
+    model: Optional[str] = None,
+    input_tokens: int = 0,
+    output_tokens: int = 0,
+    calls: int = 1,
+    cost_usd: float = 0.0,
+) -> None:
+    """Async flush of one tutor chat turn's metered usage. Never raises.
+
+    Used by the /chat and /chat/stream handlers (already inside the event loop),
+    where asyncio.run() would raise RuntimeError.
+    """
+    if not user_id:
+        logger.info("usage: no user_id for tutor turn on %s — skipping", lecture_id)
+        return
+    try:
+        await _flush_tutor_turn(
+            user_id=user_id,
+            lecture_id=lecture_id,
+            stage=stage,
+            model=model,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            calls=calls,
+            cost_usd=cost_usd,
+        )
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.exception("usage: failed to record tutor turn for %s: %s", lecture_id, exc)
+
+
+def record_tutor_turn(
+    user_id: Optional[str],
+    lecture_id: str,
+    stage: str = "tutor",
+    model: Optional[str] = None,
+    input_tokens: int = 0,
+    output_tokens: int = 0,
+    calls: int = 1,
+    cost_usd: float = 0.0,
+) -> None:
+    """Sync flush of one tutor chat turn's metered usage. Never raises.
+
+    For callers NOT inside an event loop (worker thread / tests); the async
+    handlers should use record_tutor_turn_async instead.
+    """
+    if not user_id:
+        logger.info("usage: no user_id for tutor turn on %s — skipping", lecture_id)
+        return
+    try:
+        asyncio.run(
+            record_tutor_turn_async(
+                user_id=user_id,
+                lecture_id=lecture_id,
+                stage=stage,
+                model=model,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                calls=calls,
+                cost_usd=cost_usd,
+            )
+        )
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.exception("usage: failed to record tutor turn for %s: %s", lecture_id, exc)

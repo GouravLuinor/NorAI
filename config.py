@@ -52,6 +52,36 @@ LEMONSQUEEZY_CHECKOUT_STARTER_URL = os.environ.get("LEMONSQUEEZY_CHECKOUT_STARTE
 LEMONSQUEEZY_CHECKOUT_PRO_URL = os.environ.get("LEMONSQUEEZY_CHECKOUT_PRO_URL", "")
 LEMONSQUEEZY_CUSTOMER_PORTAL_URL = os.environ.get("LEMONSQUEEZY_CUSTOMER_PORTAL_URL", "")
 
+# ── Model pricing (P6.5) ──────────────────────────────────────────────────────
+# USD per 1M tokens used by the cost dashboard (`GET /usage`). Sources:
+#   gemini-3.1-flash-lite — $0.25 input / $1.50 output (text, image, video;
+#       output includes thinking tokens), Google AI pricing page.
+#   gemini-embedding-2   — $0.20 input / $0.00 output, Google AI pricing page.
+# Env-overridable so the deployed pricing can be corrected without a deploy.
+def _price(name: str, default: float) -> float:
+    return float(os.environ.get(f"NORAI_MODEL_PRICE_{name}", str(default)))
+
+MODEL_PRICING: dict[str, dict[str, float]] = {
+    "gemini-3.1-flash-lite": {
+        "input_per_1M": _price("FLASH_LITE_INPUT", 0.25),
+        "output_per_1M": _price("FLASH_LITE_OUTPUT", 1.50),
+    },
+    "gemini-embedding-2": {
+        "input_per_1M": _price("EMBEDDING_INPUT", 0.20),
+        "output_per_1M": _price("EMBEDDING_OUTPUT", 0.0),
+    },
+}
+
+
+def model_price(model: str, *, input_tokens: int = 0, output_tokens: int = 0) -> float:
+    """Estimated USD cost for a call against `model` (fallback: $0, unknown model)."""
+    price = MODEL_PRICING.get(model)
+    if price is None:
+        return 0.0
+    return (input_tokens / 1_000_000) * price.get("input_per_1M", 0.0) + (
+        output_tokens / 1_000_000
+    ) * price.get("output_per_1M", 0.0)
+
 # ── Directory & Database Paths ────────────────────────────────────────────────
 OUTPUTS_DIR = Path("outputs")
 CHECKPOINT_DIR = OUTPUTS_DIR / "tutor"

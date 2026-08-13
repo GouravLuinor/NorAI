@@ -1,83 +1,70 @@
 """
-tutor/llm.py — ChatGoogleGenerativeAI factory (P5.1).
+tutor/llm.py — ChatGoogleGenerativeAI factory (P5.1 / P6.5).
 
 Central place to construct the tutor's chat LLM. Every LLM call goes through
 `make_chat_llm(...)`, which returns a subclass that records Gemini usage
-metadata (prompt/completion tokens) to `outputs/llm_calls.jsonl` — joined with
-the bound log context (lecture_id / thread_id / request_id) when present.
+metadata (prompt/completion tokens + estimated USD cost) via
+`backend.usage_ledger` — appended to `outputs/llm_calls.jsonl` and accumulated
+into the per-stage ledger that `/chat` + `/chat/stream` flush to UsageLog
+(P6.5 cost dashboard).
 
 Defensive by design: if usage metadata is absent (FakeLLMs in tests, older
-responses) or the JSONL append fails, logging is a silent no-op — it must never
+responses) or the ledger append fails, logging is a silent no-op — it must never
 break a tutor turn.
 """
 
-import json
-import logging
-import threading
-from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from config import DEFAULT_MAX_RETRIES, MODEL_NAME, TEMPERATURE, get_api_key
+from backend.usage_ledger import record_llm_usage
 
-logger = logging.getLogger(__name__)
-
-LLM_CALLS_FILE = Path("outputs/llm_calls.jsonl")
-
-_write_lock = threading.Lock()
-
-
-def log_llm_call(
-    node: str,
-    model: str,
-    prompt_tokens: int | None,
-    completion_tokens: int | None,
-    **extra: Any,
-) -> None:
-    """Append one LLM-usage record to outputs/llm_calls.jsonl (thread-safe)."""
-    try:
-        from backend.logging_config import get_context
-
-        record = {
-            "ts": datetime.now(timezone.utc).isoformat(),
-            "node": node,
-            "model": model,
-            "prompt_tokens": prompt_tokens,
-            "completion_tokens": completion_tokens,
-        }
-        record.update(extra)
-        record.update(get_context())
-        LLM_CALLS_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with _write_lock, LLM_CALLS_FILE.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
-    except Exception:  # noqa: BLE001
-        logger.debug("llm usage logging failed", exc_info=True)
+# Tutor turns accumulate under this ledger stage so the chat handlers can diff
+# it after a turn and write a single UsageLog row (stage="tutor").
+TUTOR_STAGE = "tutor"
 
 
 class UsageLoggingChatLLM(ChatGoogleGenerativeAI):
-    """ChatGoogleGenerativeAI that records per-call Gemini usage to JSONL.
+    """ChatGoogleGenerativeAI that records per-call Gemini usage.
 
     P6.1: also overrides `astream` so real token streaming (graph
     `astream_events`) still logs aggregated usage for the streamed call. Token
     chunks are passed through untouched — only the LAST chunk (which carries the
     response's usage_metadata) triggers a log write.
+
+    P6.5: reads LangChain's `usage_metadata` keys (`input_tokens` /
+    `output_tokens`) — langchain-google-genai converts Gemini's
+    `prompt_token_count` / `candidates_token_count` to those keys
+    (`chat_models.py:_convert`), so the old Gemini key names always read None.
+    Falls back to the Gemini key names defensively.
     """
 
     def __init__(self, node: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._llm_node = node
 
+    def _tokens_from(self, usage: dict[str, Any]) -> tuple[int | None, int | None]:
+        """Extract (prompt, completion) tokens from a usage metadata dict."""
+        if not usage:
+            return None, None
+        prompt = usage.get("input_tokens")
+        completion = usage.get("output_tokens")
+        if prompt is None or completion is None:
+            # Defensive fallback to raw Gemini key names.
+            prompt = usage.get("prompt_token_count", prompt)
+            completion = usage.get("candidates_token_count", completion)
+        return prompt, completion
+
     def _record(self, response: Any) -> None:
         usage = getattr(response, "usage_metadata", None) or {}
-        if not usage:
-            return
-        log_llm_call(
-            node=self._llm_node,
+        prompt, completion = self._tokens_from(usage)
+        record_llm_usage(
+            TUTOR_STAGE,
             model=getattr(self, "model", MODEL_NAME),
-            prompt_tokens=usage.get("prompt_token_count"),
-            completion_tokens=usage.get("candidates_token_count"),
+            prompt_tokens=prompt,
+            completion_tokens=completion,
+            node_override=self._llm_node,
         )
 
     async def ainvoke(self, input, config=None, **kwargs: Any) -> Any:
@@ -85,7 +72,9 @@ class UsageLoggingChatLLM(ChatGoogleGenerativeAI):
         try:
             self._record(response)
         except Exception:  # noqa: BLE001
-            logger.debug("llm usage logging failed", exc_info=True)
+            import logging
+
+            logging.getLogger(__name__).debug("llm usage logging failed", exc_info=True)
         return response
 
     def invoke(self, input, config=None, **kwargs: Any) -> Any:
@@ -93,24 +82,36 @@ class UsageLoggingChatLLM(ChatGoogleGenerativeAI):
         try:
             self._record(response)
         except Exception:  # noqa: BLE001
-            logger.debug("llm usage logging failed", exc_info=True)
+            import logging
+
+            logging.getLogger(__name__).debug("llm usage logging failed", exc_info=True)
         return response
 
     async def astream(self, input, config=None, **kwargs: Any) -> Any:
+        # The aggregated usage_metadata rides on a middle/last chunk (and the
+        # trailing chunk often repeats 0/0), so record a SINGLE log write from
+        # the max tokens seen across the stream once it completes.
+        max_prompt = 0
+        max_completion = 0
         async for chunk in super().astream(input, config=config, **kwargs):
             try:
-                # The final streamed chunk carries the aggregated usage_metadata.
-                usage = getattr(chunk, "usage_metadata", None)
-                if usage:
-                    log_llm_call(
-                        node=self._llm_node,
-                        model=getattr(self, "model", MODEL_NAME),
-                        prompt_tokens=usage.get("prompt_token_count"),
-                        completion_tokens=usage.get("candidates_token_count"),
-                    )
+                usage = getattr(chunk, "usage_metadata", None) or {}
+                prompt, completion = self._tokens_from(usage)
+                max_prompt = max(max_prompt, prompt or 0)
+                max_completion = max(max_completion, completion or 0)
             except Exception:  # noqa: BLE001
-                logger.debug("llm usage logging failed", exc_info=True)
+                import logging
+
+                logging.getLogger(__name__).debug("llm usage logging failed", exc_info=True)
             yield chunk
+        if max_prompt or max_completion:
+            record_llm_usage(
+                TUTOR_STAGE,
+                model=getattr(self, "model", MODEL_NAME),
+                prompt_tokens=max_prompt,
+                completion_tokens=max_completion,
+                node_override=self._llm_node,
+            )
 
 
 def make_chat_llm(

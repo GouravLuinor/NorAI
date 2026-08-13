@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, ExternalLink, Sparkles, CreditCard } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Sparkles, CreditCard, BarChart3 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
 import { apiGet } from '../lib/http'
@@ -164,6 +164,12 @@ export function BillingPage() {
               ? `${fmtHours(data.remaining_minutes)} of processing remaining this month.`
               : 'You\'ve used your monthly allowance — upgrade to keep processing.'}
           </p>
+          <button
+            onClick={() => navigate('/usage')}
+            className="mt-3 inline-flex items-center gap-1.5 text-11 text-np font-medium hover:underline cursor-pointer"
+          >
+            <BarChart3 size={13} /> See detailed usage &amp; cost
+          </button>
         </section>
 
         {/* Plan actions */}

@@ -20,6 +20,7 @@ from concurrent.futures import (
     as_completed
 )
 from backend.ratelimit import rate_limiter as _limiter
+from backend.usage_ledger import record_generate_usage
 from cache_util import outputs_current, write_marker
 from config import MODEL_NAME, DEFAULT_MAX_RETRIES
 
@@ -105,6 +106,7 @@ def extract_knowledge_object(
             )
         )
     )
+    record_generate_usage("extract", MODEL_NAME, response)
 
     data = json.loads(
         response.text

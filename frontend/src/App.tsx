@@ -11,6 +11,7 @@ import { AppErrorBoundary } from './components/AppErrorBoundary'
 const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })))
 const PricingPage = lazy(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })))
 const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })))
+const UsagePage = lazy(() => import('./pages/UsagePage').then(m => ({ default: m.UsagePage })))
 const UploadPage = lazy(() => import('./pages/UploadPage').then(m => ({ default: m.UploadPage })))
 const ProcessingPage = lazy(() => import('./pages/ProcessingPage').then(m => ({ default: m.ProcessingPage })))
 const Workspace = lazy(() => import('./components/layout/Workspace').then(m => ({ default: m.Workspace })))
@@ -61,6 +62,7 @@ export default function App() {
               <Route path="/" element={<LandingRouteWrapper />} />
               <Route path="/pricing" element={<PricingRouteWrapper />} />
               <Route path="/billing" element={<BillingPage />} />
+              <Route path="/usage" element={<UsagePage />} />
               <Route path="/app" element={<UploadPage />} />
               <Route path="/process/:taskId" element={<ProcessingPage />} />
               <Route path="/workspace" element={<Workspace />} />
