@@ -115,7 +115,41 @@ starts provisioning automatically with zero code changes.
 
 ---
 
-## 4. Savings math (expected)
+## 4. Output-token reduction (done, 2026-08-13)
+
+Output is 75% of pipeline cost ($1.50/1M vs $0.25/1M input). Two generated fields
+were **never consumed downstream** — pure wasted output — plus every LLM call except
+notes lacked a `max_output_tokens` bound:
+
+| Field | Stage | Share of stage output | Downstream consumers |
+|-------|-------|----------------------:|----------------------|
+| `external_knowledge` | extract | **23%** | none (only extract/ + merger) |
+| `visual_summary` | visual | **17%** | none (only visual/ + merger) |
+| `ocr_text` | visual | 46% | screenshot selector (analysis cache) — **kept** |
+
+Changes:
+- `extract/models.py` / `extract/prompts.py`: `external_knowledge` removed from
+  `ChunkKnowledgeModel` + `OUTPUT_SCHEMA` (schema field gone → API stops emitting it).
+  `KnowledgeObject` keeps only consumed fields; old cached chunk files still load
+  (merger reads via `.get(..., default)`).
+- `visual/visual_extractor.py` / `visual/visual_prompts.py`: `visual_summary` removed
+  from `VisualObjectItem`, `ChapterVisualKnowledgeModel`, the batch prompt, and both
+  empty-object factories.
+- `extract/merger.py`: dead `external_knowledge` / `visual_summary` writes dropped
+  from merged objects.
+- `max_output_tokens` caps added at ~2× observed max (never bite on normal runs,
+  bound pathological blowups — output bills at 6× input): extract **1200** (obs max
+  613), visual chapter-batch **3000** (obs max 1438), outline **1000** (obs max 446).
+  Notes stays at 8192 (mandated 800–1200+ word notes).
+
+**Expected savings ≈ $0.0026/run (~10%)** — `external_knowledge` ~$0.0016,
+`visual_summary` ~$0.001. Zero quality impact: fields were provably unused; caps sit
+above observed output. Verified offline: 10/10 cached chunks merge cleanly with the
+dead fields absent; full offline suite (37 tests) green. No paid probe needed.
+
+---
+
+## 5. Savings math (expected)
 
 | Turn | Uncached | Cached |
 |------|---------:|-------:|
@@ -123,5 +157,5 @@ starts provisioning automatically with zero code changes.
 | hot (prefix ~6k tokens) | $0.0015 | ~$0.0002 |
 
 Tutor at ~$0.0006/turn today; context caching cuts the prefix component ~10× on
-long conversations. Pipeline cost is dominated by output tokens (75%) which are
-deliberately untouched.
+long conversations. Pipeline output-token spend is cut ~10% (dead fields dropped;
+see §4); input-side caching stays dormant until a quota-enabled key is used.

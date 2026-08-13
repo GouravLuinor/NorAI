@@ -103,6 +103,7 @@ def extract_knowledge_object(
                 temperature=0.2,
                 response_mime_type="application/json",
                 response_schema=ChunkKnowledgeModel,
+                max_output_tokens=1200,
             )
         )
     )

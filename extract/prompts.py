@@ -14,11 +14,9 @@ RULES & EXTRACTION GUIDELINES
    implied by the speaker's logical argument (e.g. "prices rise when demand exceeds supply"
    → "demand shifting rightward causes price inflation"). Do NOT speculate or invent external
    context not grounded in the lecture.
-5. External Knowledge (Contextual Definitions): Provide brief 1-2 sentence textbook
-   definitions for key technical concepts to assist students needing baseline clarity.
-6. Equations & Algorithms: Preserve formulas, equations, or time/space complexities
+5. Equations & Algorithms: Preserve formulas, equations, or time/space complexities
    mentioned, in plain text.
-7. Tone & Strict JSON: Maintain an objective, educational, textbook-author tone. Return
+6. Tone & Strict JSON: Maintain an objective, educational, textbook-author tone. Return
    valid JSON matching the schema only.
 """
 
@@ -29,12 +27,6 @@ OUTPUT_SCHEMA = """
   "lecture_notes": "...",
   "key_points": [],
   "concepts": [],
-  "inferred_knowledge": [],
-  "external_knowledge": [
-    {
-      "key": "concept_name",
-      "value": "explanation"
-    }
-  ]
+  "inferred_knowledge": []
 }
 """

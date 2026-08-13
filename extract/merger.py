@@ -173,12 +173,6 @@ def merge_objects(
                 []
             ),
 
-        "external_knowledge":
-            knowledge_object.get(
-                "external_knowledge",
-                []
-            ),
-
         "visual_information":
             visual_object.get(
                 "important_information",
@@ -188,12 +182,6 @@ def merge_objects(
         "ocr_text":
             visual_object.get(
                 "ocr_text",
-                ""
-            ),
-
-        "visual_summary":
-            visual_object.get(
-                "visual_summary",
                 ""
             ),
 
@@ -321,10 +309,8 @@ def merge_objects_without_visual(knowledge_object: dict) -> dict:
         "concepts":             knowledge_object.get("concepts", []),
         "important_information": knowledge_object.get("key_points", []),
         "inferred_knowledge":   knowledge_object.get("inferred_knowledge", []),
-        "external_knowledge":   knowledge_object.get("external_knowledge", []),
         "visual_information":   [],
         "ocr_text":             "",
-        "visual_summary":       "",
         "visual_type":          "none",
         "teaching_stage":       "",
         "importance_score":     0,
