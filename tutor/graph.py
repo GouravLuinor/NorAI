@@ -19,7 +19,13 @@ def build_graph(checkpointer, output_dir=None):
         lambda state, config: retrieve_images_node(state, config, output_dir))
     builder.add_node("retrieve", 
         lambda state, config: retrieve_node(state, config, output_dir))
-    builder.add_node("generate_answer", generate_answer_node)
+    # generate_answer is async; wrap with an async closure so LangGraph
+    # detects it as a coroutine node (a sync lambda returning a coroutine
+    # object would never be awaited).
+    async def generate_answer(state, config):
+        return await generate_answer_node(state, config, output_dir)
+
+    builder.add_node("generate_answer", generate_answer)
     builder.add_node("verify_citations", verify_citations_node)   # P3.3
     builder.add_node("save_memory", save_memory_node)
     builder.add_node("execute_command", 

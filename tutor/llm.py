@@ -56,14 +56,31 @@ class UsageLoggingChatLLM(ChatGoogleGenerativeAI):
             completion = usage.get("candidates_token_count", completion)
         return prompt, completion
 
+    def _cached_tokens_from(self, usage: dict[str, Any]) -> int:
+        """Extract cached-input tokens served from a context cache.
+
+        P7.x: LangChain folds Gemini's `cached_content_token_count` into
+        `usage_metadata.input_token_details.cache_read` (chat_models.py
+        `_response_to_result`). The raw Gemini key is a defensive fallback.
+        """
+        if not usage:
+            return 0
+        details = usage.get("input_token_details") or {}
+        cached = details.get("cache_read")
+        if cached is None:
+            cached = usage.get("cached_content_token_count")
+        return int(cached or 0)
+
     def _record(self, response: Any) -> None:
         usage = getattr(response, "usage_metadata", None) or {}
         prompt, completion = self._tokens_from(usage)
+        cached = self._cached_tokens_from(usage)
         record_llm_usage(
             TUTOR_STAGE,
             model=getattr(self, "model", MODEL_NAME),
             prompt_tokens=prompt,
             completion_tokens=completion,
+            cached_input_tokens=cached,
             node_override=self._llm_node,
         )
 
@@ -93,23 +110,26 @@ class UsageLoggingChatLLM(ChatGoogleGenerativeAI):
         # the max tokens seen across the stream once it completes.
         max_prompt = 0
         max_completion = 0
+        max_cached = 0
         async for chunk in super().astream(input, config=config, **kwargs):
             try:
                 usage = getattr(chunk, "usage_metadata", None) or {}
                 prompt, completion = self._tokens_from(usage)
                 max_prompt = max(max_prompt, prompt or 0)
                 max_completion = max(max_completion, completion or 0)
+                max_cached = max(max_cached, self._cached_tokens_from(usage))
             except Exception:  # noqa: BLE001
                 import logging
 
                 logging.getLogger(__name__).debug("llm usage logging failed", exc_info=True)
             yield chunk
-        if max_prompt or max_completion:
+        if max_prompt or max_completion or max_cached:
             record_llm_usage(
                 TUTOR_STAGE,
                 model=getattr(self, "model", MODEL_NAME),
                 prompt_tokens=max_prompt,
                 completion_tokens=max_completion,
+                cached_input_tokens=max_cached,
                 node_override=self._llm_node,
             )
 
@@ -119,12 +139,18 @@ def make_chat_llm(
     model: str = MODEL_NAME,
     temperature: float = TEMPERATURE,
     max_retries: int = DEFAULT_MAX_RETRIES,
+    cached_content: str | None = None,
     **kwargs: Any,
 ) -> UsageLoggingChatLLM:
     """Build a usage-logging chat LLM for the given tutor node.
 
     Must be called from an async node (get_api_key may raise if the key is
     missing). Extra kwargs (e.g. google_api_key) are passed through.
+
+    P7.x context caching: when `cached_content` names an existing Gemini cache,
+    the request is served against that cache (cached input billed at the cached
+    rate). The caller MUST NOT re-send the cached tokens as messages — the cache
+    is the prefix; only the dynamic suffix belongs in the request.
     """
     return UsageLoggingChatLLM(
         node=node,
@@ -132,5 +158,6 @@ def make_chat_llm(
         temperature=temperature,
         max_retries=max_retries,
         google_api_key=get_api_key(),
+        cached_content=cached_content,
         **kwargs,
     )

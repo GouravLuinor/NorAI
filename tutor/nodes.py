@@ -41,7 +41,7 @@ into a concise paragraph. Include:
 - What topics were discussed.
 - Any key questions the student asked and the answers given.
 - The student's apparent level of understanding (if evident).
-Keep the summary factual and brief — no more than 5 sentences."""
+Keep the summary factual and brief — no more than 7 sentences."""
 
 def chapter_summary_node(state: dict, config: RunnableConfig, output_dir: str = None) -> dict:
     """
@@ -187,22 +187,28 @@ def verify_citations_node(state: dict, config: RunnableConfig) -> dict:
 
 
 # ── generate_answer (Phase 3: context injection) ───────────────────────────────
-async def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
+async def generate_answer_node(state: dict, config: RunnableConfig, output_dir: str = None) -> dict:
     """
     Core LLM node. Builds the full prompt, calls Gemini, records the answer.
 
-    Prompt structure:
+    Prompt structure (uncached, default):
         [SystemMessage] Tutor system prompt + lecture title
         [SystemMessage] CONTEXT block (retrieved study-note chunks)
         [SystemMessage] IMAGE CONTEXT block (retrieved screenshots)   ← Phase 4
         [HumanMessage / AIMessage] Conversation history (all prior turns)
         [HumanMessage] Current user question
 
-    Why separate SystemMessages?
-        The context blocks change every turn (different retrieved chunks/images).
-        By keeping them separate from the base system prompt, we can see clearly
-        in logs which part changed, and a future summarisation node won't try to
-        compress them (they're already per-turn ephemeral).
+    P7.x context caching (optional, when `output_dir` is given):
+        The static prefix — system prompt + persona + conversation summary —
+        is stored in a Gemini context cache (tutor/cache.py). When a cache is
+        active, the request sends ONLY the dynamic suffix (context block,
+        image context, recent window, question) and NO SystemMessages, because
+        LangChain merges SystemMessages into `system_instruction` which would
+        duplicate/conflict with the cached prefix. Quality is unchanged: the
+        cached system_instruction still leads the prompt. If the cache is
+        unavailable (below the 4096-token minimum, API error), this falls back
+        to the exact uncached structure above — a caching hiccup can never
+        change the answer.
 
     Reads:
         state['lecture_title']     → system prompt
@@ -261,14 +267,62 @@ async def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
     # because context_messages only contains HumanMessage, AIMessage, and summary SystemMessages.
     conversational_history = state.get("context_messages", [])
 
-    prompt_messages = [
-        SystemMessage(content=system_prompt),
-        *([SystemMessage(content=persona_instructions)] if persona_instructions else []),
-        SystemMessage(content=context_block),
-        *([SystemMessage(content=image_context_block)] if image_context_block else []),  # ← Phase 4: only include if non-empty
-        *conversational_history,
-        HumanMessage(content=user_question),
-    ]
+    # ── P7.x context caching (rolling prefix) ──────────────────────────────────
+    # The static prefix = system prompt + persona + conversation summary. It is
+    # cached per lecture (keyed by the output dir basename) and refreshed
+    # whenever the summary changes. When the cache is active we send ONLY the
+    # dynamic suffix, with no SystemMessages (see docstring).
+    cache_name = None
+    if output_dir:
+        try:
+            from tutor import cache as tutor_cache
+
+            # Extract the rolling summary from the windowed history (if any).
+            summary_text = ""
+            for m in conversational_history:
+                if isinstance(m, SystemMessage) and m.content and str(m.content).startswith(_SUMMARY_PREFIX):
+                    summary_text = str(m.content)
+                    break
+
+            lecture_key = Path(output_dir).name
+            system_text, contents_text = tutor_cache.build_cache_parts(
+                system_prompt, persona_instructions, summary_text, output_dir
+            )
+            # get_or_create_prefix_cache may hit the network (create/list);
+            # run it off the event loop so the async node never blocks on it.
+            cache_name = await asyncio.to_thread(
+                tutor_cache.get_or_create_prefix_cache,
+                lecture_key,
+                system_text,
+                contents_text,
+            )
+        except Exception:  # noqa: BLE001
+            logger.debug("generate_answer_node: cache setup failed, using uncached", exc_info=True)
+            cache_name = None
+
+    if cache_name:
+        # Cached path: no SystemMessages (they'd merge into system_instruction
+        # and duplicate the cached prefix). The recent window excludes the
+        # summary — it already lives in the cache's system_instruction.
+        recent = [
+            m for m in conversational_history
+            if isinstance(m, (HumanMessage, AIMessage))
+        ]
+        prompt_messages = [
+            HumanMessage(content=context_block),
+            *([HumanMessage(content=image_context_block)] if image_context_block else []),
+            *recent,
+            HumanMessage(content=user_question),
+        ]
+    else:
+        prompt_messages = [
+            SystemMessage(content=system_prompt),
+            *([SystemMessage(content=persona_instructions)] if persona_instructions else []),
+            SystemMessage(content=context_block),
+            *([SystemMessage(content=image_context_block)] if image_context_block else []),  # ← Phase 4: only include if non-empty
+            *conversational_history,
+            HumanMessage(content=user_question),
+        ]
 
     # ── LLM call ───────────────────────────────────────────────────────────────
     # P6.1: stream the answer via llm.astream so a graph-level
@@ -277,7 +331,11 @@ async def generate_answer_node(state: dict, config: RunnableConfig) -> dict:
     # is accumulated here for the committed state; the tokens the user sees come
     # from the event stream, not this string.
     from tutor.llm import make_chat_llm
-    llm = make_chat_llm(node="generate_answer_node", temperature=TEMPERATURE)
+    llm = make_chat_llm(
+        node="generate_answer_node",
+        temperature=TEMPERATURE,
+        cached_content=cache_name,
+    )
 
     # Extract text if the chunk content is a list of blocks (handling
     # 'thinking' models): append the block's "text" fragments in stream order.

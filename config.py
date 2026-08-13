@@ -56,6 +56,9 @@ LEMONSQUEEZY_CUSTOMER_PORTAL_URL = os.environ.get("LEMONSQUEEZY_CUSTOMER_PORTAL_
 # USD per 1M tokens used by the cost dashboard (`GET /usage`). Sources:
 #   gemini-3.1-flash-lite — $0.25 input / $1.50 output (text, image, video;
 #       output includes thinking tokens), Google AI pricing page.
+#       Cached input (context caching, P7.x) — $0.025 / 1M; storage is billed
+#       separately per token-hour ($1.00 / 1M tokens / hour), tracked in the
+#       cached-prefix design, NOT as input tokens.
 #   gemini-embedding-2   — $0.20 input / $0.00 output, Google AI pricing page.
 # Env-overridable so the deployed pricing can be corrected without a deploy.
 def _price(name: str, default: float) -> float:
@@ -65,6 +68,7 @@ MODEL_PRICING: dict[str, dict[str, float]] = {
     "gemini-3.1-flash-lite": {
         "input_per_1M": _price("FLASH_LITE_INPUT", 0.25),
         "output_per_1M": _price("FLASH_LITE_OUTPUT", 1.50),
+        "cached_input_per_1M": _price("FLASH_LITE_CACHED_INPUT", 0.025),
     },
     "gemini-embedding-2": {
         "input_per_1M": _price("EMBEDDING_INPUT", 0.20),
@@ -73,14 +77,28 @@ MODEL_PRICING: dict[str, dict[str, float]] = {
 }
 
 
-def model_price(model: str, *, input_tokens: int = 0, output_tokens: int = 0) -> float:
-    """Estimated USD cost for a call against `model` (fallback: $0, unknown model)."""
+def model_price(
+    model: str,
+    *,
+    input_tokens: int = 0,
+    output_tokens: int = 0,
+    cached_input_tokens: int = 0,
+) -> float:
+    """Estimated USD cost for a call against `model` (fallback: $0, unknown model).
+
+    P7.x: cached input tokens (served from a context cache) are billed at the
+    model's cached rate, which is cheaper than regular input. `input_tokens`
+    should be the NON-cached portion; pass `cached_input_tokens` separately so
+    the two rates are never mixed.
+    """
     price = MODEL_PRICING.get(model)
     if price is None:
         return 0.0
-    return (input_tokens / 1_000_000) * price.get("input_per_1M", 0.0) + (
-        output_tokens / 1_000_000
-    ) * price.get("output_per_1M", 0.0)
+    return (
+        (input_tokens / 1_000_000) * price.get("input_per_1M", 0.0)
+        + (cached_input_tokens / 1_000_000) * price.get("cached_input_per_1M", 0.0)
+        + (output_tokens / 1_000_000) * price.get("output_per_1M", 0.0)
+    )
 
 # ── Directory & Database Paths ────────────────────────────────────────────────
 OUTPUTS_DIR = Path("outputs")
@@ -92,6 +110,13 @@ CHECKPOINT_DB_PATH = CHECKPOINT_DIR / "checkpoints.sqlite"
 # backend/dependencies.py. Cap the cache (LRU) so long-lived processes don't
 # leak an unbounded number of open sqlite connections / compiled graphs.
 TUTOR_MAX_CACHED_GRAPHS = int(os.environ.get("NORAI_TUTOR_MAX_CACHED_GRAPHS", "32"))
+
+# ── Tutor Context Cache (P7.x) ────────────────────────────────────────────────
+# Gemini context caching for long conversations: a rolling prefix (system prompt
+# + persona + summary + stable lecture context) is cached and reused across
+# turns at the discounted cached-input rate. TTL is short because the prefix is
+# re-created whenever the conversation summary changes (see tutor/cache.py).
+TUTOR_CACHE_TTL_SECONDS = int(os.environ.get("NORAI_TUTOR_CACHE_TTL_SECONDS", "1800"))
 
 # ── Pipeline Job Queue (P4.1) ─────────────────────────────────────────────────
 # DB-backed queue + in-process worker pool (backend/jobs.py). Env-overridable.

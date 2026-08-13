@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P6.5 usage/cost dashboard**: per-stage Gemini token+cost ledger (`backend/usage_ledger.py`), one UsageLog row per stage (`model`/`calls` migration 0003), per-turn tutor metering, `GET /usage` + `UsagePage.tsx`; **paid live DoD CLOSED (pipeline $0.0269 / 18 calls; tutor ~$0.0006/turn)** | 2026-08-13 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P7 token-reduction sprint part 1**: prompt compression (5 prompts, ~500 tokens saved) + Gemini context caching for the tutor (dormant — free-tier key has 0 cached-content quota, graceful fallback proven); offline suite 37/37 | 2026-08-13 UTC |
 
 ---
 
@@ -33,6 +33,24 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### P7 part 1 — OpenCode: prompt compression + tutor context caching (token reduction)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed — offline suite green; caching dormant (free-tier quota blocks it live)
+- **Files Created**:
+  - `tutor/cache.py` [NEW] — Gemini context-cache manager: `build_cache_parts` (system prompt + persona + summary → `system_instruction`; stable lecture context from outline/notes/transcript, capped `MAX_PREFIX_CHARS=40_000`, → `contents`), `build_prefix_text`, `_prefix_hash` (sha256[:12] embedded in display name `norai-{lecture_key}-{hash}`), in-process registry (`lecture_key → {name, hash, created}`) for zero-API hot turns, `get_or_create_prefix_cache` (skips below `MIN_CACHE_TOKENS`=4096 / no lecture_key / on any API failure — graceful uncached fallback), `delete_lecture_caches`, `reset_registry`, `estimate_tokens` (~4 chars/token). `_create_cache` sets `role="user"` on cached contents (API rejects role-less).
+  - `tutor/test_cache.py` [NEW] — 23 checks with a mocked genai client (hash stability, min-token gate, hot-turn zero-call reuse, rolling refresh on summary change, system_instruction/contents split, create-failure fallback, delete scoping).
+  - `docs/token_reduction.md` [NEW] — cost baseline ($0.0269/18 calls pipeline, 75% output), pricing table (cached input $0.025/1M), compression table, cache design + savings math, probe findings + activation note.
+- **Files Modified**:
+  - `config.py` — `MODEL_PRICING` flash-lite gains `cached_input_per_1M` ($0.025); `model_price(..., cached_input_tokens=0)` bills cached input at the cached rate; new `TUTOR_CACHE_TTL_SECONDS` (env `NORAI_TUTOR_CACHE_TTL_SECONDS`, default 1800).
+  - `tutor/llm.py` — `make_chat_llm(cached_content=None)` passthrough; `UsageLoggingChatLLM._cached_tokens_from(usage)` reads `input_token_details.cache_read` (fallback `cached_content_token_count`); `_record` + `astream` aggregator record `cached_input_tokens`.
+  - `backend/usage_ledger.py` — `cached_input_tokens` plumbed through `_append_jsonl`/`_cost`/`log_llm_call`/`record_llm_usage`.
+  - `tutor/nodes.py` — `generate_answer_node(state, config, output_dir=None)` builds/uses the cache (`asyncio.to_thread` for the network call); when a cache is active it sends **no SystemMessages** (only context block + image context + recent window + question, summary excluded — it lives in the cached `system_instruction`); falls back to the exact uncached structure otherwise. Summary cap relaxed 5→7 sentences.
+  - `tutor/graph.py` — `generate_answer` node is now an async closure binding `output_dir` (a sync lambda returning a coroutine would never be awaited by LangGraph).
+  - `backend/dependencies.py` — LRU graph eviction also calls `delete_lecture_caches`.
+  - `tutor/prompts.py`, `extract/prompts.py`, `visual/visual_prompts.py`, `notes/notes_prompt.py`, `notes/outline_prompts.py` — compressed (see table in `docs/token_reduction.md`).
+- **Verification**: `scripts/run-tests.sh` 37/37 (incl. new `tutor/test_cache.py`); graph builds with the async node closure; **paid probe** (user-consented, 2026-08-13): API accepts the cache payload (8.3k est tokens ≥ 4096 min) then `429 RESOURCE_EXHAUSTED TotalCachedContentStorageTokensPerModelFreeTier limit=0` for flash-lite — free-tier key has **zero cached-content quota**, so caching is dormant (proven graceful: falls back to uncached, no cost/behavior change). `caches.list()`/`delete()` work (empty list). Activation requires a key with cached-content storage quota (paid/billing) — no code change needed.
+- **Hand-off / Next Steps**: caching auto-activates with a quota-enabled key. Unstarted P7 items: model swap (e.g. a cheaper/faster base model), output-token caps if ever reconsidered, longer-term compression strategies. Frontend untouched.
 
 ### P6.5 — OpenCode: usage/cost dashboard (per-stage Gemini token + USD accounting)
 - **Agent**: OpenCode (CLI)
