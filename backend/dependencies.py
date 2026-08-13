@@ -105,11 +105,19 @@ async def _aget_or_create_lecture_graph(lecture_id: str):
         evicted: list[dict] = []
         while len(_lecture_graphs) > TUTOR_MAX_CACHED_GRAPHS:
             _old_id, old_entry = _lecture_graphs.popitem(last=False)
-            evicted.append(old_entry)
+            evicted.append((_old_id, old_entry))
 
-    # Close evicted connections outside the cache lock so a slow close never
-    # blocks other lookups.
-    for old_entry in evicted:
+    # Close evicted connections and drop their context caches outside the
+    # cache lock so a slow close/delete never blocks other lookups.
+    for _old_id, old_entry in evicted:
+        try:
+            # P7.x: purge the lecture's Gemini context caches so they don't
+            # linger (TTL is 30 min but the graph is gone — drop now).
+            from tutor import cache as tutor_cache
+
+            tutor_cache.delete_lecture_caches(_old_id)
+        except Exception:  # noqa: BLE001
+            pass
         try:
             await old_entry["conn"].close()
         except Exception:

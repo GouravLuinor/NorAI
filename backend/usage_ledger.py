@@ -48,6 +48,7 @@ def _append_jsonl(
     prompt_tokens: int | None,
     completion_tokens: int | None,
     cost_usd: float,
+    cached_input_tokens: int | None = None,
     **extra: Any,
 ) -> None:
     try:
@@ -59,6 +60,7 @@ def _append_jsonl(
             "model": model,
             "prompt_tokens": prompt_tokens,
             "completion_tokens": completion_tokens,
+            "cached_input_tokens": cached_input_tokens,
             "cost_usd": cost_usd,
         }
         record.update(extra)
@@ -70,11 +72,17 @@ def _append_jsonl(
         logger.debug("llm usage logging failed", exc_info=True)
 
 
-def _cost(model: str, prompt_tokens: int | None, completion_tokens: int | None) -> float:
+def _cost(
+    model: str,
+    prompt_tokens: int | None,
+    completion_tokens: int | None,
+    cached_input_tokens: int | None = None,
+) -> float:
     return model_price(
         model,
         input_tokens=prompt_tokens or 0,
         output_tokens=completion_tokens or 0,
+        cached_input_tokens=cached_input_tokens or 0,
     )
 
 
@@ -83,6 +91,7 @@ def log_llm_call(
     model: str,
     prompt_tokens: int | None,
     completion_tokens: int | None,
+    cached_input_tokens: int | None = None,
     **extra: Any,
 ) -> None:
     """Append one LLM-usage record to outputs/llm_calls.jsonl (thread-safe)."""
@@ -91,7 +100,8 @@ def log_llm_call(
         model,
         prompt_tokens,
         completion_tokens,
-        _cost(model, prompt_tokens, completion_tokens),
+        _cost(model, prompt_tokens, completion_tokens, cached_input_tokens),
+        cached_input_tokens=cached_input_tokens,
         **extra,
     )
 
@@ -103,10 +113,18 @@ def record_llm_usage(
     completion_tokens: int | None,
     *,
     node_override: str | None = None,
+    cached_input_tokens: int | None = None,
 ) -> None:
     """Log one call to JSONL AND accumulate it into the per-stage ledger."""
-    cost = _cost(model, prompt_tokens, completion_tokens)
-    _append_jsonl(node_override or stage, model, prompt_tokens, completion_tokens, cost)
+    cost = _cost(model, prompt_tokens, completion_tokens, cached_input_tokens)
+    _append_jsonl(
+        node_override or stage,
+        model,
+        prompt_tokens,
+        completion_tokens,
+        cost,
+        cached_input_tokens=cached_input_tokens,
+    )
     with _stage_lock:
         row = _STAGE_LEDGER.setdefault(
             stage, {"calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0, "model": ""}
