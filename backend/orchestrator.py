@@ -28,6 +28,8 @@ from tutor.embedding import snapshot_embed_batches
 from backend.estimator import estimate_pipeline, record_metrics
 # P2: persist Lecture status + meter quota minutes for the owning user.
 from backend.usage import record_pipeline_outcome
+# P6.5: per-stage ledger deltas feed one UsageLog row per stage.
+from backend.usage_ledger import snapshot_usage, diff_usage
 
 # ── All pipeline imports ────────────────────────────────────────────────────
 from ingest.ingest import process_source
@@ -98,6 +100,8 @@ def run_pipeline(
     _t_start = time.perf_counter()
     _llm_before = snapshot_llm_calls()
     _embed_before = snapshot_embed_batches()
+    # P6.5: snapshot per-stage usage ledger before the run so we can diff after.
+    _usage_before = snapshot_usage()
     _metrics = {
         "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "lecture_id": task_id,
@@ -471,6 +475,7 @@ def run_pipeline(
                 title=_metrics.get("title"),
                 output_dir=out,
                 llm_calls=_metrics.get("llm_calls", 0),
+                stage_usage=diff_usage(_usage_before),
             )
         except Exception as e:
             logger.warning(f"Failed to record pipeline usage outcome: {e}")

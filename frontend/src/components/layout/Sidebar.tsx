@@ -284,6 +284,14 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
                 <span className="text-nt4">Free trial</span>
               )}
             </div>
+            <div className="mt-2 flex justify-between text-10">
+              <button
+                onClick={() => navigate('/usage')}
+                className="text-np font-medium hover:underline cursor-pointer"
+              >
+                Usage &amp; cost
+              </button>
+            </div>
           </div>
         </div>
 

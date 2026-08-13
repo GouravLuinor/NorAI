@@ -42,7 +42,7 @@ from ingest.ingest import probe_video_metadata
 from backend.estimator import estimate_pipeline
 from backend.auth import get_current_user_optional, get_current_user
 from backend.db.database import get_db
-from backend.db.models import User, Subscription, Lecture
+from backend.db.models import User, Subscription, Lecture, UsageLog
 from backend.usage import record_pipeline_outcome
 from tutor.llm import make_chat_llm
 from flashcards.sm2 import apply_sm2, due_in_days
@@ -96,7 +96,7 @@ def _spa_index() -> Optional[Path]:
 
 
 # SPA client-side routes (everything Vite's history-mode router owns).
-SPA_HTML_ROUTES = {"/", "/pricing", "/billing"}
+SPA_HTML_ROUTES = {"/", "/pricing", "/billing", "/usage"}
 SPA_HTML_PREFIXES = ("/app", "/workspace", "/process/", "/print")
 
 
@@ -328,10 +328,79 @@ class UpsertFlashcardRatingsRequest(BaseModel):
 # Chat endpoints
 # ---------------------------------------------------------------------------
 
+def _flush_tutor_usage(
+    user: Optional[User],
+    lecture_id: str,
+    before: dict,
+    diff_usage_fn,
+) -> None:
+    """P6.5: after a chat turn, meter its tutor-stage usage into the DB.
+
+    Filters the ledger diff to the `tutor` stage (a concurrent pipeline run on
+    the same process must not be attributed to a chat turn). Anonymous users and
+    unowned lectures are skipped inside record_tutor_turn.
+    """
+    try:
+        from backend.usage import record_tutor_turn
+
+        stages = diff_usage_fn(before)
+        tutor = next((s for s in stages if s.get("stage") == "tutor"), None)
+        if tutor is None:
+            return
+        record_tutor_turn(
+            user_id=user.id if user else None,
+            lecture_id=lecture_id,
+            stage="tutor",
+            model=tutor.get("model"),
+            input_tokens=int(tutor.get("input_tokens", 0) or 0),
+            output_tokens=int(tutor.get("output_tokens", 0) or 0),
+            calls=int(tutor.get("calls", 1) or 1),
+            cost_usd=float(tutor.get("cost_usd", 0.0) or 0.0),
+        )
+    except Exception:
+        logging.getLogger("norai").exception("Failed to meter tutor usage for lecture %s", lecture_id)
+
+
+async def _flush_tutor_usage_async(
+    user: Optional[User],
+    lecture_id: str,
+    before: dict,
+    diff_usage_fn,
+) -> None:
+    """Async variant of _flush_tutor_usage for use inside the event loop."""
+    try:
+        from backend.usage import record_tutor_turn_async
+
+        stages = diff_usage_fn(before)
+        tutor = next((s for s in stages if s.get("stage") == "tutor"), None)
+        if tutor is None:
+            return
+        await record_tutor_turn_async(
+            user_id=user.id if user else None,
+            lecture_id=lecture_id,
+            stage="tutor",
+            model=tutor.get("model"),
+            input_tokens=int(tutor.get("input_tokens", 0) or 0),
+            output_tokens=int(tutor.get("output_tokens", 0) or 0),
+            calls=int(tutor.get("calls", 1) or 1),
+            cost_usd=float(tutor.get("cost_usd", 0.0) or 0.0),
+        )
+    except Exception:
+        logging.getLogger("norai").exception("Failed to meter tutor usage for lecture %s", lecture_id)
+
+
 @app.post("/chat")
-async def chat(req: ChatRequest):
+async def chat(
+    req: ChatRequest,
+    user: Optional[User] = Depends(get_current_user_optional),
+):
     try:
         bind(lecture_id=req.lecture_id, thread_id=req.thread_id)
+        # P6.5: diff the tutor ledger across this turn so we can meter its cost.
+        from backend.usage_ledger import snapshot_usage, diff_usage
+        from backend.usage import record_tutor_turn
+
+        _tutor_before = snapshot_usage()
         result = await ainvoke_tutor(
             thread_id=req.thread_id,
             user_question=req.user_question,
@@ -341,6 +410,7 @@ async def chat(req: ChatRequest):
             study_mode=req.study_mode,
             persona_instructions=req.persona_instructions,
         )
+        await _flush_tutor_usage_async(user, req.lecture_id, _tutor_before, diff_usage)
         return result
     except Exception as e:
         logging.getLogger("norai").exception("POST /chat failed")
@@ -350,11 +420,19 @@ async def chat(req: ChatRequest):
 
 
 @app.post("/chat/stream")
-async def chat_stream(req: ChatRequest):
+async def chat_stream(
+    req: ChatRequest,
+    user: Optional[User] = Depends(get_current_user_optional),
+):
     bind(lecture_id=req.lecture_id, thread_id=req.thread_id)
 
     async def event_generator():
         try:
+            # P6.5: snapshot the tutor ledger before the turn (metered after).
+            from backend.usage_ledger import snapshot_usage, diff_usage
+            from backend.usage import record_tutor_turn
+
+            _tutor_before = snapshot_usage()
             # P6.1: REAL token streaming. astream_tutor_tokens drives the graph
             # with astream_events and yields the incremental tokens produced by
             # generate_answer_node, then a single {final: ...} payload with the
@@ -372,6 +450,7 @@ async def chat_stream(req: ChatRequest):
             ):
                 yield f"data: {json_lib.dumps(frame)}\n\n"
             yield "data: [DONE]\n\n"
+            await _flush_tutor_usage_async(user, req.lecture_id, _tutor_before, diff_usage)
         except Exception as exc:
             logging.getLogger("norai").exception("POST /chat/stream failed")
             yield "data: [ERROR] An internal error occurred while streaming the answer.\n\n"
@@ -1304,6 +1383,112 @@ async def get_billing(
         "lemon_squeezy_subscription_id": ls_sub_id,
         "checkout_urls": checkout_urls,
         "manage_url": manage_url,
+    }
+
+
+@app.get("/usage")
+async def get_usage(
+    period: str = "month",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    """P6.5: usage/cost dashboard aggregates over the user's UsageLog rows.
+
+    Returned period is calendar-month by default (`period=today` for the
+    current day, `period=month` default). All figures are derived from the
+    metered UsageLog rows; `estimated_cost_usd` for embedding stages is an
+    estimate (billable chars / 4) and the API flags `is_estimated`.
+    """
+    if period not in ("month", "today"):
+        period = "month"
+    if not user:
+        return {
+            "is_anonymous": True,
+            "totals": {"api_calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0, "minutes": 0},
+            "by_stage": [],
+            "by_day": [],
+            "by_lecture": [],
+            "period": period,
+            "is_estimated": False,
+        }
+
+    now = datetime.now(timezone.utc)
+    if period == "month":
+        start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    else:
+        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    base = select(UsageLog).where(
+        UsageLog.user_id == user.id,
+        UsageLog.created_at >= start,
+    )
+
+    rows = (await db.execute(base.order_by(UsageLog.created_at))).scalars().all()
+
+    input_tokens = sum(r.input_tokens or 0 for r in rows)
+    output_tokens = sum(r.output_tokens or 0 for r in rows)
+    calls = sum(r.calls or 0 for r in rows)
+    cost = sum(r.estimated_cost_usd or 0.0 for r in rows)
+
+    # Quota minutes consumed this month (for the summary card).
+    result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+    sub = result.scalar_one_or_none()
+    minutes = sub.used_minutes_this_month if sub else 0
+
+    by_stage: dict[str, dict] = {}
+    for r in rows:
+        s = by_stage.setdefault(
+            r.stage,
+            {"stage": r.stage, "calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0},
+        )
+        s["calls"] += r.calls or 0
+        s["input_tokens"] += r.input_tokens or 0
+        s["output_tokens"] += r.output_tokens or 0
+        s["cost_usd"] += r.estimated_cost_usd or 0.0
+
+    by_day: dict[str, dict] = {}
+    for r in rows:
+        day = (r.created_at if r.created_at.tzinfo else r.created_at.replace(tzinfo=timezone.utc))
+        key = day.strftime("%Y-%m-%d")
+        d = by_day.setdefault(
+            key, {"date": key, "calls": 0, "cost_usd": 0.0, "input_tokens": 0, "output_tokens": 0}
+        )
+        d["calls"] += r.calls or 0
+        d["cost_usd"] += r.estimated_cost_usd or 0.0
+        d["input_tokens"] += r.input_tokens or 0
+        d["output_tokens"] += r.output_tokens or 0
+
+    by_lecture: dict[str, dict] = {}
+    for r in rows:
+        lk = r.lecture_id
+        lec = by_lecture.setdefault(
+            lk, {"lecture_id": lk, "calls": 0, "cost_usd": 0.0, "input_tokens": 0, "output_tokens": 0}
+        )
+        lec["calls"] += r.calls or 0
+        lec["cost_usd"] += r.estimated_cost_usd or 0.0
+        lec["input_tokens"] += r.input_tokens or 0
+        lec["output_tokens"] += r.output_tokens or 0
+
+    # Sort by cost desc so the frontend can render top contributors.
+    by_stage_list = sorted(by_stage.values(), key=lambda x: x["cost_usd"], reverse=True)
+    by_day_list = sorted(by_day.values(), key=lambda x: x["date"])
+    by_lecture_list = sorted(by_lecture.values(), key=lambda x: x["cost_usd"], reverse=True)
+
+    return {
+        "user_id": user.id,
+        "is_anonymous": user.is_anonymous,
+        "period": period,
+        "is_estimated": any(r.stage == "embed" for r in rows),
+        "totals": {
+            "api_calls": calls,
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "cost_usd": round(cost, 6),
+            "minutes": minutes,
+        },
+        "by_stage": by_stage_list,
+        "by_day": by_day_list,
+        "by_lecture": by_lecture_list,
     }
 
 

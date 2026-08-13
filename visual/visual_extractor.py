@@ -22,6 +22,7 @@ logging.basicConfig(
 )
 from pydantic import BaseModel, Field
 from backend.ratelimit import rate_limiter as _limiter
+from backend.usage_ledger import record_generate_usage
 from config import MODEL_NAME, DEFAULT_MAX_RETRIES
 from cache_util import outputs_current, write_marker
 
@@ -138,6 +139,7 @@ def analyze_chunk_images(
                     )
                 )
             )
+            record_generate_usage("visual", MODEL_NAME, response)
 
             return response.text
 
@@ -685,6 +687,7 @@ Return a JSON matching ChapterVisualKnowledgeModel.
                     response_schema=ChapterVisualKnowledgeModel,
                 )
             )
+            record_generate_usage("visual", MODEL_NAME, response)
             if not response or not response.text:
                 raise ValueError("Gemini returned empty or blocked response (response.text is None)")
             data = json.loads(response.text)

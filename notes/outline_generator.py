@@ -11,6 +11,7 @@ from notes.outline_prompts import OUTLINE_PROMPT
 load_dotenv()
 
 from backend.ratelimit import rate_limiter as _limiter
+from backend.usage_ledger import record_generate_usage
 from cache_util import outputs_current, write_marker
 
 logging.basicConfig(
@@ -187,6 +188,7 @@ def generate_outline(
             )
         )
     )
+    record_generate_usage("outline", MODEL_NAME, response)
 
     return (
         response.text

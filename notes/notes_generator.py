@@ -30,6 +30,7 @@ from notes.notes_prompt import NOTES_PROMPT
 load_dotenv()
 
 from backend.ratelimit import rate_limiter as _limiter
+from backend.usage_ledger import record_generate_usage
 
 logging.basicConfig(
     level=logging.INFO,
@@ -433,6 +434,7 @@ def generate_chapter_notes(
                     ]
                 )
             )
+            record_generate_usage("notes", MODEL_NAME, response)
 
             markdown = (
                 response.text
@@ -882,6 +884,7 @@ Produce a valid JSON object matching MergedChapterArtifactsModel:
                     response_schema=MergedChapterArtifactsModel,
                 )
             )
+            record_generate_usage("notes", MODEL_NAME, response)
             if not response or not response.text:
                 raise ValueError("Gemini returned empty or blocked response (response.text is None)")
             data = json.loads(response.text)

@@ -48,6 +48,7 @@ from typing import List
 from chromadb import EmbeddingFunction, Embeddings
 
 from tutor.retrieval_config import EMBEDDING_DIMS, EMBEDDING_MODEL
+from backend.usage_ledger import record_embed_usage
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -161,6 +162,15 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
                     contents=contents,
                     config=types.EmbedContentConfig(output_dimensionality=self._dims),
                 )
+                billable = None
+                try:
+                    meta = result.metadata
+                    billable = getattr(meta, "billable_character_count", None)
+                except Exception:  # noqa: BLE001
+                    billable = None
+                if not billable:
+                    billable = sum(len(t) for t in formatted)
+                record_embed_usage("embed", self._model, billable)
                 return [e.values for e in result.embeddings]
             except Exception as e:
                 if attempt == max_retries - 1:

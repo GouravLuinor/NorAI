@@ -107,11 +107,13 @@ class UsageLog(Base):
     user_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
     lecture_id: Mapped[str] = mapped_column(String(128), ForeignKey("lectures.id", ondelete="CASCADE"), index=True, nullable=False)
     
-    stage: Mapped[str] = mapped_column(String(64))  # e.g., 'transcription', 'extract', 'notes', 'assessment'
+    stage: Mapped[str] = mapped_column(String(64))  # e.g., 'transcription', 'extract', 'notes', 'assessment', 'tutor'
     input_tokens: Mapped[int] = mapped_column(Integer, default=0)
     output_tokens: Mapped[int] = mapped_column(Integer, default=0)
     estimated_cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
-    
+    model: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)  # P6.5
+    calls: Mapped[int] = mapped_column(Integer, default=0)  # P6.5: API calls rolled into this row
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     # Relationships
