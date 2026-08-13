@@ -11,7 +11,6 @@ algorithms, formulas, diagrams, and problem-solving ideas rather than visual app
 
 Return ONLY valid JSON matching this schema exactly:
 {
-    "visual_summary": "",
     "visual_notes": "",
     "ocr_text": "",
     "concepts": [],
@@ -28,7 +27,6 @@ Return ONLY valid JSON matching this schema exactly:
 }
 
 Rules:
-- visual_summary: Summarize the visual content.
 - ocr_text: Extract only educationally useful text. Omit random labels, video player
   controls, timeline scrubbers, closed caption overlays, watermarks, drawing artifacts,
   and repeated text. Combine text from all screenshots into clean readable form.

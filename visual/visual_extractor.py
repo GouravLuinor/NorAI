@@ -211,8 +211,6 @@ def parse_response(
 
     required_fields = {
 
-        "visual_summary": "",
-
         "visual_notes": "",
 
         "ocr_text": "",
@@ -587,7 +585,6 @@ class VisualObjectItem(BaseModel):
     visual_notes: str
     important_information: list[str]
     ocr_text: str
-    visual_summary: str
     visual_type: str
     teaching_stage: str
     importance_score: int
@@ -612,7 +609,6 @@ def create_empty_visual_object(chunk_mapping: dict) -> dict:
         "visual_notes": "",
         "important_information": [],
         "ocr_text": "",
-        "visual_summary": "",
         "visual_type": "none",
         "teaching_stage": "none",
         "importance_score": 0,
@@ -669,7 +665,7 @@ def process_chapter_visual_batch(chapter_id: int, chapter_title: str, chapter_ch
     
     prompt = f"""
 Analyze the candidate screenshots for Chapter {chapter_id}: "{chapter_title}" covering chunks {chunk_ids}.
-For each chunk with screenshots in this chapter, extract concise visual notes, OCR text, visual summary, and importance score.
+For each chunk with screenshots in this chapter, extract concise visual notes, OCR text, and importance score.
 
 Return a JSON matching ChapterVisualKnowledgeModel.
 """
@@ -685,6 +681,7 @@ Return a JSON matching ChapterVisualKnowledgeModel.
                     temperature=0.2,
                     response_mime_type="application/json",
                     response_schema=ChapterVisualKnowledgeModel,
+                    max_output_tokens=3000,
                 )
             )
             record_generate_usage("visual", MODEL_NAME, response)

@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P7 token-reduction sprint part 1**: prompt compression (5 prompts, ~500 tokens saved) + Gemini context caching for the tutor (dormant — free-tier key has 0 cached-content quota, graceful fallback proven); offline suite 37/37 | 2026-08-13 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P7 token-reduction sprint parts 1+2**: part 1 prompt compression + Gemini context caching (dormant — free-tier key has 0 cached-content quota); part 2 output-token cut — dead fields `external_knowledge`/`visual_summary` dropped + `max_output_tokens` caps (extract/visual/outline); offline suite 37/37 | 2026-08-13 UTC |
 
 ---
 
@@ -33,6 +33,23 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### P7 part 2 — OpenCode: output-token cost cut (dead fields + caps)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed — offline suite green; no paid probe needed (fields provably unused, caps sit above observed output)
+- **Files Modified**:
+  - `extract/models.py` — `external_knowledge` + `ExternalKnowledgeItem` removed from `ChunkKnowledgeModel` (the `response_schema`) and `KnowledgeObject`. Old cached chunk files still load (merger reads via `.get(..., default)`).
+  - `extract/prompts.py` — `external_knowledge` rule + OUTPUT_SCHEMA entry removed.
+  - `extract/merger.py` — dead `external_knowledge` / `visual_summary` writes dropped from merged objects (both merge paths).
+  - `extract/extractor.py` — `max_output_tokens=1200` on the chunk extraction call (observed max 613).
+  - `visual/visual_prompts.py` — `visual_summary` schema + rule removed.
+  - `visual/visual_extractor.py` — `visual_summary` removed from `VisualObjectItem`, `create_empty_visual_object`, `required_fields`, and the chapter-batch prompt; `max_output_tokens=3000` on the chapter-batch call (observed max 1438).
+  - `notes/outline_generator.py` — `max_output_tokens=1000` on the outline call (observed max 446).
+  - `docs/token_reduction.md` — new §4 (output-token reduction) + §5 savings math renumber; `PROJECT_PROGRESS.md` (below).
+- **Rationale (data, lecture `6af222a9-…`)**: extraction output per-field — `external_knowledge` 23% of stage output, **no downstream consumer**; visual output — `visual_summary` 17% of stage output, **no downstream consumer**. `ocr_text` kept (46%, feeds screenshot selector via `visual_analysis_ch*.json`). Output bills at 6× input; caps bound pathological blowups (only notes had one before).
+- **Verification**: 10/10 cached chunks re-merge cleanly with dead fields absent (`merge_objects`/`merge_objects_without_visual`); pydantic models validate the new slimmer shapes; offline suite 36/36 via `run-tests.sh` loop + `visual/test_visual_cache.py` = **37/37**.
+- **Expected savings ≈ $0.0026/run (~10% of $0.0269 baseline)**: ~$0.0016 `external_knowledge`, ~$0.001 `visual_summary`. Zero quality impact.
+- **Hand-off / Next Steps**: Uncommitted — commit only if user asks. Remaining P7 ideas (deferred, quality-sensitive): `lecture_notes` word-target tightening (feeds notes gen — probe-verified only), model swap. Frontend untouched.
 
 ### P7 part 1 — OpenCode: prompt compression + tutor context caching (token reduction)
 - **Agent**: OpenCode (CLI)

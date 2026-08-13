@@ -185,6 +185,7 @@ def generate_outline(
                 temperature=0.3,
                 response_mime_type="application/json",
                 response_schema=LectureOutlineModel,
+                max_output_tokens=1000,
             )
         )
     )

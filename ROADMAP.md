@@ -133,6 +133,18 @@ NorAI has a working 18-stage multimodal pipeline, a genuinely grounded RAG tutor
 
 ---
 
+## Phase P7 — Token reduction (standalone sprint, complete)
+
+Standalone cost-cut sprint (not part of the original phased plan). Full plan + measurements in `docs/token_reduction.md`.
+
+| # | Item | Status | Ref | Notes |
+|---|---|---|---|---|
+| P7.1 | Prompt compression | ✅ | `tutor/prompts.py`, `extract/prompts.py`, `visual/visual_prompts.py`, `notes/notes_prompt.py`, `notes/outline_prompts.py` | All instructions tightened with no capability loss: `TUTOR_SYSTEM_PROMPT` 1605→1135 tok (SOCRATIC ~355), `EXTRACTION` 408→362, `VISUAL` 799→690, `NOTES` 1057→856, `OUTLINE` 257→249. |
+| P7.2 | Context caching for long tutor conversations | ✅ (dormant) | `tutor/cache.py` [NEW], `tutor/llm.py`, `tutor/nodes.py`, `tutor/graph.py`, `backend/usage_ledger.py`, `backend/dependencies.py`, `config.py` | Rolling-prefix Gemini context cache per lecture: static `system_instruction` + `contents` (capped 40k chars), sha256-embedded name, zero-API hot turns within TTL, graceful uncached fallback on any failure. Cached input billed at $0.025/1M (10× cheaper). **Dormant live**: the free-tier key has 0 cached-content quota (probe: `429 … limit=0`) — auto-activates with a quota-enabled key, no code change. Covered by `tutor/test_cache.py` (23 checks). |
+| P7.3 | Output-token cut (dead fields + caps) | ✅ | `extract/models.py`, `extract/prompts.py`, `extract/merger.py`, `visual/visual_extractor.py`, `visual/visual_prompts.py`, `notes/outline_generator.py` | Output bills at 6× input and is 75% of pipeline cost. Dropped two generated-but-never-consumed fields: `external_knowledge` (extract, 23% of stage output) and `visual_summary` (visual, 17%); `ocr_text` kept (feeds screenshot selector). Added `max_output_tokens` caps at ~2× observed max: extract 1200, visual chapter-batch 3000, outline 1000 (notes stays 8192). Expected ~10% pipeline-cost saving, zero quality impact. 37/37 offline tests green. |
+
+---
+
 ## Definitions of done
 
 - **P0**: no unauthenticated read of any lecture artifact; webhook rejects unsigned events in prod; uploads size/type-capped; SSRF blocked.

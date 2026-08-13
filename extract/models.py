@@ -1,11 +1,6 @@
 from pydantic import BaseModel
 
 
-class ExternalKnowledgeItem(BaseModel):
-    key: str
-    value: str
-
-
 class KnowledgeObject(BaseModel):
     chunk_id: int
     start: float
@@ -16,7 +11,6 @@ class KnowledgeObject(BaseModel):
     key_points: list[str]
     concepts: list[str]
     inferred_knowledge: list[str]
-    external_knowledge: list[ExternalKnowledgeItem]
 
 
 class ChunkKnowledgeModel(BaseModel):
@@ -25,4 +19,3 @@ class ChunkKnowledgeModel(BaseModel):
     key_points: list[str]
     concepts: list[str]
     inferred_knowledge: list[str]
-    external_knowledge: list[ExternalKnowledgeItem]
