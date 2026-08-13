@@ -1,18 +1,29 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, Filter } from 'lucide-react'
-import { fetchGeneratedFlashcards, fetchFlashcardRatings, persistFlashcardRatings, type Flashcard } from '../../stores/useQuizStore'
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo } from 'react'
+import { ChevronLeft, ChevronRight, Download } from 'lucide-react'
+import {
+  fetchGeneratedFlashcards,
+  fetchFlashcardRatings,
+  persistFlashcardRatings,
+  downloadFlashcardsApkg,
+  type Flashcard,
+  type FlashcardScheduleMap,
+} from '../../stores/useQuizStore'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { getCardKey } from '../../lib/hash'
+import { isCardDue, dueLabel } from '../../lib/flashcardSchedule'
 import { Button } from '../ui/Button'
 import { SegmentedControl } from '../ui/SegmentedControl'
+import { useToastStore } from '../../stores/useToastStore'
 import { FOCUS_RING } from '../ui/shared'
 
 type Rating = 'Again' | 'Hard' | 'Good' | 'Easy'
+type FilterMode = 'all' | 'missed' | 'due'
 
 export function FlashcardsPanel() {
   const { activeChapterId } = useChapterStore()
   const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
+  const addToast = useToastStore(s => s.addToast)
 
   const [allCards, setAllCards] = useState<Flashcard[]>([])
   const [cardKeys, setCardKeys] = useState<string[]>([])
@@ -20,7 +31,9 @@ export function FlashcardsPanel() {
   const [flipped, setFlipped] = useState(false)
   const [rating, setRating] = useState<Rating | ''>('')
   const [ratings, setRatings] = useState<Record<string, Rating>>({})
-  const [filterMissedOnly, setFilterMissedOnly] = useState(false)
+  const [schedule, setSchedule] = useState<FlashcardScheduleMap>({})
+  const [filter, setFilter] = useState<FilterMode>('all')
+  const [exporting, setExporting] = useState(false)
 
   // Load cards and compute keys
   useEffect(() => {
@@ -36,28 +49,44 @@ export function FlashcardsPanel() {
       })
   }, [activeChapterId, lectureId])
 
-  // Load persisted ratings
+  // Load persisted ratings + SM-2 schedule
   useEffect(() => {
     fetchFlashcardRatings(lectureId, activeChapterId)
-      .then((persisted) => setRatings(persisted as Record<string, Rating>))
-      .catch(() => setRatings({}))
+      .then((data) => {
+        setRatings(data.ratings as Record<string, Rating>)
+        setSchedule(data.schedule)
+      })
+      .catch(() => {
+        setRatings({})
+        setSchedule({})
+      })
   }, [lectureId, activeChapterId])
 
-  // Subsample missed (Again / Hard) cards if filter active
+  // Apply the active deck filter
   const cards = useMemo(() => {
-    if (!filterMissedOnly) return allCards
+    if (filter === 'all') return allCards
     return allCards.filter((_, idx) => {
       const key = cardKeys[idx]
-      const r = ratings[key]
-      return r === 'Again' || r === 'Hard'
+      if (filter === 'missed') {
+        const r = ratings[key]
+        return r === 'Again' || r === 'Hard'
+      }
+      return isCardDue(schedule[key])
     })
-  }, [allCards, cardKeys, ratings, filterMissedOnly])
+  }, [allCards, cardKeys, ratings, schedule, filter])
 
   const total = cards.length
   const reviewed = cardKeys.filter((key) => ratings[key]).length
   const gotIt = cardKeys.filter((key) => ratings[key] === 'Good' || ratings[key] === 'Easy').length
   const almost = cardKeys.filter((key) => ratings[key] === 'Again' || ratings[key] === 'Hard').length
   const left = Math.max(0, allCards.length - reviewed)
+  const dueCount = cardKeys.filter((key) => isCardDue(schedule[key])).length
+
+  useLayoutEffect(() => {
+    if (cards.length > 0 && current >= cards.length) {
+      setCurrent(cards.length - 1)
+    }
+  }, [current, cards.length])
 
   const goTo = useCallback((idx: number) => {
     setCurrent(Math.max(0, Math.min(total - 1, idx)))
@@ -71,13 +100,22 @@ export function FlashcardsPanel() {
     const key = await getCardKey(card.front)
     setRatings((prev) => ({ ...prev, [key]: r }))
     setRating(r)
-    persistFlashcardRatings([{ card_key: key, rating: r }], lectureId, activeChapterId)
+    const next = await persistFlashcardRatings([{ card_key: key, rating: r }], lectureId, activeChapterId)
+    if (next) setSchedule((prev) => ({ ...prev, ...next }))
 
     setTimeout(() => {
       if (current < total - 1) {
         goTo(current + 1)
       }
     }, 400)
+  }
+
+  const handleExport = async () => {
+    if (exporting) return
+    setExporting(true)
+    const ok = await downloadFlashcardsApkg(lectureId)
+    addToast(ok ? 'Anki deck downloaded' : 'Anki export failed', ok ? 'success' : 'error')
+    setExporting(false)
   }
 
   if (allCards.length === 0) {
@@ -88,14 +126,20 @@ export function FlashcardsPanel() {
     )
   }
 
-  if (filterMissedOnly && total === 0) {
+  if (total === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-3">
-        <p className="text-sm font-medium text-nt">No missed cards found!</p>
-        <p className="text-2xs text-nt3">You haven't marked any cards as "Again" or "Hard" yet.</p>
+        <p className="text-sm font-medium text-nt">
+          {filter === 'missed' ? 'No missed cards found!' : 'No cards due right now!'}
+        </p>
+        <p className="text-2xs text-nt3">
+          {filter === 'missed'
+            ? 'You haven’t marked any cards as "Again" or "Hard" yet.'
+            : 'Come back when a card’s next review arrives — or study the full deck.'}
+        </p>
         <Button
           variant="outline"
-          onClick={() => setFilterMissedOnly(false)}
+          onClick={() => { setFilter('all'); setCurrent(0) }}
           className="text-xs py-1.5 px-3 border-bdr2"
         >
           Show All Cards
@@ -105,6 +149,7 @@ export function FlashcardsPanel() {
   }
 
   const card = cards[current]
+  const cardKey = card ? cardKeys[allCards.indexOf(card)] : undefined
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -113,29 +158,44 @@ export function FlashcardsPanel() {
         <div>
           <h2 className="text-sm font-semibold text-nt">Flashcards</h2>
           <p className="text-2xs text-nt3">
-            Studying {total} {filterMissedOnly ? 'missed' : ''} cards
+            Studying {total} {filter !== 'all' ? `${filter} ` : ''}cards
+            {dueCount > 0 ? ` · ${dueCount} due` : ''}
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setFilterMissedOnly(!filterMissedOnly)
-            setCurrent(0)
-          }}
-          className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border transition ${
-            filterMissedOnly
-              ? 'bg-npf text-npfg border-np'
-              : 'bg-ns2 text-nt2 border-bdr2 hover:bg-ns3'
-          }`}
+        <Button
+          variant="outline"
+          onClick={handleExport}
+          disabled={exporting}
+          className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border-bdr2 bg-transparent"
         >
-          <Filter size={13} />
-          <span>{filterMissedOnly ? 'Missed Only' : 'All Cards'}</span>
-        </button>
+          <Download size={13} />
+          <span>{exporting ? 'Exporting…' : 'Export Anki'}</span>
+        </Button>
+      </div>
+
+      {/* Deck filter toolbar */}
+      <div className="flex items-center justify-between px-5 py-2 border-b border-bdr shrink-0 gap-2">
+        <div className="flex items-center gap-1 p-0.5 bg-ns2 border border-bdr rounded-sm">
+          {(['all', 'missed', 'due'] as FilterMode[]).map((m) => (
+            <button
+              key={m}
+              type="button"
+              aria-pressed={filter === m}
+              onClick={() => { setFilter(m); setCurrent(0) }}
+              className={`px-2.5 py-1 rounded-[3px] text-[11px] font-medium transition ${
+                filter === m ? 'bg-npf text-npfg shadow-ev2' : 'text-nt2 hover:bg-ns3'
+              }`}
+            >
+              {m === 'all' ? 'All' : m === 'missed' ? 'Missed' : 'Due'}
+            </button>
+          ))}
+        </div>
+        <span className="text-2xs text-nt3 tabular-nums">{reviewed}/{allCards.length} reviewed</span>
       </div>
 
       {/* Pips */}
-      <div aria-hidden="true" className="flex justify-center gap-1 px-5 py-3">
+      <div aria-hidden="true" className="flex justify-center gap-1 px-5 py-3 pb-1">
         {cards.map((_, i) => (
           <div
             key={i}
@@ -163,6 +223,15 @@ export function FlashcardsPanel() {
             {/* Front */}
             <div aria-hidden={flipped || undefined} className="absolute inset-0 bg-ns border border-bdr2 rounded-xl p-5 flex flex-col items-center justify-center backface-hidden">
               <span className="text-2xs font-semibold text-nt3 uppercase tracking-wider mb-4">Front</span>
+              <span
+                className={`mb-3 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                  isCardDue(cardKey ? schedule[cardKey] : undefined)
+                    ? 'bg-na/10 text-na border-na/25'
+                    : 'bg-ns2 text-nt3 border-bdr2'
+                }`}
+              >
+                {dueLabel(cardKey ? schedule[cardKey] : undefined)}
+              </span>
               <p className="text-sm font-medium text-nt text-center leading-relaxed break-words px-2">
                 {card?.front}
               </p>

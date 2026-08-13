@@ -30,7 +30,7 @@ from backend.dependencies import get_lecture_db_path, _aget_or_create_lecture_gr
 
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse, FileResponse
+from fastapi.responses import StreamingResponse, JSONResponse, Response, FileResponse
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from backend.lecture_registry import list_lectures, get_lecture
@@ -44,6 +44,8 @@ from backend.db.database import get_db
 from backend.db.models import User, Subscription, Lecture
 from backend.usage import record_pipeline_outcome
 from tutor.llm import make_chat_llm
+from flashcards.sm2 import apply_sm2, due_in_days
+from flashcards.anki import build_package
 from config import (
     CHECKPOINT_DB_PATH,
     LEMONSQUEEZY_CHECKOUT_STARTER_URL, LEMONSQUEEZY_CHECKOUT_PRO_URL,
@@ -231,6 +233,27 @@ def _ensure_flashcard_ratings_table(conn: sqlite3.Connection) -> None:
         "PRIMARY KEY (lecture_id, chapter_id, card_key)"
         ")"
     )
+    _ensure_flashcard_schedule_columns(conn)
+
+
+def _ensure_flashcard_schedule_columns(conn: sqlite3.Connection) -> None:
+    """Lazily add the SM-2 schedule columns (P6.2) to flashcard_ratings.
+
+    Migration-friendly: the base table is created *without* these columns in
+    older DBs, so we ALTER once and swallow the duplicate-column error — the
+    same lazy-migrate pattern as `_ensure_quiz_attempts_correct_ids`.
+    """
+    for col, ddl in (
+        ("easiness", "REAL"),
+        ("reps", "INTEGER"),
+        ("interval_days", "INTEGER"),
+        ("due_at", "TEXT"),
+        ("last_reviewed_at", "TEXT"),
+    ):
+        try:
+            conn.execute(f"ALTER TABLE flashcard_ratings ADD COLUMN {col} {ddl}")
+        except sqlite3.OperationalError:
+            pass  # column already exists
 
 
 # ---------------------------------------------------------------------------
@@ -869,16 +892,50 @@ async def get_quiz_attempt_missed(
 @app.post("/flashcards/ratings")
 async def upsert_flashcard_ratings(req: UpsertFlashcardRatingsRequest):
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    schedule: dict = {}
     with _db(req.lecture_id) as conn:
         _ensure_flashcard_ratings_table(conn)
         for item in req.ratings:
+            prev = conn.execute(
+                "SELECT easiness, reps, interval_days, due_at, last_reviewed_at "
+                "FROM flashcard_ratings "
+                "WHERE lecture_id=? AND chapter_id=? AND card_key=?",
+                (req.lecture_id, req.chapter_id or 0, item.card_key),
+            ).fetchone()
+            prior = None
+            if prev:
+                prior = {
+                    "easiness": prev[0],
+                    "reps": prev[1],
+                    "interval_days": prev[2],
+                    "due_at": prev[3] or "",
+                    "last_reviewed_at": prev[4] or "",
+                }
+            state = apply_sm2(item.rating, state=prior, reviewed_at=now)
             conn.execute(
-                "INSERT INTO flashcard_ratings (lecture_id, chapter_id, card_key, rating, updated_at) "
-                "VALUES (?, ?, ?, ?, ?) "
-                "ON CONFLICT(lecture_id, chapter_id, card_key) DO UPDATE SET rating=excluded.rating, updated_at=excluded.updated_at",
-                (req.lecture_id, req.chapter_id or 0, item.card_key, item.rating, now),
+                "INSERT INTO flashcard_ratings "
+                "(lecture_id, chapter_id, card_key, rating, updated_at, "
+                " easiness, reps, interval_days, due_at, last_reviewed_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT(lecture_id, chapter_id, card_key) DO UPDATE SET "
+                "rating=excluded.rating, updated_at=excluded.updated_at, "
+                "easiness=excluded.easiness, reps=excluded.reps, "
+                "interval_days=excluded.interval_days, due_at=excluded.due_at, "
+                "last_reviewed_at=excluded.last_reviewed_at",
+                (req.lecture_id, req.chapter_id or 0, item.card_key, item.rating,
+                 now, state["easiness"], state["reps"], state["interval_days"],
+                 state["due_at"], state["last_reviewed_at"]),
             )
-    return {"success": True, "count": len(req.ratings)}
+            schedule[item.card_key] = {
+                "rating": item.rating,
+                "easiness": state["easiness"],
+                "reps": state["reps"],
+                "interval_days": state["interval_days"],
+                "due_at": state["due_at"],
+                "due_in_days": due_in_days(state),
+                "last_reviewed_at": state["last_reviewed_at"],
+            }
+    return {"success": True, "count": len(req.ratings), "schedule": schedule}
 
 
 @app.get("/flashcards/ratings")
@@ -891,19 +948,32 @@ async def get_flashcard_ratings(
     await ensure_lecture_access(lecture_id, user, db)
     with _db(lecture_id) as conn:
         _ensure_flashcard_ratings_table(conn)
+        where = "WHERE lecture_id=?"
+        params: list = [lecture_id]
         if chapter_id is not None:
-            cursor = conn.execute(
-                "SELECT card_key, rating FROM flashcard_ratings WHERE lecture_id=? AND chapter_id=?",
-                (lecture_id, chapter_id),
-            )
-        else:
-            cursor = conn.execute(
-                "SELECT card_key, rating FROM flashcard_ratings WHERE lecture_id=?",
-                (lecture_id,),
-            )
+            where += " AND chapter_id=?"
+            params.append(chapter_id)
+        cursor = conn.execute(
+            "SELECT card_key, rating, easiness, reps, interval_days, due_at, last_reviewed_at "
+            f"FROM flashcard_ratings {where}",
+            params,
+        )
         rows = cursor.fetchall()
-        ratings = {r[0]: r[1] for r in rows}
-        return {"ratings": ratings}
+        ratings: dict = {}
+        schedule: dict = {}
+        for r in rows:
+            key = r[0]
+            ratings[key] = r[1]
+            schedule[key] = {
+                "rating": r[1],
+                "easiness": r[2],
+                "reps": r[3],
+                "interval_days": r[4],
+                "due_at": r[5],
+                "due_in_days": due_in_days({"due_at": r[5]}),
+                "last_reviewed_at": r[6],
+            }
+        return {"ratings": ratings, "schedule": schedule}
 
 
 @app.get("/study-guide")
@@ -986,6 +1056,70 @@ async def flashcards(
     if n is not None and len(cards) > n:
         cards = random.sample(cards, n)
     return cards
+
+
+@app.get("/flashcards/export")
+async def export_flashcards(
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    """Download the lecture's flashcard deck as an Anki `.apkg` file (P6.2).
+
+    Pure file reads + a deterministic 0-LLM transform — never regenerates
+    cards. Per-chapter files take priority (they carry chapter titles), with a
+    fallback to the combined `flashcards.json`.
+    """
+    await ensure_lecture_access(lecture_id, user, db)
+    info = get_lecture(lecture_id)
+    if not info:
+        raise HTTPException(status_code=404, detail="Lecture not found")
+    base = Path(info["output_dir"])
+    title = info.get("name") or info.get("title") or "Lecture"
+
+    cards: list[dict] = []
+    deck_dir = base / "flashcards"
+    chapter_files = sorted(deck_dir.glob("flashcards_chapter_*.json"))
+    if chapter_files:
+        for p in chapter_files:
+            raw = json_lib.loads(p.read_text(encoding="utf-8"))
+            if isinstance(raw, dict):
+                cid = raw.get("chapter_id")
+                ctitle = raw.get("chapter_title") or f"Chapter {cid}"
+                chapter_cards = raw.get("flashcards", [])
+            else:
+                cid, ctitle, chapter_cards = None, "", raw
+            for c in chapter_cards:
+                cards.append({
+                    "front": c.get("front", ""),
+                    "back": c.get("back", ""),
+                    "explanation": c.get("explanation", ""),
+                    "chapter_title": ctitle,
+                    "chapter_id": cid,
+                })
+    else:
+        combined = deck_dir / "flashcards.json"
+        if combined.exists():
+            data = json_lib.loads(combined.read_text(encoding="utf-8"))
+            for c in (data.get("flashcards", []) if isinstance(data, dict) else data):
+                cards.append({
+                    "front": c.get("front", ""),
+                    "back": c.get("back", ""),
+                    "explanation": c.get("explanation", ""),
+                    "chapter_title": "",
+                    "chapter_id": None,
+                })
+
+    if not cards:
+        raise HTTPException(status_code=404, detail="No flashcards found for this lecture")
+
+    safe_lecture = sanitize_lecture_id(lecture_id) or "lecture"
+    payload = build_package(cards, deck_name=f"NorAI · {title}", lecture_tag=f"lecture:{safe_lecture}")
+    return Response(
+        content=payload,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="norai-{safe_lecture}.apkg"'},
+    )
 
 
 @app.get("/summary")

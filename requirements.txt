@@ -24,6 +24,9 @@ numpy==2.4.6
 pillow==12.2.0
 imagehash==4.3.2
 
+# Anki .apkg export (flashcards/anki.py — P6.2)
+genanki==0.13.1
+
 # Web framework + data
 fastapi==0.138.1
 uvicorn==0.49.0
