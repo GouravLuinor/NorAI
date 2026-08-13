@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P6.1 real token streaming**: `/chat/stream` streams generate_answer_node tokens via `astream_events` v2, verified offline | 2026-08-12 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P6.2 flashcards QA**: SM-2 scheduling + Anki export verified live; fixed filtered-deck badge + blank-card-after-rating bugs in `FlashcardsPanel` | 2026-08-12 UTC |
 
 ---
 
@@ -33,6 +33,16 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### P6.2 — OpenCode: flashcards QA pass + 2 FlashcardsPanel bug fixes (SM-2/Anki deck)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed — **live-verified in browser** (no paid runs; existing artifacts + real ratings API)
+- **Files Modified**:
+  - `frontend/src/components/flashcards/FlashcardsPanel.tsx` — **Fix 1 (badge)**: front-card badge computed from `cardKeys[current]` but `current` walks the *filtered* deck while `cardKeys` is parallel to *unfiltered* `allCards`; in Due/Missed decks the badge showed a different card's schedule (an unrated default-gateway card displayed the rated switch card's `IN 1D`). Now `card ? cardKeys[allCards.indexOf(card)] : undefined`. **Fix 2 (blank card)**: post-rating auto-advance used a stale `current`/`total` closure, so rating a card that leaves the deck (Again/Good → not due) could land past the new deck length → empty card ("Card 2 of 1", blank front). Added `useLayoutEffect` clamping `current` to `cards.length - 1` when out of bounds (before paint).
+  - Docs: `PROJECT_PROGRESS.md`, `COMMUNICATOR.md`.
+- **QA Matrix (browser, chapter 1 of lecture `1c4400c1-…`, 3 real cards)**: render (header/deck count/filters/footer/pips) ✅; flip + hint ✅; rate Good → footer + due 3→2 + reviewed 1/3 ✅; ratings POST (`e98c…`/`2cbf4e…`) → SM-2 schedule (IN 1D) ✅; Due filter excludes rated cards, correct badges ✅; Missed filter lists Again/Hard cards ✅; Prev/Next + disabled states ✅; Export Anki → valid 61 KB `.apkg` ✅; empty deck states render cleanly after fix ✅.
+- **Verification**: `tsc -b && vite build`, `oxlint` (no new findings), `npm run test` 42/42 green. Note: backend schedules `Again` as `interval_days: 1` on a new card — deliberate backend behavior, not touched.
+- **Hand-off Notes / Next Steps**: Uncommitted — commit only if the user asks. Next P6 candidates: P6.3 (click-to-video). Open items unchanged (NOTES.md §3): gemini paid-tier preflight, P0.4a Bearer-on-reads, job-queue multi-worker claim-lock, P4 DoD live run.
 
 ### P6.1 — OpenCode: real token streaming (`/chat/stream`)
 - **Agent**: OpenCode (CLI)
