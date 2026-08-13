@@ -63,7 +63,7 @@ Forward-looking work — details live in the referenced docs:
 - **Gemini paid-tier preflight (launch blocker).** Upgrade the Google AI Studio API from the free tier (15 RPM / 500 RPD) to pay-as-you-go Tier 1 before public launch.
 - **P0.4a — frontend auth on reads (deferred).** Ownership scoping (`ensure_lecture_access`) only 404s foreign lectures when a token is presented; the frontend sends no token on artifact reads (`default` access). Deliberately not wired yet — see `ROADMAP.md` Phase P0.
 - **Job-queue multi-worker claim-lock.** The DB-backed job queue currently assumes a single worker; running `--workers > 1` needs a claim-lock so two workers can't process the same lecture. See `backend/jobs.py`.
-- **P6 retention (engineering backlog).** Token-level streaming, Anki flashcard export, video-seekable citations, and the rest of the P6 list in `ROADMAP.md`.
+- **P6 retention (engineering backlog).** P6.1 token-level streaming and P6.2 SM-2 + Anki `.apkg` export are shipped; remaining: video-seekable citations (P6.3 click-to-video), multi-lecture organization/sharing (P6.4), usage/cost dashboard (P6.5) — see `ROADMAP.md`.
 
 ---
 
