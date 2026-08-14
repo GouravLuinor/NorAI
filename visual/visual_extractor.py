@@ -664,10 +664,18 @@ def process_chapter_visual_batch(chapter_id: int, chapter_title: str, chapter_ch
         return
 
     uploaded_files = upload_images(all_image_paths)
+    paths_listing = "\n".join(all_image_paths)
     
     prompt = f"""
 Analyze the candidate screenshots for Chapter {chapter_id}: "{chapter_title}" covering chunks {chunk_ids}.
-For each chunk with screenshots in this chapter, extract concise visual notes, OCR text, visual_type (e.g. 'architecture_diagram', 'code', 'flowchart', 'slide', 'table'), and importance_score (1 to 10 scale). Set include_in_notes=true for informative slides and diagrams.
+
+Candidate screenshot files attached (in order):
+{paths_listing}
+
+For each chunk with screenshots in this chapter:
+1. Extract concise visual notes, OCR text, and visual_type (e.g. 'architecture_diagram', 'code', 'flowchart', 'slide', 'table', 'talking_head').
+2. In 'source_screenshots', list ONLY the exact screenshot file paths from the candidate list above that actually show the informative slide, diagram, or code. Never include frames that show the instructor webcam, presenter talking head, or blank transitions.
+3. If a chunk contains NO slides or diagrams (only the presenter webcam or talking head), set visual_type='talking_head', importance_score=1, include_in_notes=false, and source_screenshots=[].
 
 Return a JSON matching ChapterVisualKnowledgeModel.
 """
@@ -699,25 +707,37 @@ Return a JSON matching ChapterVisualKnowledgeModel.
                 obj_dict = vo.model_dump()
                 obj_dict["start"] = chunk_times.get(vo.chunk_id, {}).get("start", 0.0)
                 obj_dict["end"] = chunk_times.get(vo.chunk_id, {}).get("end", 0.0)
-                obj_dict["source_screenshots"] = chunk_image_map.get(vo.chunk_id, [])
+                # Filter source_screenshots to valid paths mapped to this chunk
+                chunk_shots = chunk_image_map.get(vo.chunk_id, [])
+                chunk_basenames = {Path(p).name: p for p in chunk_shots}
+                resolved_shots = []
+                for sp in vo.source_screenshots:
+                    if sp in chunk_shots:
+                        resolved_shots.append(sp)
+                    elif Path(sp).name in chunk_basenames:
+                        resolved_shots.append(chunk_basenames[Path(sp).name])
+                obj_dict["source_screenshots"] = resolved_shots or (chunk_shots if vo.include_in_notes and vo.visual_type not in ("talking_head", "presenter", "face", "none") else [])
                 obj_dict["object_type"] = "visual_object"
                 obj_dict["generated_by"] = MODEL_NAME
                 save_visual_object(obj_dict, output_dir)
                 processed_chunk_ids.add(vo.chunk_id)
 
             # Persist per-frame analysis so screenshot selection (Stage 12)
-            # can reuse it instead of re-uploading + re-scoring the same
-            # keyframes. See ROADMAP P1.3. Only genuinely analyzed chunks get
-            # entries; fallback chunks are left out so selection falls back to
-            # its own Pass 1 LLM scoring for their frames.
+            # can reuse it instead of re-uploading + re-scoring the same keyframes.
+            # Only frames that genuinely depict slides/diagrams get high importance;
+            # presenter webcam / talking head frames are marked as decorative.
             frames = {}
             for vo in batch_result.visual_objects:
+                informative_basenames = {Path(p).name for p in vo.source_screenshots}
+                is_chunk_informative = vo.include_in_notes and vo.visual_type not in ("talking_head", "presenter", "face", "none")
                 for path in chunk_image_map.get(vo.chunk_id, []):
-                    frames[os.path.normpath(str(path))] = {
-                        "ocr_text": vo.ocr_text,
-                        "importance_score": vo.importance_score,
-                        "visual_type": vo.visual_type,
-                        "include_in_notes": vo.include_in_notes,
+                    norm_p = os.path.normpath(str(path))
+                    is_frame_slide = Path(path).name in informative_basenames if informative_basenames else is_chunk_informative
+                    frames[norm_p] = {
+                        "ocr_text": vo.ocr_text if is_frame_slide else "",
+                        "importance_score": vo.importance_score if is_frame_slide else 1,
+                        "visual_type": vo.visual_type if is_frame_slide else "talking_head",
+                        "include_in_notes": is_frame_slide,
                     }
             if frames:
                 analysis_path = Path(output_dir) / f"visual_analysis_ch{chapter_id}.json"

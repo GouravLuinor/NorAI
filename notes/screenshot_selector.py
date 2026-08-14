@@ -232,14 +232,12 @@ corresponding path from the attached order list above.
 
 
 SCREENSHOT_SELECTOR_PROMPT = """
-You are building a study guide.
+You are selecting the best visual diagrams and slides for a technical study guide.
 
-Below is a chapter from a lecture, along with its candidate
-screenshots. These screenshots have already been pre-filtered
-for quality, every one of them contains real teaching content
-and is not just the instructor or a blank transition. Your job
-now is to rank all of them by relevance to this chapter. Do
-not decide how many to keep — rank every single one.
+Below is a chapter from a lecture, along with candidate screenshots.
+Examine EACH attached image carefully:
+- If an image is a presenter webcam feed, talking head, human speaker, blank transition, or decorative intro card with no technical diagram/code/formula, assign importance: 0 and do NOT recommend it.
+- Only assign high importance (6-10) to clear, high-value technical architecture diagrams, code listings, data tables, and slide notes.
 
 The images are attached in the same order as the paths listed
 below.
@@ -263,14 +261,9 @@ Candidate screenshot paths (in attached order):
 Rank every candidate screenshot. For each one, provide:
 
 1. path (must exactly match one of the candidate paths above)
-2. reason
+2. reason (accurate description of what is actually depicted in the image)
 3. section where it should appear
-4. importance, an integer from 1 to 10, where 10 means
-   essential to understanding the chapter and 1 means
-   marginally useful. Use the full range. Do not give every
-   screenshot a high score by default. Screenshots that teach
-   essentially the same thing should have noticeably different
-   importance scores so they can be ranked apart.
+4. importance, an integer from 0 to 10 (0 for presenter/webcam/decorative frames, 10 for essential architecture diagrams/code).
 
 You must return an entry for EVERY candidate path listed above.
 Do not omit any.
@@ -509,15 +502,18 @@ def score_frames_batch(
             imp = raw_imp * 2 if (0 < raw_imp <= 5) else raw_imp
             vis_type = (entry.get("visual_type") or "").strip().lower()
             include_in_notes = bool(entry.get("include_in_notes", True))
+            is_decorative = (
+                vis_type in ("", "none", "talking_head", "presenter", "face")
+                or not include_in_notes
+                or raw_imp <= 1
+            )
             synthesized.append(
                 FrameQualityScore(
                     path=p,
-                    content_density=imp,
-                    instructor_occlusion=0,
+                    content_density=0 if is_decorative else imp,
+                    instructor_occlusion=10 if is_decorative else 0,
                     blur_level=0,
-                    is_transition_or_decorative=(
-                        vis_type in ("", "none", "talking_head", "presenter", "face") or not include_in_notes or raw_imp <= 0
-                    ),
+                    is_transition_or_decorative=is_decorative,
                 )
             )
         else:
@@ -1182,20 +1178,18 @@ def select_top_k(
     """
 
     sorted_screenshots = sorted(
-
         ranked_selection.screenshots,
         key=lambda s: s.importance,
-        reverse=True
-
+        reverse=True,
     )
 
-    top_k = sorted_screenshots[:target_count]
+    # Filter out presenter webcam / talking head / non-informative frames (importance <= 0)
+    informative_only = [s for s in sorted_screenshots if s.importance > 0]
+    top_k = informative_only[:target_count]
 
     return ChapterScreenshots(
-
         chapter_id=ranked_selection.chapter_id,
-        screenshots=top_k
-
+        screenshots=top_k,
     )
 
 

@@ -38,11 +38,12 @@
 - **Agent**: Antigravity (IDE)
 - **Status**: Completed
 - **Summary of Changes**:
-  - **Screenshot Selector Normalization (`notes/screenshot_selector.py`, `visual/visual_extractor.py`)**:
-    - Normalized `visual_extractor` 1–5 importance scores to 2–10 (`imp = raw_imp * 2 if 0 < raw_imp <= 5 else raw_imp`) so high-value diagrams/slides (scores 3, 4, 5) pass the `MIN_CONTENT_DENSITY = 6` quality bar.
-    - Added non-decorative candidate fallback in `filter_candidates` to prevent empty screenshot sections when valid slides exist.
-    - Updated `VisualObjectItem` Pydantic schema with explicit 1–10 importance score description and updated batch prompt.
-    - Re-ran screenshot selection on `aws-cloud-engineer-71m` and `6af222a9`, generating `chapter_*_screenshots.json` and indexing captions into Chroma.
+  - **Screenshot Selector & Diagram Quality Hardening (`notes/screenshot_selector.py`, `visual/visual_extractor.py`)**:
+    - Fixed root cause of speaker webcam frames being chosen and indexed as diagrams: `visual_extractor` previously blanket-assigned chunk-level visual analysis to all candidate screenshots in a chunk (attributing slide descriptions like "Lambda Concurrency..." to speaker webcam frames like `frame_640.jpg`).
+    - Updated `process_chapter_visual_batch` in `visual_extractor.py` to require Gemini to return exact `source_screenshots` paths, marking all non-slide candidate frames as `visual_type = 'talking_head'`, `importance_score = 1`, and `include_in_notes = False`.
+    - Updated `SCREENSHOT_SELECTOR_PROMPT` in `screenshot_selector.py` to explicitly instruct Gemini to assign `importance: 0` to presenter webcam feeds, talking heads, and blank transitions.
+    - Updated `select_top_k` in `screenshot_selector.py` to strictly filter out any frames with `importance <= 0` before slicing top-K.
+    - Cleaned `aws-cloud-engineer-71m` screenshot selections and re-indexed Chroma `screenshot_captions` collection (removing `frame_640` and ensuring `frame_3832` RAG diagram is retrieved for RAG queries).
   - **Cross-Chapter Citation Navigation (`tutor/citations.py`, `frontend/src/lib/cite.ts`, `frontend/src/lib/references.ts`, `frontend/src/types/index.ts`, `frontend/src/components/chat/ChatArea.tsx`, `frontend/src/components/chat/ReferencesPanel.tsx`)**:
     - Propagated `"chapter_id": match.get("chapter_id")` in `verify_citations()` and added `chapter_id?: number | null` to `VerifiedCitation` type.
     - Fixed chunk hash regex bug where `chunk_<hex_hash>` accidentally matched leading hex digits (e.g. `chunk_53...` -> Ch 53). Now strictly matches `^ch(\d+)__` and resolves chapter IDs via citation metadata, chunk lookups, and chapter titles in `useChapterStore`.
