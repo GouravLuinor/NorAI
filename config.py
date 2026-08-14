@@ -21,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ── Canonical Pipeline & LLM Defaults ─────────────────────────────────────────
-MODEL_NAME = "gemini-3.1-flash-lite"
+MODEL_NAME = "gemini-3.5-flash-lite"
 DEFAULT_MODEL_NAME = MODEL_NAME
 
 DEFAULT_FRAME_INTERVAL_SECONDS = 8
@@ -54,9 +54,9 @@ LEMONSQUEEZY_CUSTOMER_PORTAL_URL = os.environ.get("LEMONSQUEEZY_CUSTOMER_PORTAL_
 
 # ── Model pricing (P6.5) ──────────────────────────────────────────────────────
 # USD per 1M tokens used by the cost dashboard (`GET /usage`). Sources:
-#   gemini-3.1-flash-lite — $0.25 input / $1.50 output (text, image, video;
+#   gemini-3.5-flash-lite — $0.30 input / $2.50 output (text, image, video;
 #       output includes thinking tokens), Google AI pricing page.
-#       Cached input (context caching, P7.x) — $0.025 / 1M; storage is billed
+#       Cached input (context caching, P7.x) — $0.03 / 1M; storage is billed
 #       separately per token-hour ($1.00 / 1M tokens / hour), tracked in the
 #       cached-prefix design, NOT as input tokens.
 #   gemini-embedding-2   — $0.20 input / $0.00 output, Google AI pricing page.
@@ -65,10 +65,10 @@ def _price(name: str, default: float) -> float:
     return float(os.environ.get(f"NORAI_MODEL_PRICE_{name}", str(default)))
 
 MODEL_PRICING: dict[str, dict[str, float]] = {
-    "gemini-3.1-flash-lite": {
-        "input_per_1M": _price("FLASH_LITE_INPUT", 0.25),
-        "output_per_1M": _price("FLASH_LITE_OUTPUT", 1.50),
-        "cached_input_per_1M": _price("FLASH_LITE_CACHED_INPUT", 0.025),
+    "gemini-3.5-flash-lite": {
+        "input_per_1M": _price("FLASH_LITE_INPUT", 0.30),
+        "output_per_1M": _price("FLASH_LITE_OUTPUT", 2.50),
+        "cached_input_per_1M": _price("FLASH_LITE_CACHED_INPUT", 0.03),
     },
     "gemini-embedding-2": {
         "input_per_1M": _price("EMBEDDING_INPUT", 0.20),

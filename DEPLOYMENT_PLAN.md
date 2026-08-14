@@ -48,7 +48,7 @@ For the initial stage (**4–5 demo users/testers**, negligible background traff
 | **Frontend** | Vercel Free / Cloudflare Pages | **$0.00** | Generous free static hosting |
 | **Backend & Pipeline**| Railway Starter ($5) / Hetzner Cloud CX22 ($4.50) / Render Standard ($7) | **$4.50 – $7.00** | 2-4 GB RAM required for local Whisper/FFmpeg |
 | **Database & Auth** | Supabase Free Tier | **$0.00** | 500 MB Postgres, Auth, JWKS, Daily backups |
-| **AI LLM & Vision** | Google Gemini API (`gemini-3.1-flash-lite`) | **$0.50 – $2.00** | Pay-per-token ($0.25/1M in, $1.50/1M out) |
+| **AI LLM & Vision** | Google Gemini API (`gemini-3.5-flash-lite`) | **$0.50 – $2.00** | Pay-per-token ($0.30/1M in, $2.50/1M out) |
 | **Object Storage** | Cloudflare R2 / Local Disk Volume | **$0.00** | 10 GB free on Cloudflare R2 or included VPS disk |
 | **Monitoring** | GlitchTip Free / Better Stack / Sentry Free | **$0.00** | Error tracking & uptime pinging |
 | **TOTAL INITIAL COST** | | **~$6.00 – $10.00 / month** | |
@@ -200,7 +200,7 @@ Cost ($)
 * **Storage (Cloudflare R2)**: $0.00 (under 10 GB)
 * **Gemini API Usage**:
   * 50 lectures * 15 chunks = 750 LLM calls.
-  * ~3M input tokens + 0.5M output tokens = **~$1.50/mo**.
+  * ~3M input tokens + 0.5M output tokens = **~$2.15/mo**.
 * **Total**: **~$7.50 – $9.50 / month**
 
 #### Scenario 3: 100 Active Users (500 Lectures processed/mo ~ 45 mins each)

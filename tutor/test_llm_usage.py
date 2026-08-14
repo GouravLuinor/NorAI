@@ -41,7 +41,7 @@ def check(label: str, cond: bool):
 def _llm(node: str) -> UsageLoggingChatLLM:
     # model is a required ChatGoogleGenerativeAI field; google_api_key is never
     # used because we only exercise _tokens_from/_record with fake responses.
-    return UsageLoggingChatLLM(node=node, model="gemini-3.1-flash-lite", google_api_key="test-key")
+    return UsageLoggingChatLLM(node=node, model="gemini-3.5-flash-lite", google_api_key="test-key")
 
 
 def test_tokens_from_langchain_keys():

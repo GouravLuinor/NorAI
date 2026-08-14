@@ -18,16 +18,16 @@ Full pipeline, ~8-min lecture: **$0.0269 total, 18 calls.**
 | visual     |     3 | $0.0080  |  30%  |
 | outline    |     1 | $0.0010  |   4%  |
 
-Output tokens ≈ **75%** of total cost (output $1.50/1M vs input $0.25/1M).
+Output tokens ≈ **75%** of total cost (output $2.50/1M vs input $0.30/1M).
 
 Tutor: ~$0.0006 / turn.
 
 ### Pricing model (flash-lite)
 | Item | Rate |
 |------|------|
-| input | $0.25 / 1M |
-| output | $1.50 / 1M |
-| **cached input** | **$0.025 / 1M** (10× cheaper) |
+| input | $0.30 / 1M |
+| output | $2.50 / 1M |
+| **cached input** | **$0.03 / 1M** (10× cheaper) |
 | cache storage | $1.00 / 1M tokens / hour |
 
 Cache **create** bills at the full input rate; the *minimum cacheable prefix* for
@@ -101,7 +101,7 @@ the 4096 minimum. On a cached turn the ~6000-token prefix drops to the cached ra
       API accepts the payload (system_instruction + role'd contents + ttl; the
       4096-token min is satisfied at ~8.3k est tokens) and then returns
       `429 RESOURCE_EXHAUSTED: TotalCachedContentStorageTokensPerModelFreeTier
-      limit exceeded for model gemini-3.1-flash-lite: limit=0`. The current API
+      limit exceeded for model gemini-3.5-flash-lite: limit=0`. The current API
       key's free tier allows **0 cached-content storage tokens** for this model,
       so context caching cannot provision on it. `caches.list()`/`delete()` work
       (empty list). The defensive fallback is proven: on create failure the tutor
@@ -117,7 +117,7 @@ starts provisioning automatically with zero code changes.
 
 ## 4. Output-token reduction (done, 2026-08-13)
 
-Output is 75% of pipeline cost ($1.50/1M vs $0.25/1M input). Two generated fields
+Output is 75% of pipeline cost ($2.50/1M vs $0.30/1M input). Two generated fields
 were **never consumed downstream** — pure wasted output — plus every LLM call except
 notes lacked a `max_output_tokens` bound:
 
@@ -138,7 +138,7 @@ Changes:
 - `extract/merger.py`: dead `external_knowledge` / `visual_summary` writes dropped
   from merged objects.
 - `max_output_tokens` caps added at ~2× observed max (never bite on normal runs,
-  bound pathological blowups — output bills at 6× input): extract **1200** (obs max
+  bound pathological blowups — output bills at ~8× input): extract **1200** (obs max
   613), visual chapter-batch **3000** (obs max 1438), outline **1000** (obs max 446).
   Notes stays at 8192 (mandated 800–1200+ word notes).
 

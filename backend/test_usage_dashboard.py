@@ -82,21 +82,21 @@ def _fake_user():
 def test_ledger_accumulates_and_diffs():
     from backend import usage_ledger as ul
     ul.reset_usage()
-    ul.record_llm_usage("extract", "gemini-3.1-flash-lite", 1000, 200)
-    ul.record_llm_usage("tutor", "gemini-3.1-flash-lite", 500, 300)
+    ul.record_llm_usage("extract", "gemini-3.5-flash-lite", 1000, 200)
+    ul.record_llm_usage("tutor", "gemini-3.5-flash-lite", 500, 300)
     ul.record_embed_usage("embed", "gemini-embedding-2", 800)
 
     before = ul.snapshot_usage()
-    ul.record_llm_usage("tutor", "gemini-3.1-flash-lite", 100, 100)
+    ul.record_llm_usage("tutor", "gemini-3.5-flash-lite", 100, 100)
     diff = ul.diff_usage(before)
 
     tutor = next((d for d in diff if d["stage"] == "tutor"), None)
     check("tutor delta isolates the increment", tutor is not None)
     check("tutor calls delta 1", tutor and tutor["calls"] == 1)
     check("tutor tokens delta", tutor and tutor["input_tokens"] == 100 and tutor["output_tokens"] == 100)
-    check("tutor model tracked", tutor and tutor["model"] == "gemini-3.1-flash-lite")
+    check("tutor model tracked", tutor and tutor["model"] == "gemini-3.5-flash-lite")
 
-    # 1000*0.25 + 200*1.5 = $0.00055 per 1M... exact from model_price:
+    # 1000*0.30 + 200*2.5 = $0.0008 per 1M... exact from model_price:
     full = ul.diff_usage({})
     extract = next((d for d in full if d["stage"] == "extract"), None)
     check("extract cost > 0", extract and extract["cost_usd"] > 0)
@@ -117,7 +117,7 @@ def test_record_generate_usage_reads_gemini_metadata():
     class _Resp:
         usage_metadata = _Meta()
 
-    ul.record_generate_usage("outline", "gemini-3.1-flash-lite", _Resp())
+    ul.record_generate_usage("outline", "gemini-3.5-flash-lite", _Resp())
     full = ul.diff_usage({})
     outline = next((d for d in full if d["stage"] == "outline"), None)
     check("raw gemini metadata read", outline and outline["input_tokens"] == 123 and outline["output_tokens"] == 45)
@@ -127,7 +127,7 @@ def test_record_generate_usage_reads_gemini_metadata():
     class _Empty:
         pass
 
-    ul.record_generate_usage("notes", "gemini-3.1-flash-lite", _Empty())
+    ul.record_generate_usage("notes", "gemini-3.5-flash-lite", _Empty())
     full2 = ul.diff_usage({})
     notes = next((d for d in full2 if d["stage"] == "notes"), None)
     check("missing metadata still counts the call", notes and notes["calls"] == 1 and notes["cost_usd"] == 0)
@@ -151,7 +151,7 @@ def test_pipeline_writes_per_stage_rows():
     from backend.usage import record_pipeline_outcome
 
     stages = [
-        {"stage": "extract", "model": "gemini-3.1-flash-lite", "calls": 3,
+        {"stage": "extract", "model": "gemini-3.5-flash-lite", "calls": 3,
          "input_tokens": 3000, "output_tokens": 600, "cost_usd": 0.00165},
         {"stage": "embed", "model": "gemini-embedding-2", "calls": 2,
          "input_tokens": 400, "output_tokens": 0, "cost_usd": 0.00008},
@@ -166,7 +166,7 @@ def test_pipeline_writes_per_stage_rows():
 
     check("two stage rows written", len(logs) == 2)
     by_stage = {l.stage: l for l in logs}
-    check("extract row has model", by_stage.get("extract") and by_stage["extract"].model == "gemini-3.1-flash-lite")
+    check("extract row has model", by_stage.get("extract") and by_stage["extract"].model == "gemini-3.5-flash-lite")
     check("extract row tokens", by_stage.get("extract") and by_stage["extract"].input_tokens == 3000)
     check("extract row calls", by_stage.get("extract") and by_stage["extract"].calls == 3)
     check("embed row cost", by_stage.get("embed") and abs(by_stage["embed"].estimated_cost_usd - 0.00008) < 1e-9)
@@ -178,7 +178,7 @@ def test_tutor_turn_metered_only_for_owner():
 
     record_tutor_turn(
         user_id=FAKE_USER_ID, lecture_id="lec_dash", stage="tutor",
-        model="gemini-3.1-flash-lite", input_tokens=500, output_tokens=300,
+        model="gemini-3.5-flash-lite", input_tokens=500, output_tokens=300,
         calls=1, cost_usd=0.000575,
     )
 
@@ -203,7 +203,7 @@ def test_tutor_turn_async_variant():
     before = run(_read_logs("lec_dash", "tutor"))
     run(record_tutor_turn_async(
         user_id=FAKE_USER_ID, lecture_id="lec_dash", stage="tutor",
-        model="gemini-3.1-flash-lite", input_tokens=40, output_tokens=20,
+        model="gemini-3.5-flash-lite", input_tokens=40, output_tokens=20,
         calls=1, cost_usd=0.00004,
     ))
     logs = run(_read_logs("lec_dash", "tutor"))

@@ -35,7 +35,7 @@ Historical bug → root-cause → fix table from the Tier 2/Tier 3 rebuild (kept
 
 Decisions from the Micro-SaaS foundation work; the launch-track roadmap doc they lived in is retired (shipment complete).
 
-**Base architecture (decided):** FastAPI backend (main + sync 18-stage pipeline in `backend/orchestrator.py`, run inside the DB-backed job queue `backend/jobs.py`) + React 19 / TypeScript Vite SPA. **Supabase Postgres** is the app DB (users, subscriptions, lectures, usage_logs, webhook_events); ChromaDB holds vectors; SQLite holds per-lecture LangGraph checkpoints under `outputs/<id>/tutor/`; artifact dirs + `outputs/lectures.json` on disk. Model default: `gemini-3.1-flash-lite`.
+**Base architecture (decided):** FastAPI backend (main + sync 18-stage pipeline in `backend/orchestrator.py`, run inside the DB-backed job queue `backend/jobs.py`) + React 19 / TypeScript Vite SPA. **Supabase Postgres** is the app DB (users, subscriptions, lectures, usage_logs, webhook_events); ChromaDB holds vectors; SQLite holds per-lecture LangGraph checkpoints under `outputs/<id>/tutor/`; artifact dirs + `outputs/lectures.json` on disk. Model default: `gemini-3.5-flash-lite`.
 
 **Pricing tiers & quotas:**
 
@@ -73,3 +73,15 @@ Forward-looking work — details live in the referenced docs:
 ## 4. Forward Feature Ideas
 
 `NotebookLM_competitive_analysis.md` carries the forward moat ideas (flashcard history-driven study, quiz analytics, etc.) — consult it when scoping new features.
+
+---
+
+## 5. Dev Tooling: opencode + Antigravity Split Workflow
+
+Decided 2026-08-14: heavy AI work is split between opencode and **Google Antigravity** (Gemini **3.7 Flash, high thinking mode** on the Google AI Pro subscription). Rationale + full pattern in AGENTS.md §"Tooling workflow".
+
+**Why no Gemini in opencode:** the `opencode-gemini-auth` OAuth plugin (Gemini CLI flow) was blocked by Google on 2026-06-18 for AI Pro/Ultra accounts — Google stopped serving requests for those tiers. The AI Pro subscription also grants no Gemini API access, so there's no API key to configure either. If we ever want Gemini inside opencode, it must be a Google AI Studio API key (`google/gemini-3.7-flash`, free tier first, paid Tier 1 later).
+
+**Ownership split:** Antigravity → big refactors/architecture, greenfield codegen, 1M-context work, hard debugging; opencode → surgical edits, mechanical changes, tool-heavy loops (tests/lint/builds, dev-server work, Chrome DevTools MCP), quick QA. Git is the handoff point; `COMMUNICATOR.md` carries the short handoff log at each switch.
+
+**Antigravity usage reality:** compute-based limits refresh every 5h, capped weekly; `high`-mode burns fast. Reserve 3.7 Flash/high for heavy tasks — trivial edits go to opencode. When the cap hits, Google silently shifts to a smaller model (or paid top-up credits).
