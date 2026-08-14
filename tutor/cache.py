@@ -4,8 +4,8 @@ tutor/cache.py — Gemini context caching for long tutor conversations (P7.x).
 Why:
   Every tutor turn re-sends the same static prefix: the (compressed) system
   prompt, any persona instructions, and the rolling conversation summary.
-  Gemini context caching bills that prefix at the cached rate ($0.025 / 1M
-  for gemini-3.1-flash-lite vs $0.25 / 1M uncached — a 90% discount) as long
+  Gemini context caching bills that prefix at the cached rate ($0.03 / 1M
+  for gemini-3.5-flash-lite vs $0.30 / 1M uncached — a 90% discount) as long
   as the cached content is a PREFIX of the prompt and is not re-sent in the
   request contents.
 

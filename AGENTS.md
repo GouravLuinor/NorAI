@@ -36,7 +36,7 @@ Tests: there is NO test framework/pytest. Tests are standalone `test_*.py` scrip
 ## Environment & model config
 
 - `GEMINI_API_KEY` is required (root `config.py:get_api_key()` raises `ValueError` if absent). Loaded from `.env` via python-dotenv. `.env` is gitignored — never commit it.
-- Model defaults live ONLY in root `config.py`: `MODEL_NAME = "gemini-3.1-flash-lite"`, `TEMPERATURE = 0.4`, retry/RPM limits. The separate `tutor/config.py` re-exports these so the tutor and core stay in sync.
+- Model defaults live ONLY in root `config.py`: `MODEL_NAME = "gemini-3.5-flash-lite"`, `TEMPERATURE = 0.4`, retry/RPM limits. The separate `tutor/config.py` re-exports these so the tutor and core stay in sync.
 - Embeddings use `gemini-embedding-2` (768 dims), configured in `tutor/retrieval_config.py`. It does NOT accept `task_type=`; task instructions go in the prompt. Older embedding models (gemini-embedding-001/-exp) are deprecated — don't introduce them.
 - Chroma persistent store defaults to `outputs/tutor/chroma`, overridable via `NORAI_CHROMA_DIR`.
 - CORS in `backend/main.py` is deliberately broad (all common Vite ports). Keep it broad during dev.
@@ -47,6 +47,17 @@ Tests: there is NO test framework/pytest. Tests are standalone `test_*.py` scrip
 - Lecture IDs propagate via output dirs, not shared globals; there is no `subprocess` usage anywhere — the pipeline runs in a job-queue worker thread. Keep lecture isolation when editing.
 - `outputs/` and `.tmp/` are regenerable intermediates — never commit them.
 - Personal opencode scripting notes live in `opencode-guide/` (gitignored) — not project docs.
+
+## Tooling workflow (opencode + Antigravity)
+
+The developer splits heavy work between opencode and **Google Antigravity** (Gemini **3.7 Flash, high thinking mode**, via the Google AI Pro subscription). Git is the handoff point: whoever finishes commits/stashes, then the other resumes.
+
+- **Antigravity (3.7 Flash, high) owns:** big refactors & architecture, greenfield codegen, large-context work (1M window), and hard debugging. Output should be commits/PRs or pasted diffs/plans.
+- **opencode owns:** surgical single-file edits, mechanical changes, tool-heavy agentic loops (running tests/lint/builds, `start-dev.sh`, dev-server smoke tests, Chrome DevTools MCP), and quick QA.
+- **Handoff:** keep AGENTS.md authoritative for both; write a short handoff-log entry (done / pending / commands to verify) in `COMMUNICATOR.md` at each switch so the other side can resume without re-explaining.
+- **Antigravity limits (AI Pro):** compute-based usage, refresh every 5h, capped weekly; heavy `high`-mode burns fast. Don't waste it on trivial edits — those go to opencode.
+
+> Do NOT try to use the Google AI subscription from opencode directly: the `opencode-gemini-auth` OAuth plugin was blocked by Google on 2026-06-18 for AI Pro/Ultra accounts, and there is no API-key access for this subscription. If asked to set up Gemini in opencode, use a Google AI Studio API key (`google/gemini-3.7-flash`), never the OAuth plugin.
 
 ## Agent model notes (image analysis)
 

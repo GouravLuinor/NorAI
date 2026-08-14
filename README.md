@@ -295,7 +295,7 @@ rather than during every pipeline run.
 | **Documents** | React Markdown, KaTeX | Markdown and math rendering |
 | **Backend** | FastAPI, Uvicorn | APIs, webhooks, quota, pipeline integration |
 | **Job Queue** | DB-backed (SQLAlchemy) | Durable pipeline scheduling (P4) |
-| **AI** | Google Gemini (`gemini-3.1-flash-lite`) | Text generation and multimodal understanding |
+| **AI** | Google Gemini (`gemini-3.5-flash-lite`) | Text generation and multimodal understanding |
 | **AI Workflows** | LangGraph | Stateful tutor flows |
 | **Speech** | Faster-Whisper | Lecture transcription |
 | **Vector Store** | ChromaDB + BM25 | Hybrid (RRF-fused) retrieval |
