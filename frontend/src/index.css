@@ -38,6 +38,9 @@ html, body, #root {
   --color-npfh: #A9361C;
   --color-npb: rgba(194, 65, 12, 0.10);
   --color-npbr: rgba(194, 65, 12, 0.22);
+  /* Accent border (light) — same red pencil as the fill; dark overrides to a
+     desaturated tone to kill chromatic vibration (UI_UX_AUDIT_REPORT §6.3). */
+  --color-npbd: #C2410C;
 
   /* Status dots — pinned per DESIGN.md (light) */
   --color-na: #B87C14;
@@ -251,7 +254,7 @@ html, body, #root {
 
 /* Red-pencil annotation callout — NOTE: */
 .note-callout {
-  border-left: 2px solid var(--color-np);
+  border-left: 2px solid var(--color-npbd);
   background: var(--color-npb);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
@@ -361,8 +364,8 @@ html, body, #root {
 
   --color-nt: #E9F1FA;
   --color-nt2: #B8C9DE;
-  --color-nt3: #98AFCB;
-  --color-nt4: #A3BBD6;
+  --color-nt3: #B4C8E2;
+  --color-nt4: #C2D4EA;
 
   --color-np: #E85D2F;
   --color-nph: #FF6B38;
@@ -371,6 +374,9 @@ html, body, #root {
   --color-npfh: #B93A1D;
   --color-npb: rgba(232, 93, 47, 0.20);
   --color-npbr: rgba(232, 93, 47, 0.38);
+  /* Desaturated accent border (dark): kills red/blue chromatic vibration on
+     callout and card accents per UI_UX_AUDIT_REPORT §6.3. */
+  --color-npbd: #D96B43;
 
   --color-na: #FFB020;
   --color-nab: rgba(255, 176, 32, 0.14);
@@ -419,6 +425,14 @@ html, body, #root {
 [data-theme="dark"] {
   color-scheme: dark;
   --ds-focus-ring: 0 0 0 2px var(--color-nb), 0 0 0 4px var(--color-np);
+}
+
+/* Code blocks in the reading pane sit on a darker surface than the narrative
+   cards so they read as distinct objects (UI_UX_AUDIT_REPORT §6.3). */
+[data-theme="dark"] .doc-content pre {
+  background: #071426;
+  border: 1px solid var(--color-bdr2);
+  border-radius: var(--radius-md);
 }
 
 /* Accent TEXT tokens: tuned so colored text clears 4.5:1 on its tinted

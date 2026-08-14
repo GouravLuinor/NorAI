@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, Info, Activity, AlertTriangle } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
+import { Select } from '../components/ui/Select'
 import { FOCUS_RING } from '../components/ui/shared'
 import { apiFetchRaw } from '../lib/http'
 import { useAuthStore } from '../stores/useAuthStore'
+import { useCourseStore } from '../stores/useCourseStore'
 
 type InputType = 'youtube' | 'upload' | 'drive'
 
@@ -82,8 +84,15 @@ export function UploadPage() {
   const [estimate, setEstimate] = useState<EstimateResult | null>(null)
   const [estLoading, setEstLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [courseId, setCourseId] = useState('')
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { user } = useAuthStore()
+  const { courses, loadCourses } = useCourseStore()
+
+  useEffect(() => {
+    if (user) loadCourses()
+  }, [user, loadCourses])
 
   // ── Pre-flight estimate (P1.8) ──────────────────────────────────────────
   // Debounced: fires ~600ms after the user stops typing / selects a file.
@@ -155,6 +164,7 @@ export function UploadPage() {
     } else {
       formData.append('url', url)
     }
+    if (courseId) formData.append('course_id', courseId)
 
     try {
       const res = await apiFetchRaw('/process', { method: 'POST', body: formData })
@@ -223,7 +233,7 @@ export function UploadPage() {
 
           {/* Input Card */}
           <div className="bg-ns border border-bdr2 rounded-lg p-5 shadow-ev2 fold-marks relative">
-            <div className="spec-label mb-3">01. Source</div>
+            <div className="spec-label mb-3">Source</div>
             {/* Segmented Control */}
             <SegmentedControl<InputType>
               containerClass="flex bg-nb border border-bdr rounded-md p-1 mb-4"
@@ -355,6 +365,24 @@ export function UploadPage() {
               </div>
             )}
 
+            {/* P6.4: file the new lecture into a course (optional) */}
+            <div className="mt-4 flex flex-col gap-1">
+              <label htmlFor="course-select" className="text-2xs text-nt3">
+                Add to course (optional)
+              </label>
+              <Select
+                id="course-select"
+                ariaLabel="Add to course"
+                value={courseId || ''}
+                onChange={(v) => setCourseId(v || '')}
+                placeholder="No course"
+                options={[
+                  { value: '', label: 'No course' },
+                  ...courses.map((c) => ({ value: c.course_id, label: c.name })),
+                ]}
+              />
+            </div>
+
             {/* Submit Button */}
             <Button
               variant="primary"
@@ -390,7 +418,7 @@ export function UploadPage() {
         {/* Section 2: Your Lectures (Bottom)                                 */}
         {/* ───────────────────────────────────────────────────────────────── */}
         <section>
-          <h2 className="spec-label mb-4 px-1">02. Your Recent Lectures</h2>
+          <h2 className="spec-label mb-4 px-1">Your Recent Lectures</h2>
           
           <div className="flex flex-col gap-2.5">
             {loadingLectures ? (

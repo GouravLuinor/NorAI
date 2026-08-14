@@ -9,6 +9,7 @@ import { PartialContentBadge } from '../ui/PartialContentBadge'
 import { useToastStore } from '../../stores/useToastStore'
 import { Button } from '../ui/Button'
 import { CitationBox } from '../quiz/CitationBox'
+import { QuizSkeleton } from '../ui/SkeletonCard'
 import { scrollToHeading } from '../../lib/cite'
 
 const DIFFICULTY_OPTIONS: Array<{ label: string; value: QuizDifficulty | 'All' }> = [
@@ -107,7 +108,7 @@ export function AssessmentView() {
     }
   }
 
-  if (loading) return <div className="flex-1 flex items-center justify-center text-nt3 text-sm">Loading assessment…</div>
+  if (loading) return <QuizSkeleton />
 
   const tf = questions.filter(q => q.type === 'True/False')
   const hasOptions = (q: Question) => Array.isArray(q.options) && q.options.length > 0

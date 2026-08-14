@@ -15,6 +15,7 @@ Fix log:
 import asyncio
 import json as json_lib
 import random
+import secrets
 import uuid
 import re
 import os
@@ -42,7 +43,7 @@ from ingest.ingest import probe_video_metadata
 from backend.estimator import estimate_pipeline
 from backend.auth import get_current_user_optional, get_current_user
 from backend.db.database import get_db
-from backend.db.models import User, Subscription, Lecture, UsageLog
+from backend.db.models import User, Subscription, Lecture, UsageLog, Course, CourseLecture, ShareLink
 from backend.usage import record_pipeline_outcome
 from tutor.llm import make_chat_llm
 from flashcards.sm2 import apply_sm2, due_in_days
@@ -53,7 +54,7 @@ from config import (
     LEMONSQUEEZY_CUSTOMER_PORTAL_URL,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_, func
 import logging
 
 # P5.1: structured JSON logging (console + rotating outputs/backend.log).
@@ -96,8 +97,8 @@ def _spa_index() -> Optional[Path]:
 
 
 # SPA client-side routes (everything Vite's history-mode router owns).
-SPA_HTML_ROUTES = {"/", "/pricing", "/billing", "/usage"}
-SPA_HTML_PREFIXES = ("/app", "/workspace", "/process/", "/print")
+SPA_HTML_ROUTES = {"/", "/pricing", "/billing", "/usage", "/courses"}
+SPA_HTML_PREFIXES = ("/app", "/workspace", "/process/", "/print", "/share/")
 
 
 @app.middleware("http")
@@ -324,6 +325,23 @@ class UpsertFlashcardRatingsRequest(BaseModel):
     chapter_id: int | None = None
     ratings: list[FlashcardRatingItem] = []
 
+class CourseCreateRequest(BaseModel):
+    name: str
+    description: str | None = None
+
+class CourseUpdateRequest(BaseModel):
+    name: str | None = None
+    description: str | None = None
+
+class AddLectureRequest(BaseModel):
+    lecture_id: str
+
+class ReorderLecturesRequest(BaseModel):
+    lecture_ids: list[str] = []
+
+class ShareLinkRequest(BaseModel):
+    allow_tutor_chat: bool = True
+
 # ---------------------------------------------------------------------------
 # Chat endpoints
 # ---------------------------------------------------------------------------
@@ -393,9 +411,13 @@ async def _flush_tutor_usage_async(
 async def chat(
     req: ChatRequest,
     user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
 ):
     try:
         bind(lecture_id=req.lecture_id, thread_id=req.thread_id)
+        # P6.4: chat is a tutor-gated write — owner OR share link with tutor
+        # chat enabled. Anonymous users without a share link are 404'd.
+        await ensure_lecture_access(req.lecture_id or "default", user, db, require_tutor=True)
         # P6.5: diff the tutor ledger across this turn so we can meter its cost.
         from backend.usage_ledger import snapshot_usage, diff_usage
         from backend.usage import record_tutor_turn
@@ -412,6 +434,9 @@ async def chat(
         )
         await _flush_tutor_usage_async(user, req.lecture_id, _tutor_before, diff_usage)
         return result
+    except HTTPException as e:
+        # P6.4: let access-gate 404s (unshared / tutor-disabled) propagate as-is.
+        raise e
     except Exception as e:
         logging.getLogger("norai").exception("POST /chat failed")
         raise HTTPException(status_code=500, detail="Internal error processing your request")
@@ -423,8 +448,10 @@ async def chat(
 async def chat_stream(
     req: ChatRequest,
     user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
 ):
     bind(lecture_id=req.lecture_id, thread_id=req.thread_id)
+    await ensure_lecture_access(req.lecture_id or "default", user, db, require_tutor=True)
 
     async def event_generator():
         try:
@@ -713,14 +740,22 @@ async def quiz_evaluate(req: QuizEvaluateRequest):
 
 
 @app.post("/quiz/explain")
-async def quiz_explain(req: QuizExplainRequest):
+async def quiz_explain(
+    req: QuizExplainRequest,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     """Cite a question's source from the lecture index — on demand only.
 
     Runs a single embedding retrieval (top-1 note chunk + top-1 screenshot).
     Never regenerates. Returns source:null gracefully when the index is missing.
+    P6.4: read-gated (owner or valid share link; tutor permission NOT required).
     """
     if not req.question.strip():
         return {"source": None, "message": "Empty question."}
+
+    # P6.4: read-only index access — no LLM cost, so require_tutor=False.
+    await ensure_lecture_access(req.lecture_id or "default", user, db, require_tutor=False)
 
     lecture_id = req.lecture_id if req.lecture_id and req.lecture_id != "default" else None
     output_dir = None
@@ -779,7 +814,12 @@ async def quiz_explain(req: QuizExplainRequest):
 # ---------------------------------------------------------------------------
 
 @app.post("/quiz/attempts")
-async def create_quiz_attempt(req: CreateQuizAttemptRequest):
+async def create_quiz_attempt(
+    req: CreateQuizAttemptRequest,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    await ensure_lecture_access(req.lecture_id, user, db, require_tutor=True)
     attempt_id = f"attempt-{uuid.uuid4().hex[:12]}"
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     with _db(req.lecture_id) as conn:
@@ -807,7 +847,14 @@ async def create_quiz_attempt(req: CreateQuizAttemptRequest):
 
 
 @app.post("/quiz/attempts/{attempt_id}/finish")
-async def finish_quiz_attempt(attempt_id: str, req: FinishQuizAttemptRequest, lecture_id: str = "default"):
+async def finish_quiz_attempt(
+    attempt_id: str,
+    req: FinishQuizAttemptRequest,
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    await ensure_lecture_access(lecture_id, user, db, require_tutor=True)
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     with _db(lecture_id) as conn:
         _ensure_quiz_attempts_table(conn)
@@ -970,7 +1017,12 @@ async def get_quiz_attempt_missed(
 
 
 @app.post("/flashcards/ratings")
-async def upsert_flashcard_ratings(req: UpsertFlashcardRatingsRequest):
+async def upsert_flashcard_ratings(
+    req: UpsertFlashcardRatingsRequest,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    await ensure_lecture_access(req.lecture_id, user, db, require_tutor=True)
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     schedule: dict = {}
     with _db(req.lecture_id) as conn:
@@ -1069,11 +1121,11 @@ async def study_guide(
     """
     await ensure_lecture_access(lecture_id, user, db)
     info = get_lecture(lecture_id)
-    if not info:
-        raise HTTPException(status_code=404, detail="Lecture not found")
-    base = Path(info["output_dir"])
+    # Fall back to the legacy outputs/ root (same as /outline) so the
+    # "default" demo lecture — which is never registered — still resolves.
+    base = Path(info["output_dir"]) if info else Path("outputs")
 
-    title = info.get("name") or info.get("title") or ""
+    title = (info.get("name") or info.get("title") or "") if info else ""
     chapters: list[dict] = []
 
     outline_path = base / "notes" / "lecture_outline.json"
@@ -1281,25 +1333,56 @@ async def static_artifact(rest: str):
 
 # ── Upload & Processing ──────────────────────────────────────────────────────
 
+async def _assert_shared_or_404(
+    lecture_id: str,
+    db: AsyncSession,
+    require_tutor: bool,
+) -> None:
+    """404 unless a valid (non-expired) share link grants access to lecture_id.
+
+    `require_tutor` tightens the grant to links that also allow AI tutor chat,
+    so read endpoints stay open on any share link while chat / quiz / flashcard
+    writes need the owner's explicit opt-in.
+    """
+    now = datetime.now(timezone.utc)
+    stmt = select(ShareLink).where(
+        ShareLink.lecture_id == lecture_id,
+        or_(
+            ShareLink.expires_at.is_(None),
+            ShareLink.expires_at > now,
+        ),
+    )
+    if require_tutor:
+        stmt = stmt.where(ShareLink.allow_tutor_chat.is_(True))
+    result = await db.execute(stmt)
+    if result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Lecture not found")
+
+
 async def ensure_lecture_access(
     lecture_id: str,
     user: Optional[User],
     db: AsyncSession,
+    require_tutor: bool = False,
 ) -> None:
-    """Scope a lecture-scoped read to its owner when a user is authenticated.
+    """Scope a lecture-scoped read/write to its owner or a valid share link.
 
-    Anonymous guests keep the current open behavior (free-trial access). The
-    legacy "default" lecture remains open to everyone. Because the frontend
-    does not yet send the Bearer token on read endpoints, this check is
-    dormant today — it engages only once a token is presented.
+    Closed-by-default (P6.4): a lecture is accessible only by its owner (when a
+    user is authenticated) or via a valid non-expired share link. The legacy
+    "default" lecture stays open. When `require_tutor` is True (chat / quiz /
+    flashcard writes), a share link must also allow tutor chat.
     """
-    if user is None or lecture_id in (None, "", "default"):
+    if lecture_id in (None, "", "default"):
+        return
+    if user is None:
+        # Anonymous (no token): only a valid share link grants access.
+        await _assert_shared_or_404(lecture_id, db, require_tutor)
         return
     result = await db.execute(
         select(Lecture.id).where(Lecture.id == lecture_id, Lecture.user_id == user.id)
     )
     if result.scalar_one_or_none() is None:
-        raise HTTPException(status_code=404, detail="Lecture not found")
+        await _assert_shared_or_404(lecture_id, db, require_tutor)
 
 
 @app.get("/quota")
@@ -1545,6 +1628,7 @@ async def start_processing(
     url: str | None = Form(None),
     file: UploadFile | None = None,
     duration: float | None = Form(None),
+    course_id: str | None = Form(None),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1651,11 +1735,65 @@ async def start_processing(
     db.add(lecture_record)
     await db.commit()
 
+    # P6.4: file the new lecture into the caller's course when one is given.
+    if course_id:
+        cresult = await db.execute(
+            select(Course).where(Course.id == course_id, Course.user_id == user.id)
+        )
+        if cresult.scalar_one_or_none() is not None:
+            max_pos = await db.execute(
+                select(func.coalesce(func.max(CourseLecture.position), 0)).where(
+                    CourseLecture.course_id == course_id
+                )
+            )
+            db.add(
+                CourseLecture(
+                    course_id=course_id,
+                    lecture_id=task_id,
+                    position=max_pos.scalar_one() + 1,
+                )
+            )
+            await db.commit()
+
     return {"task_id": task_id}
 
 @app.get("/lectures")
-async def get_lectures():
-    return list_lectures()
+async def get_lectures(
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    """List lectures.
+
+    Authenticated: the caller's own lectures (DB is the ownership source of
+    truth, enriched with the file registry's chapter counts / titles).
+    Anonymous: the legacy open registry (dev / default lecture).
+    """
+    if user is None:
+        return list_lectures()
+
+    result = await db.execute(
+        select(Lecture)
+        .where(Lecture.user_id == user.id)
+        .order_by(Lecture.created_at.desc())
+    )
+    rows = result.scalars().all()
+    registry = {lec.get("lecture_id"): lec for lec in list_lectures()}
+    out = []
+    for row in rows:
+        meta = registry.get(row.id, {})
+        out.append({
+            "lecture_id": row.id,
+            "title": meta.get("title") or row.title,
+            "status": row.status,
+            "source_type": row.source_type,
+            "duration_seconds": row.duration_seconds,
+            "chapter_count": meta.get("chapter_count", 0),
+            "created_at": meta.get("created_at") or (
+                row.created_at.isoformat() if row.created_at else None
+            ),
+            "output_dir": meta.get("output_dir"),
+        })
+    return out
 
 
 
@@ -1683,6 +1821,397 @@ async def get_lecture_info(
     info["status"] = row.status if row else None
     info["duration_seconds"] = row.duration_seconds if row else None
     return info
+
+
+# ---------------------------------------------------------------------------
+# P6.4 — Course collections (owner-scoped)
+# ---------------------------------------------------------------------------
+
+def _app_origin() -> str:
+    """Browser origin used to build share URLs (dev default = Vite server)."""
+    return os.environ.get("NORAI_APP_URL", "http://localhost:5173").rstrip("/")
+
+
+def _new_share_slug() -> str:
+    return secrets.token_urlsafe(12)
+
+
+async def _get_owned_course(course_id: str, user: User, db: AsyncSession) -> Course:
+    result = await db.execute(
+        select(Course).where(Course.id == course_id, Course.user_id == user.id)
+    )
+    course = result.scalar_one_or_none()
+    if course is None:
+        raise HTTPException(status_code=404, detail="Course not found")
+    return course
+
+
+def _registry_map() -> dict:
+    return {lec.get("lecture_id"): lec for lec in list_lectures()}
+
+
+def _lecture_listing(row: Lecture, meta: dict) -> dict:
+    return {
+        "lecture_id": row.id,
+        "title": meta.get("title") or row.title,
+        "status": row.status,
+        "source_type": row.source_type,
+        "duration_seconds": row.duration_seconds,
+        "chapter_count": meta.get("chapter_count", 0),
+        "created_at": meta.get("created_at") or (
+            row.created_at.isoformat() if row.created_at else None
+        ),
+    }
+
+
+@app.get("/courses")
+async def list_courses(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Course).where(Course.user_id == user.id).order_by(Course.created_at.desc())
+    )
+    courses = result.scalars().all()
+    out = []
+    for c in courses:
+        count = await db.execute(
+            select(func.count())
+            .select_from(CourseLecture)
+            .where(CourseLecture.course_id == c.id)
+        )
+        out.append({
+            "course_id": c.id,
+            "name": c.name,
+            "description": c.description,
+            "lecture_count": count.scalar_one(),
+            "created_at": c.created_at.isoformat() if c.created_at else None,
+        })
+    return {"courses": out}
+
+
+@app.post("/courses")
+async def create_course(
+    req: CourseCreateRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    name = req.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Course name is required")
+    course = Course(user_id=user.id, name=name[:256], description=req.description)
+    db.add(course)
+    await db.commit()
+    return {
+        "course_id": course.id,
+        "name": course.name,
+        "description": course.description,
+        "lecture_count": 0,
+    }
+
+
+@app.get("/courses/{course_id}")
+async def get_course(
+    course_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    course = await _get_owned_course(course_id, user, db)
+    links = (
+        await db.execute(
+            select(CourseLecture)
+            .where(CourseLecture.course_id == course_id)
+            .order_by(CourseLecture.position)
+        )
+    ).scalars().all()
+    registry = _registry_map()
+    lectures = []
+    for link in links:
+        row = (
+            await db.execute(select(Lecture).where(Lecture.id == link.lecture_id))
+        ).scalar_one_or_none()
+        if row is None:
+            continue
+        lectures.append(_lecture_listing(row, registry.get(row.id, {})))
+    return {
+        "course_id": course.id,
+        "name": course.name,
+        "description": course.description,
+        "lectures": lectures,
+    }
+
+
+@app.patch("/courses/{course_id}")
+async def update_course(
+    course_id: str,
+    req: CourseUpdateRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    course = await _get_owned_course(course_id, user, db)
+    if req.name is not None:
+        name = req.name.strip()
+        if not name:
+            raise HTTPException(status_code=400, detail="Course name cannot be empty")
+        course.name = name[:256]
+    if req.description is not None:
+        course.description = req.description
+    await db.commit()
+    return {
+        "course_id": course.id,
+        "name": course.name,
+        "description": course.description,
+    }
+
+
+@app.delete("/courses/{course_id}")
+async def delete_course(
+    course_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    course = await _get_owned_course(course_id, user, db)
+    await db.delete(course)
+    await db.commit()
+    return {"success": True}
+
+
+@app.post("/courses/{course_id}/lectures")
+async def add_lecture_to_course(
+    course_id: str,
+    req: AddLectureRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await _get_owned_course(course_id, user, db)
+    result = await db.execute(
+        select(Lecture).where(Lecture.id == req.lecture_id, Lecture.user_id == user.id)
+    )
+    if result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Lecture not found")
+
+    existing = await db.execute(
+        select(CourseLecture).where(
+            CourseLecture.course_id == course_id,
+            CourseLecture.lecture_id == req.lecture_id,
+        )
+    )
+    if existing.scalar_one_or_none() is None:
+        max_pos = await db.execute(
+            select(func.coalesce(func.max(CourseLecture.position), 0)).where(
+                CourseLecture.course_id == course_id
+            )
+        )
+        db.add(
+            CourseLecture(
+                course_id=course_id,
+                lecture_id=req.lecture_id,
+                position=max_pos.scalar_one() + 1,
+            )
+        )
+        await db.commit()
+    return {"success": True, "course_id": course_id, "lecture_id": req.lecture_id}
+
+
+@app.delete("/courses/{course_id}/lectures/{lecture_id}")
+async def remove_lecture_from_course(
+    course_id: str,
+    lecture_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await _get_owned_course(course_id, user, db)
+    result = await db.execute(
+        select(CourseLecture).where(
+            CourseLecture.course_id == course_id,
+            CourseLecture.lecture_id == lecture_id,
+        )
+    )
+    link = result.scalar_one_or_none()
+    if link is not None:
+        await db.delete(link)
+        await db.commit()
+    return {"success": True}
+
+
+@app.put("/courses/{course_id}/lectures")
+async def reorder_course_lectures(
+    course_id: str,
+    req: ReorderLecturesRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await _get_owned_course(course_id, user, db)
+    for position, lecture_id in enumerate(req.lecture_ids):
+        result = await db.execute(
+            select(CourseLecture).where(
+                CourseLecture.course_id == course_id,
+                CourseLecture.lecture_id == lecture_id,
+            )
+        )
+        link = result.scalar_one_or_none()
+        if link is None:
+            raise HTTPException(
+                status_code=400, detail=f"Lecture {lecture_id} is not in this course"
+            )
+        link.position = position
+    await db.commit()
+    return {"success": True}
+
+
+# ---------------------------------------------------------------------------
+# P6.4 — Share links (owner creates/revokes; viewers read via the slug)
+# ---------------------------------------------------------------------------
+
+@app.post("/lectures/{lecture_id}/share")
+async def create_share_link(
+    lecture_id: str,
+    req: ShareLinkRequest | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    clean_id = sanitize_lecture_id(lecture_id)
+    result = await db.execute(
+        select(Lecture).where(Lecture.id == clean_id, Lecture.user_id == user.id)
+    )
+    if result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Lecture not found")
+
+    allow_tutor_chat = req.allow_tutor_chat if req is not None else True
+    existing = await db.execute(
+        select(ShareLink).where(
+            ShareLink.lecture_id == clean_id,
+            ShareLink.created_by == user.id,
+        )
+    )
+    link = existing.scalar_one_or_none()
+    if link is None:
+        link = ShareLink(
+            id=_new_share_slug(),
+            lecture_id=clean_id,
+            created_by=user.id,
+            allow_tutor_chat=allow_tutor_chat,
+        )
+        db.add(link)
+    else:
+        # Re-sharing refreshes the existing slug (re-enabling an expired link).
+        link.allow_tutor_chat = allow_tutor_chat
+        link.expires_at = None
+    await db.commit()
+    return {
+        "slug": link.id,
+        "url": f"{_app_origin()}/share/{link.id}",
+        "allow_tutor_chat": link.allow_tutor_chat,
+    }
+
+
+@app.get("/lectures/{lecture_id}/share")
+async def get_share_link(
+    lecture_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the owner's existing share link for a lecture, or 404 if none.
+
+    Lets the ShareModal show the live link on open instead of resolving a
+    random slug by lecture id (which always 404'd).
+    """
+    clean_id = sanitize_lecture_id(lecture_id)
+    result = await db.execute(
+        select(ShareLink).where(
+            ShareLink.lecture_id == clean_id,
+            ShareLink.created_by == user.id,
+        )
+    )
+    link = result.scalar_one_or_none()
+    if link is None:
+        raise HTTPException(status_code=404, detail="No share link exists for this lecture")
+    return {
+        "slug": link.id,
+        "url": f"{_app_origin()}/share/{link.id}",
+        "allow_tutor_chat": link.allow_tutor_chat,
+    }
+
+
+@app.patch("/lectures/{lecture_id}/share")
+async def update_share_link(
+    lecture_id: str,
+    req: ShareLinkRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    clean_id = sanitize_lecture_id(lecture_id)
+    result = await db.execute(
+        select(ShareLink).where(
+            ShareLink.lecture_id == clean_id,
+            ShareLink.created_by == user.id,
+        )
+    )
+    link = result.scalar_one_or_none()
+    if link is None:
+        raise HTTPException(status_code=404, detail="No share link exists for this lecture")
+    link.allow_tutor_chat = req.allow_tutor_chat
+    await db.commit()
+    return {
+        "slug": link.id,
+        "url": f"{_app_origin()}/share/{link.id}",
+        "allow_tutor_chat": link.allow_tutor_chat,
+    }
+
+
+@app.delete("/lectures/{lecture_id}/share")
+async def delete_share_link(
+    lecture_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    clean_id = sanitize_lecture_id(lecture_id)
+    result = await db.execute(
+        select(ShareLink).where(
+            ShareLink.lecture_id == clean_id,
+            ShareLink.created_by == user.id,
+        )
+    )
+    link = result.scalar_one_or_none()
+    if link is not None:
+        await db.delete(link)
+        await db.commit()
+    return {"success": True}
+
+
+@app.get("/share/{slug}")
+async def resolve_share_link(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Resolve an unlisted share slug to a lecture the viewer may open.
+
+    Public (no auth required): anyone holding the link may read the lecture's
+    artifacts. Returns only navigation metadata — never source URLs.
+    """
+    result = await db.execute(select(ShareLink).where(ShareLink.id == slug))
+    link = result.scalar_one_or_none()
+    if link is None:
+        raise HTTPException(status_code=404, detail="Share link not found")
+    now = datetime.now(timezone.utc)
+    if link.expires_at is not None:
+        expires_at = link.expires_at
+        if expires_at.tzinfo is None:  # SQLite stores naive UTC datetimes
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < now:
+            raise HTTPException(status_code=404, detail="Share link has expired")
+    lecture = (
+        await db.execute(select(Lecture).where(Lecture.id == link.lecture_id))
+    ).scalar_one_or_none()
+    if lecture is None:
+        raise HTTPException(status_code=404, detail="Lecture not found")
+    return {
+        "lecture_id": lecture.id,
+        "title": lecture.title,
+        "status": lecture.status,
+        "source_type": lecture.source_type,
+        "allow_tutor_chat": link.allow_tutor_chat,
+    }
 
 
 @app.get("/video-map")

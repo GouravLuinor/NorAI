@@ -14,6 +14,8 @@ const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ defaul
 const UsagePage = lazy(() => import('./pages/UsagePage').then(m => ({ default: m.UsagePage })))
 const UploadPage = lazy(() => import('./pages/UploadPage').then(m => ({ default: m.UploadPage })))
 const ProcessingPage = lazy(() => import('./pages/ProcessingPage').then(m => ({ default: m.ProcessingPage })))
+const CoursesPage = lazy(() => import('./pages/CoursesPage').then(m => ({ default: m.CoursesPage })))
+const ShareRedirect = lazy(() => import('./pages/ShareRedirect').then(m => ({ default: m.ShareRedirect })))
 const Workspace = lazy(() => import('./components/layout/Workspace').then(m => ({ default: m.Workspace })))
 const PrintPage = lazy(() => import('./components/PrintPage').then(m => ({ default: m.PrintPage })))
 
@@ -64,6 +66,8 @@ export default function App() {
               <Route path="/billing" element={<BillingPage />} />
               <Route path="/usage" element={<UsagePage />} />
               <Route path="/app" element={<UploadPage />} />
+              <Route path="/courses" element={<CoursesPage />} />
+              <Route path="/share/:slug" element={<ShareRedirect />} />
               <Route path="/process/:taskId" element={<ProcessingPage />} />
               <Route path="/workspace" element={<Workspace />} />
               <Route path="/workspace/:lectureId" element={<Workspace />} />

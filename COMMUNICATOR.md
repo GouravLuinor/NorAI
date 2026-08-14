@@ -9,8 +9,8 @@
 
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
-| **Antigravity** (IDE) | 🟢 Idle / Completed | **Production Micro-SaaS Foundation**: Roadmap + Async SQLAlchemy DB + Supabase Auth + Lemon Squeezy Webhooks + Free Trial Gating + Landing & Pricing UI | 2026-08-08 09:44 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P7 token-reduction sprint parts 1+2**: part 1 prompt compression + Gemini context caching (dormant — free-tier key has 0 cached-content quota); part 2 output-token cut — dead fields `external_knowledge`/`visual_summary` dropped + `max_output_tokens` caps (extract/visual/outline); offline suite 37/37 | 2026-08-13 UTC |
+| **Antigravity** (IDE) | 🟢 Idle / Completed | **Frontend UI/UX Redesign & Audit Execution (Architect's Sketchbook v2)**: Phase 1 (Fonts, dark contrast, declutter) + Phase 2 (Blueprint Select, 14px resizers, desktop/tablet/mobile adaptivity) + Phase 3 (Skeleton loaders, Citation hover popovers, Framer Motion 3D card flip) | 2026-08-13 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **P6.4 multi-lecture organization + sharing** (current): course collections (`/courses` CRUD + reorder + membership, migration `0004_courses_and_shares`), closed-by-default share links (`/share/{slug}`, `/lectures/{id}/share` create/toggle/revoke with `allow_tutor_chat` gate), user-scoped `/lectures`, frontend `/courses` + `/share/:slug` pages + ShareModal; 32-check offline suite + live contract green. Prior: P7 token-reduction sprint parts 1+2 (prompt compression + Gemini context caching dormant on free-tier + output-token cut, offline 37/37) | 2026-08-14 UTC |
 
 ---
 
@@ -33,6 +33,48 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-14] — OpenCode: P6.4 multi-lecture organization + sharing
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed — offline suites green, live contract OK, frontend build/lint/tests green. Per-course tutor contexts (P6.4c) deferred.
+- **Files Created**:
+  - `migrations/versions/0004_courses_and_shares.py` — `courses`, `course_lectures` (ordered membership), `share_links` (`allow_tutor_chat` `server_default=sa.true()` — Postgres-safe, NOT `sa.text("1")` which fails as boolean-vs-integer).
+  - `backend/test_courses_shares.py` [NEW, 32 checks] — registry redirected to `/tmp/norai_test_registry.json` via `_reg.REGISTRY_PATH`, tutor stubbed via `ainvoke_tutor = _stub_tutor`; zero Gemini calls.
+  - `frontend/src/stores/useCourseStore.ts`, `frontend/src/pages/CoursesPage.tsx`, `frontend/src/pages/ShareRedirect.tsx`, `frontend/src/components/doc/ShareModal.tsx`.
+- **Files Modified**:
+  - `backend/main.py` — `/courses` CRUD + membership + reorder (`PUT /courses/{id}/lectures`), `POST /lectures/{id}/share` / `PATCH` (toggle tutor) / `DELETE` (revoke), `GET /share/{slug}`, user-scoped `GET /lectures`, `POST /process` `course_id` field, `ensure_lecture_access(...)` closed-by-default gate (owner → share link → 404; `require_tutor=True` needs `allow_tutor_chat`). **Bugfixes:** `/chat` re-raises `HTTPException` (was swallowed into a 500); `GET /study-guide` registry miss falls back to `outputs` like `/outline` (so `default` resolves); `resolve_share_link` normalizes naive SQLite `expires_at` to tz-aware before the Python-side comparison.
+  - `backend/db/models.py` — Course/CourseLecture/ShareLink + `overlaps=` relationship params (silences SQLAlchemy mapper warnings).
+  - `backend/test_migrations.py` — head → 0004, course-table checks (21 checks).
+  - `backend/test_api_contract.py` — closed-by-default probes on the `default` lecture; rating case fix `again` → `Again`.
+  - `frontend/vite.config.ts` — `/courses` + `/share` proxies with the `/billing`-style HTML-bypass (SPA route shares the path with the API).
+  - `frontend/src/lib/http.ts` (`apiPatch`/`apiPut`), `src/types/index.ts` (CourseSummary/CourseLectureEntry/CourseDetail/ShareLinkInfo/ResolvedShare), `src/App.tsx` (lazy `/courses`, `/share/:slug`), `src/pages/UploadPage.tsx` (course select), `src/components/layout/DocPanel.tsx` (ShareModal in top bar), `src/components/layout/Sidebar.tsx` (Courses link).
+  - Docs: `ROADMAP.md` (P6.4 ✅ + P6 summary line), `PROJECT_PROGRESS.md`, `NOTES.md` (§3 P6 backlog), `COMMUNICATOR.md`.
+- **Verification**:
+  - Backend: `test_courses_shares.py` 32, `test_migrations.py` 21, `test_api_contract_offline.py` 15, live `test_api_contract.py` `CONTRACT OK`, plus billing/usage/auth/jobs/estimate/quiz/static/upload/usage-dashboard/webhooks suites all green.
+  - Frontend: `npm run build` (`tsc -b && vite build`) clean; `npm run lint` (oxlint) 0 errors; `npm test` 70 tests / 12 files green.
+  - Live smoke: anon `GET /courses` 401, `GET /share/<unknown>` 404, `/lectures` 200, HTML navs to `/courses` + `/share/*` serve the SPA via Vite proxy + backend `spa_middleware`.
+- **Hand-off Notes / Next Steps**: Uncommitted — commit only if the user asks. Dev-server gotcha: the dev uvicorn on :8000 runs WITHOUT `--reload`, so backend edits need `scripts/start-dev.sh stop` + `start`; never `pkill -f "uvicorn backend.main:app"` (self-kills the shell). `start-dev.sh start` may outlast tool timeouts but the setsid daemon still comes up — probe with `curl http://127.0.0.1:8000/docs`. **Decision made:** `POST /quiz/explain` is now READ-gated (`ensure_lecture_access(..., require_tutor=False)`) — it's read-only index retrieval with no LLM cost, so a share link without tutor permission may use it; covered by 2 new checks in `test_courses_shares.py` (34 total). Next P6 candidates: P6.4c per-course tutor contexts or exact-moment chunk-level video seeks. Open items unchanged (NOTES.md §3).
+
+### [2026-08-13] — Antigravity: Frontend UI/UX Redesign & Audit Implementation (Phases 1, 2, 3)
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed — all 3 phases of `UI_UX_AUDIT_REPORT.md` implemented, linted, and verified via production build.
+- **Files Created**:
+  - `frontend/src/components/ui/Select.tsx` [NEW] — accessible blueprint-styled custom combobox with drafting vellum styling, keyboard arrow navigation, focus ring, and click-outside closure.
+  - `frontend/src/components/ui/SkeletonCard.tsx` [NEW] — blueprint-themed loading skeleton placeholders (`SkeletonCard`, `NotesSkeleton`, `QuizSkeleton`, `ConceptSkeleton`) to eliminate cumulative layout shift (CLS).
+- **Files Modified**:
+  - `frontend/index.html` — added missing Google Fonts weights for `Inter` (sans) and `JetBrains Mono` (mono) to fix typography fallback (CR-02).
+  - `frontend/src/index.css` — adjusted dark mode text token variables `--color-nt3` (`#B4C8E2`) and `--color-nt4` (`#C2D4EA`) to guarantee WCAG 2.1 AA contrast ($\ge 5.5:1$) on dark navy panels (HI-01).
+  - `frontend/src/components/layout/DocPanel.tsx` — stripped `03`–`07` mono number prefixes from document panel tabs (HI-02).
+  - `frontend/src/components/layout/Sidebar.tsx` — stripped `01.`, `02.`, `03.` mono prefixes from section headers (HI-02) + integrated custom blueprint `Select` for lecture selector (LO-02).
+  - `frontend/src/pages/UploadPage.tsx` — stripped `01.`, `02.` mono prefixes from section headers (HI-02).
+  - `frontend/src/components/layout/Workspace.tsx` — expanded column resizers to 14px hit area with visual grip handles (HI-03) + implemented 3-tier viewport adaptivity for desktop (`≥1024px` 3-panel), tablet (`768px-1024px` 48px icon rail + AI overlay drawer), and mobile (`<768px` single view mode with top tab switcher & slide-over drawers) (CR-01).
+  - `frontend/src/components/doc/NotesView.tsx` — integrated `NotesSkeleton` for smooth chapter switching without layout shifts (MD-01).
+  - `frontend/src/components/quiz/CitationBox.tsx` — added interactive hover popovers displaying full transcript quote previews, quote icon, and section details (MD-03).
+  - `frontend/src/components/flashcards/FlashcardsPanel.tsx` — upgraded card flip animation to Framer Motion `motion.div` 3D spring physics (`stiffness: 280, damping: 22`) (LO-01).
+- **Verification**:
+  - `cd frontend && npm run lint` (`oxlint`): **0 errors**
+  - `cd frontend && npm run build` (`tsc -b && vite build`): **Build succeeded cleanly**
+- **Hand-off Notes / Next Steps**: Frontend UI/UX overhaul is complete. `UI_UX_AUDIT_REPORT.md` fully executed. Verified P6.4 (Multi-lecture organization & sharing) is 100% complete across backend (migration 0004, `/courses`, `/share`, 32 unit tests green) and frontend (`useCourseStore`, `CoursesPage`, `ShareModal`, `ShareRedirect`), updated `ROADMAP.md` status to ✅.
 
 ### P7 part 2 — OpenCode: output-token cost cut (dead fields + caps)
 - **Agent**: OpenCode (CLI)

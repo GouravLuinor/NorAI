@@ -25,6 +25,14 @@ export default defineConfig({
       '/threads': 'http://localhost:8000',
       '/download': 'http://localhost:8000',
       '/lectures': 'http://localhost:8000',
+      '/courses': 'http://localhost:8000',
+      // /share is BOTH an SPA route (viewer landing) and an API endpoint
+      // (slug resolution): same HTML-bypass trick as /billing and /usage.
+      '/share': {
+        target: 'http://localhost:8000',
+        bypass: (req) =>
+          (req.headers.accept ?? '').includes('text/html') ? '/index.html' : undefined,
+      },
       '/static': 'http://localhost:8000',
       '/outline': 'http://localhost:8000',
       '/video-map': 'http://localhost:8000',

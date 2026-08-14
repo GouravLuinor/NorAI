@@ -102,6 +102,14 @@ export function apiDelete<T = never, P extends string = string>(path: P, init?: 
   return request<[T] extends [never] ? ApiJson<P, 'delete'> : T>(path, { ...init, method: 'DELETE' })
 }
 
+export function apiPatch<T = never, P extends string = string>(path: P, init?: ApiOptions): Promise<[T] extends [never] ? ApiJson<P, 'patch'> : T> {
+  return request<[T] extends [never] ? ApiJson<P, 'patch'> : T>(path, { ...init, method: 'PATCH' })
+}
+
+export function apiPut<T = never, P extends string = string>(path: P, init?: ApiOptions): Promise<[T] extends [never] ? ApiJson<P, 'put'> : T> {
+  return request<[T] extends [never] ? ApiJson<P, 'put'> : T>(path, { ...init, method: 'PUT' })
+}
+
 /**
  * Error-tolerant variant for reads that fall back to a default on failure
  * (mirrors the old `apiFetch` contract of returning null instead of throwing).

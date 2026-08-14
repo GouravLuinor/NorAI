@@ -4,6 +4,7 @@ import { useLectureStore } from '../../stores/useLectureStore'
 import { apiGet } from '../../lib/http'
 import { Markdown } from '../ui/Markdown'
 import { Card, CardHeader } from '../ui/Card'
+import { NotesSkeleton } from '../ui/SkeletonCard'
 
 interface GuideChapter {
   chapter_id: number
@@ -42,7 +43,7 @@ export function StudyGuideView() {
   }, [lectureId])
 
   if (loading) {
-    return <div className="flex-1 flex items-center justify-center text-nt3 text-sm">Loading study guide…</div>
+    return <NotesSkeleton />
   }
 
   if (chapters.length === 0) {
@@ -70,7 +71,7 @@ export function StudyGuideView() {
 
       {chapters.map((ch) => (
         <section key={ch.chapter_id} className="mb-10" aria-label={ch.title}>
-          <Card className="p-6 mb-4" accent="border-l-2 border-l-np">
+          <Card className="p-6 mb-4" accent="border-l-2 border-l-npbd">
             <CardHeader icon={<BookMarked size={13} strokeWidth={1.5} />}>
               {ch.title}
             </CardHeader>

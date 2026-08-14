@@ -4,11 +4,12 @@ import { DocPanel } from './DocPanel'
 import { AIPanel } from './AIPanel'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore } from '../../stores/useQuizStore'
-import { PanelLeftOpen, HelpCircle } from 'lucide-react'
+import { PanelLeftOpen, HelpCircle, Bot, BookOpen, X, Menu } from 'lucide-react'
 import { ShortcutsModal } from '../ui/ShortcutsModal'
 import { IconButton } from '../ui/IconButton'
 import { useParams } from 'react-router-dom'
 import { useLectureStore } from '../../stores/useLectureStore'
+import { FOCUS_RING } from '../ui/shared'
 
 const SIDEBAR_MIN = 160
 const SIDEBAR_MAX = 400
@@ -28,20 +29,45 @@ export function Workspace() {
   const [tutorAiWidth, setTutorAiWidth] = useState(268)
   const [isDragging, setIsDragging] = useState(false)
 
+  // Responsive state
+  const [windowWidth, setWindowWidth] = useState<number>(
+    typeof window !== 'undefined' ? window.innerWidth : 1200
+  )
+  const [mobileTab, setMobileTab] = useState<'doc' | 'ai'>('doc')
+  const [aiDrawerOpenTablet, setAiDrawerOpenTablet] = useState(false)
+  const [sidebarDrawerOpenMobile, setSidebarDrawerOpenMobile] = useState(false)
+
   const workspaceRef = useRef<HTMLDivElement>(null)
   const draggingRef = useRef<'left' | 'right' | null>(null)
 
   useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const isMobile = windowWidth < 768
+  const isTablet = windowWidth >= 768 && windowWidth < 1024
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // A modal dialog (ShortcutsModal, Lightbox) owns Escape while open —
-      // don't also collapse the sidebar.
-      if (e.key === 'Escape' && !sidebarCollapsed && !document.querySelector('[role="dialog"]')) {
-        toggleSidebar()
+      if (e.key === 'Escape') {
+        if (sidebarDrawerOpenMobile) {
+          setSidebarDrawerOpenMobile(false)
+          return
+        }
+        if (aiDrawerOpenTablet) {
+          setAiDrawerOpenTablet(false)
+          return
+        }
+        if (!sidebarCollapsed && !isMobile && !document.querySelector('[role="dialog"]')) {
+          toggleSidebar()
+        }
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [sidebarCollapsed, toggleSidebar])
+  }, [sidebarCollapsed, toggleSidebar, sidebarDrawerOpenMobile, aiDrawerOpenTablet, isMobile])
 
   useEffect(() => {
     if (lectureId) {
@@ -68,7 +94,7 @@ export function Workspace() {
       const restored = Math.max(AI_MIN_TUTOR, Math.min(tutorAiWidth, AI_MAX))
       setAiPanelWidth(restored)
     }
-  }, [aiMode])
+  }, [aiMode, tutorAiWidth])
 
   const handleMouseDown = (side: 'left' | 'right') => (e: React.MouseEvent) => {
     e.preventDefault()
@@ -142,9 +168,139 @@ export function Workspace() {
   }, [minAiWidth])
 
   const handleSidebarToggle = () => {
-    toggleSidebar()
+    if (isMobile) {
+      setSidebarDrawerOpenMobile((prev) => !prev)
+    } else {
+      toggleSidebar()
+    }
   }
 
+  // ── Render Mobile View (< 768px) ───────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div id="main" className="flex flex-col h-screen bg-nb text-nt text-xs font-sans overflow-hidden">
+        {/* Mobile Header */}
+        <header className="flex items-center justify-between px-3 py-2 border-b border-bdr bg-ns shrink-0 z-30">
+          <IconButton
+            label="Open menu"
+            onClick={() => setSidebarDrawerOpenMobile(true)}
+            className="w-8 h-8 rounded-md bg-ns2 border border-bdr text-nt"
+          >
+            <Menu size={16} strokeWidth={1.5} />
+          </IconButton>
+
+          <div className="flex bg-nb border border-bdr rounded-lg p-0.5">
+            <button
+              type="button"
+              onClick={() => setMobileTab('doc')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition ${
+                mobileTab === 'doc' ? 'bg-ns3 text-nt shadow-ev1' : 'text-nt3'
+              }`}
+            >
+              <BookOpen size={13} strokeWidth={1.5} /> Notes
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileTab('ai')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition ${
+                mobileTab === 'ai' ? 'bg-ns3 text-nt shadow-ev1' : 'text-nt3'
+              }`}
+            >
+              <Bot size={13} strokeWidth={1.5} /> AI Tutor
+            </button>
+          </div>
+
+          <IconButton
+            label="Shortcuts"
+            onClick={() => setShortcutsOpen(true)}
+            className="w-8 h-8 rounded-md bg-ns2 border border-bdr text-nt3"
+          >
+            <HelpCircle size={15} strokeWidth={1.5} />
+          </IconButton>
+        </header>
+
+        {/* Content Area */}
+        <div className="flex flex-col flex-1 relative overflow-hidden">
+          {mobileTab === 'doc' ? <DocPanel /> : <AIPanel />}
+        </div>
+
+        {/* Mobile Sidebar Slide-Over Drawer */}
+        {sidebarDrawerOpenMobile && (
+          <div className="fixed inset-0 z-50 flex">
+            <div
+              className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
+              onClick={() => setSidebarDrawerOpenMobile(false)}
+            />
+            <div className="relative w-72 max-w-[80vw] h-full bg-nb z-10 shadow-ev3 border-r border-bdr2">
+              <Sidebar forceExpanded onToggleCollapse={() => setSidebarDrawerOpenMobile(false)} />
+            </div>
+          </div>
+        )}
+
+        <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      </div>
+    )
+  }
+
+  // ── Render Tablet View (768px – 1024px) ────────────────────────────────────
+  if (isTablet) {
+    return (
+      <div
+        id="main"
+        ref={workspaceRef}
+        className="workspace grid h-screen bg-nb text-nt text-xs font-sans rounded-xl border border-bdr2 overflow-hidden shadow-ev3 relative bg-blueprint-grid fold-marks"
+        style={{ gridTemplateColumns: sidebarCollapsed ? '48px 1fr' : `${sidebarWidth}px 1fr` }}
+      >
+        {sidebarCollapsed && (
+          <IconButton
+            label="Open sidebar"
+            onClick={handleSidebarToggle}
+            className="absolute left-2 top-2 z-30 w-8 h-8 rounded-sm bg-ns2 border border-bdr2 shadow-ev2 hover:bg-ns3 active:translate-y-[1px]"
+          >
+            <PanelLeftOpen size={14} strokeWidth={1.5} />
+          </IconButton>
+        )}
+
+        <Sidebar onToggleCollapse={handleSidebarToggle} />
+
+        <div className="flex flex-col h-full overflow-hidden relative">
+          <DocPanel />
+
+          {/* Toggle button for AI Drawer on Tablet */}
+          <button
+            type="button"
+            onClick={() => setAiDrawerOpenTablet((prev) => !prev)}
+            className={`fixed right-4 bottom-16 z-40 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-npf text-npfg shadow-ev2 font-medium hover:bg-npfh transition cursor-pointer ${FOCUS_RING}`}
+          >
+            <Bot size={15} strokeWidth={1.5} /> {aiDrawerOpenTablet ? 'Close Tutor' : 'Ask Nora'}
+          </button>
+        </div>
+
+        {/* AI Panel Slide-Over Drawer for Tablet */}
+        {aiDrawerOpenTablet && (
+          <div className="fixed inset-y-0 right-0 z-50 w-[380px] max-w-[90vw] bg-ns border-l border-bdr2 shadow-ev3 flex flex-col">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-bdr bg-ns2">
+              <span className="font-display font-medium text-xs text-nt">Nora AI Tutor</span>
+              <IconButton
+                label="Close tutor panel"
+                onClick={() => setAiDrawerOpenTablet(false)}
+                className="w-6 h-6 text-nt3 hover:text-nt"
+              >
+                <X size={14} strokeWidth={1.5} />
+              </IconButton>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <AIPanel />
+            </div>
+          </div>
+        )}
+
+        <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      </div>
+    )
+  }
+
+  // ── Render Desktop View (≥ 1024px) ─────────────────────────────────────────
   const gridColumns = sidebarCollapsed
     ? `48px 1fr ${aiPanelWidth}px`
     : `${sidebarWidth}px 1fr ${aiPanelWidth}px`
@@ -173,6 +329,7 @@ export function Workspace() {
       <DocPanel />
       <AIPanel />
 
+      {/* Resizer Separator - Left (Sidebar) */}
       {!sidebarCollapsed && (
         <div
           role="separator"
@@ -182,13 +339,16 @@ export function Workspace() {
           aria-valuemin={SIDEBAR_MIN}
           aria-valuemax={SIDEBAR_MAX}
           tabIndex={0}
-          className="absolute top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-[rgba(128,128,128,0.2)] focus-visible:outline-none focus-visible:bg-np/50 transition-colors"
-          style={{ left: `calc(${sidebarCollapsed ? 48 : sidebarWidth}px - 4px)` }}
+          className="group absolute top-0 bottom-0 z-50 w-2 flex items-center justify-center cursor-col-resize hover:bg-[rgba(128,128,128,0.15)] focus-visible:outline-none focus-visible:bg-np/50 transition-colors after:content-[''] after:absolute after:inset-y-0 after:-left-[5px] after:-right-[5px] after:z-50"
+          style={{ left: `calc(${sidebarWidth}px - 4px)` }}
           onMouseDown={handleMouseDown('left')}
           onKeyDown={handleResizeKeyDown('left')}
-        />
+        >
+          <div className="w-1 h-8 rounded-full bg-bdr2 group-hover:bg-np group-focus-visible:bg-np transition-colors" />
+        </div>
       )}
 
+      {/* Resizer Separator - Right (AI Panel) */}
       <div
         role="separator"
         aria-orientation="vertical"
@@ -197,11 +357,13 @@ export function Workspace() {
         aria-valuemin={minAiWidth}
         aria-valuemax={AI_MAX}
         tabIndex={0}
-        className="absolute top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-[rgba(128,128,128,0.2)] focus-visible:outline-none focus-visible:bg-np/50 transition-colors"
+        className="group absolute top-0 bottom-0 z-50 w-2 flex items-center justify-center cursor-col-resize hover:bg-[rgba(128,128,128,0.15)] focus-visible:outline-none focus-visible:bg-np/50 transition-colors after:content-[''] after:absolute after:inset-y-0 after:-left-[5px] after:-right-[5px] after:z-50"
         style={{ right: `calc(${aiPanelWidth}px - 4px)` }}
         onMouseDown={handleMouseDown('right')}
         onKeyDown={handleResizeKeyDown('right')}
-      />
+      >
+        <div className="w-1 h-8 rounded-full bg-bdr2 group-hover:bg-np group-focus-visible:bg-np transition-colors" />
+      </div>
 
       {/* Keyboard shortcuts help button */}
       <IconButton
