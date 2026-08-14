@@ -51,7 +51,7 @@ the 4-chars-per-token estimator:
 
 ---
 
-## 3. Context caching for long tutor conversations (in progress)
+## 3. Context caching for long tutor conversations (done — dormant on free tier)
 
 **Problem:** after 6+ turns the rolling summary + recent window dominate the tutor
 prompt; every turn re-sends the *same* static prefix (system prompt + persona +

@@ -28,6 +28,12 @@ earliest skeleton/mock-data commits are folded into the architecture parts).
 | `9a9a3db` | **P5.4** single-container Docker image (SPA served by FastAPI) |
 | `93dea03` | **P5.5–5.6** typed API client, strict TS, route code-splitting & resilience |
 | `2930a52` | **P5.8** frontend tests (Vitest) + offline API contract tests |
+| `52c5a68` / `ef55011` | **P6.1** real token streaming — `astream_events(v2)` on `/chat/stream` |
+| `167c17f` / `c02e83c` | **P6.2** SM-2 spaced repetition + Anki `.apkg` export |
+| `2ee1613` | **P6.3** click-to-video grounding — YouTube seek-map player + timestamp persistence fixes |
+| `5760bc3` | **P6.5** per-stage Gemini usage/cost dashboard |
+| `fa01920` / `dc68924` | **P7** token reduction — prompt compression + context caching + output-token cut |
+| `8c4cd74` | **P6.4 + UI/UX audit execution** — course collections + share links, and the Architect's Sketchbook v2 redesign (3 responsive tiers, skeletons, custom Select, dark-theme fixes) |
 
 **What you learned in one paragraph:** you built an end-to-end AI platform that
 turns lecture videos into structured study material. An **18-stage multimodal
@@ -35,13 +41,17 @@ pipeline** (Faster-Whisper transcription + Gemini knowledge extraction + OpenCV
 visual analysis) runs in a background thread inside a **DB-backed job queue** and
 persists progress to the database; a **LangGraph + ChromaDB RAG tutor** with
 hybrid (dense+BM25) retrieval and verified citations retrieves lecture-grounded
-context and answers conversationally; a **React workspace** with
-notes/revision/assessment/flashcards/mind-map panels polls progress and streams
-tutor answers over SSE; then you **productionized** it with Postgres, real
-Supabase auth (JWT verified via JWKS), usage metering and Lemon Squeezy webhooks;
-hardened **PDF exports** via the browser print pipeline; and finally shipped a
-**P0→P5 hardening pass**: security gates, pipeline cost cuts, billing/quota,
-retrieval evals, a restart-survivable job queue, Docker, and a test suite.
+context and answers conversationally — with **real token streaming** over SSE; a
+**React workspace** with notes/revision/assessment/flashcards/mind-map panels
+polls progress and streams tutor answers; then you **productionized** it with
+Postgres, real Supabase auth (JWT verified via JWKS), usage metering and Lemon
+Squeezy webhooks; hardened **PDF exports** via the browser print pipeline; and
+finally shipped a **P0→P7 hardening pass**: security gates, pipeline cost cuts,
+billing/quota, retrieval evals, a restart-survivable job queue, Docker, a test
+suite, **retention features** (SM-2 spaced repetition, Anki export, click-to-video
+grounding, course collections + share links, usage/cost dashboard), a **token-reduction
+sprint** (prompt compression, dormant context caching, output-token cut), and a
+frontend **UI/UX audit execution** (3 responsive tiers, skeletons, custom Select).
 
 ---
 
@@ -468,18 +478,33 @@ chat with the same conversation context.
 
 ## 2.10 `/chat/stream` — SSE streaming (the real SSE in this app)
 
+> **P6.1 (commit `52c5a68` / `ef55011`):** the endpoint now does **true token
+> streaming**. Before P6.1 the whole answer was computed up-front and replayed
+> in fake 24-char chunks; that fake version is what older copies of this tutorial
+> describe. The live code (and this section) is the P6.1+ version.
+
 `POST /chat/stream` (`backend/main.py`):
 
-1. The **entire answer is computed first** (`invoke_tutor` runs in a background
-   thread via `asyncio.to_thread`; LangGraph `graph.invoke` — no true token
-   streaming).
-2. The finished string is **replayed as SSE in 24-char chunks**, word-boundary
-   aware (extends to the next space if within 12 chars), JSON-wrapped as
-   `data: {"t": "..."}\n\n`, with a 2ms `asyncio.sleep` between frames so the UI
-   renders progressively.
-3. Final frame `data: {"final": {...}}` carries `assistant_message_id`,
+1. The LangGraph graph is driven with **`graph.astream_events(version="v2")`**
+   inside `asyncio.to_thread`. `astream_events` yields real intermediate events,
+   so we can emit tokens as the model generates them.
+2. We filter the event stream to **`on_chat_model_stream`** events whose
+   `metadata["langgraph_node"] == "generate_answer"` — i.e. the streaming tokens
+   of the actual answer node, not tool calls or the planner. Each event's
+   `event["data"]["chunk"]` is the token text, forwarded as
+   `data: {"t": "...", "frame": N}\n\n`.
+3. The answer node must call **`llm.astream(...)`** (streaming mode) for these
+   events to fire — this is the contract between `tutor/nodes.py` and the
+   endpoint.
+4. The cache path is handled before streaming: if the question/thread has a
+   cached answer (P7 "context caching" / history dedupe), the **whole cached
+   answer replays as one frame** with `"final": true`, so the UI is consistent.
+5. If no token events were captured at all, we fall back to sending the full
+   final answer as a single `{"t": ...}` frame so the user still gets a reply.
+6. Final frame `data: {"final": {...}}` carries `assistant_message_id`,
    `retrieved_chunks`, `retrieved_images`, `chapter_id`, `thread_id`; then
-   `data: [DONE]`.
+   `data: [DONE]`. The `frame` counter + final-answer check lets the frontend
+   skip the replay-once-has-answer dedupe.
 
 Headers: `media_type="text/event-stream"`, `Cache-Control: no-cache`,
 `X-Accel-Buffering: no`.
@@ -487,8 +512,10 @@ Headers: `media_type="text/event-stream"`, `Cache-Control: no-cache`,
 On the frontend, `sendChatMessageStream` in `lib/chatApi.ts` is an **async
 generator**: it reads `res.body.getReader()` + `TextDecoder`, buffers `\n`
 frames, skips non-`data:` lines, and yields string chunks or a `{type:'final'}`
-object. This is a great example of client-side SSE parsing without
-`EventSource` (which can't POST or send auth headers easily).
+object. The client keeps the frame counter, and if it already received the full
+answer as a single replay frame it won't re-render duplicate text. This is a
+great example of client-side SSE parsing without `EventSource` (which can't POST
+or send auth headers easily).
 
 ## 2.11 Threads: two storage layers
 
@@ -515,11 +542,14 @@ The whole app is wrapped in an `AppErrorBoundary` (themed recovery panel).
 Routes in `src/App.tsx`:
 
 | Route | Component |
-|---|---|
+|---|---|---|
 | `/` | Landing page (marketing) |
 | `/pricing` | Pricing page |
 | `/billing` | Billing page (P2) |
+| `/usage` | Usage/cost dashboard (P6.5) |
 | `/app` | Upload page |
+| `/courses` | Course collections (P6.4) |
+| `/share/:slug` | Public share redirect (P6.4) |
 | `/process/:taskId` | Pipeline progress |
 | `/workspace/:lectureId` | The 3-pane workspace |
 | `/print` | Print/PDF route (`?type=…&lecture_id=…`) |
@@ -541,9 +571,20 @@ sidebar. The panels:
 - **Sidebar** — lecture `<select>`, chapter list, thread list, quota badge,
   theme toggle.
 - **DocPanel** — tab bar (Notes / Revision / Assessment / Guide / Mind map),
-  search, PDF + interactive-export buttons.
+  search, PDF + interactive-export buttons. Since P6.4 the top bar also has a
+  **Share** button opening `ShareModal` (creates the share link and copies it).
 - **AIPanel** — tutor chat / quiz / flashcards, swapped with Framer transitions;
   width adapts between tutor mode (narrow) and quiz/cards mode (wide).
+
+**Responsive tiers (UI/UX audit, in `8c4cd74`):** the workspace adapts to three
+breakpoints — desktop (≥1024px) shows all three panes; tablet (768–1023px) shows
+sidebar + doc with the AI panel in a slide-over drawer (a "AI" floating button
+opens it, Escape/overlay closes); mobile (<768px) shows a single pane with
+sidebar/doc/AI each becoming slide-over drawers, plus a floating **"Watch video"**
+button (P6.3) that opens the docked YouTube player. These states share the same
+components — the layout switches containers (CSS grid ↔ overlays) while panels
+stay mounted, so state isn't lost. `PrintPage` is a separate route for clean
+PDF/export output.
 
 ## 3.3 Zustand stores & state propagation
 
@@ -555,6 +596,8 @@ sidebar. The panels:
 | `useQuizStore` | AI mode, quiz session, answers/confidences, flashcards, ratings |
 | `useAuthStore` | Supabase user/token + `refreshQuota()` (Part 5) |
 | `useTutorSettingsStore` | persona, persisted per-lecture |
+| `useCourseStore` | course collections + memberships (P6.4) |
+| `useVideoStore` | current playback time / seek target / video open state (P6.3) |
 | `useToastStore` | toasts |
 
 **State propagation:** `lectureId` comes from the URL → `setActiveLecture` →
@@ -605,12 +648,20 @@ There's also a **Cancel** control → `POST /process/{id}/cancel`.
 
 ## 3.7 Flashcards
 
-- Cards rated Again/Hard/Good/Easy, with a **3D flip** via CSS
-  (`perspective-1000`, `transform-style-3d`, `rotate-y-180`, `backface-hidden`).
-- Ratings persist keyed by **`getCardKey()` — a SHA-256 hash of the normalized
-  front text** (`lib/hash.ts`), so they survive reloads even if deck structure
-  changes.
-- Filter to missed-only; stats footer derives Reviewed/Got it/Almost/Left from
+- Cards rated Again/Hard/Good/Easy, with a **3D flip** via Framer Motion
+  (P6.2) driving `rotateY` on the card body (`perspective-1000` on the
+  container), instead of the older pure-CSS `rotate-y-180`/`backface-hidden`
+  approach.
+- **P6.2 SM-2 spaced repetition** (`frontend/src/lib/flashcardSchedule.ts`): each
+  rating advances the card's interval/repetitions/ease and moves it to the next
+  due date; a "Due" filter shows cards whose due time has passed. Ratings persist
+  keyed by **`getCardKey()` — a SHA-256 hash of the normalized front text**
+  (`lib/hash.ts`), so they survive reloads even if deck structure changes.
+- **Anki export** (P6.2): "Export .apkg" (`useQuizStore.exportAnkiDeck`)
+  serializes the deck to Anki's `.apkg` format — a from-scratch writer that
+  builds a SQLite archive with a JSON `collection.anki2` — so cards import into
+  Anki with their SM-2 scheduling, with no third-party package.
+- Filter to missed/due; stats footer derives Reviewed/Got it/Almost/Left from
   the current deck's card keys only.
 
 ## 3.8 Concept map (mind map)
@@ -631,22 +682,26 @@ All tokens live in `src/index.css` under a Tailwind 4 `@theme` block:
   (`nt`–`nt4`), red-pencil accent (`np`), hard-offset "blueprint" shadows
   (`3px 3px 0`).
 - **"Blueprint at Night"** (dark): luminous Prussian `#0B1E3A`, cyan ink,
-  light-edge shadows.
+  light-edge shadows. The UI/UX audit (P6.4, `8c4cd74`) fixed dark-theme
+  leftovers — code blocks/`<pre>` surfaces now get `--color-npbd` (a dark code
+  background) instead of staying light, so dark mode has no glaring white slabs.
 - **Type ramp** from `text-3xs` to `text-44`, plus a `text-hero` serif token.
 - Signature decorative CSS: `.bg-blueprint-grid`, `.noise` (paper grain),
   `.fold-marks`, `.spec-label`, `.ripple`, `.scroll-highlight`, and a `@media
   print` block.
 - Text-accent utilities (`text-np` etc.) get a tuned `-t` variant for 4.5:1
   contrast while solid fills stay saturated.
+- Fonts: the audit added **Inter** for UI + **JetBrains Mono** for code (loaded
+  via `@fontsource` in the theme), replacing system-font fallbacks.
 
 ## 3.10 Vite dev proxy
 
 `vite.config.ts` proxies ~20 API paths (`/process`, `/chat`, `/quiz`,
-`/notes`, `/study-guide`, `/quota`, `/billing`, `/concept-map`, …) to
-`localhost:8000`, so the frontend uses relative URLs and avoids CORS during dev.
-It `envDir: '..'` so Vite reads the repo-root `.env`, and it `bypass`es
-text/html navigations to `/index.html` (so the SPA router and API share the
-origin without a `/billing` collision).
+`/notes`, `/study-guide`, `/quota`, `/billing`, `/concept-map`, `/courses`,
+`/share`, `/video-map`, …) to `localhost:8000`, so the frontend uses relative
+URLs and avoids CORS during dev. It `envDir: '..'` so Vite reads the repo-root
+`.env`, and it `bypass`es text/html navigations to `/index.html` (so the SPA
+router and API share the origin without a `/billing` collision).
 
 ---
 
@@ -703,6 +758,10 @@ payment provider.
   `/quota` through `useAuthStore.refreshQuota` (which only emits a new `user`
   object when the quota values actually change — otherwise an infinite
   refetch loop, a real P2 bug).
+- **P6.5 usage/cost dashboard** — `backend/usage_ledger.py` aggregates the same
+  per-stage rows into `GET /usage` (breakdown by lecture/stage/date, estimated
+  $ cost), rendered by `UsagePage.tsx`. This is read-only metering — the same
+  data that `usage_logs` already captures, rolled up for the user.
 
 ## 4.4 Landing & pricing pages
 
@@ -723,6 +782,23 @@ gate on auth. These were later polished in `f46b949` (Part 7).
   all-difficulty quiz, overriding difficulty/missed/in-progress quizzes.
 - **Flashcard stats** now derive from the current deck's card keys only.
 - **Tutor dedupe window** hardened in `backend/dependencies.py`.
+
+## 4.6 Courses & share links (P6.4)
+
+- **Course collections** — `courses` + `course_lectures` tables; a lecture
+  belongs to zero-or-one course via `course_id`. `POST /courses`, `GET /courses`,
+  `POST /courses/{id}/lectures`, and `GET /courses/{id}` return course info plus
+  its lectures. **Closed-by-default access:** a lecture is only returned to the
+  owning user — reading a `course_id` you don't own or that isn't public fails
+  closed. `CoursesPage.tsx` + `useCourseStore.ts` render the collection UI.
+- **Share links** — `share_links` table stores a slug (`secrets.token_urlsafe(12)`
+  unguessable id, used as the PK) + owner + optional `expires_at`. The
+  **`ShareModal`** in DocPanel calls `POST /lectures/{id}/share` to mint a link;
+  a **public** `GET /share/{slug}` returns a *sanitized* summary (title, PDF URL,
+  few questions) with **no auth** and no data leak. `ShareRedirect.tsx` opens the
+  public share page; the PDF route supports `?share=slug` for an unauthenticated
+  PDF view. Public endpoints deliberately exclude quiz answers, raw transcripts,
+  and the tutor.
 
 ---
 
@@ -907,10 +983,17 @@ foundation of the paid/trial monetization model.
 **Schema management: Alembic since P4.3.** The app no longer uses
 `Base.metadata.create_all` at boot. `backend/db/migrate.py:run_migrations()`
 runs `alembic upgrade head` on every startup (idempotent), driven by
-`alembic.ini` + `migrations/`:
-`0001_initial_schema` (the 5 tables) and `0002_lecture_pipeline_job_columns`
-(adds the P4.1 job-queue columns: `stage`, `stage_message`, `progress`,
-`attempts`, `heartbeat_at`, `queued_at`, `started_at`, `cancel_requested`).
+`alembic.ini` + `migrations/`. Migration revisions (newest last):
+
+- `0001_initial_schema` — the base 5 tables.
+- `0002_lecture_pipeline_job_columns` — adds the P4.1 job-queue columns
+  (`stage`, `stage_message`, `progress`, `attempts`, `heartbeat_at`,
+  `queued_at`, `started_at`, `cancel_requested`).
+- `0003_usage_log_columns` — adds `model`, `calls`, `input_tokens`,
+  `output_tokens` to `usage_logs` (P6.5 per-stage cost ledger).
+- `0004_courses_and_shares` — the `courses`, `course_lectures`, `share_links`
+  tables + `lectures.course_id` (P6.4).
+
 `test_migrations.py` covers fresh-create + upgrade from a legacy `create_all`
 DB. `create_all` only *creates* missing tables; it can't alter existing ones —
 that's exactly why Alembic was introduced the moment the schema changed (see
@@ -918,7 +1001,7 @@ interview Q below).
 
 ## 5.9 The schema (`models.py`)
 
-5 tables with FK relationships and cascade deletes:
+8 tables with FK relationships and cascade deletes:
 
 ```
 users 1──1 subscriptions      (user_id unique, cascade delete)
@@ -926,16 +1009,23 @@ users 1──N lectures           (cascade delete)  ← also the job-queue row (
 users 1──N usage_logs         (cascade delete)
 lectures 1──N usage_logs      (cascade delete)
 webhook_events                (idempotency key = Lemon Squeezy event id)
+users 1──N courses            (P6.4; cascade delete)
+courses 1──N course_lectures  (P6.4)
+users 1──N share_links        (P6.4; owner, slug, expires_at)
+lectures 0..1──1 course_id    (P6.4; set on lecture)
 ```
 
 - `User.subscription` is `uselist=False` (one-to-one).
 - Foreign keys use `ondelete="CASCADE"` so deleting a user cleans up all their
   data — required by data-privacy law and plain good hygiene.
 - `usage_logs` store per-stage token counts + `estimated_cost_usd` — used to
-  meter real LLM spend per user.
+  meter real LLM spend per user; since `0003` also record `model` + `calls`.
 - `Lecture` doubles as the **job queue row**: `status`
   (`queued|processing|completed|failed|cancelled`), `stage`, `progress`,
   `attempts`, `heartbeat_at`, `cancel_requested` (P4.1).
+- `Course`, `CourseLecture`, `ShareLink` (P6.4) model collections and public
+  share links — a `ShareLink` row can optionally carry `expires_at`, and a
+  `Course` has `is_public` toggling whether non-members can read its lectures.
 
 ## 5.10 Frontend Supabase client
 
@@ -1120,9 +1210,9 @@ A pure-frontend polish commit, but the concepts matter:
 
 ---
 
-# Part 8 — P0→P5 Hardening (the production pass)
+# Part 8 — P0→P7 Hardening (the production pass)
 
-After the feature work, five hardening phases shipped (see the commit table).
+After the feature work, several hardening phases shipped (see the commit table).
 These are the concepts interviewers will probe most:
 
 ## 8.1 P0 — Security hardening
@@ -1201,6 +1291,56 @@ statuses, and a golden-QA eval harness (`tutor/evals/`).
   migrations, supervisor, GC all run). `scripts/run-tests.sh` runs every
   offline `test_*.py` (the live-server probe stays excluded).
 
+## 8.7 P6 — Retention (streaming, SRS, video grounding, courses/sharing, usage)
+
+- **P6.1 real token streaming** — `/chat/stream` drives the graph with
+  `graph.astream_events(version="v2")` and forwards only the
+  `on_chat_model_stream` events from the answer node (`metadata['langgraph_node']
+  == 'generate_answer'`), so the answer node must call `llm.astream(...)`
+  (see 2.10). Cached/stream-miss answers replay as a single frame with a
+  `final` flag; the frontend dedupes by frame counter.
+- **P6.2 spaced repetition + Anki** — SM-2 scheduling (`frontend/src/lib/flashcardSchedule.ts`)
+  with per-rating due-date progression; a "Due" filter; `.apkg` export
+  (`useQuizStore.exportAnkiDeck`, a from-scratch Anki writer — SQLite archive +
+  JSON collection, no third-party package). Framer Motion 3D card flip replaced
+  the CSS-only flip (see 3.7).
+- **P6.3 click-to-video grounding** — the visual stage persists per-chapter
+  YouTube seek maps (`backend/video_map.py`, `lecture_video_seek_maps.json`);
+  the frontend derives per-section seek targets, and a docked player
+  (`useVideoStore`) seeks on chapter change and on "Watch video" buttons
+  (see 3.2). This shipped with a timestamp-persistence bugfix (visual stage no
+  longer overwrites the DB timestamp with a placeholder).
+- **P6.4 courses & sharing** — course collections + closed-by-default share
+  links (see 4.6). Migrations `0003`/`0004`. Frontend: `CoursesPage`,
+  `ShareModal`, `ShareRedirect`, `useCourseStore`, custom `Select`.
+- **P6.5 usage/cost dashboard** — `backend/usage_ledger.py` aggregates the
+  per-stage `usage_logs` (now with `model`/`calls` columns, migration `0003`)
+  into `GET /usage`; `UsagePage.tsx` renders cost/usage breakdowns (see 4.3).
+
+## 8.8 P7 — Token reduction (see `docs/token_reduction.md`)
+
+- **Prompt compression** — the tutor's system prompt was slashed to a lean
+  instruction set (~1.5k → ~0.3k tokens); retrieval prompts trimmed; default
+  answer length shortened.
+- **Context caching** — `context_caching_config` wired for the system prompt,
+  so repeated tutor calls hit the cached prefix. Implemented but currently
+  **dormant**: the app runs on Gemini's free tier where caching isn't enabled,
+  so the flag is off by default and can be toggled on a paid plan.
+- **Output-token cut** — `max_output_tokens` lowered across pipeline/tutor
+  calls and the `/chat` temperature raised slightly to leaner phrasing; verified
+  via a before/after cost run in `docs/token_reduction.md`.
+
+## 8.9 UI/UX audit execution
+
+The frontend redesign driven by `UI_UX_AUDIT_REPORT.md` shipped in `8c4cd74`
+(see Part 3 for details): three responsive tiers for the workspace (desktop /
+tablet slide-over / mobile single-pane), skeleton loading states across views,
+a custom keyboard-accessible `Select` replacing the native `<select>` on
+UploadPage, dark-theme code surfaces (`--color-npbd`) and contrast fixes,
+Inter + JetBrains Mono fonts, and the course/share pages. Verified by
+70 Vitest tests, backend `test_courses_shares.py` (37 checks) + `test_migrations.py`
+(21 checks), oxlint clean, and `tsc -b`/`vite build` green.
+
 ---
 
 ## Concepts Glossary
@@ -1264,6 +1404,16 @@ statuses, and a golden-QA eval harness (`tutor/evals/`).
 | **Code splitting** | `React.lazy` — load a route's JS only when visited (P5.6) |
 | **Typed API client** | One wrapper deriving response types from the OpenAPI schema (P5.5) |
 | **Vitest** | Fast Vite-native JS test runner (P5.8) |
+| **SM-2** | Spaced-repetition algorithm — interval/repetitions/ease from a rating (P6.2) |
+| **`.apkg`** | Anki's package format — SQLite archive + JSON collection (P6.2) |
+| **`astream_events`** | LangGraph's async event stream — yields `on_chat_model_stream` for token streaming (P6.1) |
+| **Seek map** | Per-chapter YouTube timestamp→section map used for click-to-video (P6.3) |
+| **Course** | User-owned collection of lectures (`courses`/`course_lectures`, P6.4) |
+| **Share link** | Slug-keyed public URL exposing only sanitized content (P6.4) |
+| **Closed-by-default** | Access model — data is private unless explicitly shared (P6.4) |
+| **Context caching** | Reusing a cached prompt prefix across calls to cut input tokens (P7; dormant) |
+| **Prompt compression** | Shrinking system/user prompts to reduce token cost (P7) |
+| **Skeleton loading** | Placeholder shimmer while async data loads (UI/UX audit) |
 
 ---
 
@@ -1306,16 +1456,23 @@ docker build -t norai . && docker compose up -d   # P5.4 single-container
 - `backend/auth.py` — JWT verification + auth dependencies
 - `backend/db/database.py` — async engine + session
 - `backend/db/migrate.py` + `migrations/` — Alembic schema migrations (P4.3)
-- `backend/db/models.py` — 5-table schema (+ Lecture job-queue columns)
-- `backend/usage.py` / `backend/estimator.py` / `backend/ratelimit.py` — metering, cost estimate, rate limits (P1/P2)
+- `backend/db/models.py` — 8-table schema (+ Lecture job-queue columns, courses/shares)
+- `backend/usage.py` / `backend/usage_ledger.py` / `backend/estimator.py` / `backend/ratelimit.py` — metering, cost dashboard, estimate, rate limits (P1/P2/P6.5)
 - `backend/logging_config.py` / `tutor/llm.py` — structured logs + LLM usage tracking (P5.1)
 - `backend/routers/webhooks.py` — Lemon Squeezy billing events
+- `backend/video_map.py` — per-chapter YouTube seek-map extraction (P6.3)
+- `tutor/cache.py` — answer-cache helpers used by streaming (P6.1/P7)
 - `tutor/graph.py`, `tutor/nodes.py`, `tutor/nodes_retrieval.py`, `tutor/retriever.py`, `tutor/bm25.py`, `tutor/citations.py`, `tutor/embedding.py`, `tutor/memory.py` — RAG tutor
 - `tutor/evals/` — golden-QA eval harness (P3)
-- `frontend/src/stores/*` — Zustand stores (auth, lecture, chapter, thread, quiz)
+- `frontend/src/stores/*` — Zustand stores (auth, lecture, chapter, thread, quiz, course, video)
 - `frontend/src/lib/http.ts` — typed API client (P5.5)
 - `frontend/src/components/ui/Markdown.tsx` — shared markdown renderer (P5.6)
 - `frontend/src/components/AppErrorBoundary.tsx` — app-level error boundary (P5.6)
+- `frontend/src/pages/CoursesPage.tsx` + `components/ui/Select.tsx` — course collections UI + custom a11y select (P6.4)
+- `frontend/src/components/doc/ShareModal.tsx` + `pages/ShareRedirect.tsx` — share-link minting + public share view (P6.4)
+- `frontend/src/pages/UsagePage.tsx` — usage/cost dashboard (P6.5)
+- `frontend/src/lib/flashcardSchedule.ts` (SM-2) + `stores/useQuizStore.ts` (`exportAnkiDeck`, P6.2)
+- `frontend/src/components/video/VideoPlayer.tsx` + `lib/video.ts` + `stores/useVideoStore.ts` — click-to-video (P6.3)
 - `frontend/src/lib/supabaseClient.ts` — supabase-js client
 - `frontend/src/lib/authHeaders.ts` — Bearer injection
 - `frontend/vite.config.ts` — `envDir: '..'` + proxy
@@ -1459,9 +1616,12 @@ to slices.
 **Q: How does the frontend receive streaming tutor answers?**
 A: `sendChatMessageStream` is an async generator over `fetch` + `ReadableStream`
 (`body.getReader()` + `TextDecoder`), parsing `data:` SSE frames. We avoid
-`EventSource` because it can't POST or set auth headers easily. The backend
-precomputes the whole answer then replays it in 24-char word-aware chunks — it's
-simulated streaming, not true token streaming.
+`EventSource` because it can't POST or set auth headers easily. On the backend
+(P6.1) the answer node calls `llm.astream(...)` and the endpoint drives the
+graph with `graph.astream_events(version="v2")`, forwarding the
+`on_chat_model_stream` events from the answer node — so the UI renders **real
+tokens as they're generated**, not a replay. (Pre-P6.1 this was simulated: the
+whole answer was computed then replayed in 24-char word-aware chunks.)
 
 **Q: What are design tokens and why do they matter?**
 A: Centralized style values in `index.css` (`nb` parchment background, `nt` ink
@@ -1599,7 +1759,8 @@ A: `create_all` only creates missing tables — it can't alter existing ones. It
 was fine for greenfield dev, but the moment the schema changed (P4.1 added the
 job-queue columns to `lectures`) we introduced **Alembic**: `backend/db/migrate.py`
 runs `alembic upgrade head` on every startup (idempotent), with
-`migrations/versions/0001_initial_schema` + `0002_lecture_pipeline_job_columns`.
+`migrations/versions/0001_initial_schema`, `0002_lecture_pipeline_job_columns`,
+`0003_usage_log_columns`, and `0004_courses_and_shares` (P6.4/6.5).
 The migration also absorbs pre-Alembic DBs created by `create_all`. Now schema
 changes are versioned, ordered, and reversible — and `test_migrations.py`
 covers fresh-create + legacy-upgrade. This is a great "when did you outgrow

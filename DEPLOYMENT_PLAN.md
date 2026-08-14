@@ -53,6 +53,35 @@ For the initial stage (**4–5 demo users/testers**, negligible background traff
 | **Monitoring** | GlitchTip Free / Better Stack / Sentry Free | **$0.00** | Error tracking & uptime pinging |
 | **TOTAL INITIAL COST** | | **~$6.00 – $10.00 / month** | |
 
+> **Note on compute**: the MVP is deployed to an **already-owned Hostinger KVM 1 VPS** (1 vCPU / 4 GB / 50 GB), so the backend-compute line item is effectively **$0 additional**. Marginal monthly cost = Supabase Free ($0) + Gemini usage + domain (already owned). See §0.
+
+---
+
+## 0. Decisions & Agreed Deployment Path (2026-08-14)
+
+Agreed with the project owner for the initial live deployment. This path anchors the rest of the document's step-by-step instructions.
+
+| Decision | Choice | Rationale |
+| :--- | :--- | :--- |
+| **Compute** | Existing **Hostinger KVM 1 VPS** (1 vCPU / 4 GB / 50 GB) | Already owned — paid-for compute, no extra PaaS cost. |
+| **Topology** | **Single-container** (Option B, §1) | The repo's `Dockerfile` already builds the Vite SPA into the FastAPI image (`NORAI_SPA_DIST`); one origin ⇒ zero CORS config in prod. |
+| **Frontend hosting** | None separate — served by FastAPI itself | No Vercel / Cloudflare Pages needed at this scale. |
+| **TLS / reverse proxy** | **Caddy** on the VPS (Let's Encrypt; Cloudflare DNS module or origin cert for Full-strict) | Simplest automatic TLS termination + renewal. |
+| **DNS** | Cloudflare (free) proxy; single `A` record `app.<your-domain>` → VPS IP | Only one record needed for a single-origin deployment. |
+| **Database** | **Supabase Postgres (free tier)** | Managed Postgres + daily backups; zero RAM pressure on the 4 GB VPS. |
+| **Auth** | **Supabase Auth** | Already hard-wired in `backend/auth.py` (JWKS/JWT); `NORAI_DEV_INSECURE_AUTH=0` in prod. |
+| **Object storage** | Local `outputs/` on a VPS volume (docker named volume) | Under 50 GB at demo scale; nightly backup job (§6.5). |
+
+### VPS fit assessment (KVM 1 — 1 vCPU / 4 GB / 50 GB)
+- **RAM**: adequate at `MAX_CONCURRENT_PIPELINES=1` (existing default, root `config.py`).
+- **vCPU**: the bottleneck. `faster-whisper` + `ffmpeg` + `opencv` are CPU-bound; long-lecture transcription will be slow. Heartbeat-based stuck-protection (`PIPELINE_HEARTBEAT_INTERVAL_SEC=30`) prevents false failures. Acceptable for 4–5 demo users; upgrade to KVM 2 if it becomes the constraint.
+- **Storage**: sufficient; `outputs/` is regenerable/throwaway.
+
+### Queued pre-deploy code fixes (part of Phase 1)
+1. `.env.production` is a stub — fill with real values (§5 Phase 1).
+2. CORS allowlist in `backend/main.py` is localhost-only — add the prod origin.
+3. `/docs` + OpenAPI is public — gate behind a prod env flag.
+
 ---
 
 ## 1. Production Architecture
@@ -63,7 +92,7 @@ NorAI consists of a **FastAPI backend** (orchestrating an 18-stage lecture proce
 
 NorAI supports two production topology options:
 
-#### Option A: Decoupled SPA + PaaS Backend (Recommended for Web SaaS)
+#### Option A: Decoupled SPA + PaaS Backend (Deferred — scale-out path)
 * **Frontend**: React 19 SPA deployed on **Vercel** or **Cloudflare Pages**.
 * **Backend**: Dockerized FastAPI application running on **Railway**, **Render**, or a **Hetzner VPS**.
 * **Database**: Managed **Supabase PostgreSQL**.
@@ -71,10 +100,10 @@ NorAI supports two production topology options:
 * **Storage**: **Cloudflare R2** (S3-compatible) or persistent volume mount for `outputs/`.
 * **Why**: Blazing fast SPA loading via global CDN; backend scale is isolated from static asset delivery; deployment triggers for frontend and backend are completely decoupled.
 
-#### Option B: Single-Container Deployment (Simplest Operations)
+#### Option B: Single-Container Deployment (AGREED PATH)
 * **Frontend + Backend**: Single Docker container running FastAPI with Vite SPA built into `/app/frontend/dist` (supported out-of-the-box by NorAI's `Dockerfile` and `NORAI_SPA_DIST` environment variable).
-* **Host**: **Railway**, **Render**, **DigitalOcean App Platform**, or **Hetzner VPS**.
-* **Why**: Zero CORS setup; single deployment target; domain management is effortless.
+* **Host**: **Hostinger KVM 1 VPS** (owned). Railway, Render, DigitalOcean App Platform, or Hetzner VPS remain valid alternatives if the VPS were not available.
+* **Why**: Zero CORS setup; single deployment target; domain management is effortless. Matches the repo's Dockerfile exactly — no new build machinery required.
 
 ---
 
@@ -88,16 +117,17 @@ NorAI supports two production topology options:
 
 | Environment | Frontend URL | Backend API URL | DB Instance |
 | :--- | :--- | :--- | :--- |
-| **Production** | `https://app.norai.ai` (or `https://norai.ai`) | `https://api.norai.ai` | Supabase Production DB (`norai-prod`) |
-| **Staging** | `https://staging.norai.ai` | `https://api-staging.norai.ai` | Supabase Staging DB (`norai-staging`) |
+| **Production (AGREED)** | `https://app.<your-domain>` | **same origin** (SPA served by FastAPI — no separate API subdomain) | Supabase Production DB (`norai-prod`) |
+| **Staging (later)** | `https://staging.<your-domain>` | `https://api-staging.<your-domain>` (if decoupled) | Supabase Staging DB (`norai-staging`) |
 | **Local Dev** | `http://localhost:5173` | `http://localhost:8000` | Local SQLite / Supabase Local Docker |
+
+> The three-way `app`/`api`/`staging` split shown originally assumes the decoupled Option A. The agreed MVP uses **one subdomain only** (`app.<your-domain>`), because the single-container build serves SPA + API on one origin. Re-introduce `api.`/`staging.` only when moving to Option A.
 
 ### DNS & SSL Setup (Cloudflare)
 1. Add custom domain to Cloudflare. Set Nameservers at your domain registrar to Cloudflare's.
 2. SSL/TLS Encryption Mode: Set to **Full (strict)**.
 3. Configure CNAME / A records:
-   - `CNAME @ -> cname.vercel-dns.com` (or Cloudflare Pages target)
-   - `CNAME api -> railway.app` (or server IP `A api -> 1.2.3.4`)
+   - `A app -> <VPS_IP>` (AGREED PATH; proxied via Cloudflare) — or `CNAME @ -> cname.vercel-dns.com` (Option A frontend) and `CNAME api -> railway.app` (Option A backend).
 4. Enable HTTP/2, HTTP/3, and Automatic HTTPS Rewrites.
 
 ---
@@ -115,11 +145,13 @@ NorAI supports two production topology options:
 
 ### Provider Evaluation for Backend Container
 
-1. **Railway (Top Recommendation for Fast MVP Launch)**:
+> **Agreed**: the MVP runs on the already-owned **Hostinger KVM 1 VPS** (single-container). The evaluations below are kept as reference for the case where the VPS isn't used / when scaling out.
+
+1. **Railway (Fast MVP Launch, if not self-hosting)**:
    - **Pros**: Direct GitHub integration, automatic Docker builds, persistent volume support, zero server setup, easy env management.
    - **Cons**: $5 minimum project cost after trial.
-2. **Hetzner Cloud VPS (Top Recommendation for Cost & CPU Performance)**:
-   - **Pros**: CX22 instance (2 vCPU, 4 GB RAM, 40 GB NVMe) for only **€4.50/mo (~$5.00)**. Blazing fast CPU performance for `faster-whisper` and `ffmpeg`.
+2. **Hetzner Cloud VPS / any bare VPS (Cost & CPU Performance)**:
+   - **Pros**: CX22 instance (2 vCPU, 4 GB RAM, 40 GB NVMe) for only **€4.50/mo (~$5.00)**. Blazing fast CPU performance for `faster-whisper` and `ffmpeg`. The user's Hostinger KVM 1 is the same class of infra, just with a single vCPU — same manual-Docker-Compose + reverse-proxy workflow applies.
    - **Cons**: Requires manual Docker Compose setup, Caddy reverse proxy, and basic Linux administration.
 3. **Render**:
    - **Pros**: Good UI, smooth Git workflow.
@@ -131,6 +163,8 @@ NorAI supports two production topology options:
 ---
 
 ## 4. Financial Cost Projections
+
+> **Agreed-path adjustment**: backend compute is the already-owned Hostinger VPS, so deduct the "Backend Compute" line from every scenario below until the VPS is replaced/upgraded or extra capacity is added.
 
 ### Detailed Monthly Cost Breakdown by User Scale
 
@@ -208,7 +242,10 @@ SUPABASE_JWT_SECRET=your-supabase-jwt-secret
 DATABASE_URL=postgresql+asyncpg://postgres:[YOUR-PASSWORD]@db.xyzyourproject.supabase.co:5432/postgres
 
 # Frontend & CORS Config
-VITE_API_BASE_URL=https://api.norai.ai
+# Single-container / same-origin: leave VITE_API_BASE_URL EMPTY so the SPA uses
+# relative paths against the same origin (frontend/src/lib/http.ts). Set it only
+# if you move to the decoupled Option A.
+VITE_API_BASE_URL=
 VITE_SUPABASE_URL=https://xyzyourproject.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
 
@@ -252,6 +289,10 @@ docker run -d --name norai_prod_test \
 curl -I http://localhost:8000/docs
 ```
 
+#### 4. Apply the queued pre-deploy code fixes (§0)
+1. **CORS**: in `backend/main.py`, add the prod origin (`https://app.<your-domain>`) to the `allow_origins` list while keeping the localhost dev entries.
+2. **Gate `/docs`**: disable the OpenAPI routes (`docs_url=None, redoc_url=None, openapi_url=None`) unless an env flag (e.g. `NORAI_ENV != "production"`) is set, so Swagger is not public in prod.
+
 ---
 
 ### Phase 2: Cloud Infrastructure & Database Setup
@@ -262,23 +303,36 @@ curl -I http://localhost:8000/docs
 3. Go to **Authentication -> Providers** and configure Email/Password or Google OAuth.
 4. Go to **Database -> Connection String** and copy the URI (`postgresql://postgres:[password]@db.[ref].supabase.co:5432/postgres`).
 
-#### 2. Deploy Backend Container (Option A: Railway)
-1. Log in to [Railway.app](https://railway.app) and create a new project from your GitHub Repository.
-2. Select the Dockerfile build strategy.
-3. Add environment variables listed in `.env.production`.
-4. Add a **Persistent Volume** mounted to `/app/outputs` (Size: 10 GB).
-5. Generate a public domain (e.g. `norai-backend-production.up.railway.app`).
+#### 2. Deploy Single-Container to the VPS (AGREED PATH)
+1. SSH into the Hostinger KVM 1 VPS.
+2. Install Docker + docker-compose plugin (official convenience scripts) and **Caddy**.
+3. Clone/push the repo onto the VPS (e.g. `/srv/norai`).
+4. Create `/srv/norai/.env` from the `.env.production` values.
+5. Run the single container with the outputs volume mounted:
+   ```bash
+   docker compose up --build -d
+   ```
+   (`docker-compose.yml` already mounts the `norai_outputs` volume at `/app/outputs`.)
+6. Point Caddy at the container: reverse-proxy `app.<your-domain>` → `http://127.0.0.1:8000`; use the Cloudflare DNS module or an origin cert for Let's Encrypt under Cloudflare proxy (Full-strict).
+7. Verify: `curl https://app.<your-domain>/docs` returns 200.
 
-#### 3. Deploy Frontend SPA (Option A: Vercel)
+#### 3. Deploy Frontend SPA (Option A: Vercel) — NOT used in the agreed path
 1. Import repository on [Vercel](https://vercel.com).
 2. Set Root Directory to `frontend`.
 3. Framework Preset: **Vite**.
 4. Configure Build Command: `npm run build`, Output Directory: `dist`.
 5. Set Environment Variables:
-   - `VITE_API_BASE_URL=https://api.norai.ai` (or Railway backend URL)
+   - `VITE_API_BASE_URL=https://api.<your-domain>` (or Railway backend URL)
    - `VITE_SUPABASE_URL=https://xyz.supabase.co`
    - `VITE_SUPABASE_ANON_KEY=eyJ...`
 6. Deploy!
+
+#### 4. Deploy Backend Container (Option A: Railway) — NOT used in the agreed path
+1. Log in to [Railway.app](https://railway.app) and create a new project from your GitHub Repository.
+2. Select the Dockerfile build strategy.
+3. Add environment variables listed in `.env.production`.
+4. Add a **Persistent Volume** mounted to `/app/outputs` (Size: 10 GB).
+5. Generate a public domain (e.g. `norai-backend-production.up.railway.app`).
 
 ---
 
@@ -322,17 +376,24 @@ jobs:
           pip install -r requirements.txt
           python -c "import backend.main; print('Backend loaded successfully')"
 
-  deploy-railway:
+  deploy-vps:
     needs: lint-and-build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy to Railway
-        uses: bervProject/railway-deploy@main
+      - name: Deploy to VPS (SSH)
+        uses: appleboy/ssh-action@v1
         with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: "norai-backend"
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /srv/norai
+            git pull
+            docker compose up --build -d
 ```
+
+> Alternative (not the agreed path): a `bervProject/railway-deploy@main` job using `secrets.RAILWAY_TOKEN` if the backend moves to Railway. The repo's existing `.github/workflows/ci.yml` already covers the `lint-and-build` half; this deploy job extends it.
 
 ---
 
@@ -349,15 +410,16 @@ jobs:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://norai.ai",
-        "https://app.norai.ai",
-        "https://staging.norai.ai",
+        "https://app.<your-domain>",      # agreed prod origin
+        # keep the localhost dev origins, add Option-A origins if ever split
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 ```
+
+> With the single-container path, browser requests to the API are **same-origin**, so CORS is effectively moot in prod — but keep the list explicit and minimal anyway. Also gate `/docs`/OpenAPI behind a non-production env flag (§5 Phase 1, step 4).
 
 ### 3. Rate Limiting & API Abuse Prevention
 * NorAI includes built-in rate limiting (`backend/ratelimit.py`) and billing quota verification (`backend/auth.py` & `backend/db/models.py`).
@@ -384,8 +446,8 @@ Use these 9 sequential checkpoints to execute and verify the deployment step by 
 * **Definition of Done**: Clean Docker container image generated locally.
 
 ### Checkpoint 1: Production Infrastructure & Accounts
-* **What to do**: Provision Supabase project, Cloudflare account, Railway/Hetzner server instance.
-* **Verification**: Connect to Supabase DB via `psql` or Supabase Dashboard; Cloudflare nameservers active.
+* **What to do**: Provision Supabase project, Cloudflare account, Hostinger VPS (already owned).
+* **Verification**: Connect to Supabase DB via `psql` or Supabase Dashboard; Cloudflare nameservers active; SSH into the VPS works.
 * **Definition of Done**: All cloud accounts active and API tokens created.
 
 ### Checkpoint 2: Database Schema & Migration
@@ -393,15 +455,15 @@ Use these 9 sequential checkpoints to execute and verify the deployment step by 
 * **Verification**: Inspect table schema in Supabase Table Editor (`users`, `subscriptions`, `lectures`, `usage_logs`, `courses`, `share_links`, `webhook_events`).
 * **Definition of Done**: Postgres tables created cleanly with correct indices and foreign keys.
 
-### Checkpoint 3: Backend Deployment
-* **What to do**: Deploy Docker container to Railway/Hetzner. Mount `/app/outputs` persistent volume.
-* **Verification**: `curl https://api.norai.ai/docs` returns 200 OK OpenAPI UI.
+### Checkpoint 3: Backend Deployment (VPS)
+* **What to do**: Deploy the single-container image to the Hostinger VPS (`docker compose up --build -d`) with the `norai_outputs` volume mounted at `/app/outputs`.
+* **Verification**: `curl https://app.<your-domain>/docs` returns 200 OK OpenAPI UI.
 * **Definition of Done**: Backend online, processing pipeline dependencies (`faster-whisper`, `ffmpeg`, `opencv`) functional.
 
 ### Checkpoint 4: Frontend Deployment
-* **What to do**: Deploy SPA to Vercel/Cloudflare Pages with `VITE_API_BASE_URL` pointing to backend API.
-* **Verification**: Load frontend URL in browser, inspect console for 0 CORS errors.
-* **Definition of Done**: Frontend SPA rendered cleanly on custom domain.
+* **What to do**: SPA is served by the same container (no separate deploy). Verify the full origin loads.
+* **Verification**: Load `https://app.<your-domain>/` in browser, inspect console for 0 CORS errors.
+* **Definition of Done**: SPA rendered cleanly on the custom domain.
 
 ### Checkpoint 5: Authentication & User Sync
 * **What to do**: Register a test user via Supabase Auth on the frontend.
@@ -420,18 +482,20 @@ Use these 9 sequential checkpoints to execute and verify the deployment step by 
 
 ### Checkpoint 8: Production Launch & Monitoring
 * **What to do**: Enable Uptime monitoring (Better Stack / GlitchTip) and launch demo to the 4-5 initial testers.
-* **Verification**: Monitor logs via `docker logs` / Railway log viewer during tester sessions.
+* **Verification**: Monitor logs via `docker logs` on the VPS during tester sessions.
 * **Definition of Done**: Live SaaS product accessible to public demo users.
 
 ---
 
-## Recommended Step-by-Step Implementation Sequence
+## Recommended Step-by-Step Implementation Sequence (AGREED PATH)
 
-1. **Step 1**: Register domain on Cloudflare/Namecheap (`$10/yr`).
-2. **Step 2**: Create free project on Supabase, obtain DB string + Auth keys.
+1. **Step 1**: Fill `.env.production` with real values; apply CORS + `/docs` gating fixes (Phase 1); verify `docker build -t norai-app .` locally.
+2. **Step 2**: Create free project on Supabase; obtain DB string + Auth keys.
 3. **Step 3**: Run `alembic upgrade head` to set up production database schema.
-4. **Step 4**: Deploy backend Docker image to Railway ($5/mo) or Hetzner VPS ($5/mo).
-5. **Step 5**: Deploy frontend SPA to Vercel (Free) or Cloudflare Pages (Free).
-6. **Step 6**: Configure DNS A/CNAME records in Cloudflare.
-7. **Step 7**: Perform end-to-end lecture processing test with test account.
-8. **Step 8**: Hand over login credentials to the 4–5 initial demo users!
+4. **Step 4**: Point `app.<your-domain>` `A` record at the Hostinger VPS behind Cloudflare proxy; set SSL mode Full (strict).
+5. **Step 5**: Install Docker + Caddy on the VPS; clone the repo; run `docker compose up --build -d` with the real `.env`.
+6. **Step 6**: Configure Caddy reverse proxy → `http://127.0.0.1:8000` (Cloudflare DNS module / origin cert) so `https://app.<your-domain>` terminates TLS.
+7. **Step 7**: Perform end-to-end lecture processing test with test account (register → upload short video → pipeline completes).
+8. **Step 8**: Harden (gate `/docs`, tighten CORS), schedule nightly `outputs/` backups, enable uptime monitoring, hand over login credentials to the 4–5 initial demo users.
+
+> Scaling-out triggers (later, not now): split to Option A (Vercel + API subdomain), move Postgres to Supabase Pro / dedicated, and add a second vCPU worker for transcription.
