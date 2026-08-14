@@ -57,9 +57,18 @@ export function scrollToHeading(headingPath: string, chapterId?: number | null, 
 
   const store = useChapterStore.getState()
   const currentChapterId = store.activeChapterId
+  const validChapters = store.chapters
 
-  if (chapterId != null && chapterId > 0 && chapterId !== currentChapterId) {
-    store.setChapter(chapterId)
+  // Validate target chapter ID exists in this lecture
+  let validTargetChapterId = chapterId
+  if (validTargetChapterId != null && validChapters.length > 0 && !validChapters.some((c) => c.id === validTargetChapterId)) {
+    // If bogus or unmatched chapter ID, attempt to recover by chapter title in headingPath
+    const found = validChapters.find((c) => c.title && headingPath.toLowerCase().includes(c.title.toLowerCase()))
+    validTargetChapterId = found ? found.id : null
+  }
+
+  if (validTargetChapterId != null && validTargetChapterId > 0 && validTargetChapterId !== currentChapterId) {
+    store.setChapter(validTargetChapterId)
   }
   store.setDocTab('notes')
 
