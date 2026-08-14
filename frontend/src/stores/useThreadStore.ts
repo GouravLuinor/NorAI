@@ -320,7 +320,7 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
         _messagesCache: newCache,
       })
       // Load fresh messages for the thread we're switching to
-      if (nextId !== 'default') get().loadThreadMessages(nextId)
+      if (nextId) get().loadThreadMessages(nextId)
     } else {
       set({ threads: remaining, _messagesCache: newCache })
     }

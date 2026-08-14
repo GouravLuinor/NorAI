@@ -41,8 +41,11 @@ Video (YouTube / upload / Drive)
 
 All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, screenshots, flashcards, pdfs, tutor checkpoints, chroma, `backend.log`). Gitignored / throwaway.
 
-## What's built (feature checklist)
-
+- **End-to-End Code Review & Hardening Audit (Phases 1–4 complete)**:
+  - **Tutor & Streaming Chat**: Fixed zombie-thread false positive rejection in `_thread_exists()`, added eager LangGraph checkpointer initialization (`checkpointer.setup()`), added `asyncio`/`uuid` and guaranteed non-null UUIDs on LangGraph memory messages for safe checkpoint pruning, added `_content_text` parser for Gemini thinking block lists, and surfaced real backend error messages in frontend chat UI.
+  - **Frontend State & Lifecycles**: Fixed `loadThreadMessages` skipping default thread in `Sidebar.tsx` and `useThreadStore.ts`, added generation counters to `useChapterStore` and `useVideoStore` to drop stale out-of-order async responses, upgraded `useVideoStore.load` to parallel `Promise.all` with individual catch isolation, and stabilized `useEffect` dependencies across billing/courses/usage pages.
+  - **Job Queue Durability**: Preserved uploaded video files during retryable failures in `backend/jobs.py` (`attempts < PIPELINE_MAX_ATTEMPTS`), replaced premature `orchestrator.py` error broadcasting with `jobs.py`'s `stage = "retrying"` progress countdown, and guarded `_executor.submit` against `NoneType`.
+  - **Security & Concurrency**: Verified static file allowlists, video upload streaming caps, pre-flight quota enforcement, JWT verification, and LRU graph cache eviction. 100% green across all 38 backend/tutor test suites + 73 Vitest + oxlint (0 errors).
 - **Pipeline**: 18-stage orchestrator with DB-persisted progress (polled; no SSE); concurrent transcription/chunking + frame/scene extraction; graceful degradation (partial-content marker) on retry failures.
 - **Per-lecture isolation**: lecture registry (`backend/lecture_registry.py`), per-lecture tutor graphs + checkpoints + Chroma indexes + thread history; backward-compatible default/global tutor mode.
 - **Tutor**: grounded Q&A with citations + timestamps, chapter-aware routing, query rewriting, confidence-aware answers, persistent multi-thread conversations, highlight-and-ask, references panel, screenshot previews.

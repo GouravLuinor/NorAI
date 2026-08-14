@@ -9,7 +9,7 @@
 
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
-| **Antigravity** (IDE) | 🟢 Idle / Completed | **Frontend UI/UX Redesign & Audit Execution (Architect's Sketchbook v2)**: Phase 1 (Fonts, dark contrast, declutter) + Phase 2 (Blueprint Select, 14px resizers, desktop/tablet/mobile adaptivity) + Phase 3 (Skeleton loaders, Citation hover popovers, Framer Motion 3D card flip) | 2026-08-13 UTC |
+| **Antigravity** (IDE) | 🟢 Idle / Completed | **End-to-End Audit & Code Review Pass across NorAI (Phases 1-4 Complete)**: Hardened tutor chat streaming, LangGraph checkpointer initialization, Zustand race conditions & effect lifecycles, background job retry durability, upload preservation, and API security. All 38 backend/tutor test suites + 73 Vitest + oxlint passing (100% green). | 2026-08-14 UTC |
 | **OpenCode** (CLI) | 🟢 Idle / Completed | **P6.4 + UI/UX audit execution combined — committed `8c4cd74` and pushed to `origin/fix/threads-and-pdf` (2026-08-14).** Course collections (`/courses` CRUD + reorder + membership, migration `0004_courses_and_shares`), closed-by-default share links (`/share/{slug}`, `/lectures/{id}/share` create/toggle/revoke with `allow_tutor_chat` gate), user-scoped `/lectures`, frontend `/courses` + `/share/:slug` pages + ShareModal, plus the audit follow-through (share-GET endpoint, UploadPage custom Select, skeletons across views, `--color-npbd` dark code surfaces, Select a11y). 37-check `test_courses_shares.py` + 21-check migrations + 70/70 Vitest. Followed by full doc-sync pass (all `.md` incl. TUTORIAL.md) reflecting P6/P7/UIUX + `DEPLOYMENT_PLAN.md` §0. Prior: P7 token-reduction sprint parts 1+2 (prompt compression + Gemini context caching dormant on free-tier + output-token cut, offline 37/37) | 2026-08-14 UTC |
 
 ---
@@ -33,6 +33,38 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-14] — Antigravity: End-to-End Code Review & Hardening Audit (Phases 1–4)
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed — all 4 phases audited, hardened, and verified.
+- **Summary of Changes**:
+  - **Phase 1 (Tutor & Streaming Chat Lifecycle)**:
+    - Fixed zombie-thread false positive bug in `_thread_exists()` where un-migrated or new active threads were rejected as deleted. Added `deleted_threads` table and automatic thread registration.
+    - Added `await checkpointer.setup()` upfront in `_open_checkpointer` so LangGraph checkpoint schemas exist immediately on initialization.
+    - Added missing `asyncio` and `uuid` imports in `tutor/nodes.py` and guaranteed unique message IDs for reliable LangGraph memory pruning (`RemoveMessage`).
+    - Added `_content_text` extractor in `tutor/nodes_retrieval.py` for Gemini thinking block lists.
+    - Surfaced backend error messages in `frontend/src/lib/chatApi.ts` and `ChatArea.tsx`.
+  - **Phase 2 (Frontend State Management & Effect Lifecycles)**:
+    - Fixed `loadThreadMessages` skipping default thread in `Sidebar.tsx` and `useThreadStore.ts`.
+    - Added generation counters to `useChapterStore` and `useVideoStore` to prevent race conditions during rapid lecture switching.
+    - Upgraded `useVideoStore.load` to parallel `Promise.all` with individual `.catch()` error isolation.
+    - Stabilized `useEffect` hooks in `BillingPage.tsx`, `CoursesPage.tsx`, and `UsagePage.tsx` using `user?.id` instead of full object reference `user`.
+  - **Phase 3 (Pipeline & Background Job Queue Durability)**:
+    - Preserved uploaded video files during retryable failures (`attempts < PIPELINE_MAX_ATTEMPTS`) in `backend/jobs.py` so retries succeed without "missing file" errors.
+    - Replaced eager `orchestrator.py` error broadcasting with `jobs.py`'s `stage = "retrying"` countdown, preventing frontend polling from aborting during active background retries.
+    - Guarded `_executor.submit` in supervisor loop against `NoneType`.
+  - **Phase 4 (Security, SQLite Concurrency & Resource Lifecycle)**:
+    - Verified static file allowlists (`STATIC_ALLOWED_EXTENSIONS`), video upload caps (`MAX_UPLOAD_BYTES`), pre-flight quota enforcement, JWT verification, and LRU graph cache eviction.
+- **Verification**:
+  - `oxlint`: **0 warnings, 0 errors** across 102 files.
+  - `npm test -- --run`: **73 / 73 tests passed** (12 test suites).
+  - `npm run build`: **clean build in 648ms**.
+  - `test_jobs_restart.py`: **19 / 19 passed**.
+  - `test_static_allowlist.py`: **6 / 6 passed**.
+  - `test_upload_validation.py`: **20 / 20 passed**.
+  - `test_api_contract_offline.py`: **15 / 15 passed**.
+  - Python test runner: **38 / 38 passed** (100% green).
+- **Hand-off Notes**: The entire codebase is fully audited, hardened, clean of linter/type issues, and passes all unit and integration tests. Ready for deployment.
 
 ### [2026-08-14] — Antigravity: P3.2 Dynamic Adaptive Top-k RAG Retrieval & P0.4 Doc Sync
 - **Agent**: Antigravity (IDE)

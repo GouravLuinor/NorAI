@@ -94,6 +94,8 @@ function resolveChunkId(chunkSpec: string | number, map: VideoMap | null): numbe
   return null
 }
 
+let _loadVideoGeneration = 0
+
 export const useVideoStore = create<VideoState>((set, get) => ({
   lectureId: null,
   sourceType: null,
@@ -106,6 +108,7 @@ export const useVideoStore = create<VideoState>((set, get) => ({
   pendingSeek: null,
 
   load: async (lectureId) => {
+    const gen = ++_loadVideoGeneration
     set({
       lectureId,
       sourceType: null,
@@ -116,17 +119,26 @@ export const useVideoStore = create<VideoState>((set, get) => ({
       open: false,
       pendingSeek: null,
     })
-    const info = await apiFetch<LectureSourceInfo>(`/lectures/${lectureId}`)
-    const map = await apiFetch<VideoMap>(`/video-map?lecture_id=${lectureId}`)
-    const sourceType = info?.source_type ?? null
-    const videoId = extractYoutubeVideoId(info?.source_url)
-    set({
-      sourceType,
-      status: info?.status ?? null,
-      videoId,
-      map: map ?? null,
-      embeddable: sourceType === 'youtube' && info?.status === 'completed' && videoId != null,
-    })
+    try {
+      const [info, map] = await Promise.all([
+        apiFetch<LectureSourceInfo>(`/lectures/${lectureId}`).catch(() => null),
+        apiFetch<VideoMap>(`/video-map?lecture_id=${lectureId}`).catch(() => null),
+      ])
+      if (gen !== _loadVideoGeneration) return
+
+      const sourceType = info?.source_type ?? null
+      const videoId = extractYoutubeVideoId(info?.source_url)
+      set({
+        sourceType,
+        status: info?.status ?? null,
+        videoId,
+        map: map ?? null,
+        embeddable: sourceType === 'youtube' && info?.status === 'completed' && videoId != null,
+      })
+    } catch {
+      if (gen !== _loadVideoGeneration) return
+      set({ embeddable: false })
+    }
   },
 
   reset: () =>

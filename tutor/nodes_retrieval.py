@@ -189,6 +189,17 @@ def retrieve_images_node(state: dict, config: RunnableConfig, output_dir=None) -
     
     return {"retrieved_images": retrieved_images}
 
+def _content_text(content) -> str:
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return " ".join(
+            block.get("text", "") if isinstance(block, dict) else str(block)
+            for block in content
+        )
+    return str(content) if content else ""
+
+
 async def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
     """
     LangGraph node: rewrite state['user_question'] into a retrieval-optimised query.
@@ -212,10 +223,11 @@ async def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
     # Build a compact history snippet for the rewrite prompt
     history_lines = []
     for m in recent:
+        content_str = _content_text(m.content)
         if isinstance(m, HumanMessage):
-            history_lines.append(f"Student: {m.content}")
+            history_lines.append(f"Student: {content_str}")
         else:
-            history_lines.append(f"Tutor: {m.content}")
+            history_lines.append(f"Tutor: {content_str}")
     history_str = "\n".join(history_lines) if history_lines else "(no prior conversation)"
 
     # P3.5: keep the chapter scope visible to the rewriter so anaphoric

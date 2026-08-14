@@ -107,9 +107,11 @@ export function UsagePage() {
   const [data, setData] = useState<UsageData | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const userId = user?.id
+
   useEffect(() => {
     let active = true
-    if (!user) {
+    if (!userId) {
       setData(null)
       return
     }
@@ -123,7 +125,7 @@ export function UsagePage() {
     return () => {
       active = false
     }
-  }, [user])
+  }, [userId])
 
   if (!user) {
     return (

@@ -3,7 +3,7 @@ import { useThreadStore } from '../../stores/useThreadStore'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { sendChatMessageStream } from '../../lib/chatApi'
-import { buildReferences } from '../../lib/references'
+import { buildReferences, stripSources } from '../../lib/references'
 import type { Reference } from '../../types'
 import { useTutorSettingsStore } from '../../stores/useTutorSettingsStore'
 import { MessageBubble } from './MessageBubble'
@@ -14,10 +14,6 @@ import { Lightbox } from '../ui/Lightbox'
 
 // ── Stable, collision‑free ID generator ────────────────────────────────────
 const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-
-// Strip the auto-appended Sources appendix (it's surfaced via ReferencesPanel).
-export const stripSources = (text: string) =>
-  text.replace(/(\*\*Sources\*\*|\n\nSources\b|Sources\s*[\:\•]|Sources\b[\s\S]*$)[\s\S]*$/i, '').trim()
 
 export function ChatArea() {
   const messages   = useThreadStore(s => s.messages)
@@ -141,10 +137,14 @@ const handleSend = useCallback(async (text: string) => {
       if (err instanceof Error && err.name === 'AbortError') return
       console.error('Chat error:', err)
       if (activeThreadRef.current === targetThreadId) {
+        const errorText =
+          err instanceof Error && err.message && !err.message.includes('[object Object]')
+            ? err.message
+            : 'Sorry, something went wrong. Please try again.'
         addMessage({
           id: genId(),
           role: 'assistant',
-          content: 'Sorry, something went wrong. Please try again.',
+          content: errorText,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         })
       }

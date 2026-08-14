@@ -17,6 +17,8 @@ interface ChapterState {
   loadChapters: (lectureId: string) => Promise<void>
 }
 
+let _loadChapterGeneration = 0
+
 export const useChapterStore = create<ChapterState>((set) => ({
   activeChapterId: 1,
   activeDocTab: 'revision',
@@ -28,10 +30,13 @@ export const useChapterStore = create<ChapterState>((set) => ({
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
 
   loadChapters: async (lectureId: string) => {
+    const gen = ++_loadChapterGeneration
     try {
       const outline = await apiGet<{ chapters?: { chapter_id?: number; id?: number; title?: string }[] }>(
         `/outline?lecture_id=${lectureId}&_t=${Date.now()}`,
       )
+      if (gen !== _loadChapterGeneration) return
+
       const chs = outline?.chapters || []
 
       if (chs.length === 0) {
@@ -49,6 +54,7 @@ export const useChapterStore = create<ChapterState>((set) => ({
         activeChapterId: chapters[0]?.id || 1,
       })
     } catch {
+      if (gen !== _loadChapterGeneration) return
       console.warn('Failed to load chapters — /outline endpoint may not be available')
       set({ chapters: [], activeChapterId: 1 })
     }

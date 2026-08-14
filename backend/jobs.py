@@ -277,25 +277,30 @@ def _run_job(lecture_id: str):
             )
             _set_status(lecture_id, "completed")
             logger.info("Pipeline %s completed", lecture_id)
-        except PipelineCancelled:
-            _set_status(lecture_id, "cancelled", error_message="cancelled")
-            logger.info("Pipeline %s cancelled by user", lecture_id)
-        except Exception as exc:
-            _handle_failure(lecture_id, exc)
-        finally:
-            stop.set()
             if file_path:
                 try:
                     Path(file_path).unlink(missing_ok=True)
                 except Exception as e:
                     logger.warning("Failed to delete upload %s: %s", file_path, e)
+        except PipelineCancelled:
+            _set_status(lecture_id, "cancelled", error_message="cancelled")
+            logger.info("Pipeline %s cancelled by user", lecture_id)
+            if file_path:
+                try:
+                    Path(file_path).unlink(missing_ok=True)
+                except Exception as e:
+                    logger.warning("Failed to delete upload %s: %s", file_path, e)
+        except Exception as exc:
+            _handle_failure(lecture_id, exc, file_path=file_path)
+        finally:
+            stop.set()
             clear_context()
     except Exception as exc:
         logger.exception("Job runner crashed for %s: %s", lecture_id, exc)
         clear_context()
 
 
-def _handle_failure(lecture_id: str, exc: Exception):
+def _handle_failure(lecture_id: str, exc: Exception, file_path: str | None = None):
     attempts = 0
     async def _get():
         async def _do(session):
@@ -308,14 +313,31 @@ def _handle_failure(lecture_id: str, exc: Exception):
         pass
 
     if attempts < PIPELINE_MAX_ATTEMPTS:
+        update_job_progress(
+            lecture_id,
+            "retrying",
+            f"Temporary issue encountered. Re-queuing (attempt {attempts + 1}/{PIPELINE_MAX_ATTEMPTS})…",
+            0.0,
+        )
         _set_status(lecture_id, "queued", attempts=attempts + 1, started_at=None, heartbeat_at=None)
         logger.info(
             "Pipeline %s failed (attempt %d/%d) — re-queued: %s",
             lecture_id, attempts + 1, PIPELINE_MAX_ATTEMPTS, exc,
         )
     else:
+        update_job_progress(
+            lecture_id,
+            "error",
+            str(exc)[:4000],
+            0.0,
+        )
         _set_status(lecture_id, "failed", error_message=str(exc)[:4000])
         logger.error("Pipeline %s failed permanently after %d attempts: %s", lecture_id, PIPELINE_MAX_ATTEMPTS, exc)
+        if file_path:
+            try:
+                Path(file_path).unlink(missing_ok=True)
+            except Exception as e:
+                logger.warning("Failed to delete upload %s: %s", file_path, e)
 
 
 # ── GC (P4.2) ────────────────────────────────────────────────────────────────
@@ -398,7 +420,8 @@ def _supervisor_loop():
             claimed = asyncio.run(_claim_queued_once(_make_session_factory()))
             for lecture_id in claimed:
                 logger.info("Supervisor: starting pipeline %s", lecture_id)
-                _executor.submit(_run_job, lecture_id)
+                if _executor is not None:
+                    _executor.submit(_run_job, lecture_id)
             if time.monotonic() - next_gc >= 86400:
                 next_gc = time.monotonic()
                 gc_sweep()

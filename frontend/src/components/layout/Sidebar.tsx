@@ -81,14 +81,14 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
     loadThreads().then(() => {
       if (!active) return
       const current = useThreadStore.getState().threadId
-      if (current && current !== 'default') {
+      if (current) {
         loadThreadMessages(current)
       }
     })
     loadLectures()
     // RC-FIX: cleanup flag prevents stale promise callbacks in Strict Mode
     return () => { active = false }
-  }, [activeLectureId])
+  }, [activeLectureId, loadLectures, loadThreads, loadThreadMessages])
 
   // RC-FIX: Debounce rapid thread clicks to prevent overlapping
   // setThreadId + loadThreadMessages calls that cause layout glitch (Bug 5)
