@@ -8,6 +8,10 @@
 > client caching), 2.3 (`CONFIDENCE_THRESHOLD` is now 0.35 with strong/weak
 > confidence tags, P3.7), 3.2 (adaptive chunking supersedes the fixed
 > `DEFAULT_SEGMENTS_PER_CHUNK`, P1.8), 4.1 (lecture-switch flush verified).
+> Later passes added: P4.4 async tutor persistence (LLM nodes `async` on
+> `AsyncSqliteSaver`), P6.1 real token streaming (`astream_events(v2)` on
+> `/chat/stream`), P3.2 hybrid BM25+RRF retrieval, and P7 tutor context caching
+> (`tutor/cache.py`, dormant on free tier).
 > **Superseded by design:** 3.2's "one segment count" concern is moot under
 > adaptive chunking. 1.3 (`start_normal`) remains as the conditional routing
 > node — harmless. Read the original analysis below as historical context; see

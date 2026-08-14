@@ -55,6 +55,10 @@ Lecture-Grounded AI Tutor
 | ⚡ **Revision Notes** | High-density summaries designed for rapid review |
 | 🧪 **Assessments** | Chapter-specific MCQ, True/False, short-answer, and scenario-style questions |
 | 🃏 **Flashcards** | Recall cards with concise answers, explanations, and confidence ratings |
+| 🗓️ **Spaced Repetition** | SM-2 scheduling with due-date filtering + **Anki `.apkg` export** (P6.2) |
+| 🎬 **Click-to-Video** | Chapter/section answers link to the exact YouTube moment (P6.3) |
+| 📚 **Course Collections** | Group lectures into courses; share them via public links (P6.4) |
+| 📊 **Usage Dashboard** | Per-stage Gemini usage & estimated cost breakdown (P6.5) |
 | 🖼️ **Important Visuals** | Relevant lecture frames mapped back to concepts and note sections |
 | 🤖 **AI Tutor** | Retrieval-grounded Q&A over lecture-specific notes and visual context |
 | 💬 **Persistent Threads** | Lecture-scoped tutor conversations with saved history |
@@ -115,7 +119,9 @@ connected workspace.
       │ users, lectures,  │        │ LangGraph, ChromaDB     │
       │ subscriptions,    │        │ Hybrid BM25 + dense     │
       │ usage_logs,       │        │ Verified citations       │
-      │ webhook_events    │        │ Persistent threads       │
+      │ webhook_events,   │        │ Persistent threads       │
+      │ courses,          │        │ Real token streaming     │
+      │ share_links       │        │ (astream_events, P6.1)   │
       └───────────────────┘        └──────────────────────────┘
 ```
 
@@ -197,6 +203,9 @@ The tutor layer includes:
   search fused via **RRF** (reciprocal rank fusion)
 - lecture-specific note indexes and screenshot-caption retrieval
 - persistent conversation threads per lecture
+- **real token streaming** — `/chat/stream` drives the graph with
+  `graph.astream_events(version="v2")` and forwards `on_chat_model_stream`
+  events from the answer node, so replies render as tokens are generated (P6.1)
 - verified citations — only sources that pass a deterministic post-check
   are shown; low-confidence retrieval answers say so explicitly
 - contextual tools, commands, and quiz-in-chat
@@ -221,7 +230,26 @@ questions.
 
 ### 🃏 Flashcards
 Cards contain a front, back, explanation, and `Again` / `Hard` / `Good`
-/ `Easy` confidence ratings with review statistics.
+/ `Easy` confidence ratings with review statistics. Since **P6.2** ratings
+drive **SM-2 spaced repetition** (interval/ease progression with a Due
+filter), and the whole deck can be exported as an **Anki `.apkg`** file.
+
+### 🎬 Click-to-Video Grounding (P6.3)
+Per-chapter YouTube seek maps (`backend/video_map.py`) are built during the
+visual stage. The workspace docks the lecture player, auto-seeks when you
+switch chapters, and "Watch video" buttons jump to the exact moment for a
+note section or tutor citation.
+
+### 📚 Courses & Sharing (P6.4)
+Lectures can be grouped into **course collections** (`CoursesPage`). Any
+lecture can be shared with a link minted from the DocPanel **ShareModal** —
+the public share page exposes only sanitized content (title, PDF, sample
+questions), never raw transcripts, answer keys, or the tutor
+(**closed-by-default** access model).
+
+### 📊 Usage & Cost Dashboard (P6.5)
+`backend/usage_ledger.py` rolls up per-stage token/cost rows into `GET
+/usage`, rendered by `UsagePage.tsx` — see exactly where Gemini spend goes.
 
 ## 📚 Multi-Lecture by Design
 
@@ -309,7 +337,9 @@ NorAI/
 ├── .github/workflows/ci.yml      # CI: offline tests + lint + build (P5.3)
 ├── outputs/                      # ALL generated artifacts (gitignored)
 ├── PROJECT_PROGRESS.md  ROADMAP.md  COMMUNICATOR.md
-├── AGENTS.md  NOTES.md  audit/
+├── AGENTS.md  NOTES.md  audit/  docs/
+├── DEPLOYMENT_PLAN.md            # agreed production deployment path (Hostinger VPS)
+├── UI_UX_AUDIT_REPORT.md         # frontend audit → executed design fixes
 └── requirements.txt
 ```
 
@@ -380,7 +410,9 @@ lecture and enforced *before* any Gemini spend.
 ## 🧪 Development Status
 
 NorAI is under **active development** — the SaaS foundation (auth,
-billing, job durability) is complete; content features continue to grow.
+billing, job durability), the retention feature set, and the token-reduction
+sprint are complete; a production deployment path is agreed in
+[`DEPLOYMENT_PLAN.md`](DEPLOYMENT_PLAN.md).
 
 ### Implemented
 - [x] Lecture video ingestion (YouTube / Drive / upload)
@@ -399,6 +431,13 @@ billing, job durability) is complete; content features continue to grow.
 - [x] Lemon Squeezy webhooks, usage metering, quota enforcement, billing page
 - [x] DB-backed job queue with restart recovery (P4)
 - [x] P0–P5 hardening: security, pipeline economics, retrieval evals, CI, Docker, tests
+- [x] **P6 retention** — real token streaming (P6.1), SM-2 spaced repetition +
+      Anki export (P6.2), click-to-video grounding (P6.3), course collections +
+      share links (P6.4), usage/cost dashboard (P6.5)
+- [x] **P7 token reduction** — prompt compression, context caching (dormant on
+      free tier), output-token cuts (`docs/token_reduction.md`)
+- [x] **UI/UX audit execution** — 3 responsive tiers, skeletons, custom Select,
+      dark-theme fixes, course/share pages (`UI_UX_AUDIT_REPORT.md`)
 
 ## 🧩 Engineering Challenges
 
@@ -418,7 +457,9 @@ NorAI is also a practical exploration of real-world AI systems engineering:
 - cutting re-run cost to ~0 with hash-of-inputs caching + diff-synced vector indexing
 - tuning print CSS for exactly-one-page-per-chapter PDFs and keeping screenshots in the print
 - rendering Markdown, KaTeX math, code, and callouts consistently
-- keeping a streaming chat responsive (React memo composition + SSE chunking)
+- keeping a streaming chat responsive (React memo composition + real token streaming via `astream_events`, P6.1)
+- implementing SM-2 spaced repetition + a from-scratch Anki `.apkg` exporter without third-party packages
+- building share links with a **closed-by-default** access model (sanitized public views, no answer/transcript leaks)
 - hardening the frontend: strict TypeScript, code-splitting, error boundaries, AbortController polling
 - testing without a framework: standalone offline `test_*.py` suites + Vitest + offline API contract tests
 
@@ -440,14 +481,14 @@ NorAI is also a practical exploration of real-world AI systems engineering:
 - [x] Processing observability and cost analytics (structured logs, metering, estimator)
 - [x] Verified tutor citations and source navigation
 - [x] Dockerized single-container deployment + CI
+- [x] Better mobile responsiveness (3 responsive tiers, UI/UX audit)
 - [ ] Automated integration tests for full lecture runs (offline suites exist; live end-to-end pending)
 - [ ] Cloud object storage
-- [ ] Better mobile responsiveness
 
 ### Future
 - [ ] Cross-lecture knowledge retrieval
-- [ ] Course-level organization
-- [ ] Spaced repetition scheduling
+- [x] Course-level organization *(shipped in P6.4)*
+- [x] Spaced repetition scheduling *(shipped in P6.2)*
 - [ ] Adaptive expertise tracking
 - [ ] Personalized revision plans
 - [ ] Weak-concept detection
@@ -484,6 +525,19 @@ Then open a Pull Request. Especially valuable areas include retrieval
 quality, multimodal evaluation, structured generation reliability,
 frontend UX, accessibility, pipeline recovery, testing, observability,
 and deployment.
+
+## 🚀 Deployment
+
+The agreed production path is documented in
+**[`DEPLOYMENT_PLAN.md`](DEPLOYMENT_PLAN.md)**. Summary of decisions:
+
+- **Host** — an existing **Hostinger KVM 1 VPS** (1 vCPU / 4 GB / 50 GB SSD).
+- **Packaging** — **single-container** Docker image (Option B): FastAPI serves
+  the built SPA, so there's no separate static host and **zero CORS** in prod.
+- **TLS** — **Caddy** reverse proxy with automatic Let's Encrypt.
+- **DNS** — **Cloudflare** (single `A` record to the VPS).
+- **Data** — **Supabase Postgres** (free tier) + **Supabase Auth**; generated
+  artifacts stay on the VPS under `outputs/` (volume-mounted).
 
 ## 🔐 Security Notes
 
