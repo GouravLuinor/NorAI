@@ -47,21 +47,26 @@ export function CardHeader({
   icon,
   tone = 'default',
   className = '',
+  action,
   children,
 }: {
   icon?: ReactNode
   tone?: CardTone
   className?: string
+  action?: ReactNode
   children: ReactNode
 }) {
   return (
     <div
-      className={`flex items-center gap-1.5 text-3xs font-semibold ${toneClass[tone]} uppercase tracking-wider mb-2 ${className}`
+      className={`flex items-center justify-between gap-1.5 text-3xs font-semibold ${toneClass[tone]} uppercase tracking-wider mb-2 ${className}`
         .replace(/\s+/g, ' ')
         .trim()}
     >
-      {icon}
-      {children}
+      <div className="flex items-center gap-1.5 min-w-0">
+        {icon}
+        <span className="truncate">{children}</span>
+      </div>
+      {action && <div className="shrink-0 normal-case font-normal">{action}</div>}
     </div>
   )
 }

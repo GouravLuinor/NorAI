@@ -19,6 +19,8 @@ if os.path.exists(_TMP_DB):
     os.remove(_TMP_DB)
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{_TMP_DB}"
 os.environ["GEMINI_API_KEY"] = "offline-courses-test"
+os.environ["NORAI_DEV_ACCESS"] = "0"
+
 
 
 def _utc_now():

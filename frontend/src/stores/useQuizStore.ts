@@ -60,6 +60,7 @@ export interface QuizCitation {
   heading?: string
   heading_path?: string
   chapter_id?: number | null
+  chunk_id?: string | number | null
   text?: string
   screenshot?: string | null
   message?: string

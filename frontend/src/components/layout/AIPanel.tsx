@@ -94,15 +94,15 @@ export function AIPanel() {
         </div>
       </div>
 
-      {/* Panel content with Framer Motion transitions */}
+      {/* Panel content with smooth fade transitions */}
       <div className="flex-1 overflow-hidden relative">
         <AnimatePresence mode="wait">
           <motion.div
             key={aiMode}
-            initial={{ opacity: 0, x: 15 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -15 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             className="h-full w-full"
           >
             {ActivePanel}

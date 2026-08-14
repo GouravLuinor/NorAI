@@ -63,7 +63,35 @@ interface VideoState {
   clearPlayer: () => void
   requestSeek: (seconds: number) => void
   seekToChapter: (chapterId: number) => void
+  seekToChunk: (chunkId: string | number, chapterId?: number) => void
   chapterStart: (chapterId: number | undefined) => number | null
+  chunkStart: (chunkId?: string | number | null, chapterId?: number | null) => number | null
+  chunkRange: (chunkId?: string | number | null, chapterId?: number | null) => { start_sec: number; end_sec: number | null } | null
+  sectionStart: (chapterId: number | undefined, sectionIndex: number) => number | null
+}
+
+function resolveChunkId(chunkSpec: string | number, map: VideoMap | null): number | null {
+  if (typeof chunkSpec === 'number' && Number.isFinite(chunkSpec)) {
+    return chunkSpec
+  }
+  const str = String(chunkSpec).trim()
+  if (/^\d+$/.test(str)) {
+    return Number(str)
+  }
+  const directMatch = str.match(/^c(?:hunk_)?(\d+)$/i)
+  if (directMatch) {
+    return Number(directMatch[1])
+  }
+  const chromaMatch = str.match(/^ch(\d+)__.*?__(\d+)$/)
+  if (chromaMatch && map) {
+    const chId = Number(chromaMatch[1])
+    const offset = Number(chromaMatch[2])
+    const chapter = map.chapters.find((c) => c.chapter_id === chId)
+    if (chapter?.chunk_ids && chapter.chunk_ids[offset] != null) {
+      return chapter.chunk_ids[offset]
+    }
+  }
+  return null
 }
 
 export const useVideoStore = create<VideoState>((set, get) => ({
@@ -147,9 +175,59 @@ export const useVideoStore = create<VideoState>((set, get) => ({
     if (start != null) get().requestSeek(start)
   },
 
+  seekToChunk: (chunkId, chapterId) => {
+    const start = get().chunkStart(chunkId, chapterId)
+    if (start != null) get().requestSeek(start)
+  },
+
   chapterStart: (chapterId) => {
     if (chapterId == null) return null
     const ch = get().map?.chapters.find((c) => c.chapter_id === chapterId)
     return ch?.start_sec ?? null
+  },
+
+  chunkStart: (chunkId, chapterId) => {
+    const map = get().map
+    if (chunkId != null && map) {
+      const resolvedId = resolveChunkId(chunkId, map)
+      if (resolvedId != null) {
+        const chunk = map.chunks.find((c) => c.chunk_id === resolvedId)
+        if (chunk?.start_sec != null) return chunk.start_sec
+      }
+    }
+    return get().chapterStart(chapterId ?? undefined)
+  },
+
+  chunkRange: (chunkId, chapterId) => {
+    const map = get().map
+    if (chunkId != null && map) {
+      const resolvedId = resolveChunkId(chunkId, map)
+      if (resolvedId != null) {
+        const chunk = map.chunks.find((c) => c.chunk_id === resolvedId)
+        if (chunk?.start_sec != null) {
+          return { start_sec: chunk.start_sec, end_sec: chunk.end_sec }
+        }
+      }
+    }
+    const chapter = chapterId != null ? map?.chapters.find((c) => c.chapter_id === chapterId) : null
+    if (chapter?.start_sec != null) {
+      return { start_sec: chapter.start_sec, end_sec: chapter.end_sec }
+    }
+    return null
+  },
+
+  sectionStart: (chapterId, sectionIndex) => {
+    if (chapterId == null) return null
+    const map = get().map
+    const chapter = map?.chapters.find((c) => c.chapter_id === chapterId)
+    if (!chapter) return null
+
+    if (chapter.chunk_ids && chapter.chunk_ids[sectionIndex] != null) {
+      const chunkId = chapter.chunk_ids[sectionIndex]
+      const chunk = map?.chunks.find((c) => c.chunk_id === chunkId)
+      if (chunk?.start_sec != null) return chunk.start_sec
+    }
+
+    return chapter.start_sec ?? null
   },
 }))

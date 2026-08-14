@@ -67,17 +67,29 @@ class BM25Okapi:
         return scores
 
 
-def reciprocal_rank_fusion(ranked_id_lists: list[list[str]], k: int = 60) -> list[str]:
+def reciprocal_rank_fusion_scored(
+    ranked_id_lists: list[list[str]],
+    k: int = 60,
+) -> list[tuple[str, float]]:
     """
     Reciprocal Rank Fusion (Cormack et al. 2009): fuse several ranked id lists
-    into a single ranking. Each system contributes 1/(k + rank); ids are ordered
-    by descending fused score (ties broken by first appearance).
+    into a single ranking with scores. Returns a list of (doc_id, fused_score)
+    tuples ordered by descending score (ties broken by first appearance).
     """
     fused: dict[str, float] = {}
     for ranked in ranked_id_lists:
         for rank, doc_id in enumerate(ranked, 1):
             fused[doc_id] = fused.get(doc_id, 0.0) + 1.0 / (k + rank)
-    return sorted(fused, key=lambda doc_id: (-fused[doc_id], _first_seen(doc_id, ranked_id_lists)))
+    ordered_ids = sorted(fused, key=lambda doc_id: (-fused[doc_id], _first_seen(doc_id, ranked_id_lists)))
+    return [(doc_id, fused[doc_id]) for doc_id in ordered_ids]
+
+
+def reciprocal_rank_fusion(ranked_id_lists: list[list[str]], k: int = 60) -> list[str]:
+    """
+    Reciprocal Rank Fusion (Cormack et al. 2009): fuse several ranked id lists
+    into a single ranking. Returns ordered doc_ids.
+    """
+    return [doc_id for doc_id, _ in reciprocal_rank_fusion_scored(ranked_id_lists, k=k)]
 
 
 def _first_seen(doc_id: str, ranked_id_lists: list[list[str]]) -> int:

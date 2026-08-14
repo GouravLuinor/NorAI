@@ -13,8 +13,9 @@ interface ReferencesPanelProps {
 
 export const ReferencesPanel = memo(function ReferencesPanel({ references, onReferenceClick, onScreenshotClick }: ReferencesPanelProps) {
   const [collapsed, setCollapsed] = useState(true)
-  // P6.3: each note reference can jump the video to its chapter's start.
+  // P6.3: exact-moment chunk seek with chapter fallback.
   const videoEmbeddable = useVideoStore((s) => s.embeddable)
+  const chunkStart = useVideoStore((s) => s.chunkStart)
   const chapterStart = useVideoStore((s) => s.chapterStart)
   const requestSeek = useVideoStore((s) => s.requestSeek)
 
@@ -49,7 +50,9 @@ export const ReferencesPanel = memo(function ReferencesPanel({ references, onRef
       <div inert={collapsed} className="space-y-0.5 max-h-[240px] overflow-y-auto">
         {references.map((ref) => {
           const isScreenshot = ref.type === 'screenshot'
-          const seekSec = videoEmbeddable && !isScreenshot ? chapterStart(ref.chapterId) : null
+          const seekSec = videoEmbeddable && !isScreenshot
+            ? (chunkStart(ref.chunkId, ref.chapterId) ?? chapterStart(ref.chapterId))
+            : null
           return (
             <div key={ref.id} className="group flex items-center gap-1">
               <button

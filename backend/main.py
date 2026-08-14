@@ -19,6 +19,9 @@ import secrets
 import uuid
 import re
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 from backend import jobs
 from contextlib import contextmanager
 from pathlib import Path
@@ -804,6 +807,7 @@ async def quiz_explain(
         "heading": top.get("heading", ""),
         "heading_path": top.get("heading_path", ""),
         "chapter_id": top.get("chapter_id"),
+        "chunk_id": top.get("chunk_id"),
         "text": top.get("text", "")[:400],
         "screenshot": screenshot,
     }
@@ -1359,6 +1363,12 @@ async def _assert_shared_or_404(
         raise HTTPException(status_code=404, detail="Lecture not found")
 
 
+NORAI_DEV_ACCESS = (
+    os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
+    or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
+)
+
+
 async def ensure_lecture_access(
     lecture_id: str,
     user: Optional[User],
@@ -1371,9 +1381,19 @@ async def ensure_lecture_access(
     user is authenticated) or via a valid non-expired share link. The legacy
     "default" lecture stays open. When `require_tutor` is True (chat / quiz /
     flashcard writes), a share link must also allow tutor chat.
+
+    Dev escape hatch: when NORAI_DEV_ACCESS=1 or NORAI_DEV_INSECURE_AUTH=1,
+    any lecture present in the local file registry or outputs/ directory is
+    accessible without requiring authentication or share links.
     """
     if lecture_id in (None, "", "default"):
         return
+    if (
+        os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
+        or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
+    ):
+        if get_lecture(lecture_id) is not None or (Path("outputs") / lecture_id).exists():
+            return
     if user is None:
         # Anonymous (no token): only a valid share link grants access.
         await _assert_shared_or_404(lecture_id, db, require_tutor)

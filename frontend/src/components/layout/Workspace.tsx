@@ -78,21 +78,23 @@ export function Workspace() {
   }, [lectureId, setActiveLecture, loadLectures, loadChapters])
 
   const minAiWidth = aiMode === 'tutor' || aiMode === 'socratic' ? AI_MIN_TUTOR : AI_MIN_QUIZ_CARDS
+  const prevAiModeRef = useRef(aiMode)
 
+  // Update width ONLY on explicit aiMode transition without circular feedback loops
   useEffect(() => {
-    if ((aiMode === 'tutor' || aiMode === 'socratic') && !isDragging) {
-      setTutorAiWidth(aiPanelWidth)
-    }
-  }, [aiPanelWidth, aiMode, isDragging])
+    if (prevAiModeRef.current === aiMode) return
+    const prevMode = prevAiModeRef.current
+    prevAiModeRef.current = aiMode
 
-  useEffect(() => {
-    if (aiMode !== 'tutor' && aiMode !== 'socratic') {
-      if (aiPanelWidth < AI_MIN_QUIZ_CARDS) {
-        setAiPanelWidth(AI_MIN_QUIZ_CARDS)
-      }
-    } else {
-      const restored = Math.max(AI_MIN_TUTOR, Math.min(tutorAiWidth, AI_MAX))
-      setAiPanelWidth(restored)
+    const isNowTutor = aiMode === 'tutor' || aiMode === 'socratic'
+    const wasTutor = prevMode === 'tutor' || prevMode === 'socratic'
+
+    if (!isNowTutor && wasTutor) {
+      // Switched from Tutor to Quiz/Cards -> expand if smaller than minimum
+      setAiPanelWidth((w) => Math.max(AI_MIN_QUIZ_CARDS, w))
+    } else if (isNowTutor && !wasTutor) {
+      // Switched from Quiz/Cards back to Tutor -> restore user's preferred tutor width
+      setAiPanelWidth(Math.max(AI_MIN_TUTOR, Math.min(tutorAiWidth, AI_MAX)))
     }
   }, [aiMode, tutorAiWidth])
 
@@ -112,25 +114,47 @@ export function Workspace() {
     }
     switch (e.key) {
       case 'ArrowLeft':
-        return apply(() =>
-          side === 'left'
-            ? setSidebarWidth((w) => Math.max(SIDEBAR_MIN, w - step))
-            : setAiPanelWidth((w) => Math.max(minAiWidth, w - step))
-        )
+        return apply(() => {
+          if (side === 'left') {
+            setSidebarWidth((w) => Math.max(SIDEBAR_MIN, w - step))
+          } else {
+            setAiPanelWidth((w) => {
+              const nw = Math.min(AI_MAX, w + step)
+              if (aiMode === 'tutor' || aiMode === 'socratic') setTutorAiWidth(nw)
+              return nw
+            })
+          }
+        })
       case 'ArrowRight':
-        return apply(() =>
-          side === 'left'
-            ? setSidebarWidth((w) => Math.min(SIDEBAR_MAX, w + step))
-            : setAiPanelWidth((w) => Math.min(AI_MAX, w + step))
-        )
+        return apply(() => {
+          if (side === 'left') {
+            setSidebarWidth((w) => Math.min(SIDEBAR_MAX, w + step))
+          } else {
+            setAiPanelWidth((w) => {
+              const nw = Math.max(minAiWidth, w - step)
+              if (aiMode === 'tutor' || aiMode === 'socratic') setTutorAiWidth(nw)
+              return nw
+            })
+          }
+        })
       case 'Home':
-        return apply(() =>
-          side === 'left' ? setSidebarWidth(SIDEBAR_MIN) : setAiPanelWidth(minAiWidth)
-        )
+        return apply(() => {
+          if (side === 'left') {
+            setSidebarWidth(SIDEBAR_MIN)
+          } else {
+            setAiPanelWidth(minAiWidth)
+            if (aiMode === 'tutor' || aiMode === 'socratic') setTutorAiWidth(minAiWidth)
+          }
+        })
       case 'End':
-        return apply(() =>
-          side === 'left' ? setSidebarWidth(SIDEBAR_MAX) : setAiPanelWidth(AI_MAX)
-        )
+        return apply(() => {
+          if (side === 'left') {
+            setSidebarWidth(SIDEBAR_MAX)
+          } else {
+            setAiPanelWidth(AI_MAX)
+            if (aiMode === 'tutor' || aiMode === 'socratic') setTutorAiWidth(AI_MAX)
+          }
+        })
     }
   }
 
@@ -147,6 +171,9 @@ export function Workspace() {
         const relativeRight = rect.right - e.clientX
         const w = Math.max(minAiWidth, Math.min(AI_MAX, relativeRight))
         setAiPanelWidth(w)
+        if (aiMode === 'tutor' || aiMode === 'socratic') {
+          setTutorAiWidth(w)
+        }
       }
     }
 
@@ -165,7 +192,7 @@ export function Workspace() {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [minAiWidth])
+  }, [minAiWidth, aiMode])
 
   const handleSidebarToggle = () => {
     if (isMobile) {
