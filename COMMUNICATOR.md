@@ -45,7 +45,8 @@
     - Re-ran screenshot selection on `aws-cloud-engineer-71m` and `6af222a9`, generating `chapter_*_screenshots.json` and indexing captions into Chroma.
   - **Cross-Chapter Citation Navigation (`tutor/citations.py`, `frontend/src/lib/cite.ts`, `frontend/src/lib/references.ts`, `frontend/src/types/index.ts`, `frontend/src/components/chat/ChatArea.tsx`, `frontend/src/components/chat/ReferencesPanel.tsx`)**:
     - Propagated `"chapter_id": match.get("chapter_id")` in `verify_citations()` and added `chapter_id?: number | null` to `VerifiedCitation` type.
-    - Updated `buildReferences` to resolve `chapterId` across citation metadata, chunk ID patterns, and heading breadcrumbs.
+    - Fixed chunk hash regex bug where `chunk_<hex_hash>` accidentally matched leading hex digits (e.g. `chunk_53...` -> Ch 53). Now strictly matches `^ch(\d+)__` and resolves chapter IDs via citation metadata, chunk lookups, and chapter titles in `useChapterStore`.
+    - Added chapter existence validation in `scrollToHeading` so non-existent chapters are never navigated to.
     - Replaced brittle exact `getElementById` with fuzzy card lookup (`findSectionCard`) in `scrollToHeading` matching card IDs, slugs, and token overlap.
     - Guaranteed `store.setDocTab('notes')` is always activated on reference clicks, switching to the target chapter if different and smooth-scrolling with pulsing highlight.
     - Passed complete `Reference` object from `ReferencesPanel` directly to `handleReferenceClick`.

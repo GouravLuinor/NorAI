@@ -1,5 +1,6 @@
 import type { Reference, RetrievedChunk, RetrievedImage, VerifiedCitation } from '../types'
 import { headingToId } from './markdown'
+import { useChapterStore } from '../stores/useChapterStore'
 
 /**
  * Confidence threshold for surfacing a retrieved chunk as a reference.
@@ -18,8 +19,58 @@ function isConfident(chunk: RetrievedChunk): boolean {
 
 function chapterFromChunkId(chunkId?: string): number | undefined {
   if (!chunkId) return undefined
-  const m = chunkId.match(/^(?:ch|chunk_)?(\d+)/i)
+  // Only match explicit ch<N>__ pattern (e.g. ch1__heading), NEVER chunk_<hex_hash>
+  const m = chunkId.match(/^ch(\d+)__/i)
   return m ? Number(m[1]) : undefined
+}
+
+export function resolveChapterId(
+  explicitChapterId?: number | null,
+  chunkId?: string | null,
+  headingPath?: string | null,
+  sectionName?: string | null,
+  chunks: RetrievedChunk[] = [],
+): number | undefined {
+  if (explicitChapterId != null && explicitChapterId > 0) {
+    return explicitChapterId
+  }
+
+  // 1. Check chunks lookup by chunkId
+  if (chunkId) {
+    const chunk = chunks.find((c) => c.chunk_id === chunkId)
+    if (chunk?.chapter_id != null && chunk.chapter_id > 0) {
+      return chunk.chapter_id
+    }
+  }
+
+  // 2. Check explicit ch<N>__ prefix
+  const fromPrefix = chapterFromChunkId(chunkId ?? undefined)
+  if (fromPrefix != null) return fromPrefix
+
+  // 3. Match against retrieved chunks by heading path / section
+  const queryText = headingPath || sectionName || ''
+  if (queryText) {
+    const chunk = chunks.find(
+      (c) =>
+        c.heading_path === queryText ||
+        c.heading === queryText ||
+        (c.heading && queryText.includes(c.heading)) ||
+        (c.heading_path && queryText.includes(c.heading_path)),
+    )
+    if (chunk?.chapter_id != null && chunk.chapter_id > 0) {
+      return chunk.chapter_id
+    }
+
+    // 4. Match against store chapter titles
+    const storeChapters = useChapterStore.getState().chapters
+    for (const ch of storeChapters) {
+      if (ch.title && queryText.toLowerCase().includes(ch.title.toLowerCase())) {
+        return ch.id
+      }
+    }
+  }
+
+  return undefined
 }
 
 export function buildReferences(
@@ -39,21 +90,13 @@ export function buildReferences(
       const headingParts = (v.heading_path || v.section || '').split('>')
       const leafHeading = headingParts[headingParts.length - 1].trim()
 
-      // Resolve chapterId from citation metadata, or chunk lookup, or heading path
-      let chapterId = v.chapter_id ?? chapterFromChunkId(v.chunk_id ?? undefined)
-      if (chapterId == null && v.chunk_id) {
-        const matchChunk = chunks.find((c) => c.chunk_id === v.chunk_id)
-        if (matchChunk?.chapter_id != null) chapterId = matchChunk.chapter_id
-      }
-      if (chapterId == null && (v.heading_path || v.section)) {
-        const matchChunk = chunks.find(
-          (c) =>
-            c.heading_path === v.heading_path ||
-            c.heading === v.section ||
-            (v.section && (c.heading?.includes(v.section) || v.section.includes(c.heading || ''))),
-        )
-        if (matchChunk?.chapter_id != null) chapterId = matchChunk.chapter_id
-      }
+      const chapterId = resolveChapterId(
+        v.chapter_id,
+        v.chunk_id,
+        v.heading_path,
+        v.section,
+        chunks,
+      )
 
       refs.push({
         id: v.chunk_id || v.section,
@@ -72,12 +115,19 @@ export function buildReferences(
       if (!isConfident(c)) continue
       const headingParts = (c.heading_path || c.heading || '').split('>')
       const leafHeading = headingParts[headingParts.length - 1].trim()
+      const chapterId = resolveChapterId(
+        c.chapter_id,
+        c.chunk_id,
+        c.heading_path,
+        c.heading,
+        chunks,
+      )
       refs.push({
         id: c.chunk_id || c.heading_path,
         title: c.heading_path || c.heading || 'Notes Reference',
-        section: c.chapter_id != null ? `Ch ${c.chapter_id}` : 'Notes Reference',
+        section: chapterId != null ? `Ch ${chapterId}` : 'Notes Reference',
         sectionId: headingToId(leafHeading),
-        chapterId: c.chapter_id ?? undefined,
+        chapterId: chapterId ?? undefined,
         chunkId: c.chunk_id ?? undefined,
         type: 'note',
       })
