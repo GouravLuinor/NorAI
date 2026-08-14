@@ -68,6 +68,10 @@ export function ProcessingPage() {
         useAuthStore.getState().refreshQuota()
         return
       }
+      if (stage === 'retrying') {
+        setMessage(data.message || 'Temporary issue encountered. Retrying…')
+        return
+      }
       if (stage === 'error') {
         setErrored(true)
         setMessage(`Error: ${data.message || 'Something went wrong.'}`)
