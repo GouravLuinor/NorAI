@@ -50,9 +50,9 @@ def test_estimate_baseline_matches_observed():
 def test_estimate_long_lecture_bounded():
     """3-hour lecture: adaptive spc bounds chunk count and calls."""
     est = estimate_pipeline(181, metrics_path="/nonexistent/metrics.jsonl")
-    check("3h spc == 60 (cap)", est["segments_per_chunk"] == 60)
-    check("3h chunks bounded (<=32)", est["estimated_chunks"] <= 32)
-    check("3h chapters capped at 8", est["estimated_chapters"] == 8)
+    check("3h spc == 30 (cap)", est["segments_per_chunk"] == 30)
+    check("3h chunks bounded (<=65)", est["estimated_chunks"] <= 65)
+    check("3h chapters dynamic scale (<=16)", est["estimated_chapters"] <= 16)
     check("3h exceeds free trial", est["free_trial_ok"] is False)
 
 

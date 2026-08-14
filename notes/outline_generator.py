@@ -110,37 +110,34 @@ def load_chapters(
 def build_outline_payload(
     chapters
 ):
-
     payload = []
-
     for chapter in chapters:
+        cid = chapter.get("chapter_id", chapter.get("chunk_id", 0))
+        topics = chapter.get("topics", [])
+        concepts = chapter.get("concepts", [])
+        notes = chapter.get("lecture_notes", [])
+        summary = " ".join(notes) if isinstance(notes, list) else str(notes)
+        visual_notes = chapter.get("visual_notes", [])
+        important_info = chapter.get("important_information", [])
 
-        payload.append({
+        item = {
+            "chunk_id": cid,
+            "topics": topics,
+            "concepts": concepts,
+            "summary": summary,
+        }
+        if visual_notes:
+            item["visual_notes"] = visual_notes
+        if important_info:
+            item["important_information"] = important_info
 
-            "chapter_id":
-            chapter["chapter_id"],
-
-            "topics":
-            chapter["topics"][:5],
-
-            "concepts":
-            chapter["concepts"][:10],
-
-            "summary":
-            " ".join(
-                chapter[
-                    "lecture_notes"
-                ]
-            )[:1000]
-        })
-
+        payload.append(item)
     return payload
 
 
 def build_prompt(
     chapters
 ):
-
     payload = (
         build_outline_payload(
             chapters
@@ -148,16 +145,9 @@ def build_prompt(
     )
 
     return (
-
         OUTLINE_PROMPT
-
-        +
-
-        "\n\n"
-
-        +
-
-        json.dumps(
+        + "\n\n"
+        + json.dumps(
             payload,
             indent=4,
             ensure_ascii=False
@@ -180,12 +170,12 @@ def generate_outline(
     response = (
         client.models.generate_content(
             model=MODEL_NAME,
-            contents=[prompt],
+            contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.3,
                 response_mime_type="application/json",
                 response_schema=LectureOutlineModel,
-                max_output_tokens=1000,
+                max_output_tokens=4096,
             )
         )
     )

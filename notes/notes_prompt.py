@@ -40,9 +40,12 @@ Write like a textbook author creating revision notes. Avoid: excessive introduct
 summaries, generic explanations, filler text, lecture recaps. Prefer: intuition, concise
 explanations, structured learning, technical accuracy, educational clarity.
 
-TARGET LENGTH
-Target approximately 300–700 words per chapter. Shorter is preferred if the chapter is narrow.
-Do not expand content merely to increase length.
+TARGET DEPTH & DENSITY
+Scale content depth proportionally with the chapter's conceptual breadth:
+* Narrow chapters (1–2 concepts): Keep concise (~400–700 words), focused on core definitions and key takeaways.
+* Standard chapters (3–5 concepts): Write thorough, structured explanations (~800–1,400 words) with examples and comparisons.
+* Dense chapters (6+ concepts / multi-topic architectures): Provide comprehensive, textbook-depth coverage (~1,500–2,500 words) breaking down every component, mechanism, diagram logic, and trade-off.
+Do not artificially abbreviate complex technical topics, and do not add filler to inflate narrow ones.
 
 MARKDOWN STRUCTURE
 Use only sections that add value. Recommended structure:

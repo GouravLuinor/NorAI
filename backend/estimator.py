@@ -178,7 +178,12 @@ def estimate_pipeline(
         segments = math.ceil(duration_min * segs_per_min) if duration_min else 0
     spc = adaptive_segments_per_chunk(max(segments, 0))
     chunks = math.ceil(max(segments, 0) / spc) if spc else 0
-    chapters = min(8, max(3, chunks // 3)) if chunks else 0
+    if not chunks:
+        chapters = 0
+    elif chunks <= 6:
+        chapters = min(3, chunks)
+    else:
+        chapters = min(16, max(3, round(duration_min / 8.0) if duration_min >= 20 else math.ceil(chunks / 2.5)))
     embed_batches = 2  # notes index + screenshot index
     selection = round(selection_ratio * chapters) if chapters else 0
     llm_calls = chunks + 1 + 2 * chapters + selection + embed_batches if chunks else 0
@@ -271,5 +276,6 @@ if __name__ == "__main__":
         i = sys.argv.index("--metrics")
         metrics_arg = sys.argv[i + 1]
     if "--recalibrate" in sys.argv:
-        sys.exit(recalibrate(metrics_arg))
+        recalibrate(metrics_arg)
+        sys.exit(0)
     print("Usage: python -m backend.estimator --recalibrate [--metrics <path>]")

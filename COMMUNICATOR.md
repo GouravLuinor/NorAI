@@ -34,6 +34,27 @@
 
 ## 📝 Task History & Handoff Log
 
+### [2026-08-14] — Antigravity: Content-Adaptive Dynamic Scaling (Phase 1–4)
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed
+- **Summary of Changes**:
+  - **Dynamic Chunking & Estimator (`config.py`, `chunking/chunk.py`, `backend/estimator.py`, `chunking/test_adaptive_chunking.py`, `backend/test_estimate.py`)**:
+    - Reduced `MAX_SEGMENTS_PER_CHUNK` from 60 to 30 (~2.8 mins max per chunk) to preserve fine-grained technical concepts in dense multi-service courses without squashing 6 minutes into one chunk.
+    - Updated `TARGET_MAX_CHUNKS` from 24 to 40 so chunk count scales smoothly with audio duration.
+    - Updated `estimate_pipeline()` in `estimator.py` to calculate chapters dynamically up to 16 for long courses.
+  - **Zero-Loss Curriculum Outline Payload & Dynamic Chapter Sizing (`notes/outline_prompts.py`, `notes/outline_generator.py`)**:
+    - Replaced rigid "strictly 3 to 6 chapters" rule with dynamic range scaling (2–4 chapters for ≤15m up to 8–14 chapters for ≥65m).
+    - Removed `[:1000]` character truncation and `[:5]` / `[:10]` topic truncation in `build_outline_payload`. 100% of extracted topics, OCR notes, and concept graphs are now provided to Gemini.
+    - Increased `max_output_tokens` from 1,000 to 4,096 in `generate_outline` to support large curriculum JSON schemas.
+  - **Depth-Proportional Chapter Synthesis (`notes/notes_prompt.py`, `notes/notes_generator.py`)**:
+    - Replaced 300–700 word limit with `TARGET DEPTH & DENSITY` (scaling from ~400–700 words for narrow topics to ~1,500–2,500 words across 4–8 structured card sections for dense architectures).
+    - Fixed google-genai `contents` parameter types and response checks.
+- **Verification**:
+  - 38/38 Python test suites passing (`test_adaptive_chunking.py`, `test_estimate.py`, etc.).
+  - 73/73 Vitest frontend unit tests passing.
+  - `oxlint`: 0 warnings, 0 errors across 102 files.
+- **Hand-off Notes**: Ready for production deployment and processing lectures of any duration with full depth.
+
 ### [2026-08-14] — Antigravity: Screenshot Selector Normalization & Cross-Chapter Citation Navigation Fixes
 - **Agent**: Antigravity (IDE)
 - **Status**: Completed
