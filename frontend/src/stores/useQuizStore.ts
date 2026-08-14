@@ -81,6 +81,7 @@ interface QuizState {
   setMode: (mode: 'tutor' | 'quiz' | 'cards' | 'socratic') => void
 
   isActive: boolean
+  isQuizLoading: boolean
   attemptId: string | null
   questions: Question[]
   currentIndex: number
@@ -93,6 +94,7 @@ interface QuizState {
   quizDifficulty: QuizDifficulty | null
 
   startQuiz: (questions: Question[], chapterId?: number | null, difficulty?: QuizDifficulty | null) => void
+  setQuizLoading: (loading: boolean) => void
   createAttempt: (questions: Question[], chapterId?: number | null, difficulty?: QuizDifficulty | null) => Promise<string | null>
   submitAnswer: (answer: string) => void
   setConfidence: (confidence: string) => void
@@ -111,10 +113,11 @@ interface QuizState {
 const INITIAL_STATE: Omit<
   QuizState,
   | 'setMode' | 'startQuiz' | 'createAttempt' | 'submitAnswer' | 'setConfidence'
-  | 'nextQuestion' | 'endQuiz' | 'finishAttempt' | 'retakeQuiz' | 'reset'
+  | 'nextQuestion' | 'endQuiz' | 'finishAttempt' | 'retakeQuiz' | 'reset' | 'setQuizLoading'
 > = {
   aiMode: 'tutor',
   isActive: false,
+  isQuizLoading: false,
   attemptId: null,
   questions: [],
   currentIndex: 0,
@@ -140,6 +143,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     set({
       aiMode: 'quiz',
       isActive: true,
+      isQuizLoading: false,
       questions,
       currentIndex: 0,
       answers: [],
@@ -150,6 +154,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       quizChapterId: chapterId ?? null,
       quizDifficulty: difficulty ?? null,
     }),
+
+  setQuizLoading: (loading) => set({ isQuizLoading: loading }),
 
   createAttempt: async (questions, chapterId = null, difficulty = null) => {
     const lectureId = getLectureId()

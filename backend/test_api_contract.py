@@ -69,19 +69,13 @@ def post_json(path: str, body: dict) -> tuple[int, object]:
 
 
 def probe_lecture_endpoints() -> list[str]:
-    """/study-guide + /quiz/explain need a real lecture id; probe the first one."""
+    """/study-guide + /quiz/explain + quiz/flashcards writes need a lecture id.
+
+    P6.4 closed-by-default: anonymous probes may only read the `default`
+    lecture (real lectures are owner- or share-link-only), so probe that one.
+    """
     failures: list[str] = []
-    _, payload = get("/lectures")
-    if not payload:
-        return ["/study-guide: /lectures returned nothing to pick a lecture from"]
-    try:
-        lectures = json_parse(payload[1])
-    except Exception as e:  # noqa: BLE001
-        return [f"/study-guide: could not parse /lectures -> {e}"]
-    first = next((l for l in lectures if isinstance(l, dict) and l.get("lecture_id")), None)
-    lid = first.get("lecture_id") if first else None
-    if not lid:
-        return ["/study-guide: no lecture id found to probe with"]
+    lid = "default"
 
     status, payload = get(f"/study-guide?lecture_id={lid}")
     print(f"GET  {f'/study-guide?lecture_id={lid}':<18} -> {status}")
@@ -145,7 +139,7 @@ def probe_lecture_endpoints() -> list[str]:
     if status != 200:
         failures.append(f"/quiz/attempts: expected 200, got {status}")
 
-    status, payload = post_json("/flashcards/ratings", {"lecture_id": lid, "chapter_id": 1, "ratings": [{"card_key": "test_card", "rating": "again"}]})
+    status, payload = post_json("/flashcards/ratings", {"lecture_id": lid, "chapter_id": 1, "ratings": [{"card_key": "test_card", "rating": "Again"}]})
     print(f"POST {f'/flashcards/ratings ({lid})':<18} -> {status}")
     if status != 200:
         failures.append(f"/flashcards/ratings: expected 200, got {status}")

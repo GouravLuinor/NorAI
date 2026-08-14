@@ -6,6 +6,7 @@ import { Check, X, RotateCcw, BookOpen, AlertTriangle, Quote, RefreshCw } from '
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
 import { CitationBox } from './CitationBox'
+import { QuizSkeleton } from '../ui/SkeletonCard'
 import { scrollToHeading } from '../../lib/cite'
 import { FOCUS_RING } from '../ui/shared'
 
@@ -16,6 +17,7 @@ export function QuizPanel() {
     confidences,
     score,
     evaluation,
+    isQuizLoading,
     quizStartTime,
     submitAnswer,
     nextQuestion,
@@ -213,6 +215,10 @@ export function QuizPanel() {
   }
 
   // ── Quiz Active (questions view) ─────────────────────────────────────────
+  if (isQuizLoading) {
+    return <QuizSkeleton />
+  }
+
   if (questions.length === 0) {
     return <div className="flex-1 flex items-center justify-center text-nt3 text-sm">No quiz questions loaded.</div>
   }
@@ -378,7 +384,7 @@ export function QuizPanel() {
             {citation && (
               <CitationBox
                 citation={citation}
-                loading={false}
+                loading={citing}
                 onScroll={() => scrollToHeading(citation.heading_path || citation.source || '', citation.chapter_id)}
               />
             )}

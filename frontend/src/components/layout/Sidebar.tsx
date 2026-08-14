@@ -12,6 +12,7 @@ import { FOCUS_RING } from '../ui/shared'
 import { useVideoStore } from '../../stores/useVideoStore'
 import { formatTimestamp } from '../../lib/video'
 import { useNavigate } from 'react-router-dom'
+import { Select } from '../ui/Select'
 import type { QuotaInfo } from '../../stores/useAuthStore'
 
 
@@ -30,11 +31,14 @@ const quotaPct = (q: QuotaInfo | null) => {
 
 interface SidebarProps {
   onToggleCollapse: () => void
+  /** Drawer contexts (mobile) always render the expanded sidebar even if the
+   *  store has `sidebarCollapsed` set — otherwise the drawer shows blank. */
+  forceExpanded?: boolean
 }
 
-export function Sidebar({ onToggleCollapse }: SidebarProps) {
+export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProps) {
   const activeChapterId  = useChapterStore(s => s.activeChapterId)
-  const sidebarCollapsed = useChapterStore(s => s.sidebarCollapsed)
+  const sidebarCollapsed = useChapterStore(s => s.sidebarCollapsed) && !forceExpanded
   const setChapter       = useChapterStore(s => s.setChapter)
   const addToast = useToastStore(s => s.addToast)
 
@@ -147,29 +151,21 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
 
           {/* ── Lecture selector ──────────────────────────────── */}
           <div className="mb-3">
-            <div className="spec-label mb-1.5">01. Lecture</div>
-            <select
-              aria-label="Select lecture"
+            <div className="spec-label mb-1.5">Lecture</div>
+            <Select
+              ariaLabel="Select lecture"
               value={activeLectureId || ''}
-              onChange={(e) => {
-                const newId = e.target.value
+              onChange={(newId) => {
                 setActiveLecture(newId)
-                navigate(`/workspace/${newId}`)   // ← add this
+                navigate(`/workspace/${newId}`)
               }}
-
-              className={`w-full bg-nb border border-bdr2 rounded-md px-2 py-1 text-11 text-nt2 focus:border-np transition ${FOCUS_RING}`}
-            >
-              {lectures.map((l) => (
-                <option key={l.lecture_id} value={l.lecture_id}>
-                  {l.title}
-                </option>
-              ))}
-            </select>
+              options={lectures.map((l) => ({ value: l.lecture_id, label: l.title }))}
+            />
           </div>
           {/* ──────────────────────────────────────────────────── */}
 
           {/* Chapter list */}
-          <div className="spec-label mb-1.5">02. Chapters</div>
+          <div className="spec-label mb-1.5">Chapters</div>
           <ul className="space-y-0.5">
             {chapters.map((ch) => {
               const chTime = videoMap?.chapters.find((c) => c.chapter_id === ch.id)
@@ -212,7 +208,7 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
 
         {/* Thread list */}
         <div className="flex-1 overflow-hidden px-3.5 py-3.5">
-          <div className="spec-label mb-1.5">03. Threads</div>
+          <div className="spec-label mb-1.5">Threads</div>
           {threads.map((t) => (
             <div
               key={t}
@@ -285,6 +281,12 @@ export function Sidebar({ onToggleCollapse }: SidebarProps) {
               )}
             </div>
             <div className="mt-2 flex justify-between text-10">
+              <button
+                onClick={() => navigate('/courses')}
+                className="text-np font-medium hover:underline cursor-pointer"
+              >
+                Courses
+              </button>
               <button
                 onClick={() => navigate('/usage')}
                 className="text-np font-medium hover:underline cursor-pointer"

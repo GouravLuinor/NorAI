@@ -11,6 +11,7 @@ import { Markdown } from '../ui/Markdown'
 import { Card, CardHeader } from '../ui/Card'
 import { FOCUS_RING } from '../ui/shared'
 import { PartialContentBadge } from '../ui/PartialContentBadge'
+import { NotesSkeleton } from '../ui/SkeletonCard'
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function splitByH2(md: string): { heading: string; body: string }[] {
@@ -272,11 +273,7 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
   }, [chapterIdStr, lectureId])
 
   if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-nt3 text-sm">
-        Loading notes…
-      </div>
-    )
+    return <NotesSkeleton />
   }
 
   return (

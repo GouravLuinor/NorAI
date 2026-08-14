@@ -10,6 +10,7 @@ import { useQuizStore } from '../../stores/useQuizStore'
 import { sendChatMessageStream } from '../../lib/chatApi'
 import { apiGet } from '../../lib/http'
 import { buildReferences } from '../../lib/references'
+import { ConceptSkeleton } from '../ui/SkeletonCard'
 import {
   layoutConceptMap,
   conceptEdgePath,
@@ -146,11 +147,7 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
   }, [chapterId, lectureId])
 
   if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-nt3 text-sm">
-        Deriving concept map structure…
-      </div>
-    )
+    return <ConceptSkeleton />
   }
 
   if (!data || !data.nodes || data.nodes.length === 0) {

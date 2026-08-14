@@ -15,7 +15,7 @@ import { FOCUS_RING } from '../ui/shared'
 export function AIPanel() {
   const { activeChapterId } = useChapterStore()
   const activeLectureId = useLectureStore(s => s.activeLectureId)
-  const { aiMode, setMode, startQuiz } = useQuizStore()
+  const { aiMode, setMode, startQuiz, setQuizLoading } = useQuizStore()
   const addToast = useToastStore(s => s.addToast)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
@@ -70,6 +70,7 @@ export function AIPanel() {
                 // quiz panel's "no questions" state instead of silently
                 // staying on Tutor; toast only once questions actually load.
                 setMode('quiz')
+                setQuizLoading(true)
                 fetchQuizQuestions(activeChapterId, activeLectureId || undefined)
                   .then((qs) => {
                     if (qs.length > 0) {
@@ -78,6 +79,7 @@ export function AIPanel() {
                     }
                   })
                   .catch(() => {})
+                  .finally(() => setQuizLoading(false))
               } else if (mode === 'cards') {
                 setMode('cards')
                 addToast('Flashcards mode activated', 'info')

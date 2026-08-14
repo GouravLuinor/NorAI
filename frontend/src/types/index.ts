@@ -45,3 +45,41 @@ export interface ProcessEvent {
   message?: string
   progress?: number
 }
+
+/** P6.4 — a user-owned course collection of lectures. */
+export interface CourseSummary {
+  course_id: string
+  name: string
+  description?: string | null
+  lecture_count: number
+  created_at?: string | null
+}
+
+export interface CourseLectureEntry {
+  lecture_id: string
+  title: string
+  status: string
+  source_type?: string | null
+  duration_seconds?: number
+  chapter_count?: number
+  created_at?: string | null
+}
+
+export interface CourseDetail extends CourseSummary {
+  lectures: CourseLectureEntry[]
+}
+
+/** P6.4 — unlisted share link for a lecture (owner-created). */
+export interface ShareLinkInfo {
+  slug: string
+  url: string
+  allow_tutor_chat: boolean
+}
+
+export interface ResolvedShare {
+  lecture_id: string
+  title: string
+  status: string
+  source_type?: string | null
+  allow_tutor_chat: boolean
+}

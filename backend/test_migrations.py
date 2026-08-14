@@ -38,6 +38,8 @@ PIPELINE_COLUMNS = {
 }
 # P6.5: cost-dashboard columns added to usage_logs.
 USAGE_COLUMNS = {"model", "calls"}
+# P6.4: courses + share links.
+COURSE_TABLES = {"courses", "course_lectures", "share_links"}
 
 
 def _conn(db_path: str) -> sqlite3.Connection:
@@ -58,7 +60,7 @@ def _column_names(db_path: str, table: str) -> set:
     return {r[1] for r in rows}
 
 
-_MIG_HEAD = "0003_usage_log_columns"
+_MIG_HEAD = "0004_courses_and_shares"
 
 
 def _version(db_path: str):
@@ -110,6 +112,19 @@ check(
     "fresh: usage_logs has P6.5 columns",
     USAGE_COLUMNS <= _column_names(_FRESH_DB, "usage_logs"),
 )
+check(
+    "fresh: P6.4 course tables created",
+    COURSE_TABLES <= _table_names(_FRESH_DB),
+)
+check(
+    "fresh: share_links columns",
+    {"id", "lecture_id", "created_by", "allow_tutor_chat", "expires_at"}
+    <= _column_names(_FRESH_DB, "share_links"),
+)
+check(
+    "fresh: course_lectures PK columns",
+    {"course_id", "lecture_id", "position"} <= _column_names(_FRESH_DB, "course_lectures"),
+)
 
 # ── 2. Pre-Alembic DB (old create_all schema) ───────────────────────────────
 with _conn(_LEGACY_DB) as c:
@@ -146,6 +161,10 @@ check(
     "legacy: usage_logs gained P6.5 columns",
     USAGE_COLUMNS <= _column_names(_LEGACY_DB, "usage_logs"),
 )
+check(
+    "legacy: P6.4 course tables added",
+    COURSE_TABLES <= _table_names(_LEGACY_DB),
+)
 with _conn(_LEGACY_DB) as c:
     row = c.execute("SELECT attempts, cancel_requested FROM lectures WHERE id='legacy-1'").fetchone()
 check(
@@ -163,6 +182,10 @@ check(
 check(
     "idempotent: P6.5 usage columns intact",
     USAGE_COLUMNS <= _column_names(_LEGACY_DB, "usage_logs"),
+)
+check(
+    "idempotent: P6.4 course tables intact",
+    COURSE_TABLES <= _table_names(_LEGACY_DB),
 )
 check(
     "idempotent: only one alembic_version row",

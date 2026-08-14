@@ -40,6 +40,8 @@ class User(Base):
     subscription: Mapped[Optional["Subscription"]] = relationship("Subscription", back_populates="user", uselist=False, cascade="all, delete-orphan")
     lectures: Mapped[List["Lecture"]] = relationship("Lecture", back_populates="user", cascade="all, delete-orphan")
     usage_logs: Mapped[List["UsageLog"]] = relationship("UsageLog", back_populates="user", cascade="all, delete-orphan")
+    courses: Mapped[List["Course"]] = relationship("Course", back_populates="user", cascade="all, delete-orphan")
+    share_links: Mapped[List["ShareLink"]] = relationship("ShareLink", back_populates="user", cascade="all, delete-orphan")
 
 
 class Subscription(Base):
@@ -98,6 +100,65 @@ class Lecture(Base):
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="lectures")
     usage_logs: Mapped[List["UsageLog"]] = relationship("UsageLog", back_populates="lecture", cascade="all, delete-orphan")
+    courses: Mapped[List["Course"]] = relationship(
+        "Course", secondary="course_lectures", back_populates="lectures"
+    )
+    share_links: Mapped[List["ShareLink"]] = relationship("ShareLink", back_populates="lecture", cascade="all, delete-orphan")
+
+
+class Course(Base):
+    __tablename__ = "courses"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, default=generate_uuid)
+    user_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(256), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", back_populates="courses")
+    lecture_links: Mapped[List["CourseLecture"]] = relationship(
+        "CourseLecture",
+        back_populates="course",
+        cascade="all, delete-orphan",
+        overlaps="courses,lectures",
+    )
+    lectures: Mapped[List["Lecture"]] = relationship(
+        "Lecture", secondary="course_lectures", back_populates="courses",
+        overlaps="lecture_links",
+    )
+
+
+class CourseLecture(Base):
+    __tablename__ = "course_lectures"
+
+    course_id: Mapped[str] = mapped_column(String(64), ForeignKey("courses.id", ondelete="CASCADE"), primary_key=True)
+    lecture_id: Mapped[str] = mapped_column(String(128), ForeignKey("lectures.id", ondelete="CASCADE"), primary_key=True)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+    # Relationships
+    course: Mapped["Course"] = relationship(
+        "Course", back_populates="lecture_links", overlaps="courses,lectures"
+    )
+    lecture: Mapped["Lecture"] = relationship("Lecture", overlaps="courses,lectures")
+
+
+class ShareLink(Base):
+    __tablename__ = "share_links"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)  # unguessable slug
+    lecture_id: Mapped[str] = mapped_column(String(128), ForeignKey("lectures.id", ondelete="CASCADE"), index=True, nullable=False)
+    created_by: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    allow_tutor_chat: Mapped[bool] = mapped_column(Boolean, default=True)
+    expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", back_populates="share_links")
+    lecture: Mapped["Lecture"] = relationship("Lecture", back_populates="share_links")
 
 
 class UsageLog(Base):

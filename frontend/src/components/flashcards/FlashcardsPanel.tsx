@@ -16,6 +16,7 @@ import { Button } from '../ui/Button'
 import { SegmentedControl } from '../ui/SegmentedControl'
 import { useToastStore } from '../../stores/useToastStore'
 import { FOCUS_RING } from '../ui/shared'
+import { motion } from 'framer-motion'
 
 type Rating = 'Again' | 'Hard' | 'Good' | 'Easy'
 type FilterMode = 'all' | 'missed' | 'due'
@@ -215,10 +216,10 @@ export function FlashcardsPanel() {
           className={`w-full max-w-[90%] aspect-[4/3] cursor-pointer perspective-1000 mx-auto block p-0 ${FOCUS_RING}`}
           onClick={() => setFlipped(!flipped)}
         >
-          <div
-            className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${
-              flipped ? 'rotate-y-180' : ''
-            }`}
+          <motion.div
+            className="relative w-full h-full transform-style-3d"
+            animate={{ rotateY: flipped ? 180 : 0 }}
+            transition={{ type: 'spring', stiffness: 280, damping: 22 }}
           >
             {/* Front */}
             <div aria-hidden={flipped || undefined} className="absolute inset-0 bg-ns border border-bdr2 rounded-xl p-5 flex flex-col items-center justify-center backface-hidden">
@@ -253,7 +254,7 @@ export function FlashcardsPanel() {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </button>
 
         {/* Show Answer / Rating */}
