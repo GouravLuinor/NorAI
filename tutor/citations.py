@@ -113,6 +113,7 @@ def verify_citations(answer: str, chunks: list[dict]) -> list[dict]:
                 "chunk_id": (match or {}).get("chunk_id"),
                 "heading_path": (match or {}).get("heading_path"),
                 "heading": (match or {}).get("heading"),
+                "chapter_id": (match or {}).get("chapter_id"),
             }
         )
     return result

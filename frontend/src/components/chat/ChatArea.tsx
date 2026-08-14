@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useThreadStore } from '../../stores/useThreadStore'
-import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { sendChatMessageStream } from '../../lib/chatApi'
 import { buildReferences, stripSources } from '../../lib/references'
+import { scrollToHeading } from '../../lib/cite'
 import type { Reference } from '../../types'
 import { useTutorSettingsStore } from '../../stores/useTutorSettingsStore'
 import { MessageBubble } from './MessageBubble'
@@ -159,42 +159,9 @@ const handleSend = useCallback(async (text: string) => {
   }, [threadId, addMessage, setLoading, setStreamingText, setLiveReferences, studyMode, persona])
 
   // ── Reference handlers ────────────────────────────────────────────────────
-  const handleReferenceClick = useCallback((sectionId: string) => {
-    const ref = liveReferences.find(r => r.sectionId === sectionId)
-    if (!ref) return
-
-    const targetChapterId = ref.chapterId
-    const store = useChapterStore.getState()
-    const currentChapterId = store.activeChapterId
-
-    const attemptScroll = () => {
-      let attempts = 0
-      const interval = setInterval(() => {
-        const el = document.getElementById(sectionId)
-        if (el) {
-          clearInterval(interval)
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          el.classList.remove('scroll-highlight')
-          void el.offsetWidth
-          el.classList.add('scroll-highlight')
-          el.addEventListener('animationend', function h() {
-            el.classList.remove('scroll-highlight')
-            el.removeEventListener('animationend', h)
-          })
-        } else if (attempts >= 20) {
-          clearInterval(interval)
-          console.warn('Reference click — sectionId:', sectionId, 'not found in DOM.')
-        }
-        attempts++
-      }, 100)
-    }
-
-    if (targetChapterId && targetChapterId !== currentChapterId) {
-      store.setChapter(targetChapterId)
-      store.setDocTab('notes')
-    }
-    attemptScroll()
-  }, [liveReferences])
+  const handleReferenceClick = useCallback((ref: Reference) => {
+    scrollToHeading(ref.title || ref.sectionId, ref.chapterId, ref.sectionId)
+  }, [])
 
   const handleScreenshotClick = useCallback((ref: Reference) => {
     const cleanPath = (ref.section || '').replace(/^outputs\//, '')

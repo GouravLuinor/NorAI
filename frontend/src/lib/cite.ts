@@ -1,30 +1,72 @@
 import { useChapterStore } from '../stores/useChapterStore'
 import { headingToId } from './markdown'
 
+function findSectionCard(targetId: string, headingText: string): HTMLElement | null {
+  // 1. Direct ID lookup
+  if (targetId) {
+    const direct = document.getElementById(targetId)
+    if (direct) return direct
+  }
+
+  // 2. Query all section card containers within the active document area
+  const docContainer = document.querySelector('.doc-content') || document
+  const cards = Array.from(docContainer.querySelectorAll<HTMLElement>('[id^="sec-"]'))
+  if (cards.length === 0) return null
+
+  // 3. Normalized slug matching
+  const targetSlug = headingToId(headingText).replace(/^sec-/, '').toLowerCase()
+  if (!targetSlug) return cards[0] || null
+
+  // Exact slug contains or card id contains
+  for (const card of cards) {
+    const cardSlug = card.id.replace(/^sec-/, '').toLowerCase()
+    if (cardSlug === targetSlug || cardSlug.includes(targetSlug) || targetSlug.includes(cardSlug)) {
+      return card
+    }
+  }
+
+  // 4. Token overlap matching (handling truncated headings or number prefixes)
+  const targetTokens = targetSlug.split('-').filter((t) => t.length > 2 && !/^\d+$/.test(t))
+  let bestCard: HTMLElement | null = null
+  let maxScore = 0
+
+  for (const card of cards) {
+    const cardText = (card.querySelector('h1, h2, h3, h4, [class*="font-"]') || card).textContent || ''
+    const cardSlug = headingToId(cardText).replace(/^sec-/, '').toLowerCase()
+    const matches = targetTokens.filter((tok) => cardSlug.includes(tok)).length
+    if (matches > maxScore) {
+      maxScore = matches
+      bestCard = card
+    }
+  }
+
+  return maxScore > 0 ? bestCard : (cards[0] || null)
+}
+
 /**
  * Scroll a "where is this in the notes?" citation into view.
  *
- * Mirrors ChatArea's reference-click behaviour: resolves the leaf heading of
- * a heading_path (e.g. "Chapter 1 > Core Architecture") to a DOM section id,
- * switches the doc pane to the right chapter + notes tab, then polls for
- * the element (it mounts after the tab swap) before smooth-scrolling.
+ * 1. Resolves target chapter and switches chapter + docTab to 'notes'.
+ * 2. Smart DOM polling: searches by exact sectionId, card IDs,
+ *    and keyword/subheading match across all rendered section cards.
+ * 3. Smooth-scrolls the matching card into view and triggers the pulsing highlight animation.
  */
-export function scrollToHeading(headingPath: string, chapterId?: number | null) {
-  const leafHeading = headingPath.split('>').pop()?.trim() || ''
-  if (!leafHeading) return
+export function scrollToHeading(headingPath: string, chapterId?: number | null, explicitSectionId?: string) {
+  const leafHeading = headingPath ? headingPath.split('>').pop()?.trim() || '' : ''
+  const targetId = explicitSectionId || (leafHeading ? headingToId(leafHeading) : '')
 
-  const sectionId = headingToId(leafHeading)
   const store = useChapterStore.getState()
   const currentChapterId = store.activeChapterId
 
-  if (chapterId && chapterId !== currentChapterId) {
+  if (chapterId != null && chapterId > 0 && chapterId !== currentChapterId) {
     store.setChapter(chapterId)
   }
   store.setDocTab('notes')
 
   let attempts = 0
+  const maxAttempts = 35 // Poll up to 3.5s to allow notes to fetch and render
   const interval = setInterval(() => {
-    const el = document.getElementById(sectionId)
+    const el = findSectionCard(targetId, leafHeading || headingPath)
     if (el) {
       clearInterval(interval)
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -35,8 +77,9 @@ export function scrollToHeading(headingPath: string, chapterId?: number | null) 
         el.classList.remove('scroll-highlight')
         el.removeEventListener('animationend', h)
       })
-    } else if (attempts >= 20) {
+    } else if (attempts >= maxAttempts) {
       clearInterval(interval)
+      console.warn('Reference click — section card not found in DOM:', { targetId, leafHeading, headingPath })
     }
     attempts++
   }, 100)

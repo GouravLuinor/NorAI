@@ -9,7 +9,7 @@
 
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
-| **Antigravity** (IDE) | 🟢 Idle / Completed | **End-to-End Audit & Code Review Pass across NorAI (Phases 1-4 Complete)**: Hardened tutor chat streaming, LangGraph checkpointer initialization, Zustand race conditions & effect lifecycles, background job retry durability, upload preservation, and API security. All 38 backend/tutor test suites + 73 Vitest + oxlint passing (100% green). | 2026-08-14 UTC |
+| **Antigravity** (IDE) | 🟢 Idle / Completed | **Bugfixes & Quality Hardening**: (1) Fixed missing study note screenshots by normalizing visual extractor importance ratings and adding candidate fallback; (2) Fixed cross-chapter reference navigation by propagating `chapter_id` in verified citations and implementing smart card lookup (`findSectionCard`). 38/38 backend tests + 73 Vitest + oxlint passing (100% green). | 2026-08-14 UTC |
 | **OpenCode** (CLI) | 🟢 Idle / Completed | **P6.4 + UI/UX audit execution combined — committed `8c4cd74` and pushed to `origin/fix/threads-and-pdf` (2026-08-14).** Course collections (`/courses` CRUD + reorder + membership, migration `0004_courses_and_shares`), closed-by-default share links (`/share/{slug}`, `/lectures/{id}/share` create/toggle/revoke with `allow_tutor_chat` gate), user-scoped `/lectures`, frontend `/courses` + `/share/:slug` pages + ShareModal, plus the audit follow-through (share-GET endpoint, UploadPage custom Select, skeletons across views, `--color-npbd` dark code surfaces, Select a11y). 37-check `test_courses_shares.py` + 21-check migrations + 70/70 Vitest. Followed by full doc-sync pass (all `.md` incl. TUTORIAL.md) reflecting P6/P7/UIUX + `DEPLOYMENT_PLAN.md` §0. Prior: P7 token-reduction sprint parts 1+2 (prompt compression + Gemini context caching dormant on free-tier + output-token cut, offline 37/37) | 2026-08-14 UTC |
 
 ---
@@ -34,7 +34,28 @@
 
 ## 📝 Task History & Handoff Log
 
-### [2026-08-14] — Antigravity: End-to-End Code Review & Hardening Audit (Phases 1–4)
+### [2026-08-14] — Antigravity: Screenshot Selector Normalization & Cross-Chapter Citation Navigation Fixes
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed
+- **Summary of Changes**:
+  - **Screenshot Selector Normalization (`notes/screenshot_selector.py`, `visual/visual_extractor.py`)**:
+    - Normalized `visual_extractor` 1–5 importance scores to 2–10 (`imp = raw_imp * 2 if 0 < raw_imp <= 5 else raw_imp`) so high-value diagrams/slides (scores 3, 4, 5) pass the `MIN_CONTENT_DENSITY = 6` quality bar.
+    - Added non-decorative candidate fallback in `filter_candidates` to prevent empty screenshot sections when valid slides exist.
+    - Updated `VisualObjectItem` Pydantic schema with explicit 1–10 importance score description and updated batch prompt.
+    - Re-ran screenshot selection on `aws-cloud-engineer-71m` and `6af222a9`, generating `chapter_*_screenshots.json` and indexing captions into Chroma.
+  - **Cross-Chapter Citation Navigation (`tutor/citations.py`, `frontend/src/lib/cite.ts`, `frontend/src/lib/references.ts`, `frontend/src/types/index.ts`, `frontend/src/components/chat/ChatArea.tsx`, `frontend/src/components/chat/ReferencesPanel.tsx`)**:
+    - Propagated `"chapter_id": match.get("chapter_id")` in `verify_citations()` and added `chapter_id?: number | null` to `VerifiedCitation` type.
+    - Updated `buildReferences` to resolve `chapterId` across citation metadata, chunk ID patterns, and heading breadcrumbs.
+    - Replaced brittle exact `getElementById` with fuzzy card lookup (`findSectionCard`) in `scrollToHeading` matching card IDs, slugs, and token overlap.
+    - Guaranteed `store.setDocTab('notes')` is always activated on reference clicks, switching to the target chapter if different and smooth-scrolling with pulsing highlight.
+    - Passed complete `Reference` object from `ReferencesPanel` directly to `handleReferenceClick`.
+- **Verification**:
+  - 38/38 Python backend/tutor test suites passing.
+  - 73/73 Vitest frontend unit tests passing.
+  - `oxlint`: 0 warnings, 0 errors across 102 files.
+  - `vite build`: production bundle built cleanly in 597ms.
+  - Live API verified: `/screenshots/1?lecture_id=aws-cloud-engineer-71m` returns full screenshot list.
+- **Hand-off Notes**: Ready for production deployment or next feature sprint.
 - **Agent**: Antigravity (IDE)
 - **Status**: Completed — all 4 phases audited, hardened, and verified.
 - **Summary of Changes**:

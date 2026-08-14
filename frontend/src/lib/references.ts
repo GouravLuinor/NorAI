@@ -17,7 +17,8 @@ function isConfident(chunk: RetrievedChunk): boolean {
 }
 
 function chapterFromChunkId(chunkId?: string): number | undefined {
-  const m = chunkId?.match(/^ch(\d+)__/)
+  if (!chunkId) return undefined
+  const m = chunkId.match(/^(?:ch|chunk_)?(\d+)/i)
   return m ? Number(m[1]) : undefined
 }
 
@@ -37,13 +38,29 @@ export function buildReferences(
     for (const v of verified) {
       const headingParts = (v.heading_path || v.section || '').split('>')
       const leafHeading = headingParts[headingParts.length - 1].trim()
-      const chapterId = chapterFromChunkId(v.chunk_id ?? undefined)
+
+      // Resolve chapterId from citation metadata, or chunk lookup, or heading path
+      let chapterId = v.chapter_id ?? chapterFromChunkId(v.chunk_id ?? undefined)
+      if (chapterId == null && v.chunk_id) {
+        const matchChunk = chunks.find((c) => c.chunk_id === v.chunk_id)
+        if (matchChunk?.chapter_id != null) chapterId = matchChunk.chapter_id
+      }
+      if (chapterId == null && (v.heading_path || v.section)) {
+        const matchChunk = chunks.find(
+          (c) =>
+            c.heading_path === v.heading_path ||
+            c.heading === v.section ||
+            (v.section && (c.heading?.includes(v.section) || v.section.includes(c.heading || ''))),
+        )
+        if (matchChunk?.chapter_id != null) chapterId = matchChunk.chapter_id
+      }
+
       refs.push({
         id: v.chunk_id || v.section,
-        title: v.section,
-        section: chapterId ? `Ch ${chapterId}` : 'Notes Reference',
+        title: v.section || v.heading_path || 'Notes Reference',
+        section: chapterId != null ? `Ch ${chapterId}` : 'Notes Reference',
         sectionId: headingToId(leafHeading),
-        chapterId,
+        chapterId: chapterId ?? undefined,
         chunkId: v.chunk_id ?? undefined,
         type: 'note',
       })
@@ -58,9 +75,9 @@ export function buildReferences(
       refs.push({
         id: c.chunk_id || c.heading_path,
         title: c.heading_path || c.heading || 'Notes Reference',
-        section: `Ch ${c.chapter_id}`,
+        section: c.chapter_id != null ? `Ch ${c.chapter_id}` : 'Notes Reference',
         sectionId: headingToId(leafHeading),
-        chapterId: c.chapter_id,
+        chapterId: c.chapter_id ?? undefined,
         chunkId: c.chunk_id ?? undefined,
         type: 'note',
       })

@@ -6,7 +6,7 @@ Supports PostgreSQL (Supabase / Production) and fallback to SQLite (local dev).
 """
 
 import os
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import declarative_base
@@ -26,7 +26,7 @@ if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 # Configure engine kwargs
-engine_kwargs = {"echo": False}
+engine_kwargs: dict[str, Any] = {"echo": False}
 if DATABASE_URL.startswith("sqlite"):
     engine_kwargs["connect_args"] = {"check_same_thread": False}
 

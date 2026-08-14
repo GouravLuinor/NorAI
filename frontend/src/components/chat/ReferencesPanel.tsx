@@ -7,7 +7,7 @@ import { formatTimestamp } from '../../lib/video'
 
 interface ReferencesPanelProps {
   references: Reference[]
-  onReferenceClick?: (sectionId: string) => void
+  onReferenceClick?: (ref: Reference) => void
   onScreenshotClick?: (ref: Reference) => void
 }
 
@@ -61,7 +61,7 @@ export const ReferencesPanel = memo(function ReferencesPanel({ references, onRef
                   if (isScreenshot) {
                     onScreenshotClick?.(ref)
                   } else {
-                    onReferenceClick?.(ref.sectionId)
+                    onReferenceClick?.(ref)
                   }
                 }}
                 className={`flex-1 flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer hover:bg-ns3 transition text-left ${FOCUS_RING}`}

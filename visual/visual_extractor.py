@@ -159,8 +159,6 @@ def analyze_chunk_images(
         f"Gemma failed after {DEFAULT_MAX_RETRIES} attempts."
     )
 
-    return response.text
-
 
 
 # JSON Cleanup
@@ -580,15 +578,19 @@ def save_visual_object(
 
 class VisualObjectItem(BaseModel):
     chunk_id: int
-    start: float = 0.0
-    end: float = 0.0
     visual_notes: str
-    important_information: list[str]
-    ocr_text: str
-    visual_type: str
-    teaching_stage: str
-    importance_score: int
-    include_in_notes: bool
+    important_information: list[str] = []
+    ocr_text: str = ""
+    visual_type: str = "slide"
+    teaching_stage: str = "explanation"
+    importance_score: int = Field(
+        default=5,
+        description="Importance score from 1 to 10 for study note inclusion (10=crucial architecture diagram/formula/code, 1=decorative/blank/speaker head)",
+    )
+    include_in_notes: bool = Field(
+        default=True,
+        description="True if this visual contains meaningful technical content that aids student understanding",
+    )
     source_screenshots: list[str] = []
 
 
@@ -628,7 +630,7 @@ def dedup_paths(paths: list[str]) -> list[str]:
     seen = set()
     unique = []
     for p in paths:
-        norm = os.path.normpath(str(p))
+        norm = os.path.normpath(p)
         if norm not in seen:
             seen.add(norm)
             unique.append(p)
@@ -665,7 +667,7 @@ def process_chapter_visual_batch(chapter_id: int, chapter_title: str, chapter_ch
     
     prompt = f"""
 Analyze the candidate screenshots for Chapter {chapter_id}: "{chapter_title}" covering chunks {chunk_ids}.
-For each chunk with screenshots in this chapter, extract concise visual notes, OCR text, and importance score.
+For each chunk with screenshots in this chapter, extract concise visual notes, OCR text, visual_type (e.g. 'architecture_diagram', 'code', 'flowchart', 'slide', 'table'), and importance_score (1 to 10 scale). Set include_in_notes=true for informative slides and diagrams.
 
 Return a JSON matching ChapterVisualKnowledgeModel.
 """
@@ -814,7 +816,7 @@ def process_all_chunks(
     logger.info(f"Chapter-aligned visual extraction complete ({len(chapter_batches)} chapters processed).")
 
 
-def process_visual_chunks(mapping_path: str, output_dir: str, outline_path: str = None):
+def process_visual_chunks(mapping_path: str, output_dir: str, outline_path: str | None = None):
     """Alias for backend orchestrator compatibility."""
     return process_all_chunks(mapping_path, output_dir, outline_path=outline_path)
 

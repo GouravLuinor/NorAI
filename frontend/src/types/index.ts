@@ -33,6 +33,7 @@ export interface VerifiedCitation {
   chunk_id?: string | null
   heading_path?: string | null
   heading?: string | null
+  chapter_id?: number | null
 }
 
 export interface ChatResponse {
