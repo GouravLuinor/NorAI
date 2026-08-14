@@ -303,7 +303,7 @@ def dedup_paths(paths: list[str]) -> list[str]:
     seen = set()
     unique = []
     for p in paths:
-        norm = os.path.normpath(str(p))
+        norm = os.path.normpath(p)
         if norm not in seen:
             seen.add(norm)
             unique.append(p)
@@ -503,7 +503,10 @@ def score_frames_batch(
     for p in screenshot_paths:
         entry = _VISUAL_ANALYSIS.get(os.path.normpath(str(p)))
         if entry:
-            imp = max(0, min(10, int(entry.get("importance_score", 0) or 0)))
+            raw_imp = max(0, min(10, int(entry.get("importance_score", 0) or 0)))
+            # Visual extractor ratings: if rated on 1-5 scale (common with Gemini), normalize to 2-10
+            # so high-importance diagrams/slides (scores 3, 4, 5) clear the MIN_CONTENT_DENSITY (6) bar.
+            imp = raw_imp * 2 if (0 < raw_imp <= 5) else raw_imp
             vis_type = (entry.get("visual_type") or "").strip().lower()
             include_in_notes = bool(entry.get("include_in_notes", True))
             synthesized.append(
@@ -513,7 +516,7 @@ def score_frames_batch(
                     instructor_occlusion=0,
                     blur_level=0,
                     is_transition_or_decorative=(
-                        vis_type in ("", "none") or not include_in_notes or imp <= 0
+                        vis_type in ("", "none", "talking_head", "presenter", "face") or not include_in_notes or raw_imp <= 0
                     ),
                 )
             )
@@ -603,11 +606,14 @@ def score_frames_batch(
             record_generate_usage("screenshot_selection", MODEL_NAME, response)
 
             try:
-                data = json.loads(response.text)
-                if isinstance(data, dict) and "scores" in data:
-                    raw_scores = data["scores"]
-                elif isinstance(data, list):
-                    raw_scores = data
+                if response and response.text:
+                    data = json.loads(response.text)
+                    if isinstance(data, dict) and "scores" in data:
+                        raw_scores = data["scores"]
+                    elif isinstance(data, list):
+                        raw_scores = data
+                    else:
+                        raw_scores = []
                 else:
                     raw_scores = []
             except Exception:
@@ -1000,15 +1006,19 @@ def filter_candidates(
         return [], original_count
 
     eligible = [
-
         score
         for score in scores
         if passes_quality_bar(score)
-
     ]
 
-    logger.info(
+    if not eligible:
+        # Fallback: if strict quality bar filtered everything, pick top non-decorative candidates if available
+        non_decorative = [s for s in scores if not s.is_transition_or_decorative and s.content_density > 0]
+        if non_decorative:
+            eligible = sorted(non_decorative, key=lambda s: s.content_density, reverse=True)[:10]
+            logger.info(f"Chapter {chapter_id}: recovered {len(eligible)} fallback non-decorative frames.")
 
+    logger.info(
         f"Chapter "
         f"{chapter_id}"
         f": "
@@ -1019,7 +1029,6 @@ def filter_candidates(
     )
 
     if not eligible:
-
         return [], original_count
 
     deduplicated = deduplicate_frames(

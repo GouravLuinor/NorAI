@@ -8,6 +8,7 @@ run the paid pipeline. Pass --base http://host:port to override.
 """
 import argparse
 import sys
+from typing import Any
 
 import urllib.request
 import urllib.error
@@ -29,7 +30,7 @@ CHECKS = {
 HEALTH_QUIZ_PARAMS = "?"
 
 
-def get(path: str) -> tuple[int, object]:
+def get(path: str) -> tuple[int, Any]:
     req = urllib.request.Request(BASE + path, method="GET")
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
@@ -48,7 +49,7 @@ def get(path: str) -> tuple[int, object]:
     return status, (headers, data)
 
 
-def post_json(path: str, body: dict) -> tuple[int, object]:
+def post_json(path: str, body: dict) -> tuple[int, Any]:
     import json
     req = urllib.request.Request(
         BASE + path,

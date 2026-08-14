@@ -23,10 +23,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 from backend import jobs
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
 from pathlib import Path
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, UploadFile
-from typing import List, Optional
+from typing import Any, List, Optional
 import sqlite3
 import time
 from datetime import datetime, timezone
@@ -65,10 +65,23 @@ from backend.logging_config import setup_logging, bind, clear_context
 
 setup_logging()
 
-app = FastAPI(title="NorAI Tutor API")
-
 from backend.db.migrate import run_migrations
 from backend.routers import webhooks
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # P4.3: versioned schema (Alembic) instead of create_all. Runs in a thread
+    # because the alembic command is synchronous; idempotent on every boot.
+    await asyncio.to_thread(run_migrations)
+    # P4.1: boot the DB-backed pipeline queue supervisor, then one GC sweep
+    # for stale uploads / orphaned lecture dirs.
+    jobs.start_supervisor()
+    await asyncio.to_thread(jobs.gc_sweep)
+    yield
+
+
+app = FastAPI(title="NorAI Tutor API", lifespan=lifespan)
 
 
 @app.middleware("http")
@@ -118,16 +131,6 @@ async def spa_middleware(request: Request, call_next):
             return FileResponse(SPA_DIST_DIR / "index.html")
     return await call_next(request)
 
-
-@app.on_event("startup")
-async def on_startup():
-    # P4.3: versioned schema (Alembic) instead of create_all. Runs in a thread
-    # because the alembic command is synchronous; idempotent on every boot.
-    await asyncio.to_thread(run_migrations)
-    # P4.1: boot the DB-backed pipeline queue supervisor, then one GC sweep
-    # for stale uploads / orphaned lecture dirs.
-    jobs.start_supervisor()
-    await asyncio.to_thread(jobs.gc_sweep)
 
 app.include_router(webhooks.router)
 
@@ -369,7 +372,7 @@ def _flush_tutor_usage(
         if tutor is None:
             return
         record_tutor_turn(
-            user_id=user.id if user else None,
+            user_id=str(user.id) if user and user.id else None,
             lecture_id=lecture_id,
             stage="tutor",
             model=tutor.get("model"),
@@ -397,7 +400,7 @@ async def _flush_tutor_usage_async(
         if tutor is None:
             return
         await record_tutor_turn_async(
-            user_id=user.id if user else None,
+            user_id=str(user.id) if user and user.id else None,
             lecture_id=lecture_id,
             stage="tutor",
             model=tutor.get("model"),
@@ -435,7 +438,7 @@ async def chat(
             study_mode=req.study_mode,
             persona_instructions=req.persona_instructions,
         )
-        await _flush_tutor_usage_async(user, req.lecture_id, _tutor_before, diff_usage)
+        await _flush_tutor_usage_async(user, req.lecture_id or "default", _tutor_before, diff_usage)
         return result
     except HTTPException as e:
         # P6.4: let access-gate 404s (unshared / tutor-disabled) propagate as-is.
@@ -480,7 +483,7 @@ async def chat_stream(
             ):
                 yield f"data: {json_lib.dumps(frame)}\n\n"
             yield "data: [DONE]\n\n"
-            await _flush_tutor_usage_async(user, req.lecture_id, _tutor_before, diff_usage)
+            await _flush_tutor_usage_async(user, req.lecture_id or "default", _tutor_before, diff_usage)
         except Exception as exc:
             logging.getLogger("norai").exception("POST /chat/stream failed")
             yield "data: [ERROR] An internal error occurred while streaming the answer.\n\n"
@@ -730,7 +733,7 @@ async def quiz_evaluate(req: QuizEvaluateRequest):
             "evaluation": {
                 "final_score": evaluation.final_score,
                 "total_questions": evaluation.total_questions,
-                "per_question_feedback": [fb.dict() for fb in evaluation.per_question_feedback],
+                "per_question_feedback": [fb.model_dump() for fb in evaluation.per_question_feedback],
                 "overall_insights": evaluation.overall_insights,
             }
         }
@@ -1530,12 +1533,12 @@ async def get_usage(
         UsageLog.created_at >= start,
     )
 
-    rows = (await db.execute(base.order_by(UsageLog.created_at))).scalars().all()
+    rows: list[Any] = list((await db.execute(base.order_by(UsageLog.created_at))).scalars().all())
 
-    input_tokens = sum(r.input_tokens or 0 for r in rows)
-    output_tokens = sum(r.output_tokens or 0 for r in rows)
-    calls = sum(r.calls or 0 for r in rows)
-    cost = sum(r.estimated_cost_usd or 0.0 for r in rows)
+    input_tokens = sum(int(r.input_tokens or 0) for r in rows)
+    output_tokens = sum(int(r.output_tokens or 0) for r in rows)
+    calls = sum(int(r.calls or 0) for r in rows)
+    cost = sum(float(r.estimated_cost_usd or 0.0) for r in rows)
 
     # Quota minutes consumed this month (for the summary card).
     result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
@@ -1544,37 +1547,38 @@ async def get_usage(
 
     by_stage: dict[str, dict] = {}
     for r in rows:
+        stage_name = str(r.stage)
         s = by_stage.setdefault(
-            r.stage,
-            {"stage": r.stage, "calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0},
+            stage_name,
+            {"stage": stage_name, "calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0},
         )
-        s["calls"] += r.calls or 0
-        s["input_tokens"] += r.input_tokens or 0
-        s["output_tokens"] += r.output_tokens or 0
-        s["cost_usd"] += r.estimated_cost_usd or 0.0
+        s["calls"] += int(r.calls or 0)
+        s["input_tokens"] += int(r.input_tokens or 0)
+        s["output_tokens"] += int(r.output_tokens or 0)
+        s["cost_usd"] += float(r.estimated_cost_usd or 0.0)
 
     by_day: dict[str, dict] = {}
     for r in rows:
         day = (r.created_at if r.created_at.tzinfo else r.created_at.replace(tzinfo=timezone.utc))
-        key = day.strftime("%Y-%m-%d")
+        key = str(day.strftime("%Y-%m-%d"))
         d = by_day.setdefault(
             key, {"date": key, "calls": 0, "cost_usd": 0.0, "input_tokens": 0, "output_tokens": 0}
         )
-        d["calls"] += r.calls or 0
-        d["cost_usd"] += r.estimated_cost_usd or 0.0
-        d["input_tokens"] += r.input_tokens or 0
-        d["output_tokens"] += r.output_tokens or 0
+        d["calls"] += int(r.calls or 0)
+        d["cost_usd"] += float(r.estimated_cost_usd or 0.0)
+        d["input_tokens"] += int(r.input_tokens or 0)
+        d["output_tokens"] += int(r.output_tokens or 0)
 
     by_lecture: dict[str, dict] = {}
     for r in rows:
-        lk = r.lecture_id
+        lk = str(r.lecture_id)
         lec = by_lecture.setdefault(
             lk, {"lecture_id": lk, "calls": 0, "cost_usd": 0.0, "input_tokens": 0, "output_tokens": 0}
         )
-        lec["calls"] += r.calls or 0
-        lec["cost_usd"] += r.estimated_cost_usd or 0.0
-        lec["input_tokens"] += r.input_tokens or 0
-        lec["output_tokens"] += r.output_tokens or 0
+        lec["calls"] += int(r.calls or 0)
+        lec["cost_usd"] += float(r.estimated_cost_usd or 0.0)
+        lec["input_tokens"] += int(r.input_tokens or 0)
+        lec["output_tokens"] += int(r.output_tokens or 0)
 
     # Sort by cost desc so the frontend can render top contributors.
     by_stage_list = sorted(by_stage.values(), key=lambda x: x["cost_usd"], reverse=True)
@@ -1582,8 +1586,8 @@ async def get_usage(
     by_lecture_list = sorted(by_lecture.values(), key=lambda x: x["cost_usd"], reverse=True)
 
     return {
-        "user_id": user.id,
-        "is_anonymous": user.is_anonymous,
+        "user_id": str(user.id) if user else None,
+        "is_anonymous": user.is_anonymous if user else True,
         "period": period,
         "is_estimated": any(r.stage == "embed" for r in rows),
         "totals": {
@@ -1684,7 +1688,7 @@ async def start_processing(
         )
 
     probed_sec = None
-    if source_type == "youtube":
+    if source_type == "youtube" and url:
         probed = probe_video_metadata(url)
         if probed:
             probed_sec = probed["duration_sec"]
@@ -2299,7 +2303,7 @@ async def get_concept_map(
                 lecture_title = outline.get("lecture_title", lecture_title)
                 for ch in outline.get("chapters", []):
                     cid = ch.get("chapter_id") or ch.get("id")
-                    if int(cid) == int(chapter_id):
+                    if int(cid) == chapter_id:
                         chapter_title = ch.get("title", chapter_title)
                         focus_concepts = ch.get("focus_concepts", [])
                         summary = ch.get("summary", "")
