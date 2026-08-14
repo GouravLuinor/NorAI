@@ -122,6 +122,51 @@ describe('useVideoStore', () => {
     expect(useVideoStore.getState().open).toBe(true)
   })
 
+  it('resolves exact chunk start times and ranges from numeric or string IDs', () => {
+    useVideoStore.setState({ map: MAP })
+    const s = useVideoStore.getState()
+
+    // Numeric and direct string
+    expect(s.chunkStart(0)).toBe(0)
+    expect(s.chunkStart('1')).toBe(75)
+    expect(s.chunkStart('chunk_2')).toBe(150)
+    expect(s.chunkStart('c2')).toBe(150)
+
+    // Chroma ID format (ch1__Title__1 => chapter 1, offset 1 => chunk 1 => 75s)
+    expect(s.chunkStart('ch1__Introduction_Heading__1')).toBe(75)
+    expect(s.chunkStart('ch2__Deep_Dive_Details__0')).toBe(150)
+
+    // Fallbacks
+    expect(s.chunkStart('unknown_chunk', 2)).toBe(150)
+    expect(s.chunkStart(undefined, 1)).toBe(0)
+    expect(s.chunkStart(undefined, undefined)).toBeNull()
+
+    // Chunk range
+    expect(s.chunkRange(1)).toEqual({ start_sec: 75, end_sec: 150 })
+    expect(s.chunkRange(undefined, 1)).toEqual({ start_sec: 0, end_sec: 150 })
+  })
+
+  it('resolves sectionStart by chapter and section index', () => {
+    useVideoStore.setState({ map: MAP })
+    const s = useVideoStore.getState()
+
+    expect(s.sectionStart(1, 0)).toBe(0)   // chunk 0
+    expect(s.sectionStart(1, 1)).toBe(75)  // chunk 1
+    expect(s.sectionStart(2, 0)).toBe(150) // chunk 2
+    expect(s.sectionStart(1, 99)).toBe(0)  // fallback to chapter start
+    expect(s.sectionStart(undefined, 0)).toBeNull()
+  })
+
+  it('seekToChunk requests the exact chunk timestamp and opens player', () => {
+    const player = fakePlayer()
+    useVideoStore.getState().registerPlayer(player)
+    useVideoStore.setState({ map: MAP })
+
+    useVideoStore.getState().seekToChunk(1)
+    expect(player.seekTo).toHaveBeenCalledWith(75, true)
+    expect(useVideoStore.getState().open).toBe(true)
+  })
+
   it('load and reset close the player', async () => {
     useVideoStore.setState({ open: true })
     useVideoStore.getState().reset()

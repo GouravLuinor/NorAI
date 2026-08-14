@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from tutor.bm25 import BM25Okapi, tokenize, reciprocal_rank_fusion  # noqa: E402
+from tutor.bm25 import BM25Okapi, tokenize, reciprocal_rank_fusion, reciprocal_rank_fusion_scored  # noqa: E402
 from tutor.retriever import _chunk_from_doc, _rrf_merge, retrieve  # noqa: E402
 from tutor.retrieval_config import CONFIDENCE_THRESHOLD  # noqa: E402
 
@@ -65,6 +65,15 @@ def test_rrf_fuses_and_promotes_shared():
     assert len(fused) == len(set(fused)) == 5
 
 
+def test_rrf_scored_returns_scores():
+    cosine = ["a", "b"]
+    bm25 = ["a", "c"]
+    scored = reciprocal_rank_fusion_scored([cosine, bm25], k=60)
+    assert scored[0][0] == "a"
+    # 'a' appeared at rank 1 in both: score = 1/61 + 1/61 = 2/61 ≈ 0.03278
+    assert abs(scored[0][1] - (2.0 / 61)) < 1e-6
+
+
 def test_rrf_respects_k_constant():
     a = ["a", "b"]
     b = ["c", "d"]
@@ -87,6 +96,31 @@ def test_merge_keeps_strong_and_drops_weak():
     # 2 strong results >= MIN_RESULTS → weak dropped entirely
     assert [c["chunk_id"] for c in merged] == ["s1", "s2"]
     assert all(c["relevant"] for c in merged)
+
+
+def test_merge_adaptive_score_dropoff():
+    # s1 in both at rank 1 (score 2/61 ≈ 0.0328)
+    # s2 in both at rank 2 (score 2/62 ≈ 0.0322)
+    # s3 only in cosine at rank 15 (score 1/75 ≈ 0.0133 < 50% of top score)
+    by_id = {
+        "s1": _c("s1", 0.15),
+        "s2": _c("s2", 0.18),
+        "s3": _c("s3", 0.30),
+    }
+    cosine = ["s1", "s2", "s3"]
+    bm25 = ["s1", "s2"]
+    # Dropoff ratio = 0.50 -> s3 score (0.0133) < 0.5 * 0.0328 (0.0164), so s3 is pruned
+    merged = _rrf_merge(cosine, bm25, by_id, k=60, min_results=2, dropoff_ratio=0.5)
+    assert [c["chunk_id"] for c in merged] == ["s1", "s2"]
+
+
+def test_merge_adaptive_keeps_uniform_chunks():
+    # All 4 chunks scored closely across systems
+    by_id = {f"s{i}": _c(f"s{i}", 0.20) for i in range(1, 5)}
+    cosine = ["s1", "s2", "s3", "s4"]
+    bm25 = ["s1", "s2", "s3", "s4"]
+    merged = _rrf_merge(cosine, bm25, by_id, k=60, min_results=2, dropoff_ratio=0.5, max_k=4)
+    assert [c["chunk_id"] for c in merged] == ["s1", "s2", "s3", "s4"]
 
 
 def test_merge_keeps_min_results_weak_as_context():

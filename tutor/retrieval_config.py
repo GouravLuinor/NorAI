@@ -36,11 +36,16 @@ NOTES_GLOB = "outputs/notes/chapter_*.md"
 # ── Retrieval ─────────────────────────────────────────────────────────────────
 TOP_K = 5  # chunks returned per query
 
-# ── Phase 3 (P3.2): hybrid search ─────────────────────────────────────────────
+# ── Phase 3 (P3.2): hybrid search & adaptive top-k ────────────────────────────
 # Cosine (Chroma) and BM25 each return this many candidates; the two ranked
 # lists are merged with Reciprocal Rank Fusion (RRF_K = fusion constant).
 ADAPTIVE_TOP_K_CANDIDATES = 20
 RRF_K = 60
+# Dynamic score dropoff: candidate chunks whose RRF fused score drops below
+# this fraction of the top result are trimmed (between MIN_RESULTS and TOP_K).
+ADAPTIVE_SCORE_DROPOFF_RATIO = 0.50
+ADAPTIVE_TOP_K_MIN = 2
+ADAPTIVE_TOP_K_MAX = 5
 # After fusion, results above CONFIDENCE_THRESHOLD are dropped unless fewer than
 # MIN_RESULTS would remain (kept as weak context, flagged relevant=False so they
 # never surface as references — P3.8).

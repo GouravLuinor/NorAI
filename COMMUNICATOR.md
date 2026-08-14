@@ -34,6 +34,52 @@
 
 ## 📝 Task History & Handoff Log
 
+### [2026-08-14] — Antigravity: P3.2 Dynamic Adaptive Top-k RAG Retrieval & P0.4 Doc Sync
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed — hybrid unit test suite (12/12 passed), offline backend test runner (38/38 passed).
+- **Summary**:
+  - `tutor/bm25.py`: Added `reciprocal_rank_fusion_scored` returning ordered `(doc_id, score)` tuples.
+  - `tutor/retrieval_config.py`: Added `ADAPTIVE_TOP_K_MIN = 2`, `ADAPTIVE_TOP_K_MAX = 5`, `ADAPTIVE_SCORE_DROPOFF_RATIO = 0.50`.
+  - `tutor/retriever.py`: Implemented score-dropoff elbow cutoff in `_rrf_merge` so high-confidence queries with sharp matches truncate lower-scoring distractor chunks dynamically, while multi-concept queries retain up to `TOP_K=5`.
+  - `tutor/test_hybrid.py`: Added unit tests for scored RRF, dynamic dropoff pruning, and uniform candidate retention.
+  - `ROADMAP.md`: Marked P3.2 complete and updated P0.4 notes.
+- **Verification**: `venv/bin/python tutor/test_hybrid.py` (12 checks passed), `./scripts/run-tests.sh` (38/38 suites passed).
+
+### [2026-08-14] — Antigravity: P6.3 Exact-Moment Chunk-Level Video Seeks (Click-to-Video Grounding)
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed — frontend build, oxlint (0 errors), Vitest (73/73 passed), backend offline test runner (38/38 passed).
+- **Summary**:
+  - `frontend/src/types/index.ts` & `frontend/src/lib/references.ts`: Added `chunkId`, `startSec`, and `endSec` to `Reference` and `chunk_id` to `QuizCitation`.
+  - `frontend/src/stores/useVideoStore.ts`: Implemented `chunkStart(chunkId, chapterId)`, `chunkRange(chunkId, chapterId)`, `seekToChunk(chunkId, chapterId)`, and `sectionStart(chapterId, sectionIndex)` with flexible resolution for raw numbers, string numbers (`"0"`), chunk prefixes (`"chunk_0"`, `"c0"`), and Chroma IDs (`"ch1__...__0"`).
+  - `frontend/src/components/chat/ReferencesPanel.tsx`: Updated video seek button to resolve `chunkStart(ref.chunkId, ref.chapterId)` so students jump to the exact second rather than coarse chapter start.
+  - `frontend/src/components/quiz/CitationBox.tsx`: Added an interactive `▶ Play at m:ss` button directly inside grounded quiz question citation cards.
+  - `frontend/src/components/ui/Card.tsx` & `frontend/src/components/doc/NotesView.tsx`: Added `action` prop to `CardHeader` and rendered `▶ m:ss` seek chips next to each section header in study notes.
+  - `backend/main.py`: Updated `/quiz/explain` endpoint to return `"chunk_id": top.get("chunk_id")`.
+- **Verification**:
+  - `frontend/src/stores/useVideoStore.test.ts`: Added unit tests covering chunk ID resolution, ranges, fallbacks, and seeking (73/73 Vitest tests pass).
+  - Backend full suite: `38/38 passed`.
+
+### [2026-08-14] — Antigravity: Frontend AI Tutor window width stability & transition fix
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed — frontend build, oxlint (0 errors), and vitest (70/70 passed) all green.
+- **Summary**:
+  - `frontend/src/components/layout/Workspace.tsx`: Eliminated mutual circular `useEffect` dependency between `aiPanelWidth` and `tutorAiWidth` that was triggering continuous 240ms CSS grid-template transitions and oscillating the right panel width. Placed mode-switch expansion/restoration into an explicit transition effect guarded by `prevAiModeRef`.
+  - `frontend/src/components/layout/Workspace.tsx`: Fixed inverted horizontal arrow key direction for the right panel resizer (`ArrowLeft` expands panel to the left, `ArrowRight` shrinks).
+  - `frontend/src/components/layout/AIPanel.tsx`: Replaced the `x: 15 / x: -15` horizontal translation in `<motion.div>` during mode switching with a clean, stable fade transition (`opacity: 0 -> 1 -> 0`), eliminating horizontal wiggling and layout shift.
+- **Verification**: `npm run lint` (0 errors), `npm run build` (clean), `npm test` (70/70 passed).
+
+### [2026-08-14] — Antigravity: Seamless local dev lecture access (NORAI_DEV_ACCESS=1)
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed — offline suites all green (38/38 passed), live API contract verified.
+- **Summary**:
+  - `backend/main.py`: Added `NORAI_DEV_ACCESS = os.environ.get("NORAI_DEV_ACCESS", "0") == "1"` check in `ensure_lecture_access()`. When enabled (or `NORAI_DEV_INSECURE_AUTH=1`), any lecture present in the local file registry or `outputs/` directory is immediately accessible without requiring authentication or public share links.
+  - `.env` & `.env.example`: Added `NORAI_DEV_ACCESS=1` for local dev.
+  - `backend/test_courses_shares.py`: Set `os.environ["NORAI_DEV_ACCESS"] = "0"` in test harness so strict production multi-tenant sharing semantics remain 100% covered (37/37 checks pass).
+- **Verification**:
+  - Live API probes: `GET /outline`, `GET /summary`, `GET /flashcards`, `GET /quiz/questions` on previously-blocked lecture `bf7e8248-...` now return 200 with full data.
+  - Full test runner `./scripts/run-tests.sh`: **38/38 test suites passed**.
+- **Hand-off Notes**: Developer can now open any lecture in `/workspace/<id>` locally without login or 404 errors.
+
 ### [2026-08-14] — OpenCode: combined commit `8c4cd74` (P6.4 + UI/UX audit execution) committed & pushed, then full doc-sync pass
 - **Agent**: OpenCode (CLI)
 - **Status**: Completed — all previously-uncommitted P6.4 + UI/UX audit-execution work committed in **`8c4cd74`** (`feat(courses+ux): P6.4 course collections & share links, plus UI/UX audit fixes`, 38 files, +3211/−117) and **pushed to `origin/fix/threads-and-pdf`** (`dc68924..8c4cd74`). Then a repo-wide **.md sync pass** brought every doc up to the current state, taking `DEPLOYMENT_PLAN.md` into account.

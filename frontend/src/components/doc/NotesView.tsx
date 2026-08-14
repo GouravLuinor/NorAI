@@ -98,10 +98,10 @@ function getCardType(heading: string, body: string): CardType {
 
 // ── Card Wrappers ────────────────────────────────────────────────────────────
 
-function DefinitionCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+function DefinitionCard({ heading, action, children }: { heading: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <Card className="p-4 mb-4">
-      <CardHeader icon={<Bookmark size={13} strokeWidth={1.5} className="text-np" />}>
+      <CardHeader action={action} icon={<Bookmark size={13} strokeWidth={1.5} className="text-np" />}>
         {heading}
       </CardHeader>
       {children}
@@ -109,10 +109,10 @@ function DefinitionCard({ heading, children }: { heading: string; children: Reac
   )
 }
 
-function TableCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+function TableCard({ heading, action, children }: { heading: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <Card className="p-5 mb-5">
-      <CardHeader icon={<Clock size={13} strokeWidth={1.5} className="text-ng" />}>
+      <CardHeader action={action} icon={<Clock size={13} strokeWidth={1.5} className="text-ng" />}>
         {heading}
       </CardHeader>
       {children}
@@ -120,22 +120,25 @@ function TableCard({ heading, children }: { heading: string; children: React.Rea
   )
 }
 
-function CalloutCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+function CalloutCard({ heading, action, children }: { heading: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="note-callout flex gap-2.5 p-3 mb-4">
       <Lightbulb size={14} strokeWidth={1.5} className="text-np mt-0.5 shrink-0" />
-      <div>
-        <div className="note-label mb-1">{heading}</div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="note-label">{heading}</div>
+          {action && <div>{action}</div>}
+        </div>
         <div className="text-xs text-nt2 leading-relaxed">{children}</div>
       </div>
     </div>
   )
 }
 
-function ListCard({ heading, children }: { heading: string; children: React.ReactNode }) {
+function ListCard({ heading, action, children }: { heading: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="mb-5">
-      <CardHeader icon={<List size={13} strokeWidth={1.5} className="text-np" />}>
+      <CardHeader action={action} icon={<List size={13} strokeWidth={1.5} className="text-np" />}>
         {heading}
       </CardHeader>
       <div className="pl-1.5 space-y-2.5">{children}</div>
@@ -143,10 +146,10 @@ function ListCard({ heading, children }: { heading: string; children: React.Reac
   )
 }
 
-function ProseSection({ heading, children }: { heading: string; children: React.ReactNode }) {
+function ProseSection({ heading, action, children }: { heading: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <Card className="p-5 mb-5">
-      <CardHeader icon={<FileText size={13} strokeWidth={1.5} className="text-nt3" />}>
+      <CardHeader action={action} icon={<FileText size={13} strokeWidth={1.5} className="text-nt3" />}>
         {heading}
       </CardHeader>
       {children}
@@ -154,11 +157,11 @@ function ProseSection({ heading, children }: { heading: string; children: React.
   )
 }
 
-function CodeCard({ heading, children, lang }: { heading: string; children: React.ReactNode; lang?: string }) {
+function CodeCard({ heading, action, children, lang }: { heading: string; action?: React.ReactNode; children: React.ReactNode; lang?: string }) {
   return (
     <div className="mb-6">
       {heading && (
-        <CardHeader icon={<Code size={13} strokeWidth={1.5} className="text-nbl" />}>
+        <CardHeader action={action} icon={<Code size={13} strokeWidth={1.5} className="text-nbl" />}>
           {heading}
         </CardHeader>
       )}
@@ -196,10 +199,12 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
   const chapterIdStr = chapterId != null ? String(chapterId) : null
   const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
 
-  // P6.3: chapter-level video seek target.
+  // P6.3: chapter-level and chunk-level video seek targets.
   const videoEmbeddable = useVideoStore(s => s.embeddable)
   const videoMap = useVideoStore(s => s.map)
   const seekToChapter = useVideoStore(s => s.seekToChapter)
+  const sectionStart = useVideoStore(s => s.sectionStart)
+  const requestSeek = useVideoStore(s => s.requestSeek)
   const chapterTime = chapterId != null
     ? videoMap?.chapters.find((c) => c.chapter_id === chapterId)
     : undefined
@@ -317,45 +322,59 @@ export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterI
           )
         }
 
+        const sectionSec = videoEmbeddable && chapterId != null ? sectionStart(chapterId, idx) : null
+        const seekAction = sectionSec != null ? (
+          <button
+            type="button"
+            title={`Jump video to ${formatTimestamp(sectionSec)}`}
+            aria-label={`Play ${heading} at ${formatTimestamp(sectionSec)}`}
+            onClick={() => requestSeek(sectionSec)}
+            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-ns2 border border-bdr text-3xs font-medium text-nt3 hover:text-np hover:border-np/40 transition cursor-pointer ${FOCUS_RING}`}
+          >
+            <Play size={9} strokeWidth={1.5} className="text-np" />
+            {formatTimestamp(sectionSec)}
+          </button>
+        ) : undefined
+
         const cardType = explicitType || getCardType(heading, body)
 
         switch (cardType) {
           case 'definition':
             return (
               <div key={idx} id={sectionId}>
-                <DefinitionCard heading={heading}>{innerContent}</DefinitionCard>
+                <DefinitionCard heading={heading} action={seekAction}>{innerContent}</DefinitionCard>
               </div>
             )
           case 'table':
             return (
               <div key={idx} id={sectionId}>
-                <TableCard heading={heading}>{innerContent}</TableCard>
+                <TableCard heading={heading} action={seekAction}>{innerContent}</TableCard>
               </div>
             )
           case 'callout':
             return (
               <div key={idx} id={sectionId}>
-                <CalloutCard heading={heading}>{innerContent}</CalloutCard>
+                <CalloutCard heading={heading} action={seekAction}>{innerContent}</CalloutCard>
               </div>
             )
           case 'list':
             return (
               <div key={idx} id={sectionId}>
-                <ListCard heading={heading}>{innerContent}</ListCard>
+                <ListCard heading={heading} action={seekAction}>{innerContent}</ListCard>
               </div>
             )
           case 'code': {
             const langMatch = body.match(/```(\w+)/)
             return (
               <div key={idx} id={sectionId}>
-                <CodeCard heading={heading} lang={langMatch?.[1]}>{innerContent}</CodeCard>
+                <CodeCard heading={heading} action={seekAction} lang={langMatch?.[1]}>{innerContent}</CodeCard>
               </div>
             )
           }
           default:
             return (
               <div key={idx} id={sectionId}>
-                <ProseSection heading={heading}>{innerContent}</ProseSection>
+                <ProseSection heading={heading} action={seekAction}>{innerContent}</ProseSection>
               </div>
             )
         }

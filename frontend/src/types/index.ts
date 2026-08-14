@@ -6,6 +6,9 @@ export interface Reference {
   type: 'note' | 'screenshot'
   thumbnail?: string
   chapterId?: number
+  chunkId?: string | number
+  startSec?: number | null
+  endSec?: number | null
 }
 
 export interface RetrievedChunk {

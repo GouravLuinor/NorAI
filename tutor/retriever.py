@@ -49,11 +49,12 @@ from tutor.retrieval_config import (
     SCREENSHOT_COLLECTION_NAME,
     TOP_K_IMAGES,
     ADAPTIVE_TOP_K_CANDIDATES,
+    ADAPTIVE_SCORE_DROPOFF_RATIO,
     MIN_RESULTS,
     RRF_K,
     CONFIDENCE_THRESHOLD,
 )
-from tutor.bm25 import BM25Okapi, tokenize, reciprocal_rank_fusion
+from tutor.bm25 import BM25Okapi, tokenize, reciprocal_rank_fusion, reciprocal_rank_fusion_scored
 
 
 class IndexNotBuiltError(RuntimeError):
@@ -160,20 +161,39 @@ def _rrf_merge(
     by_id: dict,
     k: int,
     min_results: int = MIN_RESULTS,
+    dropoff_ratio: float = ADAPTIVE_SCORE_DROPOFF_RATIO,
+    max_k: int = TOP_K,
 ) -> list[dict]:
     """
     Fuse cosine + BM25 rankings with Reciprocal Rank Fusion, then adaptively trim:
-    drop results above CONFIDENCE_THRESHOLD unless fewer than min_results remain
-    (kept as weak context, flagged relevant=False).
+    1. Drop results above CONFIDENCE_THRESHOLD unless fewer than min_results remain.
+    2. P3.2: Dynamically size top-k based on score drop-off curve (elbow cutoff):
+       if score drops below `dropoff_ratio` of the top result, truncate after
+       at least `min_results`.
     """
-    fused_ids = reciprocal_rank_fusion([cosine_ids, bm25_ids], k=k)
-    chunks = [by_id[did] for did in fused_ids if did in by_id]
+    scored = reciprocal_rank_fusion_scored([cosine_ids, bm25_ids], k=k)
+    fused_entries = [(did, score) for did, score in scored if did in by_id]
 
-    strong = [c for c in chunks if c["relevant"]]
-    if len(strong) >= min_results:
-        return strong
+    if not fused_entries:
+        return []
+
+    chunks_with_score = [(by_id[did], score) for did, score in fused_entries]
+    strong_with_score = [(c, score) for c, score in chunks_with_score if c["relevant"]]
+
+    if len(strong_with_score) >= min_results:
+        top_score = strong_with_score[0][1]
+        adaptive_strong: list[dict] = []
+        for i, (c, score) in enumerate(strong_with_score):
+            if i < min_results:
+                adaptive_strong.append(c)
+            elif score >= top_score * dropoff_ratio and len(adaptive_strong) < max_k:
+                adaptive_strong.append(c)
+            else:
+                break
+        return adaptive_strong
+
     # Not enough strong matches: keep the best few as weak context
-    return chunks[:min_results]
+    return [c for c, _ in chunks_with_score[:min_results]]
 
 
 # ── Public API ─────────────────────────────────────────────────────────────────

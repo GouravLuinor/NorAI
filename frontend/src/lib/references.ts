@@ -44,6 +44,7 @@ export function buildReferences(
         section: chapterId ? `Ch ${chapterId}` : 'Notes Reference',
         sectionId: headingToId(leafHeading),
         chapterId,
+        chunkId: v.chunk_id ?? undefined,
         type: 'note',
       })
     }
@@ -60,6 +61,7 @@ export function buildReferences(
         section: `Ch ${c.chapter_id}`,
         sectionId: headingToId(leafHeading),
         chapterId: c.chapter_id,
+        chunkId: c.chunk_id ?? undefined,
         type: 'note',
       })
     }
