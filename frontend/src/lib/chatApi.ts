@@ -70,9 +70,14 @@ export async function* sendChatMessageStream(
     }),
     signal,
   })
-  if (!res.ok) throw new Error('Chat stream failed')
+  if (!res.ok) {
+    const err: unknown = await res.json().catch(() => ({}))
+    const detail = typeof err === 'object' && err !== null && 'detail' in err ? (err as { detail?: string }).detail : undefined
+    throw new Error(detail || `Chat stream failed: ${res.status}`)
+  }
+  if (!res.body) throw new Error('Readable stream not supported or empty body')
 
-  const reader = res.body!.getReader()
+  const reader = res.body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
 

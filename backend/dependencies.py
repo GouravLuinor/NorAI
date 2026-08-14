@@ -67,7 +67,9 @@ async def _open_checkpointer(db_path: Path) -> AsyncSqliteSaver:
     conn = await aiosqlite.connect(str(db_path))
     await conn.execute("PRAGMA journal_mode=WAL;")
     await conn.execute("PRAGMA busy_timeout=5000;")
-    return AsyncSqliteSaver(conn)
+    checkpointer = AsyncSqliteSaver(conn)
+    await checkpointer.setup()
+    return checkpointer
 
 
 async def _build_graph_for_lecture(clean_id: str):
@@ -102,7 +104,7 @@ async def _aget_or_create_lecture_graph(lecture_id: str):
         _lecture_graphs[clean_id] = entry
         _lecture_graphs.move_to_end(clean_id)
 
-        evicted: list[dict] = []
+        evicted: list[tuple[str, dict]] = []
         while len(_lecture_graphs) > TUTOR_MAX_CACHED_GRAPHS:
             _old_id, old_entry = _lecture_graphs.popitem(last=False)
             evicted.append((_old_id, old_entry))
@@ -196,7 +198,7 @@ def _cached_turn(snapshot, user_question: str, thread_id: str) -> dict | None:
     messages = snapshot.values.get("messages", [])
     dedupe_window = [m for m in reversed(messages) if isinstance(m, HumanMessage)][:3]
     for last_human in dedupe_window:
-        if last_human.content.strip() == user_question.strip():
+        if _content_text(last_human.content).strip() == user_question.strip():
             last_ai = None
             seen = False
             for idx, m in enumerate(messages):
@@ -220,19 +222,35 @@ def _cached_turn(snapshot, user_question: str, thread_id: str) -> dict | None:
 
 
 def _thread_exists(db_path: Path, thread_id: str) -> bool:
-    """True when the thread should be allowed to continue. Runs in a worker
+    """True when the thread should be allowed to continue (not deleted). Runs in a worker
     thread (blocking sqlite3 read) so it never blocks the event loop."""
     try:
         conn = sqlite3.connect(str(db_path), timeout=5.0)
         try:
-            if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user_threads'").fetchone():
-                if not conn.execute("SELECT 1 FROM user_threads WHERE thread_id = ?", (thread_id,)).fetchone():
+            if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='deleted_threads'").fetchone():
+                if conn.execute("SELECT 1 FROM deleted_threads WHERE thread_id = ?", (thread_id,)).fetchone():
                     return False
         finally:
             conn.close()
         return True
     except sqlite3.OperationalError:
         return True  # If DB is locked, we'll let LangGraph handle it
+
+
+def _register_thread_if_needed(db_path: Path, thread_id: str) -> None:
+    """Ensure active thread is recorded in user_threads and un-marked from deleted_threads."""
+    try:
+        conn = sqlite3.connect(str(db_path), timeout=5.0)
+        try:
+            conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
+            conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (thread_id,))
+            if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='deleted_threads'").fetchone():
+                conn.execute("DELETE FROM deleted_threads WHERE thread_id = ?", (thread_id,))
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        pass
 
 
 async def ainvoke_tutor(
@@ -272,6 +290,7 @@ async def ainvoke_tutor(
             snapshot = await graph.aget_state(config)
             is_new = not snapshot or not snapshot.values
         except Exception:
+            snapshot = None
             is_new = True
 
         input_state: dict = {
@@ -298,6 +317,7 @@ async def ainvoke_tutor(
         db_path = get_lecture_db_path(lecture_id) if lecture_id else CHECKPOINT_DB_PATH
         if not await asyncio.to_thread(_thread_exists, db_path, thread_id):
             raise ValueError(f"Thread {thread_id} was deleted.")
+        await asyncio.to_thread(_register_thread_if_needed, db_path, thread_id)
 
         result = await graph.ainvoke(input_state, config)
 
@@ -385,6 +405,7 @@ async def astream_tutor_tokens(
         db_path = get_lecture_db_path(lecture_id) if lecture_id else CHECKPOINT_DB_PATH
         if not await asyncio.to_thread(_thread_exists, db_path, thread_id):
             raise ValueError(f"Thread {thread_id} was deleted.")
+        await asyncio.to_thread(_register_thread_if_needed, db_path, thread_id)
 
         streamed_any = False
         async for event in graph.astream_events(input_state, config, version="v2"):

@@ -1,8 +1,7 @@
 import { memo } from 'react'
 import type { Message } from '../../stores/useThreadStore'
 import { Markdown } from '../ui/Markdown'
-
-import { stripSources } from './ChatArea'
+import { stripSources } from '../../lib/references'
 
 export const MessageBubble = memo(function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user'

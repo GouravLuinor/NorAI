@@ -47,9 +47,11 @@ export function BillingPage() {
   const [data, setData] = useState<BillingData | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const userId = user?.id
+
   useEffect(() => {
     let active = true
-    if (!user) {
+    if (!userId) {
       setData(null)
       return
     }
@@ -63,11 +65,11 @@ export function BillingPage() {
     return () => {
       active = false
     }
-  }, [user])
+  }, [userId])
 
   useEffect(() => {
-    if (user) void refreshQuota()
-  }, [user, refreshQuota])
+    if (userId) void refreshQuota()
+  }, [userId, refreshQuota])
 
   if (!user) {
     return (

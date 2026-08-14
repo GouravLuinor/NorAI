@@ -82,13 +82,13 @@ export function buildReferences(
   //    If chunks/images existed but all were weak, we must NOT resurrect them
   //    from the model's own text (P3.8).
   if (refs.length === 0 && chunks.length === 0 && images.length === 0 && rawText) {
-    const match = rawText.match(/(?:Sources|Sources\s*[\:\•])[\s\S]*$/i)
+    const match = rawText.match(/(?:Sources|Sources\s*[:•])[\s\S]*$/i)
     if (match) {
       const sourceLine = match[0]
       const items = sourceLine.split(/[•\n]/).map((s) => s.trim()).filter((s) => s && !s.toLowerCase().startsWith('sources'))
       for (const item of items) {
         if (item.includes('outputs/') || item.includes('frame_') || item.includes('.jpg') || item.includes('.png')) {
-          const pathMatch = item.match(/(outputs\/[^\s\)]+)|(frame_\d+\.(?:jpg|png))/i)
+          const pathMatch = item.match(/(outputs\/[^\s)]+)|(frame_\d+\.(?:jpg|png))/i)
           const imgPath = pathMatch ? pathMatch[0] : item
           refs.push({
             id: imgPath,
@@ -114,3 +114,11 @@ export function buildReferences(
 
   return refs
 }
+
+/**
+ * Strip the auto-appended Sources appendix from assistant messages
+ * (sources are surfaced via ReferencesPanel).
+ */
+export const stripSources = (text: string): string =>
+  text.replace(/(\*\*Sources\*\*|\n\nSources\b|Sources\s*[:•]|Sources\b[\s\S]*$)[\s\S]*$/i, '').trim()
+

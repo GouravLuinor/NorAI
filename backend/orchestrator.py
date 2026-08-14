@@ -18,6 +18,7 @@ import hashlib
 import shutil
 import time
 from pathlib import Path
+from typing import Any
 
 
 from backend.lecture_registry import create_lecture, update_lecture_title
@@ -102,7 +103,7 @@ def run_pipeline(
     _embed_before = snapshot_embed_batches()
     # P6.5: snapshot per-stage usage ledger before the run so we can diff after.
     _usage_before = snapshot_usage()
-    _metrics = {
+    _metrics: dict[str, Any] = {
         "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "lecture_id": task_id,
         "source_type": source_type,
@@ -225,13 +226,14 @@ def run_pipeline(
         def _run_visual_branch():
             _report("frame_extraction", "Extracting frames…", 26)
             _check_cancel()
-            raw_dir = str(lecture_dir / "screenshots" / "raw")
+            lec_path = Path(out)
+            raw_dir = str(lec_path / "screenshots" / "raw")
             fe = extract_frames(video_path, raw_dir)
             f_meta = fe["metadata_file"]
 
             _report("scene_detection", "Detecting key scenes…", 32)
             _check_cancel()
-            keyframes_dir = str(lecture_dir / "screenshots" / "keyframes")
+            keyframes_dir = str(lec_path / "screenshots" / "keyframes")
             detect_scenes(f_meta, keyframes_dir)
             kf_meta = str(Path(keyframes_dir) / "metadata.json")
             return kf_meta
@@ -510,7 +512,6 @@ def run_pipeline(
             )
         except Exception as e:
             logger.warning(f"Failed to record pipeline failure outcome: {e}")
-        _report("error", str(exc), _last_percent)
         raise
 
     finally:

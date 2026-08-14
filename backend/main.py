@@ -555,6 +555,8 @@ async def create_thread_endpoint(request: Request, lecture_id: str = "default"):
         try:
             conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
             conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (thread_id,))
+            if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='deleted_threads'").fetchone():
+                conn.execute("DELETE FROM deleted_threads WHERE thread_id = ?", (thread_id,))
             conn.commit()
         finally:
             conn.close()
@@ -614,6 +616,8 @@ async def delete_thread(thread_id: str, lecture_id: str = "default"):
             conn = sqlite3.connect(str(db_path), timeout=10.0)
             configure_sqlite(conn)
             try:
+                conn.execute("CREATE TABLE IF NOT EXISTS deleted_threads (thread_id TEXT PRIMARY KEY)")
+                conn.execute("INSERT OR REPLACE INTO deleted_threads (thread_id) VALUES (?)", (thread_id,))
                 for table in ["checkpoints", "checkpoint_blobs", "checkpoint_writes", "user_threads"]:
                     try:
                         conn.execute(f"DELETE FROM {table} WHERE thread_id = ?", (thread_id,))

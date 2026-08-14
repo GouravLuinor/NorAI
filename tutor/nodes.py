@@ -14,7 +14,9 @@ won't be summarised away if we add a history-condensing step later.
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import uuid
 from pathlib import Path
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.graph.message import RemoveMessage
@@ -43,7 +45,7 @@ into a concise paragraph. Include:
 - The student's apparent level of understanding (if evident).
 Keep the summary factual and brief — no more than 7 sentences."""
 
-def chapter_summary_node(state: dict, config: RunnableConfig, output_dir: str = None) -> dict:
+def chapter_summary_node(state: dict, config: RunnableConfig, output_dir: str | None = None) -> dict:
     """
     Load the pre-made revision summary for a chapter and return it as the answer.
 
@@ -187,7 +189,7 @@ def verify_citations_node(state: dict, config: RunnableConfig) -> dict:
 
 
 # ── generate_answer (Phase 3: context injection) ───────────────────────────────
-async def generate_answer_node(state: dict, config: RunnableConfig, output_dir: str = None) -> dict:
+async def generate_answer_node(state: dict, config: RunnableConfig, output_dir: str | None = None) -> dict:
     """
     Core LLM node. Builds the full prompt, calls Gemini, records the answer.
 
@@ -356,14 +358,14 @@ async def generate_answer_node(state: dict, config: RunnableConfig, output_dir: 
     # ── Update state ───────────────────────────────────────────────────────────
     # add_messages reducer appends both messages to the persisted list.
     # We do NOT store the SystemMessages — they're rebuilt from state each turn.
-    message_id = state.get("message_id")
-    human_kwargs = {"id": message_id} if message_id else {}
-    ai_kwargs = {"id": f"ai-{message_id}"} if message_id else {}
+    import uuid
+    message_id = state.get("message_id") or str(uuid.uuid4())
+    ai_id = f"ai-{message_id}"
 
     return {
         "messages": [
-            HumanMessage(content=user_question, **human_kwargs),
-            AIMessage(content=answer_text, **ai_kwargs),
+            HumanMessage(content=user_question, id=message_id),
+            AIMessage(content=answer_text, id=ai_id),
         ],
         "answer": answer_text,
     }

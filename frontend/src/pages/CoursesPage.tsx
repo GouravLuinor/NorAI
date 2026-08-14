@@ -39,12 +39,14 @@ export function CoursesPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const userId = user?.id
+
   useEffect(() => {
-    if (user) {
+    if (userId) {
       loadCourses()
       loadLectures()
     }
-  }, [user, loadCourses, loadLectures])
+  }, [userId, loadCourses, loadLectures])
 
   const openCourse = useCallback(
     async (courseId: string) => {
