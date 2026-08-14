@@ -426,15 +426,14 @@ def generate_chapter_notes(
         )
         try:
             _limiter.wait()
-            response = (
-                client.models.generate_content(
-                    model=MODEL_NAME,
-                    contents=[
-                        prompt
-                    ]
-                )
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=prompt,
             )
             record_generate_usage("notes", MODEL_NAME, response)
+
+            if not response or not response.text:
+                raise ValueError("Empty response from model")
 
             markdown = (
                 response.text
@@ -837,7 +836,7 @@ Chapter Content JSON:
 Produce a valid JSON object matching MergedChapterArtifactsModel:
 1. study_notes_title: Professional chapter title heading.
 2. study_notes_sections: Array of structured StudyNoteSection cards covering all topics, definitions, mechanisms, and examples present in the chapter content.
-   - DENSITY & LENGTH: Scale depth strictly based on information density. Dense, multi-concept chapters must be written in comprehensive depth across 3 to 6 structured sections (800–1200+ words total); narrower topics should be concise without filler.
+   - DENSITY & DEPTH: Scale depth and section count strictly based on information density. Dense, multi-concept chapters must be written in comprehensive depth across 4 to 8 structured sections (1,000–2,200+ words total); narrower topics should remain concise and focused without artificial filler.
    - SECTION TYPES: Choose appropriate section_type ('definition' for concepts/overview, 'callout' for key insights, 'table' for comparisons, 'list' for takeaways, 'code' for code, 'prose' for deep dives).
    - FORMATTING: Incorporate comparison tables, bullet points, code snippets, and LaTeX math ($...$ for inline, $$...$$ for display math) whenever naturally applicable.
    - IMAGES: Do NOT include inline markdown image tags (e.g. ![...](...)).
@@ -876,7 +875,7 @@ Produce a valid JSON object matching MergedChapterArtifactsModel:
             client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
             response = client.models.generate_content(
                 model=MODEL_NAME,
-                contents=[prompt],
+                contents=prompt,
                 config=types.GenerateContentConfig(
                     temperature=0.3,
                     max_output_tokens=8192,

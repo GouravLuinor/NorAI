@@ -47,11 +47,11 @@ def test_short_lecture_keeps_default():
 
 
 def test_long_lecture_grows_chunk_size():
-    # 3-hour lecture ≈ 1900 segments → spc = min(ceil(1900/24), 60) = 60
+    # 3-hour lecture ≈ 1900 segments → spc = min(ceil(1900/40), 30) = 30
     spc = adaptive_segments_per_chunk(1900)
-    assert spc == 60
+    assert spc == config.MAX_SEGMENTS_PER_CHUNK == 30
     import math
-    assert math.ceil(1900 / spc) <= 32  # bounded chunk count
+    assert math.ceil(1900 / spc) <= 65  # bounded chunk count preserving concept granularity
     print("PASS test_long_lecture_grows_chunk_size")
 
 

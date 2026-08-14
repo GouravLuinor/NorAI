@@ -31,12 +31,13 @@ DEFAULT_RPM_LIMIT = 12
 
 TEMPERATURE = 0.4
 
-# ── Adaptive Chunking (P1.8) ──────────────────────────────────────────────────
+# ── Adaptive Chunking (P1.8 + Dynamic Content Scaling) ────────────────────────
 # Long lectures get larger chunks so the number of extraction LLM calls stays
-# bounded. TARGET_MAX_CHUNKS caps the target chunk count; MAX_SEGMENTS_PER_CHUNK
-# caps how large a single chunk may grow (≈ 5.5 min of audio at ~10.5 seg/min).
-TARGET_MAX_CHUNKS = 24
-MAX_SEGMENTS_PER_CHUNK = 60
+# bounded. TARGET_MAX_CHUNKS scales the chunk count; MAX_SEGMENTS_PER_CHUNK
+# caps how large a single chunk may grow (≈ 2.8 min of audio at ~10.5 seg/min)
+# ensuring fine-grained technical concepts are never over-compressed.
+TARGET_MAX_CHUNKS = 40
+MAX_SEGMENTS_PER_CHUNK = 30
 
 # ── Pre-flight Estimator (P1.8) ───────────────────────────────────────────────
 # Default segments-per-minute heuristic (measured: 88 whisper segments over a
