@@ -16,9 +16,20 @@ EXCLUDED="backend/test_api_contract.py"
 
 failures=0
 total=0
-while IFS= read -r t; do
+
+mapfile -t tests < <(
+  find "$ROOT" -name 'test_*.py' \
+    -not -path '*/venv/*' \
+    -not -path '*/node_modules/*' \
+    -not -path '*/.git/*' \
+    -not -path "*/$EXCLUDED" \
+    | sort
+)
+
+for t in "${tests[@]}"; do
+  [ -z "$t" ] && continue
   total=$((total + 1))
-  if timeout 300 "$PY" "$t" >/tmp/norai-test.log 2>&1; then
+  if timeout 300 "$PY" "$t" < /dev/null >/tmp/norai-test.log 2>&1; then
     echo "PASS  $t"
   else
     echo "FAIL  $t"
@@ -27,14 +38,8 @@ while IFS= read -r t; do
     echo "----------------------------"
     failures=$((failures + 1))
   fi
-done < <(
-  find "$ROOT" -name 'test_*.py' \
-    -not -path '*/venv/*' \
-    -not -path '*/node_modules/*' \
-    -not -path '*/.git/*' \
-    -not -path "*/$EXCLUDED" \
-    | sort
-)
+done
+
 
 echo ""
 echo "$((total - failures))/$total passed, $failures failed"

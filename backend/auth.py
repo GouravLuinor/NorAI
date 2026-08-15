@@ -153,6 +153,47 @@ async def get_or_create_user_from_token(payload: Dict[str, Any], db: AsyncSessio
     return user
 
 
+DEV_USER_ID = "dev-user-0000-0000-0000-000000000000"
+
+
+def is_dev_access() -> bool:
+    """Check if local development bypass is active via env flags."""
+    return (
+        os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
+        or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
+    )
+
+
+async def get_or_create_dev_user(db: AsyncSession) -> User:
+    """Find or create the default local development user."""
+    result = await db.execute(select(User).where(User.id == DEV_USER_ID))
+    user = result.scalar_one_or_none()
+    if not user:
+        user = User(
+            id=DEV_USER_ID,
+            email="dev@norai.local",
+            full_name="Local Dev User",
+            is_anonymous=False,
+        )
+        db.add(user)
+        db.add(
+            Subscription(
+                user_id=DEV_USER_ID,
+                status="active",
+                plan_tier="pro",
+                monthly_minutes_quota=999999,
+                used_minutes_this_month=0,
+            )
+        )
+        try:
+            await db.flush()
+        except IntegrityError:
+            await db.rollback()
+            result = await db.execute(select(User).where(User.id == DEV_USER_ID))
+            user = result.scalar_one_or_none()
+    return user
+
+
 async def get_current_user_optional(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: AsyncSession = Depends(get_db),
@@ -175,14 +216,20 @@ async def get_current_user_optional(
 
 async def get_current_user(
     user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
 ) -> User:
     """
     Required dependency: raises 401 Unauthorized if no valid user token provided.
+    In local dev mode (NORAI_DEV_ACCESS=1 or NORAI_DEV_INSECURE_AUTH=1), falls back
+    to an automatic local dev user so localhost works seamlessly without login.
     """
     if not user:
+        if is_dev_access():
+            return await get_or_create_dev_user(db)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication required. Please provide a valid Bearer token.",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
