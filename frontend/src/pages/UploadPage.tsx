@@ -145,7 +145,10 @@ export function UploadPage() {
     apiFetchRaw('/lectures')
       .then((res) => res.json())
       .then((data: LectureInfo[]) => {
-        setLectures(data.slice(0, 5)) // Take max 5 most recent
+        const valid = data.filter(
+          (l) => (l.chapter_count && l.chapter_count > 0) || (l.title && l.title !== 'New Lecture')
+        )
+        setLectures((valid.length > 0 ? valid : data).slice(0, 8))
         setLoadingLectures(false)
       })
       .catch((err) => {
@@ -153,6 +156,7 @@ export function UploadPage() {
         setLoadingLectures(false)
       })
   }, [])
+
 
   const handleStart = async () => {
     const formData = new FormData()

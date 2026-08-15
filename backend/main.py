@@ -1808,36 +1808,52 @@ async def get_lectures(
 ):
     """List lectures.
 
-    Authenticated: the caller's own lectures (DB is the ownership source of
-    truth, enriched with the file registry's chapter counts / titles).
-    Anonymous: the legacy open registry (dev / default lecture).
+    Returns the unified list of all available lectures.
+    Merges DB ownership records with on-disk lecture artifacts so no lectures are split.
     """
-    if user is None:
-        return list_lectures()
-
-    result = await db.execute(
-        select(Lecture)
-        .where(Lecture.user_id == user.id)
-        .order_by(Lecture.created_at.desc())
-    )
-    rows = result.scalars().all()
-    registry = {lec.get("lecture_id"): lec for lec in list_lectures()}
+    registry_list = list_lectures()
+    registry_map = {lec.get("lecture_id"): lec for lec in registry_list}
+    seen_ids = set()
     out = []
-    for row in rows:
-        meta = registry.get(row.id, {})
-        out.append({
-            "lecture_id": row.id,
-            "title": meta.get("title") or row.title,
-            "status": row.status,
-            "source_type": row.source_type,
-            "duration_seconds": row.duration_seconds,
-            "chapter_count": meta.get("chapter_count", 0),
-            "created_at": meta.get("created_at") or (
-                row.created_at.isoformat() if row.created_at else None
-            ),
-            "output_dir": meta.get("output_dir"),
-        })
-    return out
+
+    # 1. Fetch from DB if authenticated
+    if user is not None:
+        try:
+            result = await db.execute(
+                select(Lecture)
+                .where(Lecture.user_id == user.id)
+                .order_by(Lecture.created_at.desc())
+            )
+            rows = result.scalars().all()
+            for row in rows:
+                seen_ids.add(row.id)
+                meta = registry_map.get(row.id, {})
+                out.append({
+                    "lecture_id": row.id,
+                    "title": meta.get("title") or row.title,
+                    "status": row.status,
+                    "source_type": row.source_type,
+                    "duration_seconds": row.duration_seconds,
+                    "chapter_count": meta.get("chapter_count", 0),
+                    "created_at": meta.get("created_at") or (
+                        row.created_at.isoformat() if row.created_at else None
+                    ),
+                    "output_dir": meta.get("output_dir"),
+                })
+        except Exception as exc:
+            logging.getLogger("norai").warning("DB query failed in get_lectures: %s", exc)
+
+    # 2. In dev mode or when unauthenticated, merge all disk registry lectures
+    if user is None or NORAI_DEV_ACCESS:
+        for lec in registry_list:
+            lid = lec.get("lecture_id")
+            if lid and lid not in seen_ids:
+                seen_ids.add(lid)
+                out.append(lec)
+
+    # Sort newest first
+    return sorted(out, key=lambda x: str(x.get("created_at") or ""), reverse=True)
+
 
 
 
