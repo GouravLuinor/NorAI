@@ -54,6 +54,14 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
 
 ## Recent changes
 
+- **Content-Adaptive Dynamic Scaling & Ingestion Hardening (Phases 1–4 complete & live benchmarked).** Replaced fixed-envelope pipeline constraints with dynamic, content-density-aware scaling across chunks, curriculum outlines, and structured note generation:
+  - **Dynamic Chunking (`config.py`, `chunking/chunk.py`, `backend/estimator.py`)**: Reduced `MAX_SEGMENTS_PER_CHUNK` from 60 to 30 (~2.8 mins max per chunk) to preserve granular sub-topics in dense multi-service courses without squashing 6 minutes into one chunk. Set `TARGET_MAX_CHUNKS = 40` and calibrated `estimate_pipeline()` up to 16 chapters.
+  - **Zero-Loss Curriculum Outline Graph (`notes/outline_prompts.py`, `notes/outline_generator.py`)**: Removed rigid "strictly 3 to 6 chapters" rule, implementing dynamic range scaling (2–4 chapters for ≤15m up to 8–14 chapters for ≥65m). Removed `[:1000]` character truncation on summaries and `[:5]` / `[:10]` topic slicing in `build_outline_payload`. Increased `max_output_tokens` to 4096.
+  - **Depth-Proportional Chapter Synthesis (`notes/notes_prompt.py`, `notes/notes_generator.py`)**: Replaced flat 300–700 word limit with `TARGET DEPTH & DENSITY` (scaling from ~400–700 words for narrow topics to ~1,500–2,500 words across 4–8 structured card sections for dense architectures).
+  - **YouTube Multi-Client Ingestion (`ingest/ingest.py`)**: Configured `player_client: ["ios", "android", "web"]`, `retries=10`, and `fragment_retries=10` in `yt-dlp` options, permanently resolving 403 Forbidden errors.
+  - **Benchmarked Live**: Verified on 8-min DP lecture (3 cohesive chapters, 1,428 clean words, 0 filler) vs 71-min AWS course (7 dedicated architectural chapters, 3,562 words, 21 assessment questions, 21 flashcards, 33 indexed tutor chunks, 12 diagram screenshots).
+  - **Verification**: 38/38 backend/tutor test suites passing, 73/73 Vitest frontend unit tests passing, `oxlint` 0 errors.
+
 - **UI/UX audit execution follow-through + P6.4 combined (commit `8c4cd74`, pushed to `fix/threads-and-pdf`).** Closed out the remaining audit-action items from `UI_UX_AUDIT_REPORT.md` and shipped them together with P6.4 in one verified commit:
   - **D1 ShareModal data source fixed** — `ShareModal` was calling a non-existent `/share` endpoint; added a real `GET /lectures/{id}/share` (returns the existing share link or 404) so the modal shows the live link/toggle state instead of always minting.
   - **D2 UploadPage custom Select** — replaced the native `<select>` on UploadPage ("Add to course") with the blueprint-styled `Select.tsx` for visual + keyboard consistency with Sidebar.
