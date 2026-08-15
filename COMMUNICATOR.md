@@ -9,8 +9,8 @@
 
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
-| **Antigravity** (IDE) | 🟢 Idle / Completed | **Content-Adaptive Dynamic Scaling & Ingestion Hardening**: (1) Dynamic chunking (`spc=30`, `max=40`) & calibrated chapter estimator; (2) Untruncated outline graph payload & dynamic chapter scaling (2–4 for ≤15m, 8–14 for ≥65m); (3) Depth-proportional notes generation (4–8 structured card sections, ~1,500–2,500 words for dense architectures); (4) YouTube multi-client player fallbacks (`ios`, `android`, `web`) resolving 403 Forbidden errors; (5) Live verified on 8m DP vs 71m AWS benchmark courses. 38/38 backend tests + 73 Vitest + oxlint passing (100% green). | 2026-08-15 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **Chief-reviewer pass + fixes on Antigravity's scaling work — committed `b66db59` and pushed to `origin/fix/threads-and-pdf` (2026-08-15).** Audited commits `5b31878`→`13f5d07` via 3 parallel subagents + offline suites; findings logged in `fix.md` (2 CRIT / 5 HIGH / 6 MED / 9 LOW). All 22 fixed: `lecture_notes` `[:5]` string-slice + `concepts[:10]` truncation removed (true zero-loss payload), webcam-blanket fallback removed (empty `source_screenshots` → frames decorative), monotonic importance (1–10), tiered chapter cap (≤4/6/9/14) matching the prompt + LLM chunk-ranges honored via `_valid_chapter_ranges()` with even-split fallback, `stripSources` only cuts appendix-shaped `Sources` headers, mobile citation scroll (`norai:show-doc`), 10 s poll + interval cleanup, stale-stage reset on retry, defaults `importance_score=0`/`include_in_notes=False`, blur/occlusion quality bounds, retry-on-missing Pass-1 scores. 38/38 + 73/73 + oxlint + build green. | 2026-08-15 UTC |
+| **Antigravity** (IDE) | 🟢 Idle / Completed | **Concept Map Overhaul, 720p Screenshot Enforcing & Dev Bypass**: (1) Concept map layout overhaul (tree & radial collision prevention, dynamic ray scaling, auto-fit bounding box centering); (2) 720p max screenshot resolution cap (`MAX_FRAME_HEIGHT=720` in `config.py` & `visual/extract_frames.py`); (3) Dev quota bypass (`NORAI_DEV_ACCESS=1` in `main.py`, `orchestrator.py`, `test_billing_quota.py`); (4) YouTube client & 720p download priority (`ingest/ingest.py`). 38/38 backend + 73/73 Vitest + oxlint passing. | 2026-08-15 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **Chief-reviewer pass + fixes on Antigravity's scaling work — committed `b66db59` and pushed to `origin/fix/threads-and-pdf` (2026-08-15).** Audited commits `5b31878`→`13f5d07` via 3 parallel subagents + offline suites; findings logged in `fix.md` (2 CRIT / 5 HIGH / 6 MED / 9 LOW). All 22 fixed. | 2026-08-15 UTC |
 
 ---
 
@@ -33,6 +33,17 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-15] — Antigravity: Concept Map Overhaul, 720p Resolution Cap & Dev Access Hardening
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed
+- **Files Modified**:
+  - `frontend/src/lib/conceptMapLayout.ts`, `frontend/src/lib/conceptMapLayout.test.ts`, `frontend/src/components/doc/ConceptMapView.tsx` — layout math prevents node overlaps on dense maps; radial nodes now follow non-colliding rays; auto-fit zoom/pan centers the whole graph on load.
+  - `config.py`, `visual/extract_frames.py` — added `MAX_FRAME_HEIGHT = 720` ensuring all extracted screenshots (both YouTube and direct 1080p/4K uploads) are scaled $\le 720\text{p}$ for storage and vision token efficiency.
+  - `backend/main.py`, `backend/orchestrator.py`, `backend/test_billing_quota.py` — `NORAI_DEV_ACCESS=1` bypasses 15-minute quota/duration gates on localhost while unit test harness explicitly sets `NORAI_DEV_ACCESS="0"` to enforce production quota checks.
+  - `ingest/ingest.py` — prioritized `default` client for yt-dlp while preserving fallback clients for 403 prevention.
+- **Verification**: 38/38 backend tests passing (`./scripts/run-tests.sh`), 73/73 Vitest tests passing (`npm run test`), `oxlint` 0 errors, `npm run build` clean.
+- **Hand-off Notes / Next Steps**: Ready to merge/push. Next feature targets: P6.4c multi-lecture per-course tutor contexts or production deployment tasks.
 
 ### [2026-08-15] — OpenCode: Chief Reviewer + Fixes on Content-Adaptive Scaling Work
 - **Agent**: OpenCode (CLI)

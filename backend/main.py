@@ -1677,16 +1677,8 @@ async def start_processing(
     # ── Pre-download quota + free-trial enforcement (P2.2) ─────────────────
     # Check FIRST, then consume resources. The orchestrator's post-download
     # duration gate stays as a defense-in-depth backstop.
-    result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
-    sub = result.scalar_one_or_none()
-    quota = sub.monthly_minutes_quota if sub else 15
-    used = sub.used_minutes_this_month if sub else 0
-    if used >= quota:
-        raise HTTPException(
-            status_code=429,
-            detail=f"Monthly quota of {quota} lecture minutes reached. Please upgrade to Starter or Pro to continue processing.",
-        )
-
+    # Dev escape hatch: NORAI_DEV_ACCESS=1 skips quota + duration limits for
+    # local development (no paid plan needed to test long lectures).
     probed_sec = None
     if source_type == "youtube" and url:
         probed = probe_video_metadata(url)
@@ -1695,22 +1687,33 @@ async def start_processing(
     elif source_type == "upload" and duration and duration > 0:
         probed_sec = duration * 60.0
 
-    if probed_sec:
-        import math as _math
-        needed = _math.ceil(probed_sec / 60.0)
-        free_limit_min = int(os.environ.get("MAX_FREE_DURATION_MIN", "15"))
-        if probed_sec > free_limit_min * 60:
+    if not NORAI_DEV_ACCESS:
+        result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+        sub = result.scalar_one_or_none()
+        quota = sub.monthly_minutes_quota if sub else 15
+        used = sub.used_minutes_this_month if sub else 0
+        if used >= quota:
             raise HTTPException(
                 status_code=429,
-                detail=f"Lecture duration ({probed_sec / 60:.1f} mins) exceeds the free-trial limit "
-                       f"of {free_limit_min} minutes. Please upgrade to Starter or Pro.",
+                detail=f"Monthly quota of {quota} lecture minutes reached. Please upgrade to Starter or Pro to continue processing.",
             )
-        if used + needed > quota:
-            raise HTTPException(
-                status_code=429,
-                detail=f"This lecture needs ~{needed} of your {quota} monthly minutes "
-                       f"({used} already used). Please upgrade to continue.",
-            )
+
+        if probed_sec:
+            import math as _math
+            needed = _math.ceil(probed_sec / 60.0)
+            free_limit_min = int(os.environ.get("MAX_FREE_DURATION_MIN", "15"))
+            if probed_sec > free_limit_min * 60:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"Lecture duration ({probed_sec / 60:.1f} mins) exceeds the free-trial limit "
+                           f"of {free_limit_min} minutes. Please upgrade to Starter or Pro.",
+                )
+            if used + needed > quota:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"This lecture needs ~{needed} of your {quota} monthly minutes "
+                           f"({used} already used). Please upgrade to continue.",
+                )
 
     task_id = str(uuid.uuid4())
 

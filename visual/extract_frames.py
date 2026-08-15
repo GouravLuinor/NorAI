@@ -17,8 +17,10 @@ logger = logging.getLogger(__name__)
 
 
 
-# Constants
-
+try:
+    from config import MAX_FRAME_HEIGHT
+except ImportError:
+    MAX_FRAME_HEIGHT = 720
 
 FRAME_INTERVAL_SECONDS = 8
 
@@ -30,7 +32,8 @@ FRAME_INTERVAL_SECONDS = 8
 def extract_frames(
     video_path,
     output_dir,
-    interval_seconds=FRAME_INTERVAL_SECONDS
+    interval_seconds=FRAME_INTERVAL_SECONDS,
+    max_height=MAX_FRAME_HEIGHT
 ):
     """
     Extract one frame every N seconds.
@@ -114,6 +117,11 @@ def extract_frames(
                 )
 
                 continue
+
+            if max_height and frame.shape[0] > max_height:
+                scale = float(max_height) / frame.shape[0]
+                new_w = int(round(frame.shape[1] * scale))
+                frame = cv2.resize(frame, (new_w, max_height), interpolation=cv2.INTER_AREA)
 
             filename = (
                 f"frame_"

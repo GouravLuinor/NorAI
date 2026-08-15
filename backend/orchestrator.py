@@ -171,7 +171,11 @@ def run_pipeline(
             _metrics["duration_sec"] = duration_sec
 
             max_duration_sec = int(os.environ.get("MAX_FREE_DURATION_MIN", "15")) * 60
-            if duration_sec > max_duration_sec and os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true":
+            if (
+                duration_sec > max_duration_sec
+                and os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true"
+                and os.environ.get("NORAI_DEV_ACCESS", "0") != "1"
+            ):
                 raise ValueError(
                     f"Lecture duration ({duration_sec / 60:.1f} mins) exceeds the Free Trial limit "
                     f"of {max_duration_sec / 60:.0f} minutes. Please upgrade to Starter or Pro."

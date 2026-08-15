@@ -146,6 +146,39 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
     }
   }, [chapterId, lectureId])
 
+  // Calculate layout coordinates for nodes via the shared layout engine.
+  // Computed before the early returns so the fit hook below is unconditional.
+  const hasNodes = !!data && !!data.nodes && data.nodes.length > 0
+  const nodePositions = hasNodes
+    ? layoutConceptMap(data.nodes, data.edges, layoutMode, { height: 600 })
+    : {}
+
+  // Auto-fit: on load / layout switch, zoom + pan so the full node cloud fits
+  // the viewport (dense maps grow beyond 600px and would otherwise open
+  // clipped).
+  const fitOnceRef = useRef<{ key: string } | null>(null)
+  const fitKey = `${layoutMode}:${hasNodes ? data.nodes.length : 0}:${chapterId}`
+  useEffect(() => {
+    if (fitOnceRef.current?.key === fitKey) return
+    fitOnceRef.current = { key: fitKey }
+    const container = containerRef.current
+    if (!container || !hasNodes) return
+    const pos = Object.values(nodePositions)
+    const minX = Math.min(...pos.map((p) => p.x))
+    const maxX = Math.max(...pos.map((p) => p.x))
+    const minY = Math.min(...pos.map((p) => p.y))
+    const maxY = Math.max(...pos.map((p) => p.y))
+    const bboxW = Math.max(320, maxX - minX + 320)
+    const bboxH = Math.max(200, maxY - minY + 160)
+    const fitZoom = Math.min(1, (container.clientWidth - 48) / bboxW, (container.clientHeight - 48) / bboxH)
+    setZoom(Math.max(0.4, fitZoom))
+    setPan({
+      x: (container.clientWidth - bboxW * fitZoom) / 2 - minX * fitZoom,
+      y: (container.clientHeight - bboxH * fitZoom) / 2 - minY * fitZoom,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitKey])
+
   if (loading) {
     return <ConceptSkeleton />
   }
@@ -159,9 +192,6 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
       </div>
     )
   }
-
-  // Calculate layout coordinates for nodes via the shared layout engine
-  const nodePositions = layoutConceptMap(data.nodes, data.edges, layoutMode, { height: 600 })
 
   // Drag handlers
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -332,9 +362,13 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
                       }`
                 }`}
               >
-                <div className="flex items-center gap-2 whitespace-nowrap">
+                <div
+                  className={`flex items-center gap-2 whitespace-nowrap overflow-hidden ${isRoot ? 'max-w-[300px]' : 'max-w-[220px]'}`}
+                >
                   {isRoot && <Sparkles size={14} className="shrink-0" />}
-                  <span>{node.label}</span>
+                  <span className="truncate" title={node.label}>
+                    {node.label}
+                  </span>
                 </div>
               </div>
             )

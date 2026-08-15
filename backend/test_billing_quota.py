@@ -32,10 +32,12 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 os.environ["LEMONSQUEEZY_CHECKOUT_STARTER_URL"] = "https://store.test/buy/starter"
 os.environ["LEMONSQUEEZY_CHECKOUT_PRO_URL"] = "https://store.test/buy/pro"
 os.environ["LEMONSQUEEZY_CUSTOMER_PORTAL_URL"] = "https://store.test/billing"
+os.environ["NORAI_DEV_ACCESS"] = "0"
 
 # Patch the auth dependency so we can simulate a signed-in user without
 # crafting real Supabase JWTs.
 from backend import main as main_mod
+main_mod.NORAI_DEV_ACCESS = False
 from backend.db.models import User as _User
 
 FAKE_USER_ID = "user_test_1"
