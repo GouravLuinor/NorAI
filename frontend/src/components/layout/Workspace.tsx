@@ -65,8 +65,18 @@ export function Workspace() {
         }
       }
     }
+    const handleShowDoc = () => {
+      // Citation click: switch the mobile/tablet view to the doc pane so the
+      // cited section card can mount and be scrolled to (cite.ts).
+      setMobileTab('doc')
+      setAiDrawerOpenTablet(false)
+    }
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    window.addEventListener('norai:show-doc', handleShowDoc)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('norai:show-doc', handleShowDoc)
+    }
   }, [sidebarCollapsed, toggleSidebar, sidebarDrawerOpenMobile, aiDrawerOpenTablet, isMobile])
 
   useEffect(() => {

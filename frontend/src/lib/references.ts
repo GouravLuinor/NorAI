@@ -21,7 +21,8 @@ function chapterFromChunkId(chunkId?: string): number | undefined {
   if (!chunkId) return undefined
   // Only match explicit ch<N>__ pattern (e.g. ch1__heading), NEVER chunk_<hex_hash>
   const m = chunkId.match(/^ch(\d+)__/i)
-  return m ? Number(m[1]) : undefined
+  const n = m ? Number(m[1]) : NaN
+  return Number.isInteger(n) && n > 0 ? n : undefined
 }
 
 export function resolveChapterId(
@@ -185,7 +186,16 @@ export function buildReferences(
 /**
  * Strip the auto-appended Sources appendix from assistant messages
  * (sources are surfaced via ReferencesPanel).
+ *
+ * Only an appendix-shaped header triggers a cut — a bare "Sources" word in
+ * prose (e.g. "The sources of variance are many.") must never truncate the
+ * answer. When multiple appendix markers exist, the LAST one wins.
  */
-export const stripSources = (text: string): string =>
-  text.replace(/(\*\*Sources\*\*|\n\nSources\b|Sources\s*[:•]|Sources\b[\s\S]*$)[\s\S]*$/i, '').trim()
+const SOURCES_HEADER_RE = /(\*\*Sources\*\*|\n[ \t]*Sources\s*[:•]|\n[ \t]*Sources\s*\n)/i
+
+export const stripSources = (text: string): string => {
+  const match = text.match(SOURCES_HEADER_RE)
+  if (!match || match.index == null) return text.trim()
+  return text.slice(0, match.index).trim()
+}
 

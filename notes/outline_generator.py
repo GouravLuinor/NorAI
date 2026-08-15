@@ -261,16 +261,45 @@ def main():
         "Outline generation complete."
     )      
 
+def _valid_chapter_ranges(chapters, total_chunks):
+    """Validate the LLM's per-chapter chunk ranges.
+
+    Returns a list of (start, end) tuples only when the ranges form a complete,
+    contiguous, non-overlapping partition of chunks 0..total_chunks-1 (each
+    chapter ordered as returned). Returns None when any range is missing,
+    malformed, out of bounds, or leaves gaps — the caller then falls back to an
+    even split.
+    """
+    if total_chunks <= 0:
+        return None
+    ranges = []
+    next_start = 0
+    for ch in chapters:
+        if not isinstance(ch, dict):
+            return None
+        start = ch.get("start_chunk")
+        end = ch.get("end_chunk")
+        if not isinstance(start, int) or not isinstance(end, int):
+            return None
+        if start != next_start or end < start or end >= total_chunks:
+            return None
+        ranges.append((start, end))
+        next_start = end + 1
+    if next_start != total_chunks:
+        return None
+    return ranges
+
+
 def generate_lecture_outline(
-    merged_objects_dir: str,
+    objects_dir: str,
     output_dir: str,
 ) -> dict:
     """
-    Generate the lecture outline from merged knowledge objects.
-    Chunk ranges (start_chunk / end_chunk) are automatically assigned
-    by dividing the available merged objects equally among chapters.
+    Generate the lecture outline from per-chunk knowledge objects.
+    Chunk ranges (start_chunk / end_chunk) are taken from the LLM when valid,
+    otherwise assigned by dividing the available objects equally among chapters.
     """
-    merged_dir = Path(merged_objects_dir)
+    merged_dir = Path(objects_dir)
     objects = []
     object_files = []
     for f in sorted(merged_dir.glob("chunk_*.json")):
@@ -299,8 +328,8 @@ def generate_lecture_outline(
         proto_chapters.append({
             "chapter_id": obj.get("chunk_id", 0),
             "topics": [obj.get("topic", "")] if obj.get("topic") else [],
-            "concepts": obj.get("concepts", [])[:10],
-            "lecture_notes": obj.get("lecture_notes", [])[:5],
+            "concepts": obj.get("concepts", []),
+            "lecture_notes": obj.get("lecture_notes", ""),
         })
 
     outline_text = generate_outline(proto_chapters)
@@ -310,8 +339,18 @@ def generate_lecture_outline(
     if not outline.get("lecture_title") and chapters and isinstance(chapters[0], dict) and chapters[0].get("title"):
         outline["lecture_title"] = chapters[0]["title"]
 
-    target_chapters = max(3, min(8, max(3, total_chunks // 3)))
-    if len(chapters) > target_chapters and target_chapters > 0:
+    # Tiered chapter cap mirroring the outline prompt's dynamic scaling tiers
+    # (outline_prompts.py): short ≤4, medium ≤6, substantial ≤9, deep-dive ≤14.
+    if total_chunks <= 12:
+        target_chapters = 4
+    elif total_chunks <= 25:
+        target_chapters = 6
+    elif total_chunks <= 45:
+        target_chapters = 9
+    else:
+        target_chapters = 14
+
+    if len(chapters) > target_chapters:
         logger.info(f"Capping generated chapters from {len(chapters)} to target maximum of {target_chapters}.")
         chapters = chapters[:target_chapters]
         outline["chapters"] = chapters
@@ -319,16 +358,27 @@ def generate_lecture_outline(
     num_chapters = len(chapters)
     if num_chapters == 0:
         raise ValueError("Outline generation produced zero chapters.")
+    if num_chapters > total_chunks:
+        logger.info(f"Clamping {num_chapters} chapters to {total_chunks} chunks.")
+        chapters = chapters[:total_chunks]
+        outline["chapters"] = chapters
+        num_chapters = total_chunks
 
-    # Assign chunk ranges evenly across the total merged objects
-    per_chapter = max(1, total_chunks // num_chapters)
-    
-    for i, ch in enumerate(chapters):
-        start = i * per_chapter
-        end   = min((i + 1) * per_chapter - 1, total_chunks - 1)
-        if i == num_chapters - 1:
-            end = total_chunks - 1
+    # Honor the LLM's per-chapter chunk ranges when they form a valid, complete,
+    # contiguous partition of all chunks; otherwise fall back to an even split.
+    ranges = _valid_chapter_ranges(chapters, total_chunks)
+    if ranges is None:
+        logger.info("LLM chapter ranges invalid/incomplete; falling back to even chunk split.")
+        per_chapter = max(1, total_chunks // num_chapters)
+        ranges = []
+        for i in range(num_chapters):
+            start = i * per_chapter
+            end = min((i + 1) * per_chapter - 1, total_chunks - 1)
+            if i == num_chapters - 1:
+                end = total_chunks - 1
+            ranges.append((start, end))
 
+    for i, (ch, (start, end)) in enumerate(zip(chapters, ranges)):
         ch["chapter_id"]   = i + 1               # renumber 1…N
         ch["start_chunk"]  = start
         ch["end_chunk"]    = end
@@ -347,7 +397,7 @@ def generate_lecture_outline(
 
 def main():
     result = generate_lecture_outline(
-        merged_objects_dir="outputs/merged_objects",
+        objects_dir="outputs/merged_objects",
         output_dir="outputs",
     )
     logger.info(f"Outline generated: {result}")

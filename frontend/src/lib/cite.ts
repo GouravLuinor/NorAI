@@ -1,6 +1,8 @@
 import { useChapterStore } from '../stores/useChapterStore'
 import { headingToId } from './markdown'
 
+let activeInterval: ReturnType<typeof setInterval> | null = null
+
 function findSectionCard(targetId: string, headingText: string): HTMLElement | null {
   // 1. Direct ID lookup
   if (targetId) {
@@ -8,19 +10,31 @@ function findSectionCard(targetId: string, headingText: string): HTMLElement | n
     if (direct) return direct
   }
 
-  // 2. Query all section card containers within the active document area
-  const docContainer = document.querySelector('.doc-content') || document
-  const cards = Array.from(docContainer.querySelectorAll<HTMLElement>('[id^="sec-"]'))
+  // 2. Query ALL section card containers across every doc-content area.
+  //    Desktop mounts the doc pane; on mobile only the active tab is mounted,
+  //    so scan every scroller rather than the first `.doc-content` in DOM order
+  //    (which may be the chat's own message scroller).
+  const containers = Array.from(document.querySelectorAll<HTMLElement>('.doc-content'))
+  let cards: HTMLElement[] = []
+  for (const container of containers) {
+    cards = cards.concat(Array.from(container.querySelectorAll<HTMLElement>('[id^="sec-"]')))
+  }
   if (cards.length === 0) return null
 
   // 3. Normalized slug matching
   const targetSlug = headingToId(headingText).replace(/^sec-/, '').toLowerCase()
   if (!targetSlug) return cards[0] || null
 
-  // Exact slug contains or card id contains
+  // Exact slug equality first, then contains (exact is never ambiguous).
   for (const card of cards) {
     const cardSlug = card.id.replace(/^sec-/, '').toLowerCase()
-    if (cardSlug === targetSlug || cardSlug.includes(targetSlug) || targetSlug.includes(cardSlug)) {
+    if (cardSlug === targetSlug) {
+      return card
+    }
+  }
+  for (const card of cards) {
+    const cardSlug = card.id.replace(/^sec-/, '').toLowerCase()
+    if (cardSlug.includes(targetSlug) || targetSlug.includes(cardSlug)) {
       return card
     }
   }
@@ -72,12 +86,22 @@ export function scrollToHeading(headingPath: string, chapterId?: number | null, 
   }
   store.setDocTab('notes')
 
+  // On mobile only one panel is mounted; if the chat pane is active the doc
+  // pane isn't in the DOM yet. Ask the Workspace to switch to the doc tab so
+  // the section cards can mount (Workspace.tsx listens for this event).
+  window.dispatchEvent(new CustomEvent('norai:show-doc'))
+
+  // Clear any previous poll (e.g. a prior citation click still running) so we
+  // never accumulate intervals or scroll to a stale target after navigation.
+  if (activeInterval) clearInterval(activeInterval)
+
   let attempts = 0
-  const maxAttempts = 35 // Poll up to 3.5s to allow notes to fetch and render
+  const maxAttempts = 100 // Poll up to 10s to allow notes to fetch and render
   const interval = setInterval(() => {
     const el = findSectionCard(targetId, leafHeading || headingPath)
     if (el) {
       clearInterval(interval)
+      if (activeInterval === interval) activeInterval = null
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
       el.classList.remove('scroll-highlight')
       void el.offsetWidth
@@ -88,8 +112,10 @@ export function scrollToHeading(headingPath: string, chapterId?: number | null, 
       })
     } else if (attempts >= maxAttempts) {
       clearInterval(interval)
+      if (activeInterval === interval) activeInterval = null
       console.warn('Reference click — section card not found in DOM:', { targetId, leafHeading, headingPath })
     }
     attempts++
   }, 100)
+  activeInterval = interval
 }
