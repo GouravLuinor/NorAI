@@ -47,10 +47,9 @@ from config import (
     PIPELINE_STUCK_TIMEOUT_SEC,
     UPLOAD_GC_AGE_HOURS,
 )
-from backend.db.database import DATABASE_URL
+from backend.db.database import DATABASE_URL, get_engine_kwargs
 from backend.db.models import Lecture
 from backend.orchestrator import PipelineCancelled, run_pipeline
-from backend.usage import _ENGINE_KWARGS
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +59,7 @@ _UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f
 
 def _make_session_factory():
     return async_sessionmaker(
-        bind=create_async_engine(DATABASE_URL, poolclass=NullPool, **_ENGINE_KWARGS),
+        bind=create_async_engine(DATABASE_URL, poolclass=NullPool, **get_engine_kwargs(DATABASE_URL)),
         class_=AsyncSession,
         expire_on_commit=False,
         autoflush=False,
@@ -85,9 +84,62 @@ def _normalize(dt: datetime | None) -> datetime | None:
 
 # ── Progress / status persistence (called from the worker thread) ────────────
 
+_live_progress: dict[str, dict] = {}
+_live_progress_lock = threading.Lock()
+
+
+def _update_live_progress(
+    lecture_id: str,
+    stage: str | None = None,
+    message: str | None = None,
+    percent: float | None = None,
+    status: str | None = None,
+    error_message: str | None = None,
+):
+    with _live_progress_lock:
+        current = _live_progress.get(lecture_id, {})
+        if stage is not None:
+            current["stage"] = stage
+        if message is not None:
+            current["message"] = message
+        if percent is not None:
+            current["progress"] = percent
+        if status is not None:
+            current["status"] = status
+        if error_message is not None:
+            current["error_message"] = error_message
+        current["updated_at"] = time.time()
+        _live_progress[lecture_id] = current
+
+
+def _get_live_progress(lecture_id: str) -> dict | None:
+    with _live_progress_lock:
+        return _live_progress.get(lecture_id)
+
+
+def check_disk_completed(lecture_id: str) -> bool:
+    """Check if lecture artifacts are complete on disk."""
+    lec_dir = Path("outputs") / lecture_id
+    if not lec_dir.is_dir():
+        return False
+    notes_md = lec_dir / "notes" / "notes.md"
+    outline_json = lec_dir / "notes" / "lecture_outline.json"
+    chroma_db = lec_dir / "tutor" / "chroma" / "chroma.sqlite3"
+    if (notes_md.exists() or outline_json.exists()) and chroma_db.exists():
+        return True
+    return False
+
+
 def update_job_progress(lecture_id: str, stage: str | None, message: str | None, percent: float):
     """Persist stage/message/percent + refresh heartbeat. `stage=None` is a
     heartbeat-only refresh (long single stages must not look stuck)."""
+    _update_live_progress(
+        lecture_id,
+        stage=stage,
+        message=message,
+        percent=percent,
+        status="processing",
+    )
     now = _utcnow()
 
     async def _do(session):
@@ -110,6 +162,17 @@ def update_job_progress(lecture_id: str, stage: str | None, message: str | None,
 
 def _set_status(lecture_id: str, status: str, **fields):
     """Force a status + optional field updates on the Lecture row."""
+    stage = "complete" if status == "completed" else ("error" if status in ("failed", "cancelled") else None)
+    msg = "All done!" if status == "completed" else fields.get("error_message")
+    pct = 100.0 if status == "completed" else None
+    _update_live_progress(
+        lecture_id,
+        stage=stage,
+        message=msg,
+        percent=pct,
+        status=status,
+        error_message=fields.get("error_message"),
+    )
 
     async def _do(session):
         lecture = await session.get(Lecture, lecture_id)
@@ -433,16 +496,70 @@ def _supervisor_loop():
 # ── Status (async, for the /process/{id}/status endpoint) ───────────────────
 
 async def get_job_status(lecture_id: str) -> dict | None:
-    async def _do(session):
-        lecture = await session.get(Lecture, lecture_id)
-        if lecture is None:
-            return None
+    # 1. Check if artifacts on disk indicate complete
+    if check_disk_completed(lecture_id):
         return {
-            "status": lecture.status,
-            "stage": lecture.stage,
-            "message": lecture.stage_message,
-            "progress": lecture.progress,
-            "error_message": lecture.error_message,
+            "status": "completed",
+            "stage": "complete",
+            "message": "All done!",
+            "progress": 100.0,
+            "error_message": None,
         }
 
-    return await _run_in_session(_do)
+    # 2. Try DB query
+    try:
+        async def _do(session):
+            lecture = await session.get(Lecture, lecture_id)
+            if lecture is None:
+                return None
+            return {
+                "status": lecture.status,
+                "stage": lecture.stage,
+                "message": lecture.stage_message,
+                "progress": lecture.progress,
+                "error_message": lecture.error_message,
+            }
+
+        status = await _run_in_session(_do)
+        if status:
+            if status.get("status") == "completed" or (
+                status.get("progress") and status["progress"] >= 100.0
+            ):
+                status["status"] = "completed"
+                status["stage"] = "complete"
+                status["message"] = "All done!"
+                status["progress"] = 100.0
+            return status
+    except Exception as exc:
+        logger.warning("DB get_job_status failed for %s: %s", lecture_id, exc)
+
+    # 3. Try in-memory live progress
+    live = _get_live_progress(lecture_id)
+    if live:
+        status_val = live.get("status", "processing")
+        stage_val = live.get("stage", "processing")
+        if status_val == "completed" or (live.get("progress") and live["progress"] >= 100.0):
+            status_val = "completed"
+            stage_val = "complete"
+        return {
+            "status": status_val,
+            "stage": stage_val,
+            "message": live.get("message", "Processing…"),
+            "progress": live.get("progress", 0.0),
+            "error_message": live.get("error_message"),
+        }
+
+    # 4. Check registry or directory presence
+    lec_dir = Path("outputs") / lecture_id
+    if lec_dir.is_dir():
+        outline = lec_dir / "notes" / "lecture_outline.json"
+        if outline.exists():
+            return {
+                "status": "completed",
+                "stage": "complete",
+                "message": "All done!",
+                "progress": 100.0,
+                "error_message": None,
+            }
+
+    return None

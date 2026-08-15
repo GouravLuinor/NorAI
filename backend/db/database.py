@@ -25,12 +25,17 @@ DATABASE_URL = os.environ.get("DATABASE_URL") or os.environ.get("NORAI_POSTGRES_
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-# Configure engine kwargs
-engine_kwargs: dict[str, Any] = {"echo": False}
-if DATABASE_URL.startswith("sqlite"):
-    engine_kwargs["connect_args"] = {"check_same_thread": False}
+def get_engine_kwargs(url: str | None = None) -> dict[str, Any]:
+    target_url = url or DATABASE_URL
+    kwargs: dict[str, Any] = {"echo": False}
+    if target_url.startswith("sqlite"):
+        kwargs["connect_args"] = {"check_same_thread": False}
+    elif "asyncpg" in target_url or target_url.startswith("postgresql"):
+        kwargs["connect_args"] = {"timeout": 5, "command_timeout": 10}
+    return kwargs
 
-engine = create_async_engine(DATABASE_URL, **engine_kwargs)
+
+engine = create_async_engine(DATABASE_URL, **get_engine_kwargs(DATABASE_URL))
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

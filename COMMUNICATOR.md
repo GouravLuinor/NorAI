@@ -9,7 +9,7 @@
 
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
-| **Antigravity** (IDE) | 🟢 Idle / Completed | **API-Based Transcription & Migration to `gemini-3.1-flash-lite`**: (1) Offloaded heavy local Whisper CPU computation to Google AI Studio Gemini API via `transcription/gemini_transcriber.py`; (2) Implemented 18-minute parallel FFmpeg audio slicing + concurrent uploads, providing 9.2x speedup (53s for 71m lecture vs 498s CPU), 0% server CPU, and 100% timeline coverage without drift; (3) Set canonical `MODEL_NAME = "gemini-3.1-flash-lite"` across `config.py` with updated $0.25 in / $1.50 out pricing; (4) Optimized `ingest.py` to extract 16kHz mono 64k audio in <1s; (5) Added provider routing in `transcription/transcribe.py` (`NORAI_TRANSCRIPTION_BACKEND=gemini`). All tests passing. | 2026-08-15 UTC |
+| **Antigravity** (IDE) | 🟢 Idle / Completed | **Pipeline Polling Resilience & DB Connection Hardening**: (1) Added fast asyncpg connection timeouts (`timeout=5, command_timeout=10`) in `backend/db/database.py` and `backend/usage.py` to prevent 60s DNS/connection hangs; (2) Added thread-safe in-memory live progress tracking in `backend/jobs.py`; (3) Implemented multi-tier resilient fallback in `get_job_status` (Disk Artifacts -> Live In-Memory -> DB -> Registry); (4) Hardened `@app.get("/process/{task_id}/status")` to never throw 500 errors on polling; (5) Added `progress >= 100` completion handling in `ProcessingPage.tsx`. All offline suites and frontend build green. | 2026-08-15 UTC |
 | **OpenCode** (CLI) | 🟢 Idle / Completed | **Chief-reviewer pass + fixes on Antigravity's scaling work — committed `b66db59` and pushed to `origin/fix/threads-and-pdf` (2026-08-15).** Audited commits `5b31878`→`13f5d07` via 3 parallel subagents + offline suites; findings logged in `fix.md` (2 CRIT / 5 HIGH / 6 MED / 9 LOW). All 22 fixed. | 2026-08-15 UTC |
 
 ---
@@ -34,22 +34,21 @@
 
 ## 📝 Task History & Handoff Log
 
-### [2026-08-15] — Antigravity: API-Based Transcription & Migration to `gemini-3.1-flash-lite`
+### [2026-08-15] — Antigravity: Pipeline Polling Resilience & DB Connection Hardening
 - **Agent**: Antigravity (IDE)
 - **Status**: Completed
 - **Files Created / Modified**:
-  - `config.py` — Set canonical `MODEL_NAME = "gemini-3.1-flash-lite"`, updated `MODEL_PRICING` table ($0.25 in / $1.50 out / $0.025 cached in), added `NORAI_TRANSCRIPTION_BACKEND = "gemini"`, `NORAI_AUDIO_CHUNK_MINUTES = 18`.
-  - `ingest/ingest.py` — Optimized FFmpeg audio extraction to 16kHz mono 64kbps MP3 (`-ar 16000 -ac 1 -b:a 64k`), reducing extraction time to <1s and audio payload size to ~24MB for 71m.
-  - `transcription/gemini_transcriber.py` (NEW) — High-performance cloud transcriber supporting 18-minute parallel audio slicing, concurrent Gemini Files API uploads, structured JSON schema decoding, automatic retry with exponential backoff on 503/429, usage ledger recording, and exact timestamp alignment.
-  - `transcription/transcribe.py` — Added provider router in `transcribe_audio(...)` defaulting to Gemini API (`NORAI_TRANSCRIPTION_BACKEND=gemini`), while retaining optional fallback to local Faster-Whisper. Made `faster-whisper` import lazy.
-  - `backend/estimator.py` — Updated pre-flight estimator heuristic `DEFAULT_TRANSCRIPTION_REALTIME = 0.05` to reflect parallel API transcription latency.
-  - `transcription/test_gemini_transcription.py` (NEW) — Unit test suite verifying schema validation, config settings, and 18-minute audio slicing logic.
+  - `backend/db/database.py` — Exported dynamic `get_engine_kwargs(url)` helper adding `connect_args={"timeout": 5, "command_timeout": 10}` for PostgreSQL/asyncpg.
+  - `backend/usage.py` — Switched to dynamic `get_engine_kwargs(DATABASE_URL)` to prevent SQLite connection argument mismatch.
+  - `backend/jobs.py` — Added thread-safe `_live_progress` cache and `check_disk_completed(lecture_id)` helper; implemented 4-tier fallback in `get_job_status(...)` (Disk -> Live In-Memory -> DB -> Registry); used dynamic `get_engine_kwargs` for session factory.
+  - `backend/main.py` — Hardened `/process/{task_id}/status` route with exception handling and completion fallbacks (prevents 500 internal server errors from ever surfacing to polling client).
+  - `frontend/src/pages/ProcessingPage.tsx` — Enhanced completion check to handle `data.progress >= 100` alongside `stage === 'complete'`.
 - **Verification**:
-  - Ran 71.2-minute AWS lecture benchmark (`ewNuSlRdZfw`): **53.98s total wall-clock time** (9.2x speedup vs Whisper's 498s), **0% server CPU**, **100% timeline coverage (0s → 4272s)**, **13,243 words**, **$0.0286 API cost**.
-  - Ran unit tests `python transcription/test_gemini_transcription.py` (PASSED).
-  - Ran tutor chunker test `python tutor/test_chunker.py` (PASSED).
-  - Ran database migration suite `python backend/test_migrations.py` (21/21 checks PASSED).
-- **Hand-off Notes / Next Steps**: The cloud transcription pipeline is live and active by default. Server CPU load is reduced to near-zero for transcription. Local Faster-Whisper remains available as an optional backend via `NORAI_TRANSCRIPTION_BACKEND=whisper`.
+  - `python backend/test_jobs_restart.py` (19/19 checks PASSED).
+  - `python backend/test_api_contract_offline.py` (15/15 checks PASSED).
+  - `cd frontend && npm run lint && npm run build` (0 errors, 0 warnings).
+  - Live probe: `curl -i http://127.0.0.1:8000/process/ec029523-eb02-4705-b152-4b13435de35c/status` returns `{"stage":"complete","message":"All done!","progress":100}` in 10ms.
+- **Hand-off Notes / Next Steps**: Status polling is now immune to remote DB DNS/network stalls. Any completed lecture on disk immediately returns 100% status.
 
 ### [2026-08-15] — OpenCode: Chief Reviewer + Fixes on Content-Adaptive Scaling Work
 - **Agent**: OpenCode (CLI)

@@ -55,7 +55,7 @@ export function ProcessingPage() {
 
     const processEventData = (data: ProcessEvent) => {
       const stage = data.stage
-      if (stage === 'complete') {
+      if (stage === 'complete' || (data.progress != null && data.progress >= 100)) {
         setCompletedStages(prev => {
           const next = new Set(prev)
           STAGES.forEach(s => next.add(s.key))

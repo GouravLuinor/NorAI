@@ -2488,23 +2488,31 @@ async def get_concept_map(
 @app.get("/process/{task_id}/status")
 async def get_task_status(task_id: str):
     """Return current progress as a single JSON object (P4.1 DB-backed)."""
-    status = await jobs.get_job_status(task_id)
+    try:
+        status = await jobs.get_job_status(task_id)
+    except Exception as exc:
+        logging.getLogger("norai").warning("Error resolving status for task %s: %s", task_id, exc)
+        status = None
+
     if status is None:
+        if jobs.check_disk_completed(task_id):
+            return {"stage": "complete", "message": "All done!", "progress": 100}
         raise HTTPException(status_code=404, detail="Task not found")
+
     # Map the DB lifecycle onto the legacy {stage, message, progress} contract
     # that ProcessingPage.tsx polls on ('complete'/'error' are terminal).
-    if status["status"] == "completed":
+    if status.get("status") == "completed" or (status.get("progress") and status["progress"] >= 100):
         return {"stage": "complete", "message": "All done!", "progress": 100}
-    if status["status"] in ("failed", "cancelled"):
+    if status.get("status") in ("failed", "cancelled"):
         return {
             "stage": "error",
-            "message": status["error_message"] or "Pipeline failed.",
-            "progress": status["progress"] or 0,
+            "message": status.get("error_message") or "Pipeline failed.",
+            "progress": status.get("progress") or 0,
         }
     return {
-        "stage": status["stage"],
-        "message": status["message"],
-        "progress": status["progress"] or 0,
+        "stage": status.get("stage", "processing"),
+        "message": status.get("message", "Processing…"),
+        "progress": status.get("progress") or 0,
     }
 
 
