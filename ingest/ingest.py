@@ -172,9 +172,14 @@ def extract_from_youtube(
 
         "quiet": False,
         "no_warnings": True,
-
-        "merge_output_format":
-            "mp4",
+        "merge_output_format": "mp4",
+        "retries": 10,
+        "fragment_retries": 10,
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["ios", "android", "web"],
+            }
+        },
     }
 
     try:
