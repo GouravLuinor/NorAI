@@ -73,12 +73,25 @@ from backend.routers import webhooks
 async def lifespan(app: FastAPI):
     # P4.3: versioned schema (Alembic) instead of create_all. Runs in a thread
     # because the alembic command is synchronous; idempotent on every boot.
-    await asyncio.to_thread(run_migrations)
+    try:
+        await asyncio.to_thread(run_migrations)
+    except Exception as exc:
+        logging.getLogger("norai").warning("Alembic migrations skipped on startup: %s", exc)
+
     # P4.1: boot the DB-backed pipeline queue supervisor, then one GC sweep
     # for stale uploads / orphaned lecture dirs.
-    jobs.start_supervisor()
-    await asyncio.to_thread(jobs.gc_sweep)
+    try:
+        jobs.start_supervisor()
+    except Exception as exc:
+        logging.getLogger("norai").warning("Supervisor start skipped on startup: %s", exc)
+
+    try:
+        await asyncio.to_thread(jobs.gc_sweep)
+    except Exception as exc:
+        logging.getLogger("norai").warning("GC sweep skipped on startup: %s", exc)
+
     yield
+
 
 
 app = FastAPI(title="NorAI Tutor API", lifespan=lifespan)

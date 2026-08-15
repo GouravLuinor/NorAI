@@ -19,6 +19,7 @@ if os.path.exists(_TMP_DB):
     os.remove(_TMP_DB)
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{_TMP_DB}"
 os.environ["GEMINI_API_KEY"] = "offline-contract-test"
+os.environ["NORAI_DEV_ACCESS"] = "0"
 
 from fastapi.testclient import TestClient
 
@@ -127,7 +128,7 @@ def main() -> int:
             main_mod.app.dependency_overrides.clear()
 
     print(f"\n{PASSED} passed, {FAILED} failed")
-    return 1 if FAILED else 0
+    return 1 if FAILED > 0 else 0
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@
 
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
-| **Antigravity** (IDE) | 🟢 Idle / Completed | **Pipeline Polling Resilience & DB Connection Hardening**: (1) Added fast asyncpg connection timeouts (`timeout=5, command_timeout=10`) in `backend/db/database.py` and `backend/usage.py` to prevent 60s DNS/connection hangs; (2) Added thread-safe in-memory live progress tracking in `backend/jobs.py`; (3) Implemented multi-tier resilient fallback in `get_job_status` (Disk Artifacts -> Live In-Memory -> DB -> Registry); (4) Hardened `@app.get("/process/{task_id}/status")` to never throw 500 errors on polling; (5) Added `progress >= 100` completion handling in `ProcessingPage.tsx`. All offline suites and frontend build green. | 2026-08-15 UTC |
+| **Antigravity** (IDE) | 🟢 Idle / Completed | **Local Dev Auth Bypass & Lifespan Startup Hardening**: (1) Added automatic `dev-user` fallback to `get_current_user` in `backend/auth.py` when `NORAI_DEV_ACCESS=1` or `NORAI_DEV_INSECURE_AUTH=1` is set; (2) Hardened FastAPI lifespan in `backend/main.py` with try/except around migrations/GC sweeps against offline remote DB DNS stalls; (3) Refactored `scripts/run-tests.sh` to use `mapfile` and `< /dev/null` preventing stdin contention; (4) Full offline suite (39/39 tests) and frontend build green. | 2026-08-15 UTC |
 | **OpenCode** (CLI) | 🟢 Idle / Completed | **Chief-reviewer pass + fixes on Antigravity's scaling work — committed `b66db59` and pushed to `origin/fix/threads-and-pdf` (2026-08-15).** Audited commits `5b31878`→`13f5d07` via 3 parallel subagents + offline suites; findings logged in `fix.md` (2 CRIT / 5 HIGH / 6 MED / 9 LOW). All 22 fixed. | 2026-08-15 UTC |
 
 ---
@@ -33,6 +33,21 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-15] — Antigravity: Local Dev Auth Bypass & Lifespan Startup Hardening
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed
+- **Files Created / Modified**:
+  - `backend/auth.py` — Added `get_or_create_dev_user()` and automatic fallback inside `get_current_user()` when `NORAI_DEV_ACCESS=1` or `NORAI_DEV_INSECURE_AUTH=1`.
+  - `backend/main.py` — Wrapped `lifespan` migrations, supervisor start, and GC sweep in `try...except` to prevent server crash on startup when remote DB DNS is unreachable.
+  - `backend/test_api_contract_offline.py` — Explicitly set `os.environ["NORAI_DEV_ACCESS"] = "0"` to ensure production auth-negative contract tests remain 100% covered.
+  - `scripts/run-tests.sh` — Refactored test list generation using `mapfile` and redirected stdin with `< /dev/null` inside test loop to prevent stdin contention.
+- **Verification**:
+  - `scripts/run-tests.sh` (39/39 test suites PASSED).
+  - `cd frontend && npm run lint && npm run build` (0 warnings, 0 errors, clean build).
+  - Live probe: `curl -i -X POST http://127.0.0.1:8000/process -F "source_type=bogus"` returns 400 Bad Request instead of 401 Unauthorized.
+- **Hand-off Notes / Next Steps**: Local development at `localhost:5173` can now trigger lecture processing directly without requiring manual login.
+
 
 ### [2026-08-15] — Antigravity: Pipeline Polling Resilience & DB Connection Hardening
 - **Agent**: Antigravity (IDE)
