@@ -57,7 +57,7 @@ from config import (
 from chunking.chunk import adaptive_segments_per_chunk
 
 # ── Default heuristics (pre-calibration) ──────────────────────────────────────
-DEFAULT_TRANSCRIPTION_REALTIME = 1.0   # whisper-small wall-clock / audio
+DEFAULT_TRANSCRIPTION_REALTIME = 0.05  # parallel Gemini 3.1 Flash-Lite API (~35-50s for 15-70 min audio)
 DEFAULT_SEC_PER_CALL = 9.0             # RPM spacing (5s @12rpm) + latency
 DEFAULT_SEC_PER_EMBED_BATCH = 3.0      # one batchEmbedContents call
 DEFAULT_SELECTION_RATIO = 0.7          # Pass-2 screenshot-selection calls / chapter

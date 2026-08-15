@@ -2,8 +2,9 @@ import json
 import logging
 import os
 from pathlib import Path
-from faster_whisper import WhisperModel
+from typing import Any
 
+from config import NORAI_TRANSCRIPTION_BACKEND
 
 # Logging Setup
 
@@ -31,7 +32,7 @@ DEFAULT_BEAM_SIZE = int(os.environ.get("NORAI_WHISPER_BEAM_SIZE", "1"))
 
 # Module-level cache: model_size -> WhisperModel. WhisperModel.transcribe is
 # thread-safe, so sharing one instance across concurrent pipelines is safe.
-_MODEL_CACHE: dict[str, WhisperModel] = {}
+_MODEL_CACHE: dict[str, Any] = {}
 
 
 # Metadata Loader
@@ -67,7 +68,7 @@ def load_metadata(
 
 def load_whisper_model(
     model_size: str = DEFAULT_MODEL_SIZE
-) -> WhisperModel:
+) -> Any:
 
     cached = _MODEL_CACHE.get(model_size)
     if cached is not None:
@@ -81,6 +82,7 @@ def load_whisper_model(
     )
 
     try:
+        from faster_whisper import WhisperModel
 
         model = WhisperModel(
             model_size,
@@ -290,14 +292,24 @@ def transcribe_audio(
     audio_path: str,
     metadata_path: str,
     output_dir: str = "outputs",
+    backend: str | None = None,
     model_size: str = DEFAULT_MODEL_SIZE,
     vad_filter: bool = DEFAULT_VAD_FILTER,
     beam_size: int = DEFAULT_BEAM_SIZE,
 ) -> dict:
 
+    active_backend = (backend or NORAI_TRANSCRIPTION_BACKEND).lower().strip()
     logger.info(
-        f"Starting transcription: {audio_path}"
+        f"Starting transcription (backend={active_backend}): {audio_path}"
     )
+
+    if active_backend in ("gemini", "api", "cloud"):
+        from transcription.gemini_transcriber import transcribe_with_gemini
+        return transcribe_with_gemini(
+            audio_path=audio_path,
+            metadata_path=metadata_path,
+            output_dir=output_dir,
+        )
 
     try:
 
@@ -310,7 +322,7 @@ def transcribe_audio(
         )
 
         logger.info(
-            "Running transcription..."
+            "Running local Faster-Whisper transcription..."
         )
 
         whisper_segments, info = model.transcribe(

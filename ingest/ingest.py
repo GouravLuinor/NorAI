@@ -229,7 +229,9 @@ def extract_from_youtube(
             .output(
                 audio_path,
                 acodec="libmp3lame",
-                audio_bitrate="192k"
+                ar=16000,
+                ac=1,
+                audio_bitrate="64k"
             )
             .overwrite_output()
             .run(quiet=True)
@@ -409,7 +411,9 @@ def extract_from_local(file_path: str, output_dir: str) -> dict:
             .output(
                 audio_path,
                 acodec="libmp3lame",
-                audio_bitrate="192k"
+                ar=16000,
+                ac=1,
+                audio_bitrate="64k"
             )
             .overwrite_output()
             .run(quiet=True)

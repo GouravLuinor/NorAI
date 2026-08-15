@@ -10,8 +10,8 @@ NorAI turns a long lecture video into a complete study experience: structured st
 
 ```
 Video (YouTube / upload / Drive)
-  → Ingestion (audio extract, metadata)
-  → Transcription (faster-whisper, timestamped segments)
+  → Ingestion (16kHz mono audio extract, metadata)
+  → Transcription (parallel Gemini 3.1 Flash-Lite API with 18m chunks, timestamped segments)
   → Chunking (segment→chunk, timestamps preserved)
   → Knowledge Extraction (transcript → structured knowledge objects)
   → Frame Extraction + Scene Detection (parallel with transcription/chunking)
@@ -32,7 +32,9 @@ Video (YouTube / upload / Drive)
 
 ## Model & config truth (source of truth: root `config.py`)
 
-- `MODEL_NAME = "gemini-3.5-flash-lite"`, `TEMPERATURE = 0.4`, `GEMINI_API_KEY` from `.env` (required).
+- `MODEL_NAME = "gemini-3.1-flash-lite"`, `TEMPERATURE = 0.4`, `GEMINI_API_KEY` from `.env` (required).
+- Pricing: **$0.25 input / $1.50 output / $0.025 cached input** per 1M tokens.
+- Transcription: **`NORAI_TRANSCRIPTION_BACKEND = "gemini"`** with 18-minute parallel chunking (`gemini-3.1-flash-lite`), yielding 9.2x speedup (53s for 71m lecture vs 498s CPU) with 0% server CPU. Optional local fallback via `NORAI_TRANSCRIPTION_BACKEND = "whisper"`.
 - Embeddings: `gemini-embedding-2` (768 dims) via custom Chroma embedding fn in `tutor/embedding.py` (`tutor/retrieval_config.py`). No `task_type=` arg; instructions go in the prompt.
 - Chroma store: `outputs/tutor/chroma` (override `NORAI_CHROMA_DIR`).
 - Free-tier ceiling: **15 RPM / 500 RPD** — pipeline consolidated from ~128 → ~35 LLM calls per lecture.
