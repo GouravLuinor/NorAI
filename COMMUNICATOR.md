@@ -9,8 +9,8 @@
 
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
-| **Antigravity** (IDE) | 🟢 Idle / Completed | **Content-Adaptive Dynamic Scaling & Ingestion Hardening**: (1) Dynamic chunking (`spc=30`, `max=40`) & calibrated chapter estimator; (2) Zero-loss outline graph payload & dynamic chapter scaling (2–4 for ≤15m, 8–14 for ≥65m); (3) Depth-proportional notes generation (4–8 structured card sections, ~1,500–2,500 words for dense architectures); (4) YouTube multi-client player fallbacks (`ios`, `android`, `web`) resolving 403 Forbidden errors; (5) Live verified on 8m DP vs 71m AWS benchmark courses. 38/38 backend tests + 73 Vitest + oxlint passing (100% green). | 2026-08-15 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **P6.4 + UI/UX audit execution combined — committed `8c4cd74` and pushed to `origin/fix/threads-and-pdf` (2026-08-14).** Course collections (`/courses` CRUD + reorder + membership, migration `0004_courses_and_shares`), closed-by-default share links (`/share/{slug}`, `/lectures/{id}/share` create/toggle/revoke with `allow_tutor_chat` gate), user-scoped `/lectures`, frontend `/courses` + `/share/:slug` pages + ShareModal, plus the audit follow-through (share-GET endpoint, UploadPage custom Select, skeletons across views, `--color-npbd` dark code surfaces, Select a11y). 37-check `test_courses_shares.py` + 21-check migrations + 70/70 Vitest. Followed by full doc-sync pass (all `.md` incl. TUTORIAL.md) reflecting P6/P7/UIUX + `DEPLOYMENT_PLAN.md` §0. Prior: P7 token-reduction sprint parts 1+2 (prompt compression + Gemini context caching dormant on free-tier + output-token cut, offline 37/37) | 2026-08-14 UTC |
+| **Antigravity** (IDE) | 🟢 Idle / Completed | **Content-Adaptive Dynamic Scaling & Ingestion Hardening**: (1) Dynamic chunking (`spc=30`, `max=40`) & calibrated chapter estimator; (2) Untruncated outline graph payload & dynamic chapter scaling (2–4 for ≤15m, 8–14 for ≥65m); (3) Depth-proportional notes generation (4–8 structured card sections, ~1,500–2,500 words for dense architectures); (4) YouTube multi-client player fallbacks (`ios`, `android`, `web`) resolving 403 Forbidden errors; (5) Live verified on 8m DP vs 71m AWS benchmark courses. 38/38 backend tests + 73 Vitest + oxlint passing (100% green). | 2026-08-15 UTC |
+| **OpenCode** (CLI) | 🟢 Idle / Completed | **Chief-reviewer pass + fixes on Antigravity's scaling work — committed `b66db59` and pushed to `origin/fix/threads-and-pdf` (2026-08-15).** Audited commits `5b31878`→`13f5d07` via 3 parallel subagents + offline suites; findings logged in `fix.md` (2 CRIT / 5 HIGH / 6 MED / 9 LOW). All 22 fixed: `lecture_notes` `[:5]` string-slice + `concepts[:10]` truncation removed (true zero-loss payload), webcam-blanket fallback removed (empty `source_screenshots` → frames decorative), monotonic importance (1–10), tiered chapter cap (≤4/6/9/14) matching the prompt + LLM chunk-ranges honored via `_valid_chapter_ranges()` with even-split fallback, `stripSources` only cuts appendix-shaped `Sources` headers, mobile citation scroll (`norai:show-doc`), 10 s poll + interval cleanup, stale-stage reset on retry, defaults `importance_score=0`/`include_in_notes=False`, blur/occlusion quality bounds, retry-on-missing Pass-1 scores. 38/38 + 73/73 + oxlint + build green. | 2026-08-15 UTC |
 
 ---
 
@@ -34,6 +34,23 @@
 
 ## 📝 Task History & Handoff Log
 
+### [2026-08-15] — OpenCode: Chief Reviewer + Fixes on Content-Adaptive Scaling Work
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed
+- **Summary of Changes**: Ran a read-only chief-reviewer audit of Antigravity's scaling/screenshot/citation commits (`5b31878` chunking+outline+notes, `9ee9baa` YouTube ingest, `f456020` + `a423c36` screenshot selector + visual extractor, `4601f46` citation nav, `13f5d07` ProcessingPage retry). Three parallel subagents audited (a) screenshot selector + visual extractor, (b) outline/notes dynamic scaling, (c) frontend citation + retry status; findings consolidated in `fix.md` (2 CRIT / 5 HIGH / 6 MED / 9 LOW). Then fixed all 22 in one commit `b66db59`:
+  - **`notes/outline_generator.py`** — `lecture_notes[:5]` string-slice bug (was sending 5 *characters*, not 5 entries) and `concepts[:10]` truncation removed → outline LLM now receives the full chunk content; replaced the hard cap-8 formula with the prompt's tiered cap (≤12 chunks→4, 13–25→6, 26–45→9, 46+→14); new `_valid_chapter_ranges()` honors the LLM's `start_chunk`/`end_chunk` (complete, contiguous, non-overlapping partition) with even-split fallback; chapters clamped to `total_chunks` (also closes the `num_chapters > total_chunks` edge).
+  - **`visual/visual_extractor.py`** — removed the blanket `is_chunk_informative` fallback so an empty `source_screenshots` now marks every chunk frame decorative (`importance=1`, `talking_head`, `include_in_notes=False`) instead of re-introducing webcam frames; `VisualObjectItem` defaults changed to `importance_score=0` / `include_in_notes=False`; shared-frame analysis no longer overwritten; resolved screenshot list computed once and reused by both the saved object and the per-frame analysis.
+  - **`notes/screenshot_selector.py`** — dropped the non-monotonic `raw_imp*2` normalization (extractor already scores 1–10); `return synthesized` instead of `[]` when no frames upload; `passes_quality_bar` + `non_decorative` fallback now enforce `blur_level`/`instructor_occlusion` bounds; missing Pass-1 scores now raise → batch retried instead of silently dropping frames.
+  - **`backend/estimator.py`** — chapter formula mirrors the generator's tiered cap (not up-to-16), stale docstring fixed, `sec_per_call` clamped ≥ 0.
+  - **`frontend/src/lib/references.ts`** — `stripSources` now only cuts appendix-shaped `Sources` headers (prose false-positive fixed); `chapterFromChunkId` rejects `ch0`/`ch0__` (no `0` chapter).
+  - **`frontend/src/lib/cite.ts`** — mobile citations fixed: `findSectionCard` scans ALL `.doc-content` scrollers + dispatches a `norai:show-doc` event so the Workspace switches to the doc tab; poll extended 3.5 s → 10 s and cleared on new clicks; exact-slug match preferred before `includes`.
+  - **`frontend/src/components/layout/Workspace.tsx`** — listens for `norai:show-doc` (sets `mobileTab='doc'`, closes tablet AI drawer).
+  - **`frontend/src/pages/ProcessingPage.tsx`** — `completedStages` reset when a retry re-run reports an earlier stage (stale checkmarks gone).
+  - **`frontend/src/components/chat/ReferencesPanel.tsx`** — unique row keys.
+  - New `fix.md` — full severity-ranked findings + applied fixes.
+- **Verification**: `scripts/run-tests.sh` → **38/38 PASS**; `npm run test` → **73/73 PASS**; `oxlint` 0 errors; `tsc -b && vite build` clean. `_valid_chapter_ranges` unit-checked across 7 cases (valid/gap/overlap/missing/oob/short/empty).
+- **Hand-off Notes / Next Steps**: All fixes committed (`b66db59`) and pushed to `origin/fix/threads-and-pdf`. Two items intentionally left as-designed: (1) title-recovery in `scrollToHeading` still matches the leaf section name (primary path resolves via chunk/store); (2) `NOTES_PROMPT` feeds the now-unused `generate_study_notes` path (live pipeline uses the inline merged prompt). Next review target when ready: P6.4c per-course tutor contexts and the P6.5 chunk-level video seeks.
+
 ### [2026-08-14] — Antigravity: Content-Adaptive Dynamic Scaling (Phase 1–4)
 - **Agent**: Antigravity (IDE)
 - **Status**: Completed
@@ -41,10 +58,10 @@
   - **Dynamic Chunking & Estimator (`config.py`, `chunking/chunk.py`, `backend/estimator.py`, `chunking/test_adaptive_chunking.py`, `backend/test_estimate.py`)**:
     - Reduced `MAX_SEGMENTS_PER_CHUNK` from 60 to 30 (~2.8 mins max per chunk) to preserve fine-grained technical concepts in dense multi-service courses without squashing 6 minutes into one chunk.
     - Updated `TARGET_MAX_CHUNKS` from 24 to 40 so chunk count scales smoothly with audio duration.
-    - Updated `estimate_pipeline()` in `estimator.py` to calculate chapters dynamically up to 16 for long courses.
+    - Updated `estimate_pipeline()` in `estimator.py` to mirror the outline generator's dynamic chapter tiers (≤4 / 6 / 9 / 14).
   - **Zero-Loss Curriculum Outline Payload & Dynamic Chapter Sizing (`notes/outline_prompts.py`, `notes/outline_generator.py`)**:
     - Replaced rigid "strictly 3 to 6 chapters" rule with dynamic range scaling (2–4 chapters for ≤15m up to 8–14 chapters for ≥65m).
-    - Removed `[:1000]` character truncation and `[:5]` / `[:10]` topic truncation in `build_outline_payload`. 100% of extracted topics, OCR notes, and concept graphs are now provided to Gemini.
+    - Removed `[:1000]` character truncation and `[:5]` / `[:10]` topic truncation in `build_outline_payload`. 100% of extracted topics, OCR notes, and concept graphs are now provided to Gemini. (Note: the `[:5]`/`[:10]` slices were later fully removed from the live `generate_lecture_outline` proto-payload by OpenCode's review pass — commit `b66db59`.)
     - Increased `max_output_tokens` from 1,000 to 4,096 in `generate_outline` to support large curriculum JSON schemas.
   - **Depth-Proportional Chapter Synthesis (`notes/notes_prompt.py`, `notes/notes_generator.py`)**:
     - Replaced 300–700 word limit with `TARGET DEPTH & DENSITY` (scaling from ~400–700 words for narrow topics to ~1,500–2,500 words across 4–8 structured card sections for dense architectures).
