@@ -30,15 +30,13 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.pool import NullPool
 from sqlalchemy import select
 
-from backend.db.database import DATABASE_URL
+from backend.db.database import DATABASE_URL, get_engine_kwargs
 from backend.db.models import Lecture, Subscription, UsageLog
 
 logger = logging.getLogger(__name__)
 
 # Copied from backend/db/database.py: asyncpg/sqlite need matching connect args.
-_ENGINE_KWARGS: dict = {"echo": False}
-if DATABASE_URL.startswith("sqlite"):
-    _ENGINE_KWARGS["connect_args"] = {"check_same_thread": False}
+_ENGINE_KWARGS: dict = get_engine_kwargs(DATABASE_URL)
 
 
 def rollover_if_needed(sub: Subscription, now: Optional[datetime] = None) -> bool:
