@@ -177,7 +177,9 @@ def extract_from_youtube(
         "fragment_retries": 10,
         "extractor_args": {
             "youtube": {
-                "player_client": ["ios", "android", "web"],
+                # Prefer the standard 'default' client (capped at height<=720 in format
+                # string); ios/android/web clients are kept as fallbacks for 403 prevention.
+                "player_client": ["default", "ios", "android", "web"],
             }
         },
     }

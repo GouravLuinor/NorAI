@@ -29,7 +29,7 @@ describe('layoutConceptMap', () => {
     expect(pos['d'].x).toBeGreaterThan(pos['a'].x)
   })
 
-  it('radial mode keeps focus concepts within radius bounds', () => {
+  it('radial mode keeps focus concepts apart (no card collision)', () => {
     const nodes = [
       node('root', 'root'),
       node('a', 'focus_concept'),
@@ -39,9 +39,21 @@ describe('layoutConceptMap', () => {
     const edges = [edge('root', 'a'), edge('root', 'b'), edge('root', 'c')]
     const pos = layoutConceptMap(nodes, edges, 'radial', { height: 600 })
     expect(pos['root']).toEqual({ x: 220, y: 300 })
-    for (const p of Object.values(pos)) {
-      expect(p.x).toBeGreaterThanOrEqual(0)
-      expect(p.y).toBeGreaterThanOrEqual(0)
+    // Focus cards are up to ~220px wide + 40px gap. Each focus must clear the
+    // root card and every other focus card.
+    const rootPos = pos['root']
+    const focusIds = ['a', 'b', 'c']
+    for (const id of focusIds) {
+      const dRoot = Math.hypot(pos[id].x - rootPos.x, pos[id].y - rootPos.y)
+      expect(dRoot).toBeGreaterThanOrEqual(336)
+    }
+    for (let i = 0; i < focusIds.length; i++) {
+      for (let j = i + 1; j < focusIds.length; j++) {
+        const a = pos[focusIds[i]]
+        const b = pos[focusIds[j]]
+        const d = Math.hypot(a.x - b.x, a.y - b.y)
+        expect(d).toBeGreaterThanOrEqual(260)
+      }
     }
   })
 
