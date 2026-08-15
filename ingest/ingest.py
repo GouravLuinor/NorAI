@@ -3,6 +3,7 @@ import re
 import json
 import logging
 from pathlib import Path
+from typing import Any
 from urllib.parse import urlparse
 import gdown
 import shutil
@@ -122,7 +123,7 @@ def extract_from_gdrive(
         )
 
     return extract_from_local(
-        downloaded_path,
+        str(downloaded_path),
         output_dir
     )
 
@@ -328,7 +329,7 @@ def probe_video_metadata(url: str) -> dict | None:
         return None
     try:
         import yt_dlp
-        ydl_opts = {
+        ydl_opts: dict[str, Any] = {
             "quiet": True,
             "no_warnings": True,
             "skip_download": True,

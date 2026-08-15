@@ -88,7 +88,7 @@ def slice_audio_for_transcription(
             "ffmpeg", "-y",
             "-ss", str(current_start),
             "-t", str(dur),
-            "-i", str(audio_path),
+            "-i", audio_path,
             "-c", "copy",
             str(slice_path),
         ]
@@ -100,7 +100,7 @@ def slice_audio_for_transcription(
                 "ffmpeg", "-y",
                 "-ss", str(current_start),
                 "-t", str(dur),
-                "-i", str(audio_path),
+                "-i", audio_path,
                 "-ar", "16000", "-ac", "1", "-b:a", "64k",
                 str(slice_path),
             ]
@@ -156,12 +156,13 @@ def _transcribe_audio_slice(
 
     response = None
     last_err = None
+    contents_payload: Any = [audio_upload, prompt]
     for attempt in range(DEFAULT_MAX_RETRIES):
         try:
             _limiter.wait()
             response = client.models.generate_content(
                 model=model_name,
-                contents=[audio_upload, prompt],
+                contents=contents_payload,
                 config=types.GenerateContentConfig(
                     temperature=0.1,
                     response_mime_type="application/json",
@@ -181,9 +182,10 @@ def _transcribe_audio_slice(
 
     # Clean up uploaded file from Gemini Files API
     try:
-        client.files.delete(name=audio_upload.name)
+        if audio_upload and audio_upload.name:
+            client.files.delete(name=audio_upload.name)
     except Exception as e:
-        logger.warning(f"Failed to delete uploaded file {audio_upload.name}: {e}")
+        logger.warning(f"Failed to delete uploaded file {audio_upload.name if audio_upload else 'unknown'}: {e}")
 
     if not response or not response.text:
         raise RuntimeError(f"Transcription failed for audio slice {slice_idx+1}: {last_err}")
