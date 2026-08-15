@@ -584,11 +584,11 @@ class VisualObjectItem(BaseModel):
     visual_type: str = "slide"
     teaching_stage: str = "explanation"
     importance_score: int = Field(
-        default=5,
-        description="Importance score from 1 to 10 for study note inclusion (10=crucial architecture diagram/formula/code, 1=decorative/blank/speaker head)",
+        default=0,
+        description="Importance score from 1 to 10 for study note inclusion (10=crucial architecture diagram/formula/code, 1=decorative/blank/speaker head); 0 = not rated",
     )
     include_in_notes: bool = Field(
-        default=True,
+        default=False,
         description="True if this visual contains meaningful technical content that aids student understanding",
     )
     source_screenshots: list[str] = []
@@ -703,11 +703,10 @@ Return a JSON matching ChapterVisualKnowledgeModel.
             # Save visual objects for each chunk in chapter
             processed_chunk_ids = set()
             chunk_times = {c["chunk_id"]: c for c in chapter_chunks}
+            # Resolve each chunk's informative screenshots once so the saved
+            # object and the persisted per-frame analysis agree (L5).
+            resolved_by_chunk = {}
             for vo in batch_result.visual_objects:
-                obj_dict = vo.model_dump()
-                obj_dict["start"] = chunk_times.get(vo.chunk_id, {}).get("start", 0.0)
-                obj_dict["end"] = chunk_times.get(vo.chunk_id, {}).get("end", 0.0)
-                # Filter source_screenshots to valid paths mapped to this chunk
                 chunk_shots = chunk_image_map.get(vo.chunk_id, [])
                 chunk_basenames = {Path(p).name: p for p in chunk_shots}
                 resolved_shots = []
@@ -716,6 +715,15 @@ Return a JSON matching ChapterVisualKnowledgeModel.
                         resolved_shots.append(sp)
                     elif Path(sp).name in chunk_basenames:
                         resolved_shots.append(chunk_basenames[Path(sp).name])
+                resolved_by_chunk[vo.chunk_id] = resolved_shots
+
+            for vo in batch_result.visual_objects:
+                obj_dict = vo.model_dump()
+                obj_dict["start"] = chunk_times.get(vo.chunk_id, {}).get("start", 0.0)
+                obj_dict["end"] = chunk_times.get(vo.chunk_id, {}).get("end", 0.0)
+                # Filter source_screenshots to valid paths mapped to this chunk
+                chunk_shots = chunk_image_map.get(vo.chunk_id, [])
+                resolved_shots = resolved_by_chunk.get(vo.chunk_id, [])
                 obj_dict["source_screenshots"] = resolved_shots or (chunk_shots if vo.include_in_notes and vo.visual_type not in ("talking_head", "presenter", "face", "none") else [])
                 obj_dict["object_type"] = "visual_object"
                 obj_dict["generated_by"] = MODEL_NAME
@@ -728,11 +736,17 @@ Return a JSON matching ChapterVisualKnowledgeModel.
             # presenter webcam / talking head frames are marked as decorative.
             frames = {}
             for vo in batch_result.visual_objects:
-                informative_basenames = {Path(p).name for p in vo.source_screenshots}
-                is_chunk_informative = vo.include_in_notes and vo.visual_type not in ("talking_head", "presenter", "face", "none")
+                # Use the SAME resolved list the saved object used (L5); when it
+                # is empty no frame in the chunk is treated as a slide (C2).
+                informative_basenames = {Path(p).name for p in resolved_by_chunk.get(vo.chunk_id, [])}
                 for path in chunk_image_map.get(vo.chunk_id, []):
                     norm_p = os.path.normpath(str(path))
-                    is_frame_slide = Path(path).name in informative_basenames if informative_basenames else is_chunk_informative
+                    # A frame shared across chunks (mapper fallback can assign the
+                    # same screenshot to adjacent chunks) must not be overwritten
+                    # by a later chunk re-labeling it (L4).
+                    if norm_p in frames:
+                        continue
+                    is_frame_slide = Path(path).name in informative_basenames
                     frames[norm_p] = {
                         "ocr_text": vo.ocr_text if is_frame_slide else "",
                         "importance_score": vo.importance_score if is_frame_slide else 1,

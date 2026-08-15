@@ -48,13 +48,13 @@ export const ReferencesPanel = memo(function ReferencesPanel({ references, onRef
 
       {/* Reference rows — note rows scroll, screenshot rows open lightbox */}
       <div inert={collapsed} className="space-y-0.5 max-h-[240px] overflow-y-auto">
-        {references.map((ref) => {
+        {references.map((ref, index) => {
           const isScreenshot = ref.type === 'screenshot'
           const seekSec = videoEmbeddable && !isScreenshot
             ? (chunkStart(ref.chunkId, ref.chapterId) ?? chapterStart(ref.chapterId))
             : null
           return (
-            <div key={ref.id} className="group flex items-center gap-1">
+            <div key={`${ref.type}-${ref.id}-${index}`} className="group flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => {

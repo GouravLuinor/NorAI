@@ -25,7 +25,9 @@ Model (mirrors chunking/chunk.py + notes/outline_generator.py)
   segments      = ceil(duration_min * segs_per_min)
   spc           = adaptive_segments_per_chunk(segments)
   chunks        = ceil(segments / spc)
-  chapters      = min(8, max(3, chunks // 3))        # outline generator formula
+  chapters      = min(tier_cap(chunks), max(3, round(duration_min/8)))
+                  # tier_cap mirrors notes/outline_generator.py prompt tiers:
+                  # ≤12 chunks → 4, 13-25 → 6, 26-45 → 9, 46+ → 14
   selection     = round(selection_ratio * chapters)  # screenshot-selection Pass-2
   calls         = chunks + 1 + 2*chapters + selection + embed_batches
                   # 1 outline + chapters visual + chapters artifacts
@@ -107,14 +109,17 @@ def load_calibration(metrics_path=None) -> dict:
         and e.get("duration_sec")
     )
     # Non-transcription time per LLM call (lumps download, LLM RPM, embeds, IO).
-    sec_per_call = _median(
-        (
-            e["stage_seconds"]["pipeline"]
-            - (e.get("stage_seconds") or {}).get("transcription", 0.0)
-            - DEFAULT_DOWNLOAD_SEC
-        ) / e["llm_calls"]
-        for e in fresh
-        if (e.get("stage_seconds") or {}).get("pipeline") and e["llm_calls"]
+    sec_per_call = max(
+        0.0,
+        _median(
+            (
+                e["stage_seconds"]["pipeline"]
+                - (e.get("stage_seconds") or {}).get("transcription", 0.0)
+                - DEFAULT_DOWNLOAD_SEC
+            ) / e["llm_calls"]
+            for e in fresh
+            if (e.get("stage_seconds") or {}).get("pipeline") and e["llm_calls"]
+        ) or 0.0,
     )
     sec_per_embed_batch = _median(
         (
@@ -183,7 +188,17 @@ def estimate_pipeline(
     elif chunks <= 6:
         chapters = min(3, chunks)
     else:
-        chapters = min(16, max(3, round(duration_min / 8.0) if duration_min >= 20 else math.ceil(chunks / 2.5)))
+        # Mirrors the outline generator's dynamic scaling tiers
+        # (notes/outline_generator.py / notes/outline_prompts.py).
+        if chunks <= 12:
+            tier_cap = 4
+        elif chunks <= 25:
+            tier_cap = 6
+        elif chunks <= 45:
+            tier_cap = 9
+        else:
+            tier_cap = 14
+        chapters = min(tier_cap, max(3, round(duration_min / 8.0) if duration_min >= 20 else math.ceil(chunks / 2.5)))
     embed_batches = 2  # notes index + screenshot index
     selection = round(selection_ratio * chapters) if chapters else 0
     llm_calls = chunks + 1 + 2 * chapters + selection + embed_batches if chunks else 0

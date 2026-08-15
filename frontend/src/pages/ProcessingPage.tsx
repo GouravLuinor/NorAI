@@ -82,8 +82,17 @@ export function ProcessingPage() {
       setCompletedStages(prev => {
         const next = new Set(prev)
         const idx = STAGES.findIndex(s => s.key === stage)
-        if (idx !== -1) STAGES.slice(0, idx).forEach(s => next.add(s.key))
-        next.add(stage)
+        if (idx !== -1) {
+          // A stage earlier than the furthest completed one signals a retry
+          // re-run (backend restarted the pipeline). Reset so the bar doesn't
+          // keep stale checkmarks ahead of the active stage.
+          const furthestDone = STAGES.findIndex(s => next.has(s.key))
+          if (idx < furthestDone || (idx >= 0 && next.has(stage))) {
+            next.clear()
+          }
+          STAGES.slice(0, idx).forEach(s => next.add(s.key))
+          next.add(stage)
+        }
         return next
       })
       setProgress(data.progress ?? 0)

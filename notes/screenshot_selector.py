@@ -55,6 +55,8 @@ MIN_CONTENT_DENSITY = 6
 
 MAX_INSTRUCTOR_OCCLUSION = 5
 
+MAX_BLUR_LEVEL = 6
+
 # Two frames are considered near-duplicates if their perceptual
 # hash distance is at or below this threshold. Lower means
 # stricter (only near-identical frames are merged).
@@ -497,11 +499,11 @@ def score_frames_batch(
         entry = _VISUAL_ANALYSIS.get(os.path.normpath(str(p)))
         if entry:
             raw_imp = max(0, min(10, int(entry.get("importance_score", 0) or 0)))
-            # Visual extractor ratings: if rated on 1-5 scale (common with Gemini), normalize to 2-10
-            # so high-importance diagrams/slides (scores 3, 4, 5) clear the MIN_CONTENT_DENSITY (6) bar.
-            imp = raw_imp * 2 if (0 < raw_imp <= 5) else raw_imp
+            # Visual extractor already scores on a 1-10 scale (same as the selector's
+            # Pass-2 prompt), so the raw score is used as-is.
+            imp = raw_imp
             vis_type = (entry.get("visual_type") or "").strip().lower()
-            include_in_notes = bool(entry.get("include_in_notes", True))
+            include_in_notes = bool(entry.get("include_in_notes", False))
             is_decorative = (
                 vis_type in ("", "none", "talking_head", "presenter", "face")
                 or not include_in_notes
@@ -548,7 +550,7 @@ def score_frames_batch(
             f": no frames could be uploaded."
         )
 
-        return []
+        return synthesized
 
     valid_paths = [
 
@@ -693,8 +695,13 @@ def score_frames_batch(
                     f"{batch_index}"
                     f": Pass 1 response missing scores for "
                     f"{len(missing_paths)}"
-                    f" frame(s), treating as failed: "
+                    f" frame(s), retrying batch: "
                     f"{sorted(missing_paths)}"
+                )
+
+                raise ValueError(
+                    f"Pass 1 batch {batch_index} missing scores for "
+                    f"{len(missing_paths)} frame(s)"
                 )
             scores = [
 
@@ -829,6 +836,10 @@ def passes_quality_bar(
         return False
 
     if score.instructor_occlusion > MAX_INSTRUCTOR_OCCLUSION:
+
+        return False
+
+    if score.blur_level > MAX_BLUR_LEVEL:
 
         return False
 
@@ -1008,8 +1019,16 @@ def filter_candidates(
     ]
 
     if not eligible:
-        # Fallback: if strict quality bar filtered everything, pick top non-decorative candidates if available
-        non_decorative = [s for s in scores if not s.is_transition_or_decorative and s.content_density > 0]
+        # Fallback: if strict quality bar filtered everything, pick top
+        # non-decorative candidates if available — but still keep occlusion and
+        # blur bounds so a webcam-heavy or illegible frame can't sneak back in.
+        non_decorative = [
+            s for s in scores
+            if not s.is_transition_or_decorative
+            and s.content_density > 0
+            and s.instructor_occlusion <= MAX_INSTRUCTOR_OCCLUSION
+            and s.blur_level <= MAX_BLUR_LEVEL
+        ]
         if non_decorative:
             eligible = sorted(non_decorative, key=lambda s: s.content_density, reverse=True)[:10]
             logger.info(f"Chapter {chapter_id}: recovered {len(eligible)} fallback non-decorative frames.")
