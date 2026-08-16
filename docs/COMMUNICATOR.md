@@ -34,6 +34,17 @@
 
 ## 📝 Task History & Handoff Log
 
+### [2026-08-16] — Antigravity: Removed Faster-Whisper & Unused Torch/ONNX Runtime Dependencies
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed
+- **Files Created / Modified**:
+  - `requirements.txt` — Removed `faster-whisper==1.2.1` and all its transitive heavy neural-network dependencies (PyTorch, CTranslate2, ONNX Runtime), saving ~250MB+ in Docker context and eliminating all device warnings.
+  - `transcription/transcribe.py` — Added clean `ImportError` handling for optional offline Whisper invocation; primary pipeline uses Google Gemini Cloud API (`NORAI_TRANSCRIPTION_BACKEND="gemini"`).
+  - `README.md` — Updated feature list to reflect Cloud Gemini API transcription (zero-CPU, 9.2x faster).
+- **Verification**:
+  - `scripts/run-tests.sh`: 39/39 offline test suites passed (0 failed).
+  - `npm run lint && npm run build`: 0 lint errors, built in 673ms.
+
 ### [2026-08-16] — Antigravity: Completed Render Staging Prep & Full Pre-Deploy Verification
 - **Agent**: Antigravity (IDE)
 - **Status**: Completed

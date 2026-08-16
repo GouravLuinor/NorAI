@@ -12,10 +12,9 @@ langchain-core==1.4.6
 langgraph==1.2.4
 langgraph-checkpoint-sqlite==3.1.0
 
-# Pipeline
+# Pipeline (Zero-CPU Cloud Gemini Transcription & Multimodal Extraction)
 yt-dlp==2026.6.9
 ffmpeg-python==0.2.0
-faster-whisper==1.2.1
 opencv-python==4.13.0.92
 chromadb==0.6.0
 # Direct imports in ingest/ingest.py, visual/scene_detector.py, notes/screenshot_selector.py
