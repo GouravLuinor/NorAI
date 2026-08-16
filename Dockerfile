@@ -30,9 +30,9 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ffmpeg needed by yt-dlp download + audio extraction; mime-support ensures /etc/mime.types is present.
+# ffmpeg needed by yt-dlp download + audio extraction; media-types provides /etc/mime.types.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg mime-support \
+    && apt-get install -y --no-install-recommends ffmpeg media-types \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . .
