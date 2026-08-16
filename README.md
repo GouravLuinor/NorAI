@@ -424,7 +424,7 @@ sprint are complete; a production deployment path is agreed in
 
 ### Implemented
 - [x] Lecture video ingestion (YouTube / Drive / upload)
-- [x] Faster-Whisper transcription with timestamped segments
+- [x] Cloud Gemini API audio transcription with timestamped segments (zero-CPU, 9.2x speedup)
 - [x] Adaptive chunking + structured knowledge extraction
 - [x] Multimodal visual understanding (frames, scenes, mapping, analysis)
 - [x] Dynamic outline generation + chapter construction

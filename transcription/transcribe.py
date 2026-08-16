@@ -83,7 +83,14 @@ def load_whisper_model(
 
     try:
         from faster_whisper import WhisperModel
+    except ImportError as exc:
+        raise ImportError(
+            "faster-whisper is not installed. NorAI uses Gemini cloud transcription "
+            "by default (NORAI_TRANSCRIPTION_BACKEND='gemini'). To use local offline Whisper, "
+            "install faster-whisper separately: pip install faster-whisper"
+        ) from exc
 
+    try:
         model = WhisperModel(
             model_size,
             device=DEFAULT_DEVICE,
@@ -99,7 +106,6 @@ def load_whisper_model(
         return model
 
     except Exception as e:
-
         logger.error(
             f"Failed to load model: {e}"
         )
