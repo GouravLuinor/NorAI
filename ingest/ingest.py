@@ -138,23 +138,53 @@ def extract_from_gdrive(
 # YouTube Processing
 # -----------------------------
 
+def _get_youtube_cookiefile() -> str | None:
+    """Return path to a cookiefile if configured via env var or local file."""
+    if cookie_path := os.environ.get("YOUTUBE_COOKIES_FILE"):
+        if os.path.isfile(cookie_path):
+            return cookie_path
+    if os.path.isfile("cookies.txt"):
+        return "cookies.txt"
+    if raw_cookies := os.environ.get("YOUTUBE_COOKIES"):
+        import tempfile
+        tmp = tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt", prefix="yt_cookies_")
+        tmp.write(raw_cookies)
+        tmp.close()
+        return tmp.name
+    if b64_cookies := os.environ.get("YOUTUBE_COOKIES_BASE64"):
+        import base64, tempfile
+        try:
+            decoded = base64.b64decode(b64_cookies).decode("utf-8")
+            tmp = tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt", prefix="yt_cookies_")
+            tmp.write(decoded)
+            tmp.close()
+            return tmp.name
+        except Exception:
+            pass
+    return None
+
 # Multi-tier fallback extraction strategies to prevent YouTube HTTP 403 Forbidden & bot-throttling errors.
-# Note: 'ios' client is deliberately avoided because YouTube requires GVS PO Tokens for iOS streams.
+# 'tv' and 'tv_embedded' are resilient on cloud/datacenter IP ranges where web/android_vr are challenged.
 YOUTUBE_FALLBACK_STRATEGIES = [
+    {
+        "name": "Smart TV & Embedded (Datacenter-Resilient)",
+        "player_client": ["tv_embedded", "tv", "android", "web"],
+        "format": "bestvideo[height<=720][vcodec^=avc1]+bestaudio/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+    },
     {
         "name": "Android VR + Android (H.264 Preferred)",
         "player_client": ["android_vr", "android", "web"],
         "format": "bestvideo[height<=720][vcodec^=avc1]+bestaudio/bestvideo[height<=720][vcodec^=avc]+bestaudio/bestvideo[height<=720][vcodec^=h264]+bestaudio/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
     },
     {
+        "name": "iOS + Mobile Web (Low-Restriction Stream)",
+        "player_client": ["ios", "mweb", "web"],
+        "format": "bestvideo[vcodec^=avc1]+bestaudio/bestvideo+bestaudio/best",
+    },
+    {
         "name": "Android + Web (Progressive Fallback)",
         "player_client": ["android", "web"],
         "format": "best[height<=720][vcodec^=avc1]/best[height<=720]/bestvideo[height<=720]+bestaudio/best",
-    },
-    {
-        "name": "Web + MWeb (Standard Stream)",
-        "player_client": ["mweb", "web"],
-        "format": "bestvideo[vcodec^=avc1]+bestaudio/bestvideo+bestaudio/best",
     },
     {
         "name": "Generic Direct Format (Emergency Fallback)",
@@ -199,6 +229,7 @@ def extract_from_youtube(
 
     info = None
     last_error = None
+    cookiefile = _get_youtube_cookiefile()
 
     for strategy in YOUTUBE_FALLBACK_STRATEGIES:
         logger.info(f"Attempting YouTube download with strategy: {strategy['name']}")
@@ -211,15 +242,19 @@ def extract_from_youtube(
             "quiet": False,
             "no_warnings": True,
             "merge_output_format": "mp4",
-            "retries": 10,
-            "fragment_retries": 10,
+            "retries": 5,
+            "fragment_retries": 5,
             "nocheckcertificate": True,
+            "socket_timeout": 15,
             "extractor_args": {
                 "youtube": {
                     "player_client": strategy["player_client"],
                 }
             },
         }
+
+        if cookiefile:
+            ydl_opts["cookiefile"] = cookiefile
 
         if "http_headers" in strategy:
             ydl_opts["http_headers"] = strategy["http_headers"]
@@ -240,6 +275,12 @@ def extract_from_youtube(
             )
 
     if not info or not info.get("id"):
+        err_str = str(last_error) if last_error else ""
+        if "Sign in to confirm you're not a bot" in err_str or "bot" in err_str.lower():
+            raise RuntimeError(
+                "YouTube requested bot verification for this video on the cloud server. "
+                "Please upload the video directly via the 'Upload' tab, or configure YOUTUBE_COOKIES in server settings."
+            )
         raise RuntimeError(
             f"All YouTube download strategies failed for {url}. Last error: {last_error}"
         )
@@ -373,60 +414,71 @@ def probe_video_metadata(url: str) -> dict | None:
     """
     Cheap pre-flight metadata probe for the /estimate endpoint (P1.8).
 
-    Uses yt-dlp with download=False so no media is fetched (~1-2s for YouTube).
-    Returns {"duration_sec": float, "title": str} or None when the source
-    can't be probed without downloading.
+    Uses YouTube official oEmbed API for instant zero-rate-limit title extraction,
+    then queries yt-dlp with download=False across TV/mobile client strategies.
     """
     if not is_youtube_url(url):
         return None
     clean_url = sanitize_youtube_url(url)
+
+    # 1. Fetch title via YouTube oEmbed API (guaranteed zero rate limit / no bot check)
+    oembed_title = None
     try:
-        ydl_opts: dict[str, Any] = {
-            "quiet": True,
-            "no_warnings": True,
-            "skip_download": True,
-            "noplaylist": True,
-            "extractor_args": {
-                "youtube": {
-                    "player_client": ["android_vr", "android", "web"],
-                }
-            },
-        }
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(clean_url, download=False)
-        if not info:
-            return None
-        duration = info.get("duration")
-        if duration is None:
-            return None
-        return {
-            "duration_sec": float(duration),
-            "title": info.get("title"),
-        }
+        import urllib.request
+        import urllib.parse
+        import json as json_mod
+        oembed_url = f"https://www.youtube.com/oembed?url={urllib.parse.quote(clean_url)}&format=json"
+        req = urllib.request.Request(oembed_url, headers={"User-Agent": "NorAI/1.0"})
+        with urllib.request.urlopen(req, timeout=3.5) as resp:
+            if resp.status == 200:
+                data = json_mod.loads(resp.read().decode("utf-8"))
+                oembed_title = data.get("title")
     except Exception as e:
-        logger.info(f"Metadata probe failed (trying fallback client): {e}")
+        logger.debug(f"oEmbed probe skipped: {e}")
+
+    # 2. Extract exact duration with yt-dlp across multiple client strategies
+    cookiefile = _get_youtube_cookiefile()
+    for clients in [
+        ["tv_embedded", "tv", "android"],
+        ["android_vr", "android", "web"],
+        ["ios", "mweb", "web"],
+        ["web"],
+    ]:
         try:
-            fallback_opts: dict[str, Any] = {
+            ydl_opts: dict[str, Any] = {
                 "quiet": True,
                 "no_warnings": True,
                 "skip_download": True,
                 "noplaylist": True,
+                "socket_timeout": 5,
                 "extractor_args": {
                     "youtube": {
-                        "player_client": ["android", "web"],
+                        "player_client": clients,
                     }
                 },
             }
-            with yt_dlp.YoutubeDL(fallback_opts) as ydl:
+            if cookiefile:
+                ydl_opts["cookiefile"] = cookiefile
+
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(clean_url, download=False)
             if info and info.get("duration") is not None:
                 return {
                     "duration_sec": float(info["duration"]),
-                    "title": info.get("title"),
+                    "title": info.get("title") or oembed_title,
                 }
-        except Exception as e2:
-            logger.info(f"Fallback probe also failed: {e2}")
-        return None
+        except Exception as err:
+            logger.debug(f"yt-dlp probe with {clients} failed: {err}")
+
+    # 3. If oEmbed retrieved title but duration was blocked on datacenter IP:
+    if oembed_title:
+        return {
+            "duration_sec": 900.0,
+            "title": oembed_title,
+            "estimated": True,
+        }
+
+    return None
 
 
 # -----------------------------
