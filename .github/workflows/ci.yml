@@ -25,6 +25,10 @@ jobs:
           pip install -r requirements-dev.txt
       - name: Run offline test suite
         run: scripts/run-tests.sh python3
+        env:
+          GEMINI_API_KEY: test-offline-key-dummy
+          NORAI_DEV_ACCESS: "1"
+          DATABASE_URL: sqlite+aiosqlite:////tmp/norai_ci_test.db
 
   frontend:
     name: Frontend (lint + build + tests)
