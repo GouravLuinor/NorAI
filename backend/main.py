@@ -228,10 +228,29 @@ async def request_id_middleware(request: Request, call_next):
     return response
 
 
+import mimetypes
+from fastapi.staticfiles import StaticFiles
+
+# ── Explicit MIME Type Registration ──────────────────────────────────────────
+# Debian-slim Docker images may lack /etc/mime.types. Register standard web
+# extensions explicitly so CSS, JS, fonts, and images never default to text/plain.
+mimetypes.add_type("text/css", ".css")
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("application/javascript", ".mjs")
+mimetypes.add_type("image/svg+xml", ".svg")
+mimetypes.add_type("font/woff2", ".woff2")
+mimetypes.add_type("font/woff", ".woff")
+mimetypes.add_type("font/ttf", ".ttf")
+mimetypes.add_type("application/json", ".json")
+mimetypes.add_type("image/webp", ".webp")
+mimetypes.add_type("image/png", ".png")
+mimetypes.add_type("image/jpeg", ".jpg")
+mimetypes.add_type("image/jpeg", ".jpeg")
+
 # ── SPA static serving (P5.4) ─────────────────────────────────────────────────
 # When a production build of the frontend exists (frontend/dist), the backend
 # serves it directly so a single container runs the whole app. Registered as a
-# middleware + catch-all route so the API routes below still take precedence.
+# middleware + /assets StaticFiles mount + catch-all route.
 
 SPA_DIST_DIR = Path(os.environ.get("NORAI_SPA_DIST", "frontend/dist")).resolve()
 
@@ -240,6 +259,10 @@ def _spa_index() -> Optional[Path]:
     candidate = SPA_DIST_DIR / "index.html"
     return candidate if candidate.is_file() else None
 
+
+# Mount /assets directly with StaticFiles for high-performance asset serving
+if SPA_DIST_DIR.exists() and (SPA_DIST_DIR / "assets").is_dir():
+    app.mount("/assets", StaticFiles(directory=str(SPA_DIST_DIR / "assets")), name="spa_assets_mount")
 
 # SPA client-side routes (everything Vite's history-mode router owns).
 SPA_HTML_ROUTES = {"/", "/pricing", "/billing", "/usage", "/courses"}
@@ -257,7 +280,7 @@ async def spa_middleware(request: Request, call_next):
         if "text/html" in accept and (
             path in SPA_HTML_ROUTES or path.startswith(SPA_HTML_PREFIXES)
         ):
-            return FileResponse(SPA_DIST_DIR / "index.html")
+            return FileResponse(SPA_DIST_DIR / "index.html", media_type="text/html")
     return await call_next(request)
 
 
@@ -2728,5 +2751,6 @@ async def spa_assets(path: str):
         except ValueError:
             raise HTTPException(status_code=404, detail="Not found")
         if candidate.is_file():
-            return FileResponse(candidate)
+            mime_type, _ = mimetypes.guess_type(str(candidate))
+            return FileResponse(candidate, media_type=mime_type or "application/octet-stream")
     raise HTTPException(status_code=404, detail="Not found")
