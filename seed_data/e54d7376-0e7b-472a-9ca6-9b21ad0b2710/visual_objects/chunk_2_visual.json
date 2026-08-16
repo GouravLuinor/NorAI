@@ -1,0 +1,19 @@
+{
+    "chunk_id": 2,
+    "visual_notes": "A character holding money and a coffee cup, illustrating the concept of opportunity cost and spending choices.",
+    "important_information": [
+        "Spending money on one item (like coffee) represents an opportunity cost of not spending it elsewhere."
+    ],
+    "ocr_text": "$",
+    "visual_type": "slide",
+    "teaching_stage": "application",
+    "importance_score": 7,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_168.jpg"
+    ],
+    "start": 136.5,
+    "end": 191.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

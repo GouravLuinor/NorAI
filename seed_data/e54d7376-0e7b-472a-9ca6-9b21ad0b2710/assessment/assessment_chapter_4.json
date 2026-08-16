@@ -1,0 +1,62 @@
+{
+    "chapter_id": 4,
+    "chapter_title": "Fiscal Policy and the Unintended Consequences of Taxation",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 4,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Price Ceiling",
+                "Shortage"
+            ],
+            "question": "What is the primary economic consequence of setting a price ceiling below the market equilibrium?",
+            "options": [
+                "A surplus of goods",
+                "A shortage of goods",
+                "Increased production efficiency",
+                "Lower government spending"
+            ],
+            "answer": "A shortage of goods",
+            "explanation": "When prices are artificially capped below equilibrium, quantity demanded exceeds quantity supplied, resulting in a shortage.",
+            "flashcard_front": "What happens when a price ceiling is set below market equilibrium?",
+            "flashcard_back": "A shortage occurs because quantity demanded exceeds quantity supplied.",
+            "flashcard_explanation": "Artificially low prices discourage supply while simultaneously increasing consumer demand, leading to a market shortage."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 4,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Market Signals",
+                "Profit Motive"
+            ],
+            "question": "How do profits and losses function as signals in a market economy?",
+            "options": [],
+            "answer": "Profits signal that a good is highly valued, encouraging production, while losses signal that resources are misallocated, encouraging a shift in strategy.",
+            "explanation": "Profits indicate consumer satisfaction and resource efficiency; losses indicate resource waste and the need for reallocation.",
+            "flashcard_front": "What do profits and losses signal to producers?",
+            "flashcard_back": "Profits signal value and growth; losses signal misallocation and the need to stop production.",
+            "flashcard_explanation": "These signals ensure that resources are directed toward their most highly valued uses based on consumer demand."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 4,
+            "type": "Conceptual",
+            "difficulty": "Hard",
+            "concepts": [
+                "Unintended consequences",
+                "Economic Disparity"
+            ],
+            "question": "Why might price controls intended to help the poor actually harm them?",
+            "options": [],
+            "answer": "Price controls create shortages that are often bypassed by the wealthy through bribery or social capital, leaving the poor with limited access to goods.",
+            "explanation": "Price controls replace price rationing with non-price rationing, which favors those with higher social or financial capital.",
+            "flashcard_front": "Why do price controls often harm the poor?",
+            "flashcard_back": "Wealthy individuals use social capital to bypass shortages, while the poor cannot.",
+            "flashcard_explanation": "Price controls create non-market barriers that disproportionately exclude those without resources to navigate them."
+        }
+    ]
+}

@@ -1,0 +1,56 @@
+{
+    "object_type": "merged_object",
+    "chunk_id": 4,
+    "topic": "Economic Opportunity Cost and Price Signals",
+    "transcript": "Every time you spend money, you're not just spending money, you're spending what that money could have become.\n\nSame with your time, same with your energy, same with your attention.\n\nOnce you start seeing trade-offs, you can't unsee them.\n\nAnd that's either the most terrifying thing you'll ever learn or the most powerful.\n\nNumber three, prices are messages.\n\nThere's this famous story.\n\nSoviet leader Gorbachev visits Britain and asks Margaret Thatcher, how do you make sure people get food?\n\nShe replies, I don't, prices do.\n\nThink about that.\n\nLondon has not grown enough food to feed itself for over a century.\n\nMillions of people, three meals a day.\n\nThere is no minister of sandwiches, no government office decides where the bread goes.\n\nAnd yet every morning, fresh fish arrives from Norway, beef from Argentina, coffee from Brazil.\n\nNobody is coordinating this.\n\nPrices are.",
+    "lecture_notes": "The lecture introduces two fundamental economic principles. First, the concept of opportunity cost, which posits that every expenditure of resources—money, time, energy, or attention—involves the sacrifice of alternative potential outcomes. Once recognized, this trade-off becomes an inescapable framework for decision-making. Second, the lecture explores the role of prices as decentralized information signals. Using the example of food distribution in London, it illustrates that complex logistical coordination for basic necessities is achieved not through central planning, but through the emergent order created by price signals, which direct global supply chains to meet local demand without a central authority.",
+    "visual_notes": "A person is shown with icons for money, time, and human capital, followed by examples of car prices ($50,000 vs $20,000). This illustrates how price signals convey information about scarcity and value.",
+    "key_points": [
+        "Every resource allocation decision inherently involves an opportunity cost.",
+        "The awareness of trade-offs is a permanent shift in perspective.",
+        "Prices function as communication signals that coordinate global economic activity.",
+        "Complex supply chains can operate efficiently without central government intervention.",
+        "Market-based price mechanisms facilitate the distribution of goods across vast distances."
+    ],
+    "concepts": [
+        "Decentralized Coordination",
+        "Market Economy",
+        "Opportunity Cost",
+        "Price Signals",
+        "Resource Allocation",
+        "Spontaneous Order"
+    ],
+    "important_information": [
+        "Every resource allocation decision inherently involves an opportunity cost.",
+        "The awareness of trade-offs is a permanent shift in perspective.",
+        "Prices function as communication signals that coordinate global economic activity.",
+        "Complex supply chains can operate efficiently without central government intervention.",
+        "Market-based price mechanisms facilitate the distribution of goods across vast distances.",
+        "Economic resources include money, time, and human capital.",
+        "Price signals help coordinate economic activity.",
+        "Different prices reflect different levels of value or scarcity."
+    ],
+    "inferred_knowledge": [
+        "Centralized planning is not a prerequisite for the successful distribution of essential goods in large populations.",
+        "Price signals reduce the need for administrative oversight in complex supply chains.",
+        "Economic efficiency is driven by the aggregation of individual decisions based on price information.",
+        "The absence of a central coordinator does not imply a lack of systemic order."
+    ],
+    "visual_information": [
+        "Economic resources include money, time, and human capital.",
+        "Price signals help coordinate economic activity.",
+        "Different prices reflect different levels of value or scarcity."
+    ],
+    "ocr_text": "$50 000 $20 000",
+    "visual_type": "slide",
+    "teaching_stage": "explanation",
+    "importance_score": 7,
+    "include_in_notes": true,
+    "screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_272.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_280.jpg"
+    ],
+    "selected_screenshots": [],
+    "start": 263.0,
+    "end": 329.5
+}

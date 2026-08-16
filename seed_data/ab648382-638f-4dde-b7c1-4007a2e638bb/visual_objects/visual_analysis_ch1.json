@@ -1,0 +1,35 @@
+{
+  "chapter_id": 1,
+  "frames": {
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_64.jpg": {
+      "ocr_text": "0 1 2 3 4 5 ? 6 7 8 9",
+      "importance_score": 9,
+      "visual_type": "architecture_diagram",
+      "include_in_notes": true
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_104.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_168.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_232.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_296.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    }
+  }
+}

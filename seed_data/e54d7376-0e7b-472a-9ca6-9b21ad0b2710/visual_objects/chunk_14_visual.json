@@ -1,0 +1,20 @@
+{
+    "chunk_id": 14,
+    "visual_notes": "A slide labeled '#6' showing a hand holding a coin and a price tag with a dollar sign, followed by a depiction of a lemonade stand, illustrating profit and pricing.",
+    "important_information": [
+        "Point #6 focuses on the relationship between cost, price, and profit.",
+        "The lemonade stand serves as a practical example of a small business model."
+    ],
+    "ocr_text": "#6",
+    "visual_type": "slide",
+    "teaching_stage": "example_application",
+    "importance_score": 8,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_848.jpg"
+    ],
+    "start": 844.5,
+    "end": 894.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

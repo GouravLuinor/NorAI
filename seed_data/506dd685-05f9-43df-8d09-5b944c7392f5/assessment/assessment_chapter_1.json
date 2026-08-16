@@ -1,0 +1,64 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "The Rise of Open-Weights Models and Local Deployment",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 1,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Model quantization",
+                "Memory requirements"
+            ],
+            "question": "What is the approximate base VRAM requirement for running a 27B parameter model at 4-bit quantization?",
+            "options": [
+                "8.5 GB",
+                "13.5 GB",
+                "28.9 GB",
+                "48 GB"
+            ],
+            "answer": "13.5 GB",
+            "explanation": "The calculation is (27 billion parameters * 4 bits) / 8 = 13.5 gigabytes.",
+            "flashcard_front": "Base VRAM for 27B model at 4-bit?",
+            "flashcard_back": "13.5 GB.",
+            "flashcard_explanation": "Calculated as (27B * 4 bits) / 8 bytes/bit."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 1,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Local model deployment"
+            ],
+            "question": "True or False: Local deployment of large language models eliminates per-token inference costs.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "Local execution runs on your own hardware, removing the need to pay for cloud API usage.",
+            "flashcard_front": "Does local deployment eliminate per-token costs?",
+            "flashcard_back": "True.",
+            "flashcard_explanation": "Local models run on your own hardware, removing cloud API fees."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 1,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Quantization",
+                "Efficiency"
+            ],
+            "question": "Why is quantization considered a 'necessary technique' for local LLM deployment?",
+            "options": [],
+            "answer": "It reduces the memory footprint of large models, enabling them to fit into the limited VRAM/RAM of consumer-grade hardware.",
+            "explanation": "Without quantization, the memory requirements for high-parameter models would exceed the capacity of most consumer workstations.",
+            "flashcard_front": "Why is quantization necessary for local LLMs?",
+            "flashcard_back": "Reduces memory footprint to fit on consumer hardware.",
+            "flashcard_explanation": "Quantization compresses model weights, allowing large models to run on limited VRAM."
+        }
+    ]
+}

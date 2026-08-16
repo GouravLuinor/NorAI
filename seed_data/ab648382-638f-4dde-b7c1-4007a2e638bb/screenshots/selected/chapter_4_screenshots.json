@@ -1,0 +1,17 @@
+{
+  "chapter_id": 4,
+  "screenshots": [
+    {
+      "path": "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_920.jpg",
+      "reason": "This slide illustrates the neural network architecture, showing the input layer size (784), the output layer (digits 0-9), and defines a neuron as a container for a number.",
+      "section": "Neural Network Architecture",
+      "importance": 10
+    },
+    {
+      "path": "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_1040.jpg",
+      "reason": "This slide shows the mathematical formula and graph for the sigmoid activation function, which is a core concept discussed in the lecture.",
+      "section": "Sigmoid Activation Function",
+      "importance": 9
+    }
+  ]
+}

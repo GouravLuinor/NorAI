@@ -1,0 +1,20 @@
+{
+    "chunk_id": 10,
+    "visual_notes": "Mathematical formula for the Sigmoid activation function and its corresponding graph.",
+    "important_information": [
+        "Sigmoid function formula: σ(x) = 1 / (1 + e^-x)",
+        "Sigmoid function graph characteristics"
+    ],
+    "ocr_text": "Sigmoid σ(x) = 1 / (1 + e^-x)",
+    "visual_type": "slide",
+    "teaching_stage": "mathematical_definition",
+    "importance_score": 10,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_1040.jpg"
+    ],
+    "start": 997.38,
+    "end": 1104.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

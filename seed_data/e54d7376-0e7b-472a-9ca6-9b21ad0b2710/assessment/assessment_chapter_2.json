@@ -1,0 +1,62 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Price Signals and Market Coordination",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 2,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Opportunity Cost"
+            ],
+            "question": "Why does the purchase of a luxury car have a higher 'true' cost than its sticker price?",
+            "options": [
+                "Because of luxury taxes and maintenance fees.",
+                "Because the capital spent could have generated compounding returns if invested.",
+                "Because the car will immediately depreciate in value.",
+                "Because it requires more natural resources to produce."
+            ],
+            "answer": "Because the capital spent could have generated compounding returns if invested.",
+            "explanation": "The true economic cost includes the opportunity cost of the capital, which is the potential future value lost by not investing that money.",
+            "flashcard_front": "What is the 'true' cost of a purchase?",
+            "flashcard_back": "The sticker price plus the value of the next best alternative foregone.",
+            "flashcard_explanation": "Every expenditure involves sacrificing potential future gains from alternative investments, such as compounding interest."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 2,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Price signals"
+            ],
+            "question": "Centralized planning is generally more efficient than market-based price signals for managing complex global supply chains.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "Centralized planning cannot handle the vast, dynamic, and dispersed information required to coordinate complex supply chains, whereas price signals aggregate this information efficiently.",
+            "flashcard_front": "Are price signals necessary for market coordination?",
+            "flashcard_back": "Yes, they communicate scarcity and demand to coordinate independent actors.",
+            "flashcard_explanation": "Prices act as a decentralized feedback loop, incentivizing production and consumption adjustments without central oversight."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 2,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Spontaneous order"
+            ],
+            "question": "Define 'spontaneous order' in the context of market economies.",
+            "options": [],
+            "answer": "Spontaneous order refers to the emergent, organized system of resource allocation that arises from the decentralized decisions of individuals responding to price signals, rather than from a central authority.",
+            "explanation": "It describes how complex systems, like global supply chains, organize themselves through individual interactions guided by price, rather than by a top-down planner.",
+            "flashcard_front": "What is spontaneous order?",
+            "flashcard_back": "Organized systems emerging from decentralized individual actions without central planning.",
+            "flashcard_explanation": "It explains how markets coordinate complex activities through price signals rather than government mandates."
+        }
+    ]
+}

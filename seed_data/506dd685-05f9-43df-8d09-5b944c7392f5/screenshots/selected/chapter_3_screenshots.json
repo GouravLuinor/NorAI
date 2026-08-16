@@ -1,0 +1,11 @@
+{
+  "chapter_id": 3,
+  "screenshots": [
+    {
+      "path": "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_472.jpg",
+      "reason": "A social media post comparing the performance of Opus 5 and GLM 5.3 in a head-to-head benchmark test against various frontier models.",
+      "section": "GLM 5.3 benchmark performance",
+      "importance": 8
+    }
+  ]
+}

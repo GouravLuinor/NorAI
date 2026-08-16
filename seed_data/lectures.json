@@ -1,0 +1,20 @@
+{
+  "506dd685-05f9-43df-8d09-5b944c7392f5": {
+    "lecture_id": "506dd685-05f9-43df-8d09-5b944c7392f5",
+    "title": "The Rise of Open-Weights Models and Local Deployment",
+    "created_at": "2026-08-15T17:41:10",
+    "output_dir": "outputs/506dd685-05f9-43df-8d09-5b944c7392f5"
+  },
+  "e54d7376-0e7b-472a-9ca6-9b21ad0b2710": {
+    "lecture_id": "e54d7376-0e7b-472a-9ca6-9b21ad0b2710",
+    "title": "Foundations of Economic Thinking: Incentives and Opportunity Cost",
+    "created_at": "2026-08-16T07:24:31",
+    "output_dir": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710"
+  },
+  "ab648382-638f-4dde-b7c1-4007a2e638bb": {
+    "lecture_id": "ab648382-638f-4dde-b7c1-4007a2e638bb",
+    "title": "Foundations of Neural Network Architecture",
+    "created_at": "2026-08-16T07:36:53",
+    "output_dir": "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb"
+  }
+}

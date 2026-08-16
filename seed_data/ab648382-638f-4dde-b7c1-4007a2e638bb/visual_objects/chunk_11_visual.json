@@ -1,0 +1,20 @@
+{
+    "chunk_id": 11,
+    "visual_notes": "Comparison between Sigmoid and ReLU activation functions in the context of neural network learning speed.",
+    "important_information": [
+        "Sigmoid is characterized as a 'slow learner'",
+        "ReLU activation function introduced as an alternative"
+    ],
+    "ocr_text": "Slow learner Sigmoid ReLU",
+    "visual_type": "slide",
+    "teaching_stage": "comparison",
+    "importance_score": 8,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_1104.jpg"
+    ],
+    "start": 1104.5,
+    "end": 1105.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

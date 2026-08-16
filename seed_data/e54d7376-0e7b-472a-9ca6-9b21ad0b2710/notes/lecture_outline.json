@@ -1,0 +1,120 @@
+{
+    "chapters": [
+        {
+            "chapter_id": 1,
+            "title": "Foundations of Economic Thinking: Incentives and Opportunity Cost",
+            "focus_concepts": [
+                "Incentive structures",
+                "Opportunity cost",
+                "Scarcity",
+                "Trade-offs",
+                "Resource allocation",
+                "Compounding returns"
+            ],
+            "chunk_ids": [
+                0,
+                1,
+                2
+            ],
+            "start_chunk": 0,
+            "end_chunk": 2
+        },
+        {
+            "chapter_id": 2,
+            "title": "Price Signals and Market Coordination",
+            "focus_concepts": [
+                "Price signals",
+                "Decentralized coordination",
+                "Market equilibrium",
+                "Supply and demand",
+                "Information asymmetry",
+                "Spontaneous order"
+            ],
+            "chunk_ids": [
+                3,
+                4,
+                5
+            ],
+            "start_chunk": 3,
+            "end_chunk": 5
+        },
+        {
+            "chapter_id": 3,
+            "title": "The Distortions of Price Controls",
+            "focus_concepts": [
+                "Price ceilings",
+                "Price floors",
+                "Shortage",
+                "Surplus",
+                "Rent control",
+                "Market distortion",
+                "Negative externalities"
+            ],
+            "chunk_ids": [
+                6,
+                7,
+                8
+            ],
+            "start_chunk": 6,
+            "end_chunk": 8
+        },
+        {
+            "chapter_id": 4,
+            "title": "Fiscal Policy and the Unintended Consequences of Taxation",
+            "focus_concepts": [
+                "Fiscal policy",
+                "Tax elasticity",
+                "Capital flight",
+                "Unintended consequences",
+                "Economic incentives"
+            ],
+            "chunk_ids": [
+                9,
+                10,
+                11
+            ],
+            "start_chunk": 9,
+            "end_chunk": 11
+        },
+        {
+            "chapter_id": 5,
+            "title": "Profit, Loss, and Resource Reallocation",
+            "focus_concepts": [
+                "Profit motive",
+                "Market signals",
+                "Resource allocation",
+                "Economic efficiency",
+                "Too big to fail",
+                "Opportunity cost"
+            ],
+            "chunk_ids": [
+                12,
+                13,
+                14
+            ],
+            "start_chunk": 12,
+            "end_chunk": 14
+        },
+        {
+            "chapter_id": 6,
+            "title": "Labor Economics: Value Creation and Wage Determination",
+            "focus_concepts": [
+                "Wage determination",
+                "Marginal Revenue Product of Labor",
+                "Labor productivity",
+                "Capital substitution",
+                "Skill scarcity"
+            ],
+            "chunk_ids": [
+                15,
+                16,
+                17,
+                18,
+                19
+            ],
+            "start_chunk": 15,
+            "end_chunk": 19
+        }
+    ],
+    "lecture_title": "Foundations of Economic Thinking: Incentives and Opportunity Cost"
+}

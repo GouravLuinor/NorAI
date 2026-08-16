@@ -1,0 +1,29 @@
+{
+  "chapter_id": 4,
+  "screenshots": [
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_720.jpg",
+      "reason": "A scale comparing two different price points, illustrating a cost-benefit comparison.",
+      "section": "Cost-benefit comparison",
+      "importance": 8
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_648.jpg",
+      "reason": "A visual representation of a transaction involving a $1 price point, illustrating the impact of taxation on transaction value.",
+      "section": "Taxation impact on transaction value",
+      "importance": 7
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_712.jpg",
+      "reason": "A character with products and a negative symbol, illustrating the negative impact of taxation or price controls on consumer goods.",
+      "section": "Negative impact of taxation on consumer goods",
+      "importance": 7
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_640.jpg",
+      "reason": "A character interacting with a price tag, representing the impact of price controls on market dynamics.",
+      "section": "Market distortions",
+      "importance": 6
+    }
+  ]
+}

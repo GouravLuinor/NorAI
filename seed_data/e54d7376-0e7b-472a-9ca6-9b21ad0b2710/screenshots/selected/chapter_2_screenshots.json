@@ -1,0 +1,23 @@
+{
+  "chapter_id": 2,
+  "screenshots": [
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_368.jpg",
+      "reason": "A diagram illustrating the complexity of market coordination, showing various inputs like ingredients, logistics, and data points surrounding a central decision-maker.",
+      "section": "Market Coordination",
+      "importance": 9
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_208.jpg",
+      "reason": "A comparative diagram showing Venezuela (oil-rich) versus Switzerland (capital-rich), illustrating that natural resources do not equate to prosperity.",
+      "section": "Resource Allocation",
+      "importance": 8
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_272.jpg",
+      "reason": "A visual representation of time and energy as economic resources.",
+      "section": "Economic Resources",
+      "importance": 5
+    }
+  ]
+}

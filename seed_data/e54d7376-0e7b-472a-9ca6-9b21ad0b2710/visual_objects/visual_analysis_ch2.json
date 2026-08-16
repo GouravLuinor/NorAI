@@ -1,0 +1,107 @@
+{
+  "chapter_id": 2,
+  "frames": {
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_200.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_208.jpg": {
+      "ocr_text": "",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_216.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_232.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_240.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_256.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_272.jpg": {
+      "ocr_text": "$50 000 $20 000",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_280.jpg": {
+      "ocr_text": "$50 000 $20 000",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_288.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_296.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_304.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_312.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_320.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_336.jpg": {
+      "ocr_text": "",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_368.jpg": {
+      "ocr_text": "",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_376.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_384.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    }
+  }
+}

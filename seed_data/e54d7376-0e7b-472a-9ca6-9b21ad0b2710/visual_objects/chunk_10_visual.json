@@ -1,0 +1,25 @@
+{
+    "chunk_id": 10,
+    "visual_notes": "Visuals depicting the exchange of goods (wheat) for money, price tags increasing, and a transaction involving a $1 price point, illustrating fiscal policy and taxation effects.",
+    "important_information": [
+        "Exchange of agricultural goods for currency",
+        "Price increase mechanisms",
+        "Taxation impact on transaction value ($1)"
+    ],
+    "ocr_text": "$1",
+    "visual_type": "slide",
+    "teaching_stage": "explanation",
+    "importance_score": 7,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_632.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_640.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_648.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_656.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_664.jpg"
+    ],
+    "start": 628.5,
+    "end": 686.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

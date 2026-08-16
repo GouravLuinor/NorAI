@@ -1,0 +1,29 @@
+{
+  "chapter_id": 2,
+  "frames": {
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_336.jpg": {
+      "ocr_text": "google is clearly focusing on smaller, cheaper, faster models. they're also in a very different position from everyone else and don't need AI to survive as a company, so they can afford to play a much longer game. gemini is already in basically every search, so efficiency matters at huge scale.",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_376.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_400.jpg": {
+      "ocr_text": "Introducing GLM-5.3: Built to Code. Ready for Cyber Defense. LLM Performance Evaluation. 9 benchmarks: Terminal Bench 3.0, DeepSWE, Agents' Last Exam (CLI), AutomationBench, HLE w/ Tools, GDPVal-AA v2, CyberGym, ExploitBench, ExploitGym",
+      "importance_score": 10,
+      "visual_type": "table",
+      "include_in_notes": true
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_448.jpg": {
+      "ocr_text": "Introducing GLM-5.3: Built to Code. Ready for Cyber Defense. LLM Performance Evaluation. 9 benchmarks: Terminal Bench 3.0, DeepSWE, Agents' Last Exam (CLI), AutomationBench, HLE w/ Tools, GDPVal-AA v2, CyberGym, ExploitBench, ExploitGym",
+      "importance_score": 10,
+      "visual_type": "table",
+      "include_in_notes": true
+    }
+  }
+}

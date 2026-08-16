@@ -1,0 +1,21 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "Benchmarking Performance, Latency, and Usability",
+    "flashcards": [
+        {
+            "front": "Do high benchmark scores guarantee superior user experience?",
+            "back": "No, high latency can negate the benefits of high benchmark scores.",
+            "explanation": "User experience is heavily dependent on responsiveness; a slow model is often perceived as less useful regardless of its intelligence."
+        },
+        {
+            "front": "What is a benefit of optimizing long-context handling?",
+            "back": "Reduced memory growth and fewer API requests.",
+            "explanation": "Optimizing context handling improves speed and reduces resource consumption, leading to a smoother user experience."
+        },
+        {
+            "front": "How is GLM 5.3 positioned in the market?",
+            "back": "As a niche alternative to proprietary models.",
+            "explanation": "It is not a disruptive low-cost solution, but rather a functional alternative for specific coding tasks."
+        }
+    ]
+}

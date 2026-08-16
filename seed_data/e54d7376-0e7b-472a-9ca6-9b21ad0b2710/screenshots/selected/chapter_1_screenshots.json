@@ -1,0 +1,23 @@
+{
+  "chapter_id": 1,
+  "screenshots": [
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_168.jpg",
+      "reason": "A character holding money with a coffee cup, illustrating the concept of opportunity cost.",
+      "section": "Opportunity Cost and Scarcity",
+      "importance": 8
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_88.jpg",
+      "reason": "A character at a desk with a '-2000' indicator, illustrating the negative impact of tax policy on revenue.",
+      "section": "Unintended Consequences of Tax Policy",
+      "importance": 7
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_112.jpg",
+      "reason": "A character interacting with a government figure, illustrating the mobility of high-net-worth individuals in response to tax incentives.",
+      "section": "Incentives and Behavior",
+      "importance": 6
+    }
+  ]
+}

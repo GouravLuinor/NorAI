@@ -1,0 +1,17 @@
+{
+    "chunk_id": 15,
+    "visual_notes": "A comparison between two individuals, one appearing sad and one appearing confident, illustrating different states of mind or economic situations.",
+    "important_information": [],
+    "ocr_text": "",
+    "visual_type": "talking_head",
+    "teaching_stage": "explanation",
+    "importance_score": 2,
+    "include_in_notes": false,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_912.jpg"
+    ],
+    "start": 895.5,
+    "end": 956.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

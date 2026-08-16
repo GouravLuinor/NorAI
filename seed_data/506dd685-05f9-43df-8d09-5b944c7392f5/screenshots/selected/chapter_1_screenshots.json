@@ -1,0 +1,17 @@
+{
+  "chapter_id": 1,
+  "screenshots": [
+    {
+      "path": "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_16.jpg",
+      "reason": "A social media post showing performance evaluation charts for the GLM-5.3 model across multiple benchmarks, demonstrating its competitive standing.",
+      "section": "Model Performance and Benchmarks",
+      "importance": 8
+    },
+    {
+      "path": "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_272.jpg",
+      "reason": "A comparison between Claude Opus 4.6 and Qwen 3.8 27B showing visual generation quality, highlighting the capability of open-weights models.",
+      "section": "Local Model Deployment and Capabilities",
+      "importance": 7
+    }
+  ]
+}

@@ -26,6 +26,7 @@ from .retrieval_config import (
     EMBED_BATCH_SLEEP_SEC,
 )
 from .embedding import GeminiEmbeddingFunction
+from .build_index import get_persistent_client
 
 # ── Batch size for embedding calls ─────────────────────────────────────────────
 # Not in retrieval_config.py (that file is for shared runtime constants).
@@ -35,7 +36,7 @@ _INDEX_BATCH_SIZE = 20
 
 def _get_screenshot_collection(reset: bool = False):
     """Create or retrieve the screenshot captions Chroma collection."""
-    client = chromadb.PersistentClient(path=str(CHROMA_DIR))
+    client = get_persistent_client(CHROMA_DIR)
     embedding_fn = GeminiEmbeddingFunction(role="document")
 
     if reset:

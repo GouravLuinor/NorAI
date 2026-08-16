@@ -1,0 +1,21 @@
+{
+    "chapter_id": 4,
+    "chapter_title": "Parameterization and Linear Algebra in Deep Learning",
+    "flashcards": [
+        {
+            "front": "What is the formula for ReLU?",
+            "back": "f(x) = max(0, x)",
+            "explanation": "ReLU outputs the input if positive, otherwise it outputs zero."
+        },
+        {
+            "front": "Why is ReLU preferred over Sigmoid?",
+            "back": "Easier to train; mitigates vanishing gradient problems.",
+            "explanation": "ReLU's non-saturating linear property for positive values facilitates faster and more stable learning."
+        },
+        {
+            "front": "What is the operation Wx + b?",
+            "back": "Matrix-vector multiplication plus bias.",
+            "explanation": "This is the fundamental linear operation used to transform inputs between neural network layers."
+        }
+    ]
+}

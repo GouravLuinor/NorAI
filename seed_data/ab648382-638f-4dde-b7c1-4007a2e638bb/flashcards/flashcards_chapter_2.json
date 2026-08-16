@@ -1,0 +1,21 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Hierarchical Feature Learning and Abstraction",
+    "flashcards": [
+        {
+            "front": "How is the final classification determined?",
+            "back": "By the output neuron with the highest activation value.",
+            "explanation": "The network assigns each output neuron to a class; the highest signal indicates the chosen category."
+        },
+        {
+            "front": "What is the function of negative weights?",
+            "back": "To suppress signals and act as a filter for specific spatial patterns.",
+            "explanation": "Negative weights reduce the influence of noise, allowing neurons to focus on specific features."
+        },
+        {
+            "front": "Why use hierarchical feature learning?",
+            "back": "It decomposes complex patterns into simpler, reusable subcomponents, simplifying the final classification.",
+            "explanation": "Hierarchical learning breaks down complex problems into manageable, modular sub-tasks."
+        }
+    ]
+}

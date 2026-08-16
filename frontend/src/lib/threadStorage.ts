@@ -38,12 +38,12 @@ export function getLectureId(): string {
   return useLectureStore.getState().activeLectureId || 'default'
 }
 
-function getLabels(): Record<string, string> {
+export function getLabels(): Record<string, string> {
   const lectureId = getLectureId()
   try { return JSON.parse(localStorage.getItem(`${LABELS_KEY}-${lectureId}`) || '{}') } catch { return {} }
 }
 
-function saveLabels(labels: Record<string, string>) {
+export function saveLabels(labels: Record<string, string>) {
   const lectureId = getLectureId()
   localStorage.setItem(`${LABELS_KEY}-${lectureId}`, JSON.stringify(labels))
 }

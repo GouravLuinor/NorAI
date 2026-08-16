@@ -1,0 +1,31 @@
+{
+    "chapter_id": 3,
+    "title": "The Distortions of Price Controls",
+    "sections": [
+        {
+            "section_type": "definition",
+            "title": "1. THE ECONOMIC FUNCTION OF PRICES",
+            "content_markdown": "Prices are not merely numbers on a tag; they are objective information signals that communicate the relationship between supply and demand. In a free market, the price mechanism facilitates efficient resource allocation without the need for centralized coordination. \n\n- **Scarcity Indicator:** High prices signal scarcity or high demand, encouraging producers to increase supply and consumers to conserve resources.\n- **Market Equilibrium:** The point where quantity supplied equals quantity demanded. Prices fluctuate naturally to maintain this balance.\n- **Communication Mechanism:** Prices act as an honest signal, allowing market participants to make informed decisions based on the true cost of production and the intensity of consumer desire."
+        },
+        {
+            "section_type": "prose",
+            "title": "2. THE MECHANICS OF PRICE CEILINGS",
+            "content_markdown": "A price ceiling is a government-imposed limit on how high a price can be charged for a product or service. When set below the market equilibrium price, it creates a persistent disequilibrium.\n\nWhen the price is artificially suppressed:\n1. **Quantity Demanded Increases:** Consumers perceive the good as cheaper, leading to an increase in the number of people seeking the product.\n2. **Quantity Supplied Decreases:** Producers find it less profitable (or even loss-making) to supply the good, leading to a reduction in production or total withdrawal from the market.\n3. **Shortage:** The gap between the increased quantity demanded ($Q_d$) and the decreased quantity supplied ($Q_s$) results in a shortage. Because the price cannot rise to clear the market, the rationing mechanism shifts from price-based to non-price-based (e.g., first-come-first-served, waiting lists, or black markets)."
+        },
+        {
+            "section_type": "table",
+            "title": "3. CONSEQUENCES OF ARTIFICIAL PRICE SUPPRESSION",
+            "content_markdown": "| Feature | Market Equilibrium | Price Ceiling (Below Equilibrium) |\n| :--- | :--- | :--- |\n| **Resource Allocation** | Efficient | Inefficient (Misallocation) |\n| **Supply/Demand** | Balanced | Shortage ($Q_d > Q_s$) |\n| **Quality** | Maintained by competition | Often declines (lack of incentive) |\n| **Rationing** | Price-based | Non-price (queues, shortages) |"
+        },
+        {
+            "section_type": "list",
+            "title": "4. CASE STUDY: RENT CONTROL AND NEGATIVE EXTERNALITIES",
+            "content_markdown": "Rent control is a classic example of a price ceiling that leads to significant market distortions:\n- **Increased Demand:** Artificially low rents encourage individuals to seek independent housing rather than sharing, increasing the total demand for units.\n- **Reduced Maintenance:** Landlords lack the revenue or incentive to maintain properties, leading to building degradation.\n- **Property Abandonment:** When operating costs exceed the capped revenue, landlords may abandon properties entirely, reducing the total housing stock.\n- **Inefficient Allocation:** Individuals may occupy more space than they actually need because the cost of doing so is artificially suppressed."
+        },
+        {
+            "section_type": "callout",
+            "title": "5. KEY INSIGHTS ON MARKET DISTORTION",
+            "content_markdown": "Government intervention in pricing does not eliminate the underlying scarcity of a resource; it merely hides the signal of that scarcity. When the price mechanism is broken, the market fails to clear, leading to:\n- **Empty Shelves:** In food markets, producers stop bringing goods to market when they cannot cover costs.\n- **Inefficient Rationing:** Goods are often consumed by those who happen to be first in line rather than those who value them most.\n- **Social Costs:** Policies intended to help the vulnerable (like rent control) can exacerbate issues like homelessness by reducing the availability of housing."
+        }
+    ]
+}

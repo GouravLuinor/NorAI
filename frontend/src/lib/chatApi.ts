@@ -2,6 +2,7 @@ import type { ChatResponse } from '../types'
 import { getLectureId, generateThreadTitle, isDefaultLabel, setThreadLabel } from './threadStorage'
 import { authHeaders } from './authHeaders'
 import { apiFetch, ApiError, apiGet, apiPost, apiDelete, API_BASE } from './http'
+import { useThreadStore } from '../stores/useThreadStore'
 
 // API_BASE comes from ./http (shared single source). It is intentionally NOT
 // used inside apiFetch — all internal store calls use bare relative paths so
@@ -11,7 +12,13 @@ export { apiFetch, apiGet, apiPost, apiDelete, ApiError, API_BASE }
 
 function ensureLabel(threadId: string, userQuestion: string) {
   if (isDefaultLabel(threadId)) {
-    setThreadLabel(threadId, generateThreadTitle(userQuestion))
+    const title = generateThreadTitle(userQuestion)
+    setThreadLabel(threadId, title)
+    try {
+      useThreadStore.getState().setThreadLabel(threadId, title)
+    } catch {
+      // ignore
+    }
   }
 }
 

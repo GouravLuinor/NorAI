@@ -43,6 +43,15 @@ def is_youtube_url(url: str) -> bool:
     except Exception:
         return False
 
+def sanitize_youtube_url(url: str) -> str:
+    """Extract canonical YouTube watch URL to strip tracking and session parameters."""
+    if not url:
+        return url
+    match = re.search(r"(?:v=|\/|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})", url)
+    if match:
+        return f"https://www.youtube.com/watch?v={match.group(1)}"
+    return url
+
 def is_gdrive_url(url: str) -> bool:
     try:
         netloc = urlparse(url).netloc.lower()
@@ -54,7 +63,6 @@ def extract_gdrive_file_id(url: str) -> str:
     """
     Extract Google Drive file ID from various URL formats.
     """
-
     match = re.search(r"/d/([a-zA-Z0-9_-]+)", url)
     if match:
         return match.group(1)
@@ -93,7 +101,6 @@ def extract_from_gdrive(
     Download video from Google Drive
     and process exactly like a local file.
     """
-
     logger.info(
         f"Downloading Google Drive video: {url}"
     )
@@ -131,19 +138,46 @@ def extract_from_gdrive(
 # YouTube Processing
 # -----------------------------
 
+# Multi-tier fallback extraction strategies to prevent YouTube HTTP 403 Forbidden & bot-throttling errors.
+# Note: 'ios' client is deliberately avoided because YouTube requires GVS PO Tokens for iOS streams.
+YOUTUBE_FALLBACK_STRATEGIES = [
+    {
+        "name": "Android VR + Android (H.264 Preferred)",
+        "player_client": ["android_vr", "android", "web"],
+        "format": "bestvideo[height<=720][vcodec^=avc1]+bestaudio/bestvideo[height<=720][vcodec^=avc]+bestaudio/bestvideo[height<=720][vcodec^=h264]+bestaudio/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+    },
+    {
+        "name": "Android + Web (Progressive Fallback)",
+        "player_client": ["android", "web"],
+        "format": "best[height<=720][vcodec^=avc1]/best[height<=720]/bestvideo[height<=720]+bestaudio/best",
+    },
+    {
+        "name": "Web + MWeb (Standard Stream)",
+        "player_client": ["mweb", "web"],
+        "format": "bestvideo[vcodec^=avc1]+bestaudio/bestvideo+bestaudio/best",
+    },
+    {
+        "name": "Generic Direct Format (Emergency Fallback)",
+        "player_client": ["web"],
+        "format": "best",
+        "http_headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+        },
+    },
+]
+
 
 def extract_from_youtube(
     url: str,
     output_dir: str
 ) -> dict:
     """
-    Download YouTube video,
-    convert to H.264,
-    extract audio.
+    Download YouTube video with multi-tier fallback protection,
+    convert/ensure H.264 MP4, and extract audio.
     """
-
+    clean_url = sanitize_youtube_url(url)
     logger.info(
-        f"Downloading YouTube video: {url}"
+        f"Downloading YouTube video: {clean_url}"
     )
 
     video_dir = os.path.join(
@@ -161,55 +195,107 @@ def extract_from_youtube(
         "metadata"
     )
 
-    ydl_opts = {
-        "format":
-            "bestvideo[height<=720][vcodec^=avc1]+bestaudio/best[height<=720][vcodec^=avc1]/bestvideo[height<=720]+bestaudio/best[height<=720]",
+    create_directories(output_dir)
 
-        "outtmpl":
-            os.path.join(
+    info = None
+    last_error = None
+
+    for strategy in YOUTUBE_FALLBACK_STRATEGIES:
+        logger.info(f"Attempting YouTube download with strategy: {strategy['name']}")
+        ydl_opts: dict[str, Any] = {
+            "format": strategy["format"],
+            "outtmpl": os.path.join(
                 video_dir,
                 "%(id)s.%(ext)s"
             ),
+            "quiet": False,
+            "no_warnings": True,
+            "merge_output_format": "mp4",
+            "retries": 10,
+            "fragment_retries": 10,
+            "nocheckcertificate": True,
+            "extractor_args": {
+                "youtube": {
+                    "player_client": strategy["player_client"],
+                }
+            },
+        }
 
-        "quiet": False,
-        "no_warnings": True,
-        "merge_output_format": "mp4",
-        "retries": 10,
-        "fragment_retries": 10,
-        "extractor_args": {
-            "youtube": {
-                # Prefer the standard 'default' client (capped at height<=720 in format
-                # string); ios/android/web clients are kept as fallbacks for 403 prevention.
-                "player_client": ["default", "ios", "android", "web"],
-            }
-        },
-    }
+        if "http_headers" in strategy:
+            ydl_opts["http_headers"] = strategy["http_headers"]
 
-    try:
-
-        with yt_dlp.YoutubeDL(
-            ydl_opts
-        ) as ydl:
-
-            info = ydl.extract_info(
-                url,
-                download=True
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(
+                    clean_url,
+                    download=True
+                )
+            if info and info.get("id"):
+                logger.info(f"Download successful using strategy: {strategy['name']}")
+                break
+        except Exception as e:
+            last_error = e
+            logger.warning(
+                f"YouTube download failed with '{strategy['name']}': {e}. Trying next strategy..."
             )
 
-    except Exception as e:
-
-        logger.error(
-            f"YouTube download failed: {e}"
+    if not info or not info.get("id"):
+        raise RuntimeError(
+            f"All YouTube download strategies failed for {url}. Last error: {last_error}"
         )
-
-        raise
 
     video_id = info["id"]
 
-    video_path = os.path.join(
-        video_dir,
-        f"{video_id}.mp4"
-    )
+    # Locate downloaded file in video_dir
+    video_path = os.path.join(video_dir, f"{video_id}.mp4")
+    if not os.path.exists(video_path):
+        candidates = list(Path(video_dir).glob(f"{video_id}.*"))
+        if candidates:
+            downloaded_file = str(candidates[0])
+            if candidates[0].suffix.lower() == ".mp4":
+                video_path = downloaded_file
+            else:
+                # Convert/remux non-mp4 format to mp4 for frontend and opencv compatibility
+                logger.info(f"Remuxing {downloaded_file} to {video_path}...")
+                try:
+                    (
+                        ffmpeg
+                        .input(downloaded_file)
+                        .output(video_path, vcodec="copy", acodec="copy")
+                        .overwrite_output()
+                        .run(quiet=True)
+                    )
+                except Exception:
+                    # Fallback to full re-encode if copy fails
+                    (
+                        ffmpeg
+                        .input(downloaded_file)
+                        .output(video_path, vcodec="libx264", acodec="aac")
+                        .overwrite_output()
+                        .run(quiet=True)
+                    )
+        else:
+            raise FileNotFoundError(f"Downloaded video file for ID {video_id} not found in {video_dir}")
+
+    # Verify video codec: ensure standard H.264 so OpenCV & HTML5 player decode reliably
+    try:
+        probe = ffmpeg.probe(video_path)
+        v_stream = next((s for s in probe.get("streams", []) if s.get("codec_type") == "video"), None)
+        v_codec = (v_stream.get("codec_name") or "").lower() if v_stream else ""
+        if v_codec and v_codec not in ("h264", "avc1"):
+            logger.info(f"Video stream codec is '{v_codec}'. Normalizing to H.264 MP4...")
+            temp_trans = os.path.join(video_dir, f"{video_id}_h264.mp4")
+            (
+                ffmpeg
+                .input(video_path)
+                .output(temp_trans, vcodec="libx264", preset="ultrafast", crf=23, acodec="copy")
+                .overwrite_output()
+                .run(quiet=True)
+            )
+            if os.path.exists(temp_trans) and os.path.getsize(temp_trans) > 0:
+                os.replace(temp_trans, video_path)
+    except Exception as exc:
+        logger.warning(f"Codec normalization skipped: {exc}")
 
     audio_path = os.path.join(
         audio_dir,
@@ -221,7 +307,6 @@ def extract_from_youtube(
     )
 
     try:
-
         (
             ffmpeg
             .input(
@@ -237,43 +322,21 @@ def extract_from_youtube(
             .overwrite_output()
             .run(quiet=True)
         )
-
     except ffmpeg.Error as e:
-
         logger.error(
             f"FFmpeg extraction failed: {e}"
         )
-
         raise
 
     metadata = {
-        "video_id":
-            video_id,
-
-        "title":
-            info.get("title"),
-
-        "source_type":
-            "youtube",
-
-        "duration":
-            info.get("duration"),
-
-        "source_url":
-            info.get(
-                "webpage_url"
-            ),
-
-        "uploader":
-            info.get(
-                "uploader"
-            ),
-
-        "video_path":
-            video_path,
-
-        "audio_path":
-            audio_path
+        "video_id": video_id,
+        "title": info.get("title"),
+        "source_type": "youtube",
+        "duration": info.get("duration"),
+        "source_url": info.get("webpage_url") or clean_url,
+        "uploader": info.get("uploader"),
+        "video_path": video_path,
+        "audio_path": audio_path
     }
 
     metadata_path = os.path.join(
@@ -286,7 +349,6 @@ def extract_from_youtube(
         "w",
         encoding="utf-8"
     ) as f:
-
         json.dump(
             metadata,
             f,
@@ -295,20 +357,11 @@ def extract_from_youtube(
         )
 
     return {
-        "source_type":
-            "youtube",
-
-        "audio_path":
-            audio_path,
-
-        "video_path":
-            video_path,
-
-        "metadata_path":
-            metadata_path,
-
-        "metadata":
-            metadata
+        "source_type": "youtube",
+        "audio_path": audio_path,
+        "video_path": video_path,
+        "metadata_path": metadata_path,
+        "metadata": metadata
     }
 
 
@@ -320,23 +373,27 @@ def probe_video_metadata(url: str) -> dict | None:
     """
     Cheap pre-flight metadata probe for the /estimate endpoint (P1.8).
 
-    Uses yt-dlp with download=False so no media is fetched (~2s for YouTube).
+    Uses yt-dlp with download=False so no media is fetched (~1-2s for YouTube).
     Returns {"duration_sec": float, "title": str} or None when the source
-    can't be probed without downloading (e.g. Google Drive shares, which
-    require gdown and would defeat the purpose of a cheap estimate).
+    can't be probed without downloading.
     """
     if not is_youtube_url(url):
         return None
+    clean_url = sanitize_youtube_url(url)
     try:
-        import yt_dlp
         ydl_opts: dict[str, Any] = {
             "quiet": True,
             "no_warnings": True,
             "skip_download": True,
             "noplaylist": True,
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["android_vr", "android", "web"],
+                }
+            },
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
+            info = ydl.extract_info(clean_url, download=False)
         if not info:
             return None
         duration = info.get("duration")
@@ -347,7 +404,28 @@ def probe_video_metadata(url: str) -> dict | None:
             "title": info.get("title"),
         }
     except Exception as e:
-        logger.info(f"Metadata probe failed (falling back): {e}")
+        logger.info(f"Metadata probe failed (trying fallback client): {e}")
+        try:
+            fallback_opts: dict[str, Any] = {
+                "quiet": True,
+                "no_warnings": True,
+                "skip_download": True,
+                "noplaylist": True,
+                "extractor_args": {
+                    "youtube": {
+                        "player_client": ["android", "web"],
+                    }
+                },
+            }
+            with yt_dlp.YoutubeDL(fallback_opts) as ydl:
+                info = ydl.extract_info(clean_url, download=False)
+            if info and info.get("duration") is not None:
+                return {
+                    "duration_sec": float(info["duration"]),
+                    "title": info.get("title"),
+                }
+        except Exception as e2:
+            logger.info(f"Fallback probe also failed: {e2}")
         return None
 
 
@@ -397,7 +475,6 @@ def extract_from_local(file_path: str, output_dir: str) -> dict:
     )
 
     if os.path.abspath(file_path) != os.path.abspath(copied_video_path):
-
         shutil.copy2(
             file_path,
             copied_video_path
@@ -405,7 +482,7 @@ def extract_from_local(file_path: str, output_dir: str) -> dict:
 
     logger.info("Extracting audio...")
 
-    try : 
+    try:
         (
             ffmpeg
             .input(copied_video_path)
@@ -426,7 +503,6 @@ def extract_from_local(file_path: str, output_dir: str) -> dict:
         raise
 
     probe = ffmpeg.probe(copied_video_path)
-
 
     duration = float(
         probe["format"]["duration"]
@@ -476,73 +552,27 @@ def process_source(
     Output:
         Structured dictionary
     """
-
     create_directories(output_dir)
 
     if is_url(source):
-
         if is_youtube_url(source):
             logger.info("Detected YouTube URL")
-
-        elif is_gdrive_url(source):
-            logger.info("Detected Google Drive URL")
-
-        else:
-            logger.info("Detected Local File")
-
-        if is_youtube_url(source):
             return extract_from_youtube(
                 source,
                 output_dir
             )
-
-        if is_gdrive_url(source):
+        elif is_gdrive_url(source):
+            logger.info("Detected Google Drive URL")
             return extract_from_gdrive(
                 source,
                 output_dir
             )
-
-        raise ValueError(
-            "Unsupported URL source."
-        )
+        else:
+            raise ValueError(
+                "Unsupported URL source."
+            )
 
     return extract_from_local(
         source,
         output_dir
     )
-
-
-# -----------------------------
-# Testing
-# -----------------------------
-
-
-if __name__ == "__main__":
-
-    youtube_url = "https://www.youtube.com/watch?v=ciHThtTVNto"
-
-    result = process_source(youtube_url)
-
-    print(json.dumps(result, indent=4))
-
-
-"""
-if __name__ == "__main__":
-
-    source = "/mnt/c/Users/gaura/Videos/2026-03-22 17-10-37.mp4"
-
-    result = process_source(source)
-
-    print(json.dumps(result, indent=4))
-
-"""
-
-"""
-if __name__ == "__main__":
-
-    source = "https://drive.google.com/file/d/1M-xW7jV9iOSIXfFqZJGAxxrHbEJTc_Wf/view?usp=sharing"
-
-    result = process_source(source)
-
-    print(json.dumps(result, indent=4))
-"""

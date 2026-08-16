@@ -1,0 +1,20 @@
+{
+    "chunk_id": 6,
+    "visual_notes": "Comparison of AI model performance on benchmarks, specifically comparing Opus 5 and GLM 5.3 in a simulated environment.",
+    "important_information": [
+        "GLM 5.3 benchmark performance",
+        "Head-to-head comparison against frontier models like GPT-5.6, Opus 5, Gemini 3.7 Flash, and Grok 4.6"
+    ],
+    "ocr_text": "OPUS 5 GLM 5.3 STAND BY GET READY",
+    "visual_type": "slide",
+    "teaching_stage": "introduction",
+    "importance_score": 7,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_472.jpg"
+    ],
+    "start": 454.5,
+    "end": 520.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

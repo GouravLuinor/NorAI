@@ -1,0 +1,21 @@
+{
+    "chapter_id": 6,
+    "chapter_title": "Labor Economics: Value Creation and Wage Determination",
+    "flashcards": [
+        {
+            "front": "What happens when wages exceed MRPL?",
+            "back": "The firm incurs a net financial loss on that labor.",
+            "explanation": "Hiring is only sustainable when the cost of labor is less than or equal to the revenue it generates."
+        },
+        {
+            "front": "Why is trade a non-zero-sum game?",
+            "back": "Both parties increase their utility through voluntary exchange.",
+            "explanation": "Trade reallocates resources to those who value them more, creating mutual benefit."
+        },
+        {
+            "front": "How should one allocate resources for career growth?",
+            "back": "Focus on existing strengths where you have a comparative advantage.",
+            "explanation": "Specialization in strengths maximizes output and return on investment compared to remediating weaknesses."
+        }
+    ]
+}

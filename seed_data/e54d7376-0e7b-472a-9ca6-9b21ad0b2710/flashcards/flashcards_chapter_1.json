@@ -1,0 +1,21 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Foundations of Economic Thinking: Incentives and Opportunity Cost",
+    "flashcards": [
+        {
+            "front": "What is opportunity cost?",
+            "back": "The value of the next best alternative foregone when a decision is made.",
+            "explanation": "It represents the trade-off inherent in every choice due to scarcity."
+        },
+        {
+            "front": "Should policy focus on intent or behavior?",
+            "back": "Policy should focus on human behavior and incentives.",
+            "explanation": "Legislative intent often fails if it ignores how people respond to new incentives."
+        },
+        {
+            "front": "Why do static tax projections often fail?",
+            "back": "They ignore behavioral changes like capital flight and relocation.",
+            "explanation": "Taxpayers respond to incentives; high rates can cause them to move, reducing the total tax base."
+        }
+    ]
+}

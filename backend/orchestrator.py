@@ -347,10 +347,9 @@ def run_pipeline(
         _report("tutor_index", "Indexing for tutor…", 96)
         _check_cancel()
         try:
-            import chromadb
             from tutor.chunker import chunk_glob
             from tutor.embedding import GeminiEmbeddingFunction
-            from tutor.build_index import upsert_batched
+            from tutor.build_index import get_persistent_client, upsert_batched
 
             lecture_dir = Path(out)
             notes_glob = str(lecture_dir / "notes" / "chapter_*.md")
@@ -361,7 +360,7 @@ def run_pipeline(
             logger.info(f"  Tutor index: found {len(chunks)} chunks")
 
             if chunks:
-                client = chromadb.PersistentClient(path=str(chroma_dir))
+                client = get_persistent_client(chroma_dir)
                 ef = GeminiEmbeddingFunction(role="document")
                 collection = client.get_or_create_collection(
                     name="norai_notes",
@@ -408,9 +407,8 @@ def run_pipeline(
         _check_cancel()
         try:
             import json as _json, glob as _glob
-            import chromadb
             from tutor.embedding import GeminiEmbeddingFunction
-            from tutor.build_index import upsert_batched
+            from tutor.build_index import get_persistent_client, upsert_batched
 
             lecture_dir = Path(out)
             screenshot_glob = str(lecture_dir / "screenshots" / "selected" / "chapter_*_screenshots.json")
@@ -420,7 +418,7 @@ def run_pipeline(
             logger.info(f"  Screenshot index: found {len(json_files)} files")
 
             if json_files:
-                client = chromadb.PersistentClient(path=str(chroma_dir))
+                client = get_persistent_client(chroma_dir)
                 ef = GeminiEmbeddingFunction(role="document")
                 collection = client.get_or_create_collection(
                     name="screenshot_captions",

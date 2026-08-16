@@ -1,0 +1,17 @@
+{
+    "chunk_id": 17,
+    "visual_notes": "Illustrations of different labor scenarios: a person with a burger vs. pizza, a person with a camera, and a person with armed guards.",
+    "important_information": [],
+    "ocr_text": "",
+    "visual_type": "slide",
+    "teaching_stage": "explanation",
+    "importance_score": 5,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1016.jpg"
+    ],
+    "start": 1013.5,
+    "end": 1059.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

@@ -1,0 +1,43 @@
+{
+    "object_type": "merged_object",
+    "chunk_id": 17,
+    "topic": "The Economic Concept of Voluntary Trade",
+    "transcript": "You've got a sandwich.\n\nYour friend has pizza.\n\nYou each kind of want what the other person has.\n\nSo you trade halves.\n\nDid the total amount of food change?\n\nNo.\n\nBut are you both happier?\n\nYes.\n\nThat's trade.\n\nIt creates value without creating more stuff.\n\nNobody lost, you didn't beat your friend.\n\nShe didn't beat you.\n\nBoth of you won.\n\nNow, here's where adults completely mess this up.\n\nPoliticians talk about trade between countries like it's a war.",
+    "lecture_notes": "The lecture defines trade as a mutually beneficial exchange of goods between two parties. Using the example of swapping halves of a sandwich and pizza, it demonstrates that trade creates value by reallocating existing resources to better match individual preferences. The core argument is that trade is a non-zero-sum activity where both participants increase their utility without requiring an increase in the total quantity of physical goods. The speaker contrasts this economic reality with political rhetoric that often frames international trade as a competitive, adversarial conflict.",
+    "visual_notes": "Illustrations of different labor scenarios: a person with a burger vs. pizza, a person with a camera, and a person with armed guards.",
+    "key_points": [
+        "Trade creates value through the reallocation of existing goods.",
+        "Voluntary exchange can increase the total utility of all participants.",
+        "Trade is a non-zero-sum interaction where both parties can benefit simultaneously.",
+        "Political discourse often incorrectly characterizes trade as a competitive war rather than a cooperative exchange."
+    ],
+    "concepts": [
+        "Non-zero-sum game",
+        "Resource allocation",
+        "Utility maximization",
+        "Voluntary exchange"
+    ],
+    "important_information": [
+        "Trade creates value through the reallocation of existing goods.",
+        "Voluntary exchange can increase the total utility of all participants.",
+        "Trade is a non-zero-sum interaction where both parties can benefit simultaneously.",
+        "Political discourse often incorrectly characterizes trade as a competitive war rather than a cooperative exchange."
+    ],
+    "inferred_knowledge": [
+        "Economic value is subjective and dependent on individual preferences rather than just the physical quantity of goods.",
+        "The perception of trade as a zero-sum game is a cognitive or rhetorical error in political analysis.",
+        "Mutual benefit is the primary driver of voluntary trade transactions."
+    ],
+    "visual_information": [],
+    "ocr_text": "",
+    "visual_type": "slide",
+    "teaching_stage": "explanation",
+    "importance_score": 5,
+    "include_in_notes": true,
+    "screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1016.jpg"
+    ],
+    "selected_screenshots": [],
+    "start": 1013.5,
+    "end": 1059.5
+}

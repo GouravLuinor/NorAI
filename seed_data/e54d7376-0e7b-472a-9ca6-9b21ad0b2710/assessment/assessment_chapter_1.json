@@ -1,0 +1,62 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Foundations of Economic Thinking: Incentives and Opportunity Cost",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 1,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Opportunity Cost"
+            ],
+            "question": "If you spend $10 on a movie ticket instead of buying a book, what is the opportunity cost?",
+            "options": [
+                "The $10 spent",
+                "The book you did not buy",
+                "The enjoyment of the movie",
+                "The time spent at the theater"
+            ],
+            "answer": "The book you did not buy",
+            "explanation": "Opportunity cost is the value of the next best alternative foregone, which in this case is the book.",
+            "flashcard_front": "What is opportunity cost?",
+            "flashcard_back": "The value of the next best alternative foregone when a decision is made.",
+            "flashcard_explanation": "It represents the trade-off inherent in every choice due to scarcity."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 1,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Incentive structures"
+            ],
+            "question": "Economic policy is most effective when it focuses on legislative intent rather than human behavior.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "Effective policy must account for how individuals actually respond to incentives, not just the stated goals of the legislation.",
+            "flashcard_front": "Should policy focus on intent or behavior?",
+            "flashcard_back": "Policy should focus on human behavior and incentives.",
+            "flashcard_explanation": "Legislative intent often fails if it ignores how people respond to new incentives."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 1,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Capital Flight"
+            ],
+            "question": "Why might increasing tax rates on high-income earners lead to a decrease in total tax revenue?",
+            "options": [],
+            "answer": "High-income earners are mobile and may relocate to jurisdictions with lower taxes, leading to capital flight and a shrinking tax base.",
+            "explanation": "When the tax burden becomes too high, the incentive to stay is reduced, causing the tax base to shrink faster than the rate increases.",
+            "flashcard_front": "Why do static tax projections often fail?",
+            "flashcard_back": "They ignore behavioral changes like capital flight and relocation.",
+            "flashcard_explanation": "Taxpayers respond to incentives; high rates can cause them to move, reducing the total tax base."
+        }
+    ]
+}

@@ -25,6 +25,8 @@ token.json
 outputs/
 transcripts/
 uploads/
+chroma_db/
+.tmp/
 *.sqlite
 *.sqlite3
 *.db

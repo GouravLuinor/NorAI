@@ -1,0 +1,21 @@
+{
+    "chunk_id": 1,
+    "visual_notes": "A fully connected neural network architecture with 784 input neurons (representing the 28x28 pixel grid) and an output layer for digits 0-9.",
+    "important_information": [
+        "Input layer size: 784 neurons",
+        "Fully connected network structure",
+        "Output layer for digit classification (0-9)"
+    ],
+    "ocr_text": "784 0 1 2 3 4 5 6 7 8 9",
+    "visual_type": "architecture_diagram",
+    "teaching_stage": "explanation",
+    "importance_score": 10,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_168.jpg"
+    ],
+    "start": 112.78,
+    "end": 207.98,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

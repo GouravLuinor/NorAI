@@ -1,0 +1,22 @@
+{
+    "chunk_id": 9,
+    "visual_notes": "Neural network architecture diagram showing input layer (784 neurons) and output layer (0-9). Defines a neuron as a container for a number.",
+    "important_information": [
+        "Neural network architecture",
+        "Input layer size: 784",
+        "Output layer: digits 0-9",
+        "Neuron definition: a container for a number"
+    ],
+    "ocr_text": "784 0 1 2 3 4 5 6 7 8 9 Neuron Thing that holds a number",
+    "visual_type": "architecture_diagram",
+    "teaching_stage": "conceptual_introduction",
+    "importance_score": 9,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_920.jpg"
+    ],
+    "start": 917.38,
+    "end": 997.38,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

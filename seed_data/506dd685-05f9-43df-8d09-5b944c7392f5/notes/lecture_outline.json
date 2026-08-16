@@ -1,0 +1,59 @@
+{
+    "chapters": [
+        {
+            "chapter_id": 1,
+            "title": "The Rise of Open-Weights Models and Local Deployment",
+            "focus_concepts": [
+                "Open-weights models",
+                "Consumer-grade hardware inference",
+                "Model quantization",
+                "4-bit Quantization",
+                "Local model deployment"
+            ],
+            "chunk_ids": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "start_chunk": 0,
+            "end_chunk": 3
+        },
+        {
+            "chapter_id": 2,
+            "title": "Competitive Landscape and Architectural Strategies",
+            "focus_concepts": [
+                "Large Language Models (LLMs)",
+                "Model pre-training",
+                "Cloud-based AI deployment",
+                "Market dynamics",
+                "Post-training optimization"
+            ],
+            "chunk_ids": [
+                4,
+                5
+            ],
+            "start_chunk": 4,
+            "end_chunk": 5
+        },
+        {
+            "chapter_id": 3,
+            "title": "Benchmarking Performance, Latency, and Usability",
+            "focus_concepts": [
+                "LLM Benchmarking",
+                "Latency",
+                "Memory footprint",
+                "Inference speed",
+                "User experience optimization"
+            ],
+            "chunk_ids": [
+                6,
+                7,
+                8
+            ],
+            "start_chunk": 6,
+            "end_chunk": 8
+        }
+    ],
+    "lecture_title": "The Rise of Open-Weights Models and Local Deployment"
+}

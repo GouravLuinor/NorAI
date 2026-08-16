@@ -1,0 +1,24 @@
+{
+    "chunk_id": 8,
+    "visual_notes": "The video demonstrates the consequences of price controls: a building with lights going out, a symbol equating a price lock to trash, and a shop closing down as customers leave.",
+    "important_information": [
+        "Price controls can lead to a decline in quality or availability.",
+        "Price ceilings often result in market closures and reduced supply."
+    ],
+    "ocr_text": "CLOSE",
+    "visual_type": "slide",
+    "teaching_stage": "conclusion",
+    "importance_score": 9,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_536.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_544.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_552.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_560.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_568.jpg"
+    ],
+    "start": 522.0,
+    "end": 574.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

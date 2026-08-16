@@ -1,0 +1,62 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Foundations of Neural Network Architecture",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 1,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Input Layer"
+            ],
+            "question": "For a 28x28 pixel image, how many neurons are required in the input layer of a neural network?",
+            "options": [
+                "28",
+                "56",
+                "784",
+                "10"
+            ],
+            "answer": "784",
+            "explanation": "The input layer must have one neuron for every pixel in the image. Since 28 * 28 = 784, 784 neurons are required.",
+            "flashcard_front": "How many input neurons are needed for a 28x28 pixel image?",
+            "flashcard_back": "784 neurons.",
+            "flashcard_explanation": "Each pixel in the 28x28 grid maps to a single input neuron."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 1,
+            "type": "Short Answer",
+            "difficulty": "Easy",
+            "concepts": [
+                "Neuron Activation"
+            ],
+            "question": "What does the activation value of a neuron in the output layer represent?",
+            "options": [],
+            "answer": "The system's confidence level in the classification of a specific digit.",
+            "explanation": "In the output layer, each of the 10 neurons corresponds to a digit (0-9), and its activation value (0 to 1) indicates the network's confidence.",
+            "flashcard_front": "What does an output neuron's activation value represent?",
+            "flashcard_back": "The system's confidence in that specific classification.",
+            "flashcard_explanation": "Values range from 0 to 1, indicating how strongly the network predicts that digit."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 1,
+            "type": "True/False",
+            "difficulty": "Medium",
+            "concepts": [
+                "Neural Network Architecture"
+            ],
+            "question": "True or False: The number of hidden layers and neurons per layer in a neural network is strictly defined by biological constraints.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The architecture is flexible and determined by experimental design, not by strict biological rules.",
+            "flashcard_front": "Is neural network architecture strictly defined by biological constraints?",
+            "flashcard_back": "False.",
+            "flashcard_explanation": "Architecture is determined experimentally, using biology only as an initial inspiration."
+        }
+    ]
+}

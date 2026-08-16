@@ -54,9 +54,15 @@ case "$cmd" in
     pkill -f "$BE_TAG" 2>/dev/null && echo "backend: stopped" || echo "backend: not running"
     pkill -f "$FE_TAG" 2>/dev/null && echo "frontend: stopped" || echo "frontend: not running"
     ;;
+  restart)
+    pkill -f "$BE_TAG" 2>/dev/null && echo "backend: stopped" || echo "backend: not running"
+    pkill -f "$FE_TAG" 2>/dev/null && echo "frontend: stopped" || echo "frontend: not running"
+    sleep 1
+    start_backend && start_frontend
+    ;;
   status)
     probe "$BE_URL" && echo "backend:  UP  ($BE_URL)" || echo "backend: DOWN"
     probe "$FE_URL" && echo "frontend: UP  ($FE_URL)" || echo "frontend: DOWN"
     ;;
-  *) echo "usage: $0 {start|stop|status}"; exit 1 ;;
+  *) echo "usage: $0 {start|stop|restart|status}"; exit 1 ;;
 esac

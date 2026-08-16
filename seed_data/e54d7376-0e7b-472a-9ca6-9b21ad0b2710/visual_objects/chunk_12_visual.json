@@ -1,0 +1,22 @@
+{
+    "chunk_id": 12,
+    "visual_notes": "A collection of icons representing business concepts: a lightbulb (idea), a gear (process), a truck (logistics), a person (human resources), and a crossed-out building icon, followed by a slide showing a standard office building and a government building.",
+    "important_information": [
+        "Icons represent various business functions.",
+        "The crossed-out building icon suggests a concept of non-corporate or decentralized operations.",
+        "Distinction between private corporate buildings and government/public institutions."
+    ],
+    "ocr_text": "",
+    "visual_type": "slide",
+    "teaching_stage": "introduction",
+    "importance_score": 6,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_736.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_752.jpg"
+    ],
+    "start": 731.0,
+    "end": 790.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

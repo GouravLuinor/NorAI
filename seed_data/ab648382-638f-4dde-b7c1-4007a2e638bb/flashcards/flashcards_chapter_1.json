@@ -1,0 +1,21 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Foundations of Neural Network Architecture",
+    "flashcards": [
+        {
+            "front": "How many input neurons are needed for a 28x28 pixel image?",
+            "back": "784 neurons.",
+            "explanation": "Each pixel in the 28x28 grid maps to a single input neuron."
+        },
+        {
+            "front": "What does an output neuron's activation value represent?",
+            "back": "The system's confidence in that specific classification.",
+            "explanation": "Values range from 0 to 1, indicating how strongly the network predicts that digit."
+        },
+        {
+            "front": "Is neural network architecture strictly defined by biological constraints?",
+            "back": "False.",
+            "explanation": "Architecture is determined experimentally, using biology only as an initial inspiration."
+        }
+    ]
+}

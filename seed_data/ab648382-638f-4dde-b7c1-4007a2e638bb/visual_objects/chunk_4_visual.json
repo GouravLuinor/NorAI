@@ -1,0 +1,17 @@
+{
+    "chunk_id": 4,
+    "visual_notes": "Visualization of a neural network architecture showing how input pixels (784) are processed through hidden layers to identify specific features like loops.",
+    "important_information": [],
+    "ocr_text": "784 Upper loop neuron...maybe... 0 1 2 3 4 5 6 7 8 9",
+    "visual_type": "architecture_diagram",
+    "teaching_stage": "explanation",
+    "importance_score": 9,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_472.jpg"
+    ],
+    "start": 407.38,
+    "end": 505.38,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

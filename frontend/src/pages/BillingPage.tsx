@@ -6,6 +6,8 @@ import { apiGet } from '../lib/http'
 import { Button } from '../components/ui/Button'
 
 interface BillingData {
+  user_id?: string
+  email?: string | null
   plan_tier: 'free' | 'starter' | 'pro'
   subscription_status: string
   monthly_minutes_quota: number
@@ -115,8 +117,21 @@ export function BillingPage() {
 
   const pct = Math.min(100, Math.round((data.used_minutes_this_month / Math.max(1, data.monthly_minutes_quota)) * 100))
   const isPaid = data.plan_tier !== 'free'
-  const starterUrl = data.checkout_urls?.starter
-  const proUrl = data.checkout_urls?.pro
+
+  const appendCheckoutParams = (url: string | null | undefined) => {
+    if (!url) return null
+    const targetUserId = data.user_id || userId || ''
+    const sep = url.includes('?') ? '&' : '?'
+    let fullUrl = `${url}${sep}checkout[custom][user_id]=${encodeURIComponent(targetUserId)}`
+    const targetEmail = data.email || user.email
+    if (targetEmail && !data.is_anonymous) {
+      fullUrl += `&checkout[email]=${encodeURIComponent(targetEmail)}`
+    }
+    return fullUrl
+  }
+
+  const starterUrl = appendCheckoutParams(data.checkout_urls?.starter)
+  const proUrl = appendCheckoutParams(data.checkout_urls?.pro)
 
   return (
     <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center py-12 px-6">

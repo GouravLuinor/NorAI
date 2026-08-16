@@ -1,0 +1,77 @@
+{
+    "chapters": [
+        {
+            "chapter_id": 1,
+            "title": "Foundations of Neural Network Architecture",
+            "focus_concepts": [
+                "Neural Networks",
+                "Image Recognition",
+                "Input Layer",
+                "Pixel Mapping",
+                "Neuron Activation"
+            ],
+            "chunk_ids": [
+                0,
+                1,
+                2
+            ],
+            "start_chunk": 0,
+            "end_chunk": 2
+        },
+        {
+            "chapter_id": 2,
+            "title": "Hierarchical Feature Learning and Abstraction",
+            "focus_concepts": [
+                "Forward Propagation",
+                "Feature Hierarchies",
+                "Pattern Recognition",
+                "Subcomponent Decomposition",
+                "Hierarchical Abstraction"
+            ],
+            "chunk_ids": [
+                3,
+                4,
+                5
+            ],
+            "start_chunk": 3,
+            "end_chunk": 5
+        },
+        {
+            "chapter_id": 3,
+            "title": "Mathematical Mechanisms: Weights, Biases, and Activation",
+            "focus_concepts": [
+                "Weighted Sum",
+                "Neuron Activation",
+                "Bias",
+                "Sigmoid Function",
+                "Thresholding"
+            ],
+            "chunk_ids": [
+                6,
+                7,
+                8
+            ],
+            "start_chunk": 6,
+            "end_chunk": 8
+        },
+        {
+            "chapter_id": 4,
+            "title": "Parameterization and Linear Algebra in Deep Learning",
+            "focus_concepts": [
+                "Fully Connected Layers",
+                "Parameter Tuning",
+                "Matrix-Vector Multiplication",
+                "Weight Matrix",
+                "Activation Vector"
+            ],
+            "chunk_ids": [
+                9,
+                10,
+                11
+            ],
+            "start_chunk": 9,
+            "end_chunk": 11
+        }
+    ],
+    "lecture_title": "Foundations of Neural Network Architecture"
+}

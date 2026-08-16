@@ -1,0 +1,83 @@
+{
+  "chapter_id": 4,
+  "frames": {
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_576.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_584.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_592.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_608.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_616.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_632.jpg": {
+      "ocr_text": "$1",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_640.jpg": {
+      "ocr_text": "$1",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_648.jpg": {
+      "ocr_text": "$1",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_656.jpg": {
+      "ocr_text": "$1",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_664.jpg": {
+      "ocr_text": "$1",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_712.jpg": {
+      "ocr_text": "",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_720.jpg": {
+      "ocr_text": "",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_728.jpg": {
+      "ocr_text": "",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": true
+    }
+  }
+}

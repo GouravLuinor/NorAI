@@ -1,0 +1,83 @@
+{
+  "chapter_id": 1,
+  "frames": {
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_0.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_32.jpg": {
+      "ocr_text": "$0.99",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_40.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_48.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_72.jpg": {
+      "ocr_text": "-2000, TAX, TAX",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_88.jpg": {
+      "ocr_text": "-2000, TAX, TAX",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_104.jpg": {
+      "ocr_text": "-2000, TAX, TAX",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_112.jpg": {
+      "ocr_text": "-2000, TAX, TAX",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_120.jpg": {
+      "ocr_text": "-2000, TAX, TAX",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_128.jpg": {
+      "ocr_text": "-2000, TAX, TAX",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_144.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_152.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_168.jpg": {
+      "ocr_text": "$",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    }
+  }
+}

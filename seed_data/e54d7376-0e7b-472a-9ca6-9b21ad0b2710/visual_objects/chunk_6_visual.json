@@ -1,0 +1,20 @@
+{
+    "chunk_id": 6,
+    "visual_notes": "The video illustrates the concept of price ceilings using a pizza shop example. A price tag icon with upward arrows indicates a price increase, followed by a chef preparing pizzas on a conveyor belt, suggesting production.",
+    "important_information": [
+        "Price controls can distort market signals.",
+        "Production processes are affected by price regulations."
+    ],
+    "ocr_text": "$",
+    "visual_type": "slide",
+    "teaching_stage": "conceptual_introduction",
+    "importance_score": 6,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_392.jpg"
+    ],
+    "start": 392.0,
+    "end": 467.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

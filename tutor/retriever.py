@@ -39,9 +39,8 @@ from pathlib import Path
 from functools import lru_cache
 from typing import Optional
 
-import chromadb
-
 from tutor.embedding import GeminiEmbeddingFunction
+from tutor.build_index import get_persistent_client
 from tutor.retrieval_config import (
     CHROMA_DIR,
     NOTES_COLLECTION,
@@ -72,7 +71,7 @@ def _get_client(chroma_dir: Optional[str] = None):
             f"Chroma index directory not found at {path}. "
             "Run indexing scripts first (e.g. python -m tutor.build_index)."
         )
-    return chromadb.PersistentClient(path=str(path))
+    return get_persistent_client(path)
 
 
 @lru_cache(maxsize=20)
