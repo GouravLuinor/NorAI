@@ -283,22 +283,32 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
       timestamp: '',
     }))
 
+    const lastAssistant = [...msgs].reverse().find((m) => m.role === 'assistant')
+    const answerText = lastAssistant?.content || ''
+
     set((s) => {
       // Phase 4: Cache resilience - merge incoming messages with optimistic UI messages
       const existing = s._messagesCache[threadId] || []
       const merged = [...msgs]
-      const backendIds = new Set(merged.map(m => m.id))
+      const backendContents = new Set(merged.map((m) => `${m.role}:${m.content.trim()}`))
+      const backendIds = new Set(merged.map((m) => m.id))
+
       for (const msg of existing) {
-        if (!backendIds.has(msg.id)) {
+        if (!backendIds.has(msg.id) && !backendContents.has(`${msg.role}:${msg.content.trim()}`)) {
           merged.push(msg)
         }
       }
 
-      const isCurrentThread = s.threadId === threadId;
+      const isCurrentThread = s.threadId === threadId
 
-      let refs = s.liveReferences;
+      let refs = s.liveReferences
       if (isCurrentThread) {
-        refs = buildReferences(data?.last_retrieved_chunks ?? [], data?.last_retrieved_images ?? [], '', data?.verified_citations ?? []);
+        refs = buildReferences(
+          data?.last_retrieved_chunks ?? [],
+          data?.last_retrieved_images ?? [],
+          answerText,
+          data?.verified_citations ?? []
+        )
       }
 
       return {

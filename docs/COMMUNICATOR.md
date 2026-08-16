@@ -34,6 +34,19 @@
 
 ## 📝 Task History & Handoff Log
 
+### [2026-08-16] — Antigravity: Fixed Estimation, YouTube Ingestion, Share Links, and AI Tutor Thread State
+- **Agent**: Antigravity (IDE)
+- **Status**: Completed
+- **Files Created / Modified**:
+  - `ingest/ingest.py` — Added YouTube oEmbed instant title metadata probe and hardened yt-dlp client fallback strategies (`tv_embedded`, `tv`, `ios`, `mweb`, `android`); added `YOUTUBE_COOKIES` / `YOUTUBE_COOKIES_BASE64` env support and user-friendly bot-check guidance.
+  - `backend/main.py` — Made `_app_origin()` dynamically detect Render / request origins; added public sharing for demo lectures (`DEMO_LECTURE_IDS`); hardened message deserialization in `/threads/{thread_id}` so `HumanMessage` is never misclassified as `assistant`; guarded `spa_middleware` from hijacking JSON requests.
+  - `frontend/src/lib/http.ts` — Added explicit `Accept: application/json` header across all internal HTTP requests.
+  - `frontend/src/stores/useThreadStore.ts` & `frontend/src/components/chat/ChatArea.tsx` — Restored reference/citation re-parsing upon thread switching and preserved optimistic user messages across fast thread switches.
+- **Verification**:
+  - `scripts/run-tests.sh`: 39/39 offline test suites passed (0 failed).
+  - `npm run lint && npm run build`: 0 lint errors, built in 580ms.
+  - Live probe test on `w-1lnCmqf_E` & `RNF0FvRjGZk`: returned exact duration & title.
+
 ### [2026-08-16] — Antigravity: Removed Faster-Whisper & Unused Torch/ONNX Runtime Dependencies
 - **Agent**: Antigravity (IDE)
 - **Status**: Completed

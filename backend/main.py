@@ -272,12 +272,12 @@ SPA_HTML_PREFIXES = ("/app", "/workspace", "/process/", "/print", "/share/")
 @app.middleware("http")
 async def spa_middleware(request: Request, call_next):
     """Serve index.html for HTML navigations to client-side routes, mirroring
-    the Vite dev proxy's /billing bypass. API fetches send Accept: */* (never
-    text/html), so they still hit the JSON routes."""
+    the Vite dev proxy's /billing bypass. API fetches send Accept: */* or application/json
+    (never pure text/html), so they still hit the JSON routes."""
     if request.method == "GET" and _spa_index() is not None:
         accept = request.headers.get("accept", "")
         path = request.url.path
-        if "text/html" in accept and (
+        if "application/json" not in accept and "text/html" in accept and (
             path in SPA_HTML_ROUTES or path.startswith(SPA_HTML_PREFIXES)
         ):
             return FileResponse(SPA_DIST_DIR / "index.html", media_type="text/html")
@@ -757,20 +757,32 @@ async def get_thread(thread_id: str, lecture_id: str = "default"):
 
         result = []
         for msg in snapshot.values.get("messages", []):
-            class_name = msg.__class__.__name__
-            # SystemMessages are internal (system prompt, context blocks, memory
-            # summaries) — never render them as conversation turns.
-            if class_name == "SystemMessage":
-                continue
-            role = "user" if class_name == "HumanMessage" else "assistant"
-            content = msg.content
+            if isinstance(msg, dict):
+                msg_type = str(msg.get("type", msg.get("role", ""))).lower()
+                if msg_type in ("system", "systemmessage", "removemessage"):
+                    continue
+                role = "user" if msg_type in ("human", "user", "humanmessage", "humanmessagechunk") else "assistant"
+                content = msg.get("content", "")
+                msg_id = msg.get("id") or str(uuid.uuid4())
+            else:
+                class_name = msg.__class__.__name__
+                if class_name in ("SystemMessage", "RemoveMessage"):
+                    continue
+                role = "user" if class_name in ("HumanMessage", "HumanMessageChunk") else "assistant"
+                content = getattr(msg, "content", "")
+                msg_id = getattr(msg, "id", None) or str(uuid.uuid4())
+
+            if isinstance(content, list):
+                content = " ".join(
+                    b.get("text", "") for b in content if isinstance(b, dict) and "text" in b
+                )
             if role == "assistant":
-                content = re.sub(r'(\*\*Sources\*\*|\n\nSources\b|Sources\s*[\:\•]|Sources\b[\s\S]*$)[\s\S]*$', '', content, flags=re.IGNORECASE).strip()
+                content = re.sub(r'(\*\*Sources\*\*|\n\nSources\b|Sources\s*[\:\•]|Sources\b[\s\S]*$)[\s\S]*$', '', str(content), flags=re.IGNORECASE).strip()
 
             result.append({
-                "id": msg.id,
+                "id": str(msg_id),
                 "role": role,
-                "content": content,
+                "content": str(content),
             })
 
         last_retrieved_chunks = snapshot.values.get("retrieved_chunks", [])
@@ -782,6 +794,7 @@ async def get_thread(thread_id: str, lecture_id: str = "default"):
             "last_retrieved_chunks": last_retrieved_chunks,
             "last_retrieved_images": last_retrieved_images,
             "verified_citations": snapshot.values.get("verified_citations", []),
+            "answer": snapshot.values.get("answer", ""),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -2072,9 +2085,18 @@ async def get_lecture_info(
 # P6.4 — Course collections (owner-scoped)
 # ---------------------------------------------------------------------------
 
-def _app_origin() -> str:
-    """Browser origin used to build share URLs (dev default = Vite server)."""
-    return os.environ.get("NORAI_APP_URL", "http://localhost:5173").rstrip("/")
+def _app_origin(request: Optional[Request] = None) -> str:
+    """Browser origin used to build share URLs (Render staging / custom domain / dev)."""
+    if app_url := os.environ.get("NORAI_APP_URL"):
+        return app_url.rstrip("/")
+    if render_url := os.environ.get("RENDER_EXTERNAL_URL"):
+        return render_url.rstrip("/")
+    if request is not None:
+        proto = request.headers.get("x-forwarded-proto", request.url.scheme)
+        host = request.headers.get("x-forwarded-host", request.headers.get("host", request.url.netloc))
+        if host:
+            return f"{proto}://{host}".rstrip("/")
+    return "http://localhost:5173"
 
 
 def _new_share_slug() -> str:
@@ -2311,22 +2333,30 @@ async def reorder_course_lectures(
 @app.post("/lectures/{lecture_id}/share")
 async def create_share_link(
     lecture_id: str,
+    request: Request,
     req: ShareLinkRequest | None = None,
-    user: User = Depends(get_current_user),
+    user: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
     clean_id = sanitize_lecture_id(lecture_id)
-    result = await db.execute(
-        select(Lecture).where(Lecture.id == clean_id, Lecture.user_id == user.id)
-    )
-    if result.scalar_one_or_none() is None:
-        raise HTTPException(status_code=404, detail="Lecture not found")
+    is_demo = clean_id in DEMO_LECTURE_IDS
 
+    if not is_demo:
+        if user is None:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        result = await db.execute(
+            select(Lecture).where(Lecture.id == clean_id, Lecture.user_id == user.id)
+        )
+        if result.scalar_one_or_none() is None:
+            raise HTTPException(status_code=404, detail="Lecture not found")
+
+    creator_id = user.id if user else "demo-user"
     allow_tutor_chat = req.allow_tutor_chat if req is not None else True
+
     existing = await db.execute(
         select(ShareLink).where(
             ShareLink.lecture_id == clean_id,
-            ShareLink.created_by == user.id,
+            ShareLink.created_by == creator_id,
         )
     )
     link = existing.scalar_one_or_none()
@@ -2334,7 +2364,7 @@ async def create_share_link(
         link = ShareLink(
             id=_new_share_slug(),
             lecture_id=clean_id,
-            created_by=user.id,
+            created_by=creator_id,
             allow_tutor_chat=allow_tutor_chat,
         )
         db.add(link)
@@ -2345,7 +2375,7 @@ async def create_share_link(
     await db.commit()
     return {
         "slug": link.id,
-        "url": f"{_app_origin()}/share/{link.id}",
+        "url": f"{_app_origin(request)}/share/{link.id}",
         "allow_tutor_chat": link.allow_tutor_chat,
     }
 
@@ -2353,27 +2383,40 @@ async def create_share_link(
 @app.get("/lectures/{lecture_id}/share")
 async def get_share_link(
     lecture_id: str,
-    user: User = Depends(get_current_user),
+    request: Request,
+    user: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return the owner's existing share link for a lecture, or 404 if none.
-
-    Lets the ShareModal show the live link on open instead of resolving a
-    random slug by lecture id (which always 404'd).
-    """
+    """Return the owner's or demo's existing share link for a lecture, or 404 if none."""
     clean_id = sanitize_lecture_id(lecture_id)
-    result = await db.execute(
-        select(ShareLink).where(
-            ShareLink.lecture_id == clean_id,
-            ShareLink.created_by == user.id,
-        )
-    )
+    is_demo = clean_id in DEMO_LECTURE_IDS
+    creator_id = user.id if user else "demo-user"
+
+    query = select(ShareLink).where(ShareLink.lecture_id == clean_id)
+    if not is_demo:
+        if user is None:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        query = query.where(ShareLink.created_by == user.id)
+
+    result = await db.execute(query)
     link = result.scalar_one_or_none()
     if link is None:
-        raise HTTPException(status_code=404, detail="No share link exists for this lecture")
+        if is_demo:
+            # Auto-provision a public share link for demo lectures on first request
+            link = ShareLink(
+                id=_new_share_slug(),
+                lecture_id=clean_id,
+                created_by=creator_id,
+                allow_tutor_chat=True,
+            )
+            db.add(link)
+            await db.commit()
+        else:
+            raise HTTPException(status_code=404, detail="No share link exists for this lecture")
+
     return {
         "slug": link.id,
-        "url": f"{_app_origin()}/share/{link.id}",
+        "url": f"{_app_origin(request)}/share/{link.id}",
         "allow_tutor_chat": link.allow_tutor_chat,
     }
 
@@ -2382,6 +2425,7 @@ async def get_share_link(
 async def update_share_link(
     lecture_id: str,
     req: ShareLinkRequest,
+    request: Request,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -2399,7 +2443,7 @@ async def update_share_link(
     await db.commit()
     return {
         "slug": link.id,
-        "url": f"{_app_origin()}/share/{link.id}",
+        "url": f"{_app_origin(request)}/share/{link.id}",
         "allow_tutor_chat": link.allow_tutor_chat,
     }
 
@@ -2448,8 +2492,19 @@ async def resolve_share_link(
     lecture = (
         await db.execute(select(Lecture).where(Lecture.id == link.lecture_id))
     ).scalar_one_or_none()
+
     if lecture is None:
+        if str(link.lecture_id) in DEMO_LECTURE_IDS:
+            meta = get_lecture(str(link.lecture_id))
+            return {
+                "lecture_id": str(link.lecture_id),
+                "title": (meta.get("title") if meta else None) or "Demo Lecture",
+                "status": "completed",
+                "source_type": "youtube",
+                "allow_tutor_chat": link.allow_tutor_chat,
+            }
         raise HTTPException(status_code=404, detail="Lecture not found")
+
     return {
         "lecture_id": lecture.id,
         "title": lecture.title,

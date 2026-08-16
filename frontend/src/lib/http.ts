@@ -66,7 +66,11 @@ export interface ApiOptions extends RequestInit {
 async function request<T>(path: string, init?: ApiOptions): Promise<T> {
   const res = await fetch(path, {
     ...init,
-    headers: { ...authHeaders(), ...init?.headers },
+    headers: {
+      Accept: 'application/json',
+      ...authHeaders(),
+      ...init?.headers,
+    },
   })
   const ct = res.headers.get('content-type') || ''
   if (!res.ok) {
