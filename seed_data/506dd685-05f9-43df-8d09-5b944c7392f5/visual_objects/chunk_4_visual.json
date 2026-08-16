@@ -1,0 +1,21 @@
+{
+    "chunk_id": 4,
+    "visual_notes": "A social media post discussing Google's strategy of focusing on smaller, cheaper, and faster models to maintain efficiency at scale, contrasting their position with other AI companies.",
+    "important_information": [
+        "Google is prioritizing smaller, cheaper, and faster models.",
+        "Efficiency is critical for Google due to the scale of Gemini in search.",
+        "Google's market position allows for a long-term strategic approach compared to competitors."
+    ],
+    "ocr_text": "google is clearly focusing on smaller, cheaper, faster models. they're also in a very different position from everyone else and don't need AI to survive as a company, so they can afford to play a much longer game. gemini is already in basically every search, so efficiency matters at huge scale.",
+    "visual_type": "slide",
+    "teaching_stage": "introduction",
+    "importance_score": 6,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_336.jpg"
+    ],
+    "start": 308.5,
+    "end": 376.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

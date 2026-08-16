@@ -1,0 +1,21 @@
+{
+    "chunk_id": 18,
+    "visual_notes": "Diagram showing the relationship between government, industry, and economic value.",
+    "important_information": [],
+    "ocr_text": "",
+    "visual_type": "slide",
+    "teaching_stage": "explanation",
+    "importance_score": 7,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1072.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1080.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1088.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1096.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1104.jpg"
+    ],
+    "start": 1060.5,
+    "end": 1112.3,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

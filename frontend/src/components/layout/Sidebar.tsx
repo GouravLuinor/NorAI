@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react'
 import { useChapterStore } from '../../stores/useChapterStore'
-import { useThreadStore, getOrCreateLabel } from '../../stores/useThreadStore'
+import { useThreadStore } from '../../stores/useThreadStore'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { PanelLeftClose, Trash2, Play } from 'lucide-react'
@@ -44,6 +44,8 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
 
   const threads             = useThreadStore(s => s.threads)
   const threadId            = useThreadStore(s => s.threadId)
+  const labels              = useThreadStore(s => s.labels)
+  const getThreadLabel      = useThreadStore(s => s.getThreadLabel)
   const setThreadId         = useThreadStore(s => s.setThreadId)
   const loadThreads         = useThreadStore(s => s.loadThreads)
   const loadThreadMessages  = useThreadStore(s => s.loadThreadMessages)
@@ -229,10 +231,10 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
                     threadId === t ? 'bg-np' : 'bg-nt4'
                   }`}
                 />
-                <span className="truncate flex-1">{getOrCreateLabel(t)}</span>
+                <span className="truncate flex-1">{labels[t] || getThreadLabel(t)}</span>
               </button>
               <IconButton
-                label={`Delete thread ${getOrCreateLabel(t)}`}
+                label={`Delete thread ${labels[t] || getThreadLabel(t)}`}
                 variant="bare"
                 onClick={() => handleDeleteThread(t)}
                 className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 p-0.5 rounded hover:bg-ns4"

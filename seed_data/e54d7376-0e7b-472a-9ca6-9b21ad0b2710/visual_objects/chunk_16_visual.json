@@ -1,0 +1,24 @@
+{
+    "chunk_id": 16,
+    "visual_notes": "Illustrations of factors influencing value: money, time, and diamonds (representing scarcity/value).",
+    "important_information": [
+        "Money",
+        "Time",
+        "Value (Diamonds)"
+    ],
+    "ocr_text": "",
+    "visual_type": "slide",
+    "teaching_stage": "explanation",
+    "importance_score": 6,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_976.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_984.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_992.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1000.jpg"
+    ],
+    "start": 957.5,
+    "end": 1012.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

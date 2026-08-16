@@ -1,0 +1,23 @@
+{
+  "chapter_id": 2,
+  "screenshots": [
+    {
+      "path": "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_600.jpg",
+      "reason": "Diagram showing the weighted sum formula and the visualization of positive (green) and negative (red) weights acting as a spatial filter on an input digit.",
+      "section": "Neural Network Weights and Activation",
+      "importance": 9
+    },
+    {
+      "path": "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_472.jpg",
+      "reason": "Visualization of hierarchical feature learning, showing how different neurons in a network layer detect specific subcomponents like lines and loops.",
+      "section": "Hierarchical Feature Learning",
+      "importance": 9
+    },
+    {
+      "path": "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_536.jpg",
+      "reason": "Diagram illustrating the concept of weights in a neural network, showing how specific pixels in the input grid are assigned parameters to influence a neuron's activation.",
+      "section": "Neural Network Weights and Activation",
+      "importance": 8
+    }
+  ]
+}

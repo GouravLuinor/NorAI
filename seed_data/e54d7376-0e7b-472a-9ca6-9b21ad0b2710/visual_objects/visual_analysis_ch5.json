@@ -1,0 +1,71 @@
+{
+  "chapter_id": 5,
+  "frames": {
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_736.jpg": {
+      "ocr_text": "",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_752.jpg": {
+      "ocr_text": "",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_768.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_776.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_792.jpg": {
+      "ocr_text": "",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_800.jpg": {
+      "ocr_text": "",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_808.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_816.jpg": {
+      "ocr_text": "",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_824.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_832.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_848.jpg": {
+      "ocr_text": "#6",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true
+    }
+  }
+}

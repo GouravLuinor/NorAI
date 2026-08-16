@@ -1,0 +1,17 @@
+{
+  "chapter_id": 3,
+  "screenshots": [
+    {
+      "path": "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_664.jpg",
+      "reason": "Diagram illustrating the sigmoid activation function applied to a weighted sum of inputs, with a thresholding example.",
+      "section": "Neuron Activation and Thresholding",
+      "importance": 9
+    },
+    {
+      "path": "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_728.jpg",
+      "reason": "Diagram showing the parameter count for a neural network layer, specifically 784x16 weights and 16 biases.",
+      "section": "Network Parameters",
+      "importance": 9
+    }
+  ]
+}

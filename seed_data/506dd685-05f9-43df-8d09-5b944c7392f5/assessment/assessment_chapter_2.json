@@ -1,0 +1,64 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Competitive Landscape and Architectural Strategies",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 2,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Post-training"
+            ],
+            "question": "What was the primary method used to achieve the performance gains seen in GLM 5.3?",
+            "options": [
+                "Full pre-training from scratch",
+                "Post-training of the GLM 5.2 architecture",
+                "Switching to a different hardware infrastructure",
+                "Reducing the parameter count of the base model"
+            ],
+            "answer": "Post-training of the GLM 5.2 architecture",
+            "explanation": "GLM 5.3 achieved its performance leaps exclusively through post-training techniques applied to the existing GLM 5.2 base.",
+            "flashcard_front": "How did GLM 5.3 achieve its significant performance improvements?",
+            "flashcard_back": "Through targeted post-training techniques applied to the existing GLM 5.2 base model.",
+            "flashcard_explanation": "Post-training allows for high-leverage performance gains without the computational expense of full retraining."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 2,
+            "type": "Short Answer",
+            "difficulty": "Easy",
+            "concepts": [
+                "Cloud-based AI deployment"
+            ],
+            "question": "Why is Google developing Gemini 4 as a cloud-based model rather than a local one?",
+            "options": [],
+            "answer": "It is designed for large-scale, high-ambition projects that require the computational power of cloud infrastructure.",
+            "explanation": "Gemini 4 is a frontier-level model intended for high-scale execution, contrasting with Google's smaller, local-friendly 'flash' models.",
+            "flashcard_front": "What is the primary deployment target for Google's Gemini 4?",
+            "flashcard_back": "Cloud infrastructure.",
+            "flashcard_explanation": "Gemini 4 is a large-scale, high-ambition model designed for cloud, not local, execution."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 2,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Terminal Bench"
+            ],
+            "question": "What does a significant increase in Terminal Bench scores indicate about an LLM?",
+            "options": [
+                "Improved creative writing abilities",
+                "Enhanced agentic and command-line capabilities",
+                "Better image generation quality",
+                "Faster pre-training speeds"
+            ],
+            "answer": "Enhanced agentic and command-line capabilities",
+            "explanation": "Terminal Bench specifically measures how well a model can perform tasks in a terminal environment, reflecting agentic skill.",
+            "flashcard_front": "What does Terminal Bench measure in an LLM?",
+            "flashcard_back": "Agentic and command-line execution capabilities.",
+            "flashcard_explanation": "Terminal Bench scores reflect a model's ability to operate effectively within a terminal environment."
+        }
+    ]
+}

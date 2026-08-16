@@ -1,0 +1,22 @@
+{
+    "chunk_id": 13,
+    "visual_notes": "A sequence showing a person interacting with resources, including a coin, a briefcase, an art palette, and a clock, illustrating the allocation of capital, labor, and time.",
+    "important_information": [
+        "Resource allocation involves balancing capital (money), labor (work), and time.",
+        "Visual representation of trade-offs in business decision-making."
+    ],
+    "ocr_text": "",
+    "visual_type": "slide",
+    "teaching_stage": "conceptual_explanation",
+    "importance_score": 7,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_792.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_800.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_816.jpg"
+    ],
+    "start": 791.5,
+    "end": 843.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

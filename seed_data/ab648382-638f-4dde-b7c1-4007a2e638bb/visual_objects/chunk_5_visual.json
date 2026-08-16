@@ -1,0 +1,18 @@
+{
+    "chunk_id": 5,
+    "visual_notes": "Mathematical representation of a neuron's activation as a weighted sum of inputs, showing how specific pixel regions contribute to a feature.",
+    "important_information": [],
+    "ocr_text": "784 What parameters should exist? p1: 0.00 p2: 0.00 p3: 0.00 p4: 0.00 p5: 0.00 p6: 0.00 p7: 0.00 p8: 0.00 w1 a1 + w2 a2 + w3 a3 + w4 a4 + ... + wn an",
+    "visual_type": "formula",
+    "teaching_stage": "explanation",
+    "importance_score": 10,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_536.jpg",
+        "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_600.jpg"
+    ],
+    "start": 505.38,
+    "end": 606.38,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

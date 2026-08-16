@@ -1,0 +1,62 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Hierarchical Feature Learning and Abstraction",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 2,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Forward Propagation",
+                "Neural Network Layers"
+            ],
+            "question": "How is the final classification determined in a neural network for digit recognition?",
+            "options": [
+                "By averaging all output neuron activations",
+                "By selecting the neuron with the highest activation",
+                "By calculating the sum of all weights",
+                "By identifying the input pixel with the highest brightness"
+            ],
+            "answer": "By selecting the neuron with the highest activation",
+            "explanation": "The network maps inputs to output neurons, and the one with the highest activation represents the model's prediction.",
+            "flashcard_front": "How is the final classification determined?",
+            "flashcard_back": "By the output neuron with the highest activation value.",
+            "flashcard_explanation": "The network assigns each output neuron to a class; the highest signal indicates the chosen category."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 2,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Weight Configuration",
+                "Neuron Activation"
+            ],
+            "question": "What is the function of negative weights in a neural network's hidden layer?",
+            "options": [],
+            "answer": "Negative weights suppress noise or signals from surrounding areas, allowing the neuron to act as a filter for specific spatial patterns.",
+            "explanation": "Negative weights effectively subtract influence from specific inputs, helping the neuron ignore irrelevant data.",
+            "flashcard_front": "What is the function of negative weights?",
+            "flashcard_back": "To suppress signals and act as a filter for specific spatial patterns.",
+            "flashcard_explanation": "Negative weights reduce the influence of noise, allowing neurons to focus on specific features."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 2,
+            "type": "Conceptual",
+            "difficulty": "Hard",
+            "concepts": [
+                "Hierarchical Abstraction",
+                "Subcomponent Decomposition"
+            ],
+            "question": "Why is hierarchical feature learning more efficient than mapping raw pixels directly to an output?",
+            "options": [],
+            "answer": "It simplifies the classification task by decomposing complex patterns into reusable subcomponents, reducing the complexity the final layer must learn.",
+            "explanation": "By learning sub-features like loops or lines first, the final layer only needs to learn how to combine these high-level components.",
+            "flashcard_front": "Why use hierarchical feature learning?",
+            "flashcard_back": "It decomposes complex patterns into simpler, reusable subcomponents, simplifying the final classification.",
+            "flashcard_explanation": "Hierarchical learning breaks down complex problems into manageable, modular sub-tasks."
+        }
+    ]
+}

@@ -1,0 +1,21 @@
+{
+    "chunk_id": 1,
+    "visual_notes": "Performance comparison table for Qwen3.8-27B against other models like Qwen3.6-27B, Qwen3.7-Plus, and Opus4.6 Max across coding and agentic benchmarks.",
+    "important_information": [
+        "Qwen3.8-27B outperforms previous versions and competitors in agentic terminal coding (73.0) and agentic coding (61.7).",
+        "Benchmarks cover coding, agentic tasks, and general reasoning."
+    ],
+    "ocr_text": "Performance of Qwen3.8-27B: Coding Agentic terminal coding 73.0 63.4 64.0 51.7 78.2 Agentic coding 61.7 53.5 57.6 51.2 53.4 Repo-level code generation 42.3 36.2 41.1 -- 47.6 Agentic coding 42.2 13.3 14.2 -- -- Software engineering 79.0 49.3 59.2 -- 63.8",
+    "visual_type": "table",
+    "teaching_stage": "analysis",
+    "importance_score": 9,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_88.jpg",
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_96.jpg"
+    ],
+    "start": 87.7,
+    "end": 145.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

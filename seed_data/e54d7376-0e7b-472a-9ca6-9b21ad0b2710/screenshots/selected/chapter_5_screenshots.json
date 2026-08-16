@@ -1,0 +1,23 @@
+{
+  "chapter_id": 5,
+  "screenshots": [
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_816.jpg",
+      "reason": "A slide highlighting point #6, focusing on the relationship between cost, price, and profit through icons.",
+      "section": "Cost, Price, and Profit",
+      "importance": 9
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_848.jpg",
+      "reason": "A visual representation of a lemonade stand, serving as a practical example of a small business model.",
+      "section": "Business Models and Value Creation",
+      "importance": 8
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_736.jpg",
+      "reason": "Icons representing various business functions and a crossed-out building, suggesting decentralized or non-corporate operations.",
+      "section": "Resource Allocation and Market Signals",
+      "importance": 7
+    }
+  ]
+}

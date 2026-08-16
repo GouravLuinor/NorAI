@@ -1,0 +1,35 @@
+{
+  "chapter_id": 4,
+  "frames": {
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_920.jpg": {
+      "ocr_text": "784 0 1 2 3 4 5 6 7 8 9 Neuron Thing that holds a number",
+      "importance_score": 9,
+      "visual_type": "architecture_diagram",
+      "include_in_notes": true
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_984.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_1024.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_1040.jpg": {
+      "ocr_text": "Sigmoid σ(x) = 1 / (1 + e^-x)",
+      "importance_score": 10,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_1104.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    }
+  }
+}

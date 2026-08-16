@@ -336,10 +336,18 @@ NorAI/
 ├── Dockerfile  +  docker-compose.yml   # single-container deploy (P5.4)
 ├── .github/workflows/ci.yml      # CI: offline tests + lint + build (P5.3)
 ├── outputs/                      # ALL generated artifacts (gitignored)
-├── PROJECT_PROGRESS.md  ROADMAP.md  COMMUNICATOR.md
-├── AGENTS.md  NOTES.md  audit/  docs/
-├── DEPLOYMENT_PLAN.md            # agreed production deployment path (Hostinger VPS)
-├── UI_UX_AUDIT_REPORT.md         # frontend audit → executed design fixes
+├── docs/                         # Project architecture, plans, and tracking docs
+│   ├── DEPLOYMENT_PLAN.md        # agreed production deployment path (Hostinger VPS)
+│   ├── RENDER_STAGING_PREP.md    # staging deployment checklist & verification
+│   ├── PROJECT_PROGRESS.md       # living technical changelog & architectural state
+│   ├── ROADMAP.md                # phased engineering-hardening roadmap
+│   ├── COMMUNICATOR.md           # agent synchronization bridge
+│   ├── TUTORIAL.md               # complete system architecture & design tutorial
+│   ├── NOTES.md                  # developer fix log & architectural decisions
+│   ├── fix.md                    # scaling & concurrency audit log
+│   ├── UI_UX_AUDIT_REPORT.md     # frontend audit & design fixes
+│   └── token_reduction.md        # prompt compression & caching benchmarks
+├── AGENTS.md                     # developer and agent operational guide
 └── requirements.txt
 ```
 
@@ -412,7 +420,7 @@ lecture and enforced *before* any Gemini spend.
 NorAI is under **active development** — the SaaS foundation (auth,
 billing, job durability), the retention feature set, and the token-reduction
 sprint are complete; a production deployment path is agreed in
-[`DEPLOYMENT_PLAN.md`](DEPLOYMENT_PLAN.md).
+[`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md).
 
 ### Implemented
 - [x] Lecture video ingestion (YouTube / Drive / upload)
@@ -437,7 +445,7 @@ sprint are complete; a production deployment path is agreed in
 - [x] **P7 token reduction** — prompt compression, context caching (dormant on
       free tier), output-token cuts (`docs/token_reduction.md`)
 - [x] **UI/UX audit execution** — 3 responsive tiers, skeletons, custom Select,
-      dark-theme fixes, course/share pages (`UI_UX_AUDIT_REPORT.md`)
+      dark-theme fixes, course/share pages (`docs/UI_UX_AUDIT_REPORT.md`)
 
 ## 🧩 Engineering Challenges
 
@@ -529,7 +537,7 @@ and deployment.
 ## 🚀 Deployment
 
 The agreed production path is documented in
-**[`DEPLOYMENT_PLAN.md`](DEPLOYMENT_PLAN.md)**. Summary of decisions:
+**[`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md)**. Summary of decisions:
 
 - **Host** — an existing **Hostinger KVM 1 VPS** (1 vCPU / 4 GB / 50 GB SSD).
 - **Packaging** — **single-container** Docker image (Option B): FastAPI serves

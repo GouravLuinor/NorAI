@@ -1,0 +1,21 @@
+{
+    "chunk_id": 3,
+    "visual_notes": "A person representing Venezuela is surrounded by oil barrels, while a person representing Switzerland is surrounded by money bags. This illustrates the difference between resource-rich economies and financial-service-based economies.",
+    "important_information": [
+        "Venezuela is associated with oil production.",
+        "Switzerland is associated with financial services/capital.",
+        "Resource wealth does not automatically equate to economic prosperity."
+    ],
+    "ocr_text": "",
+    "visual_type": "slide",
+    "teaching_stage": "introduction",
+    "importance_score": 6,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_208.jpg"
+    ],
+    "start": 192.0,
+    "end": 262.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

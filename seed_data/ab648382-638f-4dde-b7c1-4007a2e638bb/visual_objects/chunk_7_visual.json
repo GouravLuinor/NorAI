@@ -1,0 +1,21 @@
+{
+    "chunk_id": 7,
+    "visual_notes": "Overview of the network architecture showing the connection between the 784 input neurons and the next layer, highlighting the parameters involved: 784x16 weights and 16 biases.",
+    "important_information": [
+        "784 input neurons",
+        "784x16 weight matrix",
+        "16 bias terms"
+    ],
+    "ocr_text": "784x16 weights 16 biases 784",
+    "visual_type": "architecture_diagram",
+    "teaching_stage": "conceptual_explanation",
+    "importance_score": 8,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_728.jpg"
+    ],
+    "start": 697.88,
+    "end": 802.38,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

@@ -1,0 +1,41 @@
+{
+  "chapter_id": 2,
+  "frames": {
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_336.jpg": {
+      "ocr_text": "How does training work? Okay, but recognizing loops is just as hard!",
+      "importance_score": 3,
+      "visual_type": "slide",
+      "include_in_notes": true
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_384.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_408.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_472.jpg": {
+      "ocr_text": "784 Upper loop neuron...maybe... 0 1 2 3 4 5 6 7 8 9",
+      "importance_score": 9,
+      "visual_type": "architecture_diagram",
+      "include_in_notes": true
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_536.jpg": {
+      "ocr_text": "784 What parameters should exist? p1: 0.00 p2: 0.00 p3: 0.00 p4: 0.00 p5: 0.00 p6: 0.00 p7: 0.00 p8: 0.00 w1 a1 + w2 a2 + w3 a3 + w4 a4 + ... + wn an",
+      "importance_score": 10,
+      "visual_type": "formula",
+      "include_in_notes": true
+    },
+    "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_600.jpg": {
+      "ocr_text": "784 What parameters should exist? p1: 0.00 p2: 0.00 p3: 0.00 p4: 0.00 p5: 0.00 p6: 0.00 p7: 0.00 p8: 0.00 w1 a1 + w2 a2 + w3 a3 + w4 a4 + ... + wn an",
+      "importance_score": 10,
+      "visual_type": "formula",
+      "include_in_notes": true
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+    "chunk_id": 5,
+    "visual_notes": "A business owner at a desk uses information (represented by pizza ingredients, maps, and charts) to coordinate production. This demonstrates how market signals guide business decisions.",
+    "important_information": [
+        "Business owners use market data to coordinate production.",
+        "Information includes supply costs, consumer demand, and logistics.",
+        "Market coordination allows for efficient resource allocation."
+    ],
+    "ocr_text": "",
+    "visual_type": "slide",
+    "teaching_stage": "application",
+    "importance_score": 8,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_336.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_368.jpg"
+    ],
+    "start": 330.5,
+    "end": 391.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

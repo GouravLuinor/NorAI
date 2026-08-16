@@ -1,0 +1,21 @@
+{
+    "chapter_id": 5,
+    "chapter_title": "Profit, Loss, and Resource Reallocation",
+    "flashcards": [
+        {
+            "front": "Why is business failure vital for economic health?",
+            "back": "It facilitates the reallocation of resources from low-value to high-value uses.",
+            "explanation": "Failure acts as a signal to stop wasting resources on inefficient activities, allowing them to be redirected."
+        },
+        {
+            "front": "What is the primary determinant of wages?",
+            "back": "The economic value an individual creates.",
+            "explanation": "Employers are constrained by the marginal revenue product of the labor they hire."
+        },
+        {
+            "front": "Do 'too big to fail' policies improve market efficiency?",
+            "back": "False.",
+            "explanation": "They distort signals and prevent the necessary reallocation of resources from inefficient firms."
+        }
+    ]
+}

@@ -19,6 +19,7 @@ import secrets
 import uuid
 import re
 import os
+import shutil
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -53,6 +54,7 @@ from flashcards.sm2 import apply_sm2, due_in_days
 from flashcards.anki import build_package
 from config import (
     CHECKPOINT_DB_PATH,
+    DEMO_LECTURE_IDS,
     LEMONSQUEEZY_CHECKOUT_STARTER_URL, LEMONSQUEEZY_CHECKOUT_PRO_URL,
     LEMONSQUEEZY_CUSTOMER_PORTAL_URL,
 )
@@ -69,6 +71,107 @@ from backend.db.migrate import run_migrations
 from backend.routers import webhooks
 
 
+# ── Seeded Public Demo Workspaces ──────────────────────────────────────────────
+# Three high-impact educational lectures permanently accessible to all users for free.
+DEMO_LECTURES = [
+    {
+        "lecture_id": "ab648382-638f-4dde-b7c1-4007a2e638bb",
+        "title": "Foundations of Neural Networks & Deep Learning",
+        "duration_seconds": 1100,
+        "chapter_count": 4,
+        "category": "Computer Science & Deep Learning",
+        "source_type": "youtube",
+        "status": "completed",
+        "is_demo": True,
+    },
+    {
+        "lecture_id": "e54d7376-0e7b-472a-9ca6-9b21ad0b2710",
+        "title": "Foundations of Economic Thinking: Incentives and Opportunity Cost",
+        "duration_seconds": 1150,
+        "chapter_count": 6,
+        "category": "Economics & Market Theory",
+        "source_type": "youtube",
+        "status": "completed",
+        "is_demo": True,
+    },
+    {
+        "lecture_id": "506dd685-05f9-43df-8d09-5b944c7392f5",
+        "title": "The Rise of Open-Weights Models and Local Deployment",
+        "duration_seconds": 580,
+        "chapter_count": 3,
+        "category": "Modern AI Engineering",
+        "source_type": "youtube",
+        "status": "completed",
+        "is_demo": True,
+    },
+]
+
+DEMO_LECTURE_IDS = DEMO_LECTURE_IDS  # canonical set lives in config.py
+
+
+def _demo_seed_complete(dst: Path) -> bool:
+    """A demo workspace is fully seeded when its Chroma index is present.
+
+    `backend/jobs.check_disk_completed` treats the same artifact as the
+    completion signal, so a dir that exists without it (partial copy, GC
+    damage, interrupted hydration) must be treated as NOT seeded.
+    """
+    return (dst / "tutor" / "chroma" / "chroma.sqlite3").is_file()
+
+
+def sync_demo_seed_data():
+    """Ensure pre-processed demo lecture artifacts are copied from seed_data/ into outputs/.
+
+    Re-copies a demo dir when it is absent OR incomplete so a partial/broken
+    seed self-heals on the next boot (P5.4).
+    """
+    seed_dir = Path("seed_data")
+    outputs_dir = Path("outputs")
+    if not seed_dir.exists():
+        return
+    outputs_dir.mkdir(parents=True, exist_ok=True)
+    for demo in DEMO_LECTURES:
+        lid = str(demo["lecture_id"])
+        src = seed_dir / lid
+        dst = outputs_dir / lid
+        if not src.exists():
+            continue
+        if dst.exists() and _demo_seed_complete(dst):
+            continue
+        if dst.exists():
+            shutil.rmtree(dst, ignore_errors=True)
+        try:
+            shutil.copytree(str(src), str(dst))
+            logging.getLogger("norai").info(f"Seeded demo lecture {lid} from seed_data/ to outputs/")
+        except Exception as e:
+            logging.getLogger("norai").warning(f"Failed to seed demo lecture {lid}: {e}")
+
+    # Seed lectures.json if missing or merge entries
+    seed_reg = seed_dir / "lectures.json"
+    out_reg = outputs_dir / "lectures.json"
+    if seed_reg.exists():
+        try:
+            with open(seed_reg, encoding="utf-8") as f:
+                seed_data = json_lib.load(f)
+            current_data = {}
+            if out_reg.exists():
+                try:
+                    with open(out_reg, encoding="utf-8") as f:
+                        current_data = json_lib.load(f)
+                except Exception:
+                    current_data = {}
+            merged = False
+            for k, v in seed_data.items():
+                if k not in current_data:
+                    current_data[k] = v
+                    merged = True
+            if merged or not out_reg.exists():
+                with open(out_reg, "w", encoding="utf-8") as f:
+                    json_lib.dump(current_data, f, indent=2)
+        except Exception as e:
+            logging.getLogger("norai").warning(f"Failed to merge seed_data/lectures.json: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # P4.3: versioned schema (Alembic) instead of create_all. Runs in a thread
@@ -77,6 +180,12 @@ async def lifespan(app: FastAPI):
         await asyncio.to_thread(run_migrations)
     except Exception as exc:
         logging.getLogger("norai").warning("Alembic migrations skipped on startup: %s", exc)
+
+    # Seed permanent public demo lecture artifacts into outputs/ if not present
+    try:
+        await asyncio.to_thread(sync_demo_seed_data)
+    except Exception as exc:
+        logging.getLogger("norai").warning("Demo seed sync skipped on startup: %s", exc)
 
     # P4.1: boot the DB-backed pipeline queue supervisor, then one GC sweep
     # for stale uploads / orphaned lecture dirs.
@@ -93,8 +202,15 @@ async def lifespan(app: FastAPI):
     yield
 
 
+is_prod = os.environ.get("NORAI_ENV") == "production"
 
-app = FastAPI(title="NorAI Tutor API", lifespan=lifespan)
+app = FastAPI(
+    title="NorAI Tutor API",
+    lifespan=lifespan,
+    docs_url=None if is_prod else "/docs",
+    redoc_url=None if is_prod else "/redoc",
+    openapi_url=None if is_prod else "/openapi.json",
+)
 
 
 @app.middleware("http")
@@ -152,22 +268,36 @@ app.include_router(webhooks.router)
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
     logging.getLogger("norai").exception(
-        "Unhandled exception on %s %s", request.method, request.url.path
+        "unhandled_exception",
+        extra={"extra": {"path": request.url.path, "method": request.method}},
     )
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
-# BUG-2: include every port Vite or the preview server might use
+# ── CORS Configuration ────────────────────────────────────────────────────────
+cors_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:4173",   # vite preview
+    "http://127.0.0.1:4173",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
+# Allow custom production domains via comma-separated NORAI_ALLOWED_ORIGINS
+if extra_origins := os.environ.get("NORAI_ALLOWED_ORIGINS"):
+    cors_origins.extend([o.strip() for o in extra_origins.split(",") if o.strip()])
+
+# If running on Render, automatically add the external staging URL
+if render_url := os.environ.get("RENDER_EXTERNAL_URL"):
+    cors_origins.append(render_url.strip())
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:4173",   # vite preview
-        "http://127.0.0.1:4173",
-    ],
+    allow_origins=cors_origins,
+    allow_origin_regex=r"https://.*\.onrender\.com" if not is_prod else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -516,13 +646,20 @@ async def list_threads(lecture_id: str = "default"):
     """Return all thread IDs for a lecture."""
     db_path = get_lecture_db_path(lecture_id)
     if not db_path.exists():
-        return {"threads": []}
+        return {"threads": ["default"]}
 
     threads = set()
+    deleted = set()
     try:
         conn = sqlite3.connect(str(db_path), timeout=10.0)
         configure_sqlite(conn)
         try:
+            # 0) Read deleted_threads
+            if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='deleted_threads'").fetchone():
+                for row in conn.execute("SELECT thread_id FROM deleted_threads"):
+                    if row[0]:
+                        deleted.add(row[0])
+
             # 1) Auto-migrate old threads: check if a checkpoint has HumanMessage
             try:
                 conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
@@ -531,7 +668,7 @@ async def list_threads(lecture_id: str = "default"):
                 for row in rows:
                     tid = row[0]
                     chk = row[1]
-                    if isinstance(chk, bytes) and b"HumanMessage" in chk:
+                    if isinstance(chk, bytes) and b"HumanMessage" in chk and tid not in deleted:
                         conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (tid,))
                 conn.commit()
             except Exception:
@@ -540,7 +677,7 @@ async def list_threads(lecture_id: str = "default"):
             # 2) user_threads table (explicitly created or migrated user threads)
             try:
                 for row in conn.execute("SELECT thread_id FROM user_threads"):
-                    if row[0]:
+                    if row[0] and row[0] not in deleted:
                         threads.add(row[0])
             except Exception:
                 pass
@@ -548,6 +685,10 @@ async def list_threads(lecture_id: str = "default"):
             conn.close()
     except Exception:
         pass
+
+    # Ensure "default" is included if not explicitly deleted
+    if "default" not in deleted:
+        threads.add("default")
 
     return {"threads": sorted(threads)}
 
@@ -1406,7 +1547,7 @@ async def ensure_lecture_access(
     any lecture present in the local file registry or outputs/ directory is
     accessible without requiring authentication or share links.
     """
-    if lecture_id in (None, "", "default"):
+    if lecture_id in (None, "", "default") or lecture_id in DEMO_LECTURE_IDS:
         return
     if (
         os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
@@ -1809,14 +1950,32 @@ async def get_lectures(
     """List lectures.
 
     Returns the unified list of all available lectures.
-    Merges DB ownership records with on-disk lecture artifacts so no lectures are split.
+    Merges DB ownership records with on-disk lecture artifacts and seeded demo lectures.
     """
     registry_list = list_lectures()
     registry_map = {lec.get("lecture_id"): lec for lec in registry_list}
     seen_ids = set()
     out = []
 
-    # 1. Fetch from DB if authenticated
+    # 1. Always include the 3 permanent public demo workspaces
+    for demo in DEMO_LECTURES:
+        lid = str(demo["lecture_id"])
+        seen_ids.add(lid)
+        meta = registry_map.get(lid, {})
+        out.append({
+            "lecture_id": lid,
+            "title": demo["title"],
+            "status": "completed",
+            "source_type": demo.get("source_type", "youtube"),
+            "duration_seconds": demo["duration_seconds"],
+            "chapter_count": meta.get("chapter_count", demo["chapter_count"]),
+            "created_at": meta.get("created_at") or "2026-08-16T00:00:00Z",
+            "output_dir": str(Path("outputs") / lid),
+            "is_demo": True,
+            "category": demo.get("category", "Demo"),
+        })
+
+    # 2. Fetch from DB if authenticated
     if user is not None:
         try:
             result = await db.execute(
@@ -1826,24 +1985,27 @@ async def get_lectures(
             )
             rows = result.scalars().all()
             for row in rows:
-                seen_ids.add(row.id)
-                meta = registry_map.get(row.id, {})
-                out.append({
-                    "lecture_id": row.id,
-                    "title": meta.get("title") or row.title,
-                    "status": row.status,
-                    "source_type": row.source_type,
-                    "duration_seconds": row.duration_seconds,
-                    "chapter_count": meta.get("chapter_count", 0),
-                    "created_at": meta.get("created_at") or (
-                        row.created_at.isoformat() if row.created_at else None
-                    ),
-                    "output_dir": meta.get("output_dir"),
-                })
+                row_id = str(row.id)
+                if row_id not in seen_ids:
+                    seen_ids.add(row_id)
+                    meta = registry_map.get(row_id, {})
+                    out.append({
+                        "lecture_id": row_id,
+                        "title": meta.get("title") or row.title,
+                        "status": row.status,
+                        "source_type": row.source_type,
+                        "duration_seconds": row.duration_seconds,
+                        "chapter_count": meta.get("chapter_count", 0),
+                        "created_at": meta.get("created_at") or (
+                            row.created_at.isoformat() if row.created_at else None
+                        ),
+                        "output_dir": meta.get("output_dir"),
+                        "is_demo": False,
+                    })
         except Exception as exc:
             logging.getLogger("norai").warning("DB query failed in get_lectures: %s", exc)
 
-    # 2. In dev mode or when unauthenticated, merge all disk registry lectures
+    # 3. In dev mode or when unauthenticated, merge remaining disk registry lectures
     if user is None or NORAI_DEV_ACCESS:
         for lec in registry_list:
             lid = lec.get("lecture_id")
@@ -1851,8 +2013,8 @@ async def get_lectures(
                 seen_ids.add(lid)
                 out.append(lec)
 
-    # Sort newest first
-    return sorted(out, key=lambda x: str(x.get("created_at") or ""), reverse=True)
+    # Sort newest first, keeping demos accessible
+    return out
 
 
 

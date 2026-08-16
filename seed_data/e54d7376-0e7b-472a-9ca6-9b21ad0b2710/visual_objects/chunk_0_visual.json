@@ -1,0 +1,19 @@
+{
+    "chunk_id": 0,
+    "visual_notes": "A store shelf displaying various products, all priced at $0.99, illustrating a uniform pricing scenario.",
+    "important_information": [
+        "Uniform pricing of $0.99 for different items on a store shelf."
+    ],
+    "ocr_text": "$0.99",
+    "visual_type": "slide",
+    "teaching_stage": "introduction",
+    "importance_score": 5,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_32.jpg"
+    ],
+    "start": 0.0,
+    "end": 65.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

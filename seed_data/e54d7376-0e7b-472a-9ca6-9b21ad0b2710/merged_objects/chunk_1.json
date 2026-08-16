@@ -1,0 +1,56 @@
+{
+    "object_type": "merged_object",
+    "chunk_id": 1,
+    "topic": "The Impact of High-Earner Taxation on Revenue and Migration",
+    "transcript": "Done, problem solved, everyone celebrates.\n\nHere's what actually happened.\n\nYear one, they collected the tax, everything is going to plan.\n\nYear two, somebody counts the millionaires again.\n\nThere were only 6,000 left.\n\n2,000 millionaires had just vanished.\n\nThey moved somewhere else.\n\nInstead of gaining 106 million, Maryland actually lost 257 million in total tax revenue.\n\nOregon tried the same thing.\n\nRaised taxes on high earners and lost billions over time.\n\nAnd here's the lesson.\n\nAnd I really want you to get this.\n\nPeople respond to rewards, not intentions.\n\nMaryland intended to raise money, but what they actually did was reward millionaires for leaving.\n\nSo, the millionaires left, and they took their businesses, their restaurants, their companies with them.",
+    "lecture_notes": "The lecture examines the unintended consequences of increasing tax rates on high-income earners, using the case studies of Maryland and Oregon. When Maryland increased taxes on millionaires, the state experienced a significant decline in the number of millionaires residing within its borders, leading to a net loss in total tax revenue rather than the projected gain. The core argument is that tax policy often fails when it focuses on legislative intent rather than human behavior. High-net-worth individuals respond to tax incentives by relocating, which results in the loss of their economic contributions, including businesses and local investments.",
+    "visual_notes": "A series of illustrations showing a character interacting with a computer, a safe, and tax-related symbols to explain economic incentives.",
+    "key_points": [
+        "Taxing high earners can lead to capital flight and a reduction in the total tax base.",
+        "Legislative intent (raising revenue) does not guarantee the desired outcome if it ignores taxpayer behavior.",
+        "High-net-worth individuals are mobile and will relocate to jurisdictions with more favorable tax environments.",
+        "The loss of high earners results in the loss of broader economic activity, such as business operations and local investment."
+    ],
+    "concepts": [
+        "Capital Flight",
+        "Fiscal Policy",
+        "Incentive Structures",
+        "Tax Elasticity",
+        "Unintended Consequences"
+    ],
+    "important_information": [
+        "Taxing high earners can lead to capital flight and a reduction in the total tax base.",
+        "Legislative intent (raising revenue) does not guarantee the desired outcome if it ignores taxpayer behavior.",
+        "High-net-worth individuals are mobile and will relocate to jurisdictions with more favorable tax environments.",
+        "The loss of high earners results in the loss of broader economic activity, such as business operations and local investment.",
+        "Incentives influence behavior.",
+        "Tax changes (up or down) act as incentives for economic actors.",
+        "Economic decision-making involves weighing costs and benefits."
+    ],
+    "inferred_knowledge": [
+        "Tax revenue is highly sensitive to the geographic mobility of the tax base.",
+        "Increasing tax rates on a specific demographic can create a negative feedback loop where the tax base shrinks faster than the rate increases.",
+        "Economic policy effectiveness is constrained by the ability of taxpayers to alter their behavior in response to tax changes."
+    ],
+    "visual_information": [
+        "Incentives influence behavior.",
+        "Tax changes (up or down) act as incentives for economic actors.",
+        "Economic decision-making involves weighing costs and benefits."
+    ],
+    "ocr_text": "-2000, TAX, TAX",
+    "visual_type": "slide",
+    "teaching_stage": "explanation",
+    "importance_score": 8,
+    "include_in_notes": true,
+    "screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_72.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_88.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_104.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_112.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_120.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_128.jpg"
+    ],
+    "selected_screenshots": [],
+    "start": 66.5,
+    "end": 135.5
+}

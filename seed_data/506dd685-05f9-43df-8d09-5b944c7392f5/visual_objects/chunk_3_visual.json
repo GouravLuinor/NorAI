@@ -1,0 +1,20 @@
+{
+    "chunk_id": 3,
+    "visual_notes": "Comparison of 3D Atlantis flythrough generation between Claude Opus 4.6 and Qwen 3.8 27B, highlighting Qwen's superior detail and free availability.",
+    "important_information": [
+        "Qwen 3.8 27B generates more detailed scenes (temple, portal, environment) compared to Opus 4.6.",
+        "Qwen 3.8 27B is open-weights and can be run locally."
+    ],
+    "ocr_text": "ONE PROMPT - 3D ATLANTIS FLYTHROUGH, THREE.JS Claude Opus 4.6 $0.21 Qwen 3.8 27B Free",
+    "visual_type": "slide",
+    "teaching_stage": "demonstration",
+    "importance_score": 7,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_272.jpg"
+    ],
+    "start": 214.5,
+    "end": 308.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

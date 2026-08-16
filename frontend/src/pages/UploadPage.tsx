@@ -16,6 +16,8 @@ interface LectureInfo {
   title: string
   created_at: string
   chapter_count: number
+  is_demo?: boolean
+  category?: string
 }
 
 interface EstimateResult {
@@ -448,8 +450,15 @@ export function UploadPage() {
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="text-13 font-medium text-nt truncate mb-1">
-                        {lec.title || 'Untitled Lecture'}
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="text-13 font-medium text-nt truncate">
+                          {lec.title || 'Untitled Lecture'}
+                        </div>
+                        {lec.is_demo && (
+                          <span className="shrink-0 px-1.5 py-0.5 rounded bg-npb border border-npbr text-npt font-mono text-3xs font-semibold uppercase">
+                            Demo
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 text-2xs text-nt4">
                         <span className="flex items-center gap-1">

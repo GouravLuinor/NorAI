@@ -1,0 +1,17 @@
+{
+  "chapter_id": 6,
+  "screenshots": [
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1072.jpg",
+      "reason": "A visual representation of trade and resource allocation, showing cars and shirts being exchanged or reallocated.",
+      "section": "Trade and Value Creation",
+      "importance": 8
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1080.jpg",
+      "reason": "A cartoon illustration of two parties shaking hands, representing the concept of mutually beneficial trade.",
+      "section": "Trade and Value Creation",
+      "importance": 5
+    }
+  ]
+}

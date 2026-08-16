@@ -1,0 +1,23 @@
+{
+    "chunk_id": 11,
+    "visual_notes": "Visuals showing the negative consequences of taxation, including a 'no' symbol over products, a scale comparing costs, and a 'no' symbol over a building, representing unintended economic outcomes.",
+    "important_information": [
+        "Negative impact of taxation on consumer goods",
+        "Cost-benefit comparison",
+        "Unintended consequences of fiscal policy"
+    ],
+    "ocr_text": "",
+    "visual_type": "slide",
+    "teaching_stage": "conclusion",
+    "importance_score": 6,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_712.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_720.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_728.jpg"
+    ],
+    "start": 687.5,
+    "end": 730.0,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

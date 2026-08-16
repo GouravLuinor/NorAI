@@ -1,0 +1,20 @@
+{
+    "chunk_id": 0,
+    "visual_notes": "Performance comparison charts for Z.ai's GLM-5.3 model across various benchmarks including Terminal Bench 3.0, DeepSWE, and others.",
+    "important_information": [
+        "GLM-5.3 shows competitive performance against other models like GLM-5.2, Kimi K3, and GPT-5.6 Sol.",
+        "Benchmarks include Terminal Bench 3.0, DeepSWE, Agents' Last Exam, HLE w/ Tools, and GDPVal-AA v2."
+    ],
+    "ocr_text": "LLM Performance Evaluation 9 benchmarks: Terminal Bench 3.0, DeepSWE, Agents' Last Exam (CLI), AutomationBench, HLE w/ Tools, GDPVal-AA v2, CyberGym, ExploitBench, ExploitGym GLM-5.3 GLM-5.2 Kimi K3 Mythos / Fable 5 GPT-5.6 Sol",
+    "visual_type": "table",
+    "teaching_stage": "introduction",
+    "importance_score": 8,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_16.jpg"
+    ],
+    "start": 0.0,
+    "end": 87.7,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

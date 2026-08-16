@@ -38,6 +38,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import NullPool
 
 from config import (
+    DEMO_LECTURE_IDS,
     MAX_CONCURRENT_PIPELINES,
     MAX_PER_USER_PIPELINES,
     ORPHAN_DIR_GC_AGE_DAYS,
@@ -436,6 +437,9 @@ def gc_sweep():
         return
     for d in outputs.iterdir():
         if not d.is_dir() or not _UUID_RE.match(d.name):
+            continue
+        # The permanent public demo workspaces have no DB row by design — never GC them.
+        if d.name in DEMO_LECTURE_IDS:
             continue
         if d.name in known:
             continue

@@ -1,0 +1,21 @@
+{
+    "chapter_id": 4,
+    "chapter_title": "Fiscal Policy and the Unintended Consequences of Taxation",
+    "flashcards": [
+        {
+            "front": "What happens when a price ceiling is set below market equilibrium?",
+            "back": "A shortage occurs because quantity demanded exceeds quantity supplied.",
+            "explanation": "Artificially low prices discourage supply while simultaneously increasing consumer demand, leading to a market shortage."
+        },
+        {
+            "front": "What do profits and losses signal to producers?",
+            "back": "Profits signal value and growth; losses signal misallocation and the need to stop production.",
+            "explanation": "These signals ensure that resources are directed toward their most highly valued uses based on consumer demand."
+        },
+        {
+            "front": "Why do price controls often harm the poor?",
+            "back": "Wealthy individuals use social capital to bypass shortages, while the poor cannot.",
+            "explanation": "Price controls create non-market barriers that disproportionately exclude those without resources to navigate them."
+        }
+    ]
+}

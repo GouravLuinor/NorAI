@@ -1,0 +1,50 @@
+{
+    "object_type": "merged_object",
+    "chunk_id": 18,
+    "topic": "The Economic Principles of Trade and Comparative Advantage",
+    "transcript": "We're losing to China.\n\nThey're stealing our jobs.\n\nWe need to win.\n\nBut trade isn't a game with winners and losers.\n\nIf it were, why would both sides keep doing it?\n\nYear after year, century after century.\n\nTrade isn't war, it's cooperation.\n\nBoth sides win.\n\nNow, what this means for you.\n\nThink about last week, how many hours did you spend on stuff you're bad at and hate doing?\n\nEmails, spreadsheets, admin work.\n\nImagine you paid someone 50 bucks to do all that.\n\nAnd you spent those hours on the thing only you can do.\n\nThat's the trade.\n\nThis whole video comes down to one thing, trade-offs.",
+    "lecture_notes": "The lecture challenges the mercantilist perspective that international trade is a zero-sum game characterized by winners and losers. Instead, it posits that trade is a form of cooperation that yields mutual benefits for all participating parties. The core mechanism of trade is illustrated through the concept of opportunity cost and specialization: by delegating tasks in which one has a comparative disadvantage to others, an individual can reallocate their time toward high-value activities where they possess a comparative advantage. The fundamental principle governing these decisions is the concept of trade-offs.",
+    "visual_notes": "Diagram showing the relationship between government, industry, and economic value.",
+    "key_points": [
+        "International trade is a cooperative process rather than a competitive conflict.",
+        "The persistence of trade over long historical periods suggests mutual benefit for all parties involved.",
+        "Specialization allows individuals to focus on tasks where they provide the most value.",
+        "Delegating low-value or inefficient tasks to others increases overall productivity.",
+        "Trade-offs are the central decision-making framework for resource allocation."
+    ],
+    "concepts": [
+        "Comparative Advantage",
+        "Opportunity Cost",
+        "Resource Allocation",
+        "Specialization",
+        "Zero-sum game"
+    ],
+    "important_information": [
+        "International trade is a cooperative process rather than a competitive conflict.",
+        "The persistence of trade over long historical periods suggests mutual benefit for all parties involved.",
+        "Specialization allows individuals to focus on tasks where they provide the most value.",
+        "Delegating low-value or inefficient tasks to others increases overall productivity.",
+        "Trade-offs are the central decision-making framework for resource allocation."
+    ],
+    "inferred_knowledge": [
+        "Economic efficiency is maximized when individuals or nations specialize in tasks where they have a comparative advantage.",
+        "The cost of performing a task includes the value of the alternative activities one could have performed during that time.",
+        "Trade facilitates higher total output by allowing parties to focus on their most productive roles."
+    ],
+    "visual_information": [],
+    "ocr_text": "",
+    "visual_type": "slide",
+    "teaching_stage": "explanation",
+    "importance_score": 7,
+    "include_in_notes": true,
+    "screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1072.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1080.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1088.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1096.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_1104.jpg"
+    ],
+    "selected_screenshots": [],
+    "start": 1060.5,
+    "end": 1112.3
+}

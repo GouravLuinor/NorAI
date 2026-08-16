@@ -1,0 +1,50 @@
+{
+    "object_type": "merged_object",
+    "chunk_id": 1,
+    "topic": "Performance Benchmarking of 27B Parameter Agentic Models",
+    "transcript": "If we look at the performance benchmarks on things like agentic terminal coding.\n\nThe model achieves 73.\n\nAnd then the older models were achieving 63.4 versus 64 and Opus 4.6 Max is 78.2.\n\nSo yes, this model does not beat it when it comes to agentic terminal coding.\n\nBut it matches the performance similar to Opus 4.6 level.\n\nWe can see that across the benchmarks as well.\n\nWe see in agentic coding, this model actually is better than Opus 4.6.\n\nAgentic coding, the deep software engineering test, same thing, 42.2.\n\nSoftware engineering, the model which is Qwen's own software engineering bench, so take that with a grain of salt.\n\nIt achieves 79.\n\nEven across the board over here when it comes to agent capabilities.\n\nThis model is better than Opus 4.6, but is also better than the previous version.\n\nAnd this is a 27 billion parameter model.\n\nSo when you quantize that model.\n\nSo yeah, it's definitely possible to run this model locally.",
+    "lecture_notes": "The lecture evaluates the performance of a 27 billion parameter model against existing benchmarks, specifically focusing on agentic terminal coding and software engineering capabilities. The model demonstrates competitive performance, matching Opus 4.6 in terminal coding tasks and outperforming it in general agentic coding and deep software engineering benchmarks. While the model shows strong results, the speaker notes that internal benchmarks (such as Qwen's software engineering bench) should be interpreted with caution. Due to the 27B parameter size, the model is viable for local deployment through quantization.",
+    "visual_notes": "Performance comparison table for Qwen3.8-27B against other models like Qwen3.6-27B, Qwen3.7-Plus, and Opus4.6 Max across coding and agentic benchmarks.",
+    "key_points": [
+        "The 27B model achieves a score of 73 in agentic terminal coding, comparable to Opus 4.6.",
+        "The model outperforms Opus 4.6 in general agentic coding and deep software engineering tasks.",
+        "Internal benchmarks, such as Qwen's software engineering bench, may carry inherent bias.",
+        "The 27B parameter count allows for local execution via model quantization."
+    ],
+    "concepts": [
+        "Agentic terminal coding",
+        "Local model deployment",
+        "Model quantization",
+        "Parameter scaling",
+        "Software engineering benchmarks"
+    ],
+    "important_information": [
+        "The 27B model achieves a score of 73 in agentic terminal coding, comparable to Opus 4.6.",
+        "The model outperforms Opus 4.6 in general agentic coding and deep software engineering tasks.",
+        "Internal benchmarks, such as Qwen's software engineering bench, may carry inherent bias.",
+        "The 27B parameter count allows for local execution via model quantization.",
+        "Qwen3.8-27B outperforms previous versions and competitors in agentic terminal coding (73.0) and agentic coding (61.7).",
+        "Benchmarks cover coding, agentic tasks, and general reasoning."
+    ],
+    "inferred_knowledge": [
+        "Quantization is a necessary technique for running large language models on consumer-grade local hardware.",
+        "Performance parity with larger models like Opus 4.6 suggests high parameter efficiency in the 27B architecture.",
+        "Benchmark results are context-dependent and vary based on the specific domain of the task."
+    ],
+    "visual_information": [
+        "Qwen3.8-27B outperforms previous versions and competitors in agentic terminal coding (73.0) and agentic coding (61.7).",
+        "Benchmarks cover coding, agentic tasks, and general reasoning."
+    ],
+    "ocr_text": "Performance of Qwen3.8-27B: Coding Agentic terminal coding 73.0 63.4 64.0 51.7 78.2 Agentic coding 61.7 53.5 57.6 51.2 53.4 Repo-level code generation 42.3 36.2 41.1 -- 47.6 Agentic coding 42.2 13.3 14.2 -- -- Software engineering 79.0 49.3 59.2 -- 63.8",
+    "visual_type": "table",
+    "teaching_stage": "analysis",
+    "importance_score": 9,
+    "include_in_notes": true,
+    "screenshots": [
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_88.jpg",
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_96.jpg"
+    ],
+    "selected_screenshots": [],
+    "start": 87.7,
+    "end": 145.5
+}

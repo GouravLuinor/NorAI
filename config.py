@@ -107,6 +107,16 @@ def model_price(
         + (output_tokens / 1_000_000) * price.get("output_per_1M", 0.0)
     )
 
+# ── Seeded Public Demo Lectures (P5.4) ───────────────────────────────────────
+# Canonical IDs of the 3 permanently-public demo workspaces hydrated from
+# seed_data/ at startup. Shared by backend/main.py (display + access bypass) and
+# backend/jobs.py (gc_sweep must NEVER delete demo dirs — they have no DB row).
+DEMO_LECTURE_IDS = frozenset({
+    "ab648382-638f-4dde-b7c1-4007a2e638bb",
+    "e54d7376-0e7b-472a-9ca6-9b21ad0b2710",
+    "506dd685-05f9-43df-8d09-5b944c7392f5",
+})
+
 # ── Directory & Database Paths ────────────────────────────────────────────────
 OUTPUTS_DIR = Path("outputs")
 CHECKPOINT_DIR = OUTPUTS_DIR / "tutor"

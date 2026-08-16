@@ -1,0 +1,28 @@
+{
+    "chunk_id": 7,
+    "start": 468.5,
+    "end": 521.5,
+    "topic": "Economic Consequences of Price Ceilings",
+    "transcript": "But word spreads fast.\n\nNow everyone shows up, kids who usually bring lunch from home, kids from other grades, everybody.\n\nAnd everybody's grabbing extra slices, just in case.\n\n20 minutes later, the pizza is gone.\n\nThe early kids hoarded everything, the ones who came late got nothing.\n\nThis is what happens every single time you mess with prices.\n\nNow go back to New York.\n\nRent was getting expensive, people were struggling.\n\nSo politicians step in.\n\nThey make a rule.\n\nLandlords can't charge more than a certain amount, rent control.\n\nProblem solved, right?\n\nWrong.\n\nAt the lower price, suddenly everyone wants their own place.\n\nThe college student who was going to stay with his parents now gets his own apartment.",
+    "lecture_notes": "The lecture uses the analogy of a pizza distribution to illustrate the market failures caused by price controls. When a price is artificially suppressed below the market equilibrium, demand increases as more consumers enter the market, while supply remains static or is depleted rapidly. This creates a shortage where the initial supply is exhausted by early participants, leaving latecomers with no access to the good. The lecture applies this logic to rent control in New York, arguing that capping rent prices leads to an increase in demand for housing units, as individuals who would otherwise share living spaces or live with parents now seek independent housing, ultimately exacerbating the housing shortage.",
+    "key_points": [
+        "Artificially low prices lead to an increase in quantity demanded.",
+        "Price controls often result in shortages where supply is exhausted by early consumers.",
+        "Rent control policies intended to help struggling tenants can lead to unintended market distortions.",
+        "Lowering prices below market equilibrium incentivizes individuals to seek independent housing, increasing the total demand for units."
+    ],
+    "concepts": [
+        "Price Ceiling",
+        "Market Equilibrium",
+        "Shortage",
+        "Rent Control",
+        "Quantity Demanded",
+        "Market Distortion"
+    ],
+    "inferred_knowledge": [
+        "Price ceilings create a disconnect between the market price and the actual scarcity of a good.",
+        "Government intervention in pricing does not eliminate the underlying scarcity of a resource.",
+        "Rent control policies can lead to inefficient allocation of housing resources.",
+        "When prices are held below market value, the mechanism for rationing goods shifts from price-based to non-price-based, such as first-come-first-served."
+    ]
+}

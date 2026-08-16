@@ -1,0 +1,21 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "The Rise of Open-Weights Models and Local Deployment",
+    "flashcards": [
+        {
+            "front": "Base VRAM for 27B model at 4-bit?",
+            "back": "13.5 GB.",
+            "explanation": "Calculated as (27B * 4 bits) / 8 bytes/bit."
+        },
+        {
+            "front": "Does local deployment eliminate per-token costs?",
+            "back": "True.",
+            "explanation": "Local models run on your own hardware, removing cloud API fees."
+        },
+        {
+            "front": "Why is quantization necessary for local LLMs?",
+            "back": "Reduces memory footprint to fit on consumer hardware.",
+            "explanation": "Quantization compresses model weights, allowing large models to run on limited VRAM."
+        }
+    ]
+}

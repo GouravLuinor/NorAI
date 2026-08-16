@@ -1,0 +1,26 @@
+{
+    "chunk_id": 1,
+    "visual_notes": "A series of illustrations showing a character interacting with a computer, a safe, and tax-related symbols to explain economic incentives.",
+    "important_information": [
+        "Incentives influence behavior.",
+        "Tax changes (up or down) act as incentives for economic actors.",
+        "Economic decision-making involves weighing costs and benefits."
+    ],
+    "ocr_text": "-2000, TAX, TAX",
+    "visual_type": "slide",
+    "teaching_stage": "explanation",
+    "importance_score": 8,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_72.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_88.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_104.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_112.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_120.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_128.jpg"
+    ],
+    "start": 66.5,
+    "end": 135.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

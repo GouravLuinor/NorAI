@@ -1,0 +1,11 @@
+{
+  "chapter_id": 1,
+  "screenshots": [
+    {
+      "path": "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_64.jpg",
+      "reason": "This diagram illustrates the core concept of digit recognition, showing a pixel grid representation of the digit '3' being mapped to a classification output of '5' (with a question mark), highlighting the challenge of neural network classification.",
+      "section": "Foundations of Neural Network Architecture",
+      "importance": 9
+    }
+  ]
+}

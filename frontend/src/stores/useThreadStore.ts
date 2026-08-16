@@ -39,6 +39,8 @@ import {
   getLectureId,
   getPersistedThreads,
   getOrCreateLabel,
+  getLabels,
+  setThreadLabel as setThreadLabelStorage,
   persistThreads,
   removeThreadLabel,
 } from '../lib/threadStorage'
@@ -71,6 +73,7 @@ export interface Message {
 interface ThreadState {
   threadId: string
   threads: string[]
+  labels: Record<string, string>
   messages: Message[]
   isLoading: boolean
 
@@ -85,6 +88,7 @@ interface ThreadState {
   streamingText: string
   setStreamingText: (text: string) => void
   setThreads: (threads: string[]) => void
+  setThreadLabel: (id: string, label: string) => void
 
   loadThreads: () => Promise<void>
   loadThreadMessages: (threadId: string) => Promise<void>
@@ -103,6 +107,7 @@ const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}
 export const useThreadStore = create<ThreadState>((set, get) => ({
   threadId: 'default',
   threads:  ['default'],
+  labels: {},
   messages: [],
   isLoading: false,
   streamingText: '',
@@ -116,6 +121,7 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
     set({
       threadId: 'default',
       threads: ['default'],
+      labels: getLabels(),
       messages: [],
       liveReferences: [],
       streamingText: '',
@@ -169,6 +175,13 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
     set({ threads })
   },
 
+  setThreadLabel: (id, label) => {
+    setThreadLabelStorage(id, label)
+    set((s) => ({
+      labels: { ...s.labels, [id]: label },
+    }))
+  },
+
   // -------------------------------------------------------------------------
   // loadThreads — fetches the sidebar list only; never loads any messages.
   // Falls back to localStorage if the backend is unreachable.
@@ -182,23 +195,51 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
       const lectureId = getLectureId()
       const data = await apiFetch<{ threads: string[] }>(`/threads?lecture_id=${lectureId}`)
 
-      let threads: string[] = data?.threads ?? []
+      const backendThreads = data?.threads ?? []
+      const localThreads = getPersistedThreads()
 
-      if (threads.length === 0) {
-        const local = getPersistedThreads()
-        threads = local.length > 0 ? local : ['default']
+      // Merge backend threads with local threads (maintaining uniqueness, preserving default first if present)
+      const threadSet = new Set<string>()
+      const merged: string[] = []
+
+      // If 'default' exists in either backend or local, place it first
+      if (backendThreads.includes('default') || localThreads.includes('default')) {
+        threadSet.add('default')
+        merged.push('default')
       }
 
-      threads.forEach((id) => getOrCreateLabel(id))
-      persistThreads(threads)
+      for (const t of backendThreads) {
+        if (!threadSet.has(t)) {
+          threadSet.add(t)
+          merged.push(t)
+        }
+      }
+
+      for (const t of localThreads) {
+        if (!threadSet.has(t)) {
+          threadSet.add(t)
+          merged.push(t)
+        }
+      }
+
+      if (merged.length === 0) {
+        merged.push('default')
+      }
+
+      merged.forEach((id) => getOrCreateLabel(id))
+      persistThreads(merged)
 
       // Set the active thread to the most recent one if current is stale
       const current = get().threadId
-      const threadId = threads.includes(current)
+      const threadId = merged.includes(current)
         ? current
-        : threads[threads.length - 1] || 'default'
+        : merged[merged.length - 1] || 'default'
 
-      set({ threads, threadId })
+      set({
+        threads: merged,
+        threadId,
+        labels: getLabels(),
+      })
     } finally {
       _loadThreadsInFlight = false
     }
@@ -275,13 +316,19 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
   createThread: async () => {
     const threadId = `thread-${Date.now()}`
 
-    getOrCreateLabel(threadId)
+    const label = getOrCreateLabel(threadId)
     const next = [...get().threads, threadId]
     persistThreads(next)
 
     useQuizStore.getState().reset()
     // RC-A: don't call loadThreadMessages here — new thread has no messages
-    set({ threads: next, threadId, messages: [], isLoading: false })
+    set({
+      threads: next,
+      threadId,
+      messages: [],
+      isLoading: false,
+      labels: { ...get().labels, [threadId]: label },
+    })
 
     apiFetch(`/threads?lecture_id=${getLectureId()}`, {
       method: 'POST',
@@ -296,12 +343,14 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
   // deleteThread — optimistic-first
   // -------------------------------------------------------------------------
   deleteThread: async (threadId) => {
-    const { threads, threadId: currentId, _messagesCache } = get()
+    const { threads, threadId: currentId, _messagesCache, labels } = get()
     const remaining = threads.filter((t) => t !== threadId)
     const nextId = remaining.length > 0 ? remaining[remaining.length - 1] : 'default'
 
     // Remove label
     removeThreadLabel(threadId)
+    const nextLabels = { ...labels }
+    delete nextLabels[threadId]
 
     // Remove from cache
     const newCache = { ..._messagesCache }
@@ -318,17 +367,18 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
         messages: cached,
         isLoading: false,
         _messagesCache: newCache,
+        labels: nextLabels,
       })
       // Load fresh messages for the thread we're switching to
       if (nextId) get().loadThreadMessages(nextId)
     } else {
-      set({ threads: remaining, _messagesCache: newCache })
+      set({ threads: remaining, _messagesCache: newCache, labels: nextLabels })
     }
 
     apiFetch(`/threads/${threadId}?lecture_id=${getLectureId()}`, { method: 'DELETE' }).catch(() => {})
   },
 
-  getThreadLabel: (id) => getOrCreateLabel(id),
+  getThreadLabel: (id) => get().labels[id] || getOrCreateLabel(id),
 }))
 
 export type { ChatResponse }

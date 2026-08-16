@@ -298,6 +298,86 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
         </div>
       </section>
 
+      {/* Interactive Live Demo Workspaces */}
+      <section className="relative z-10 py-16 px-6 max-w-6xl mx-auto w-full">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-npb border border-npbr text-npt font-mono text-11 font-medium mb-3">
+            <Sparkles size={12} className="text-np" />
+            <span>NO SIGNUP OR PAYMENT REQUIRED</span>
+          </div>
+          <h2 className="font-serif text-3xl sm:text-4xl text-nt font-normal tracking-tight text-balance">
+            Explore 3 Live Demo Workspaces
+          </h2>
+          <p className="text-nt2 text-14 max-w-xl mx-auto mt-2 font-normal">
+            Click any workspace below to experience full study notes, interactive quizzes, flashcards, and Nora AI Tutor.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            {
+              id: 'ab648382-638f-4dde-b7c1-4007a2e638bb',
+              category: 'Computer Science & Deep Learning',
+              title: 'Foundations of Neural Networks & Deep Learning',
+              chapters: '4 Chapters',
+              duration: '18 min video',
+              badge: 'Deep Learning',
+              desc: 'Mathematical parameterization, activation functions comparison (Sigmoid vs ReLU), and matrix transformations.',
+            },
+            {
+              id: 'e54d7376-0e7b-472a-9ca6-9b21ad0b2710',
+              category: 'Economics & Market Theory',
+              title: 'Foundations of Economic Thinking: Incentives & Opportunity Cost',
+              chapters: '6 Chapters',
+              duration: '19 min video',
+              badge: 'Economics',
+              desc: 'Market coordination, supply-demand distortions under price ceilings & floors, and capital flight economics.',
+            },
+            {
+              id: '506dd685-05f9-43df-8d09-5b944c7392f5',
+              category: 'Modern AI Engineering',
+              title: 'The Rise of Open-Weights Models and Local Deployment',
+              chapters: '3 Chapters',
+              duration: '10 min video',
+              badge: 'AI Systems',
+              desc: 'Memory requirements for local LLM inference, 4-bit VRAM calculations, and dynamic quantization efficiencies.',
+            },
+          ].map((demo) => (
+            <Link
+              key={demo.id}
+              to={`/workspace/${demo.id}`}
+              className="group bg-ns hover:bg-ns2 border border-bdr hover:border-npbr rounded-lg p-6 shadow-bp transition-all duration-200 flex flex-col justify-between cursor-pointer hover:-translate-y-1"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="font-mono text-10 font-bold uppercase tracking-wider text-np bg-npb px-2 py-0.5 rounded border border-npbr">
+                    {demo.badge}
+                  </span>
+                  <span className="font-mono text-11 text-nt3">
+                    {demo.duration}
+                  </span>
+                </div>
+
+                <h3 className="font-serif text-18 text-nt font-normal group-hover:text-np transition-colors leading-snug mb-2">
+                  {demo.title}
+                </h3>
+
+                <p className="font-sans text-12 text-nt2 leading-relaxed mb-4">
+                  {demo.desc}
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-bdr flex items-center justify-between text-11 font-display uppercase tracking-wider text-nt2 font-semibold group-hover:text-np">
+                <span className="font-mono text-10 text-nt3 lowercase">{demo.chapters}</span>
+                <span className="flex items-center gap-1">
+                  Launch Demo <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* How It Works (Blueprint Stepper 01-04) */}
       <section id="how-it-works" className="relative z-10 py-20 px-6 bg-ns border-y border-bdr">
         <div className="max-w-6xl mx-auto">

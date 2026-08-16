@@ -1,0 +1,22 @@
+{
+    "chunk_id": 4,
+    "visual_notes": "A person is shown with icons for money, time, and human capital, followed by examples of car prices ($50,000 vs $20,000). This illustrates how price signals convey information about scarcity and value.",
+    "important_information": [
+        "Economic resources include money, time, and human capital.",
+        "Price signals help coordinate economic activity.",
+        "Different prices reflect different levels of value or scarcity."
+    ],
+    "ocr_text": "$50 000 $20 000",
+    "visual_type": "slide",
+    "teaching_stage": "explanation",
+    "importance_score": 7,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_272.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_280.jpg"
+    ],
+    "start": 263.0,
+    "end": 329.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

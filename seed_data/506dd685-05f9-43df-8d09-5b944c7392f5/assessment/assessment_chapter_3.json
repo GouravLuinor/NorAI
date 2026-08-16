@@ -1,0 +1,66 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "Benchmarking Performance, Latency, and Usability",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 3,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "LLM Benchmarking",
+                "Latency"
+            ],
+            "question": "Which of the following best describes the relationship between benchmark scores and user experience?",
+            "options": [
+                "Higher benchmark scores always guarantee a superior user experience.",
+                "Benchmark scores are irrelevant to real-world utility.",
+                "High benchmark scores do not necessarily correlate with superior user experience if latency is high.",
+                "Latency is only important for local-run models."
+            ],
+            "answer": "High benchmark scores do not necessarily correlate with superior user experience if latency is high.",
+            "explanation": "The lecture emphasizes that a model can perform well on benchmarks but still provide a poor user experience if it is too slow to complete tasks in a reasonable timeframe.",
+            "flashcard_front": "Do high benchmark scores guarantee superior user experience?",
+            "flashcard_back": "No, high latency can negate the benefits of high benchmark scores.",
+            "flashcard_explanation": "User experience is heavily dependent on responsiveness; a slow model is often perceived as less useful regardless of its intelligence."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 3,
+            "type": "Short Answer",
+            "difficulty": "Easy",
+            "concepts": [
+                "Memory footprint",
+                "Long-context handling"
+            ],
+            "question": "What is one major benefit of optimizing long-context conversation handling?",
+            "options": [],
+            "answer": "Significant reduction in memory growth and request volume.",
+            "explanation": "Optimizations in long-context handling lead to lower memory usage and fewer API requests, improving overall application performance.",
+            "flashcard_front": "What is a benefit of optimizing long-context handling?",
+            "flashcard_back": "Reduced memory growth and fewer API requests.",
+            "flashcard_explanation": "Optimizing context handling improves speed and reduces resource consumption, leading to a smoother user experience."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 3,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Model selection"
+            ],
+            "question": "How is GLM 5.3 positioned in the current LLM market?",
+            "options": [
+                "As a revolutionary low-cost local-run solution.",
+                "As a niche alternative to proprietary models like OpenAI and Entropic.",
+                "As the industry standard for UI/UX design tasks.",
+                "As a direct replacement for Opus 5."
+            ],
+            "answer": "As a niche alternative to proprietary models like OpenAI and Entropic.",
+            "explanation": "GLM 5.3 is described as a functional coding alternative but not a direct replacement for top-tier models or a low-cost local solution.",
+            "flashcard_front": "How is GLM 5.3 positioned in the market?",
+            "flashcard_back": "As a niche alternative to proprietary models.",
+            "flashcard_explanation": "It is not a disruptive low-cost solution, but rather a functional alternative for specific coding tasks."
+        }
+    ]
+}

@@ -1,0 +1,20 @@
+{
+    "chunk_id": 8,
+    "visual_notes": "Comparison of Gemini 3.7 Flash and GLM 5.3 performance in a simulated task, highlighting time taken for completion.",
+    "important_information": [
+        "Gemini 3.7 Flash: 10 mins",
+        "GLM 5.3: 1 hour"
+    ],
+    "ocr_text": "Gemini 3.7 Flash GLM-5.3",
+    "visual_type": "slide",
+    "teaching_stage": "analysis",
+    "importance_score": 8,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_592.jpg"
+    ],
+    "start": 584.5,
+    "end": 594.0,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

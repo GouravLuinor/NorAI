@@ -1,0 +1,23 @@
+{
+  "chapter_id": 3,
+  "screenshots": [
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_560.jpg",
+      "reason": "A conceptual diagram showing a price tag with a lock symbol equating to a trash can, symbolizing the inefficiency of price controls.",
+      "section": "Market distortion and inefficiencies",
+      "importance": 8
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_568.jpg",
+      "reason": "A diagram showing a price tag with downward arrows (price ceiling) leading to a closed store, illustrating supply depletion.",
+      "section": "Price ceilings and shortages",
+      "importance": 8
+    },
+    {
+      "path": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_544.jpg",
+      "reason": "A close-up of a building showing signs of degradation, illustrating the negative externalities of rent control.",
+      "section": "Rent control and market distortions",
+      "importance": 7
+    }
+  ]
+}

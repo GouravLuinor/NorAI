@@ -1,0 +1,21 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Price Signals and Market Coordination",
+    "flashcards": [
+        {
+            "front": "What is the 'true' cost of a purchase?",
+            "back": "The sticker price plus the value of the next best alternative foregone.",
+            "explanation": "Every expenditure involves sacrificing potential future gains from alternative investments, such as compounding interest."
+        },
+        {
+            "front": "Are price signals necessary for market coordination?",
+            "back": "Yes, they communicate scarcity and demand to coordinate independent actors.",
+            "explanation": "Prices act as a decentralized feedback loop, incentivizing production and consumption adjustments without central oversight."
+        },
+        {
+            "front": "What is spontaneous order?",
+            "back": "Organized systems emerging from decentralized individual actions without central planning.",
+            "explanation": "It explains how markets coordinate complex activities through price signals rather than government mandates."
+        }
+    ]
+}

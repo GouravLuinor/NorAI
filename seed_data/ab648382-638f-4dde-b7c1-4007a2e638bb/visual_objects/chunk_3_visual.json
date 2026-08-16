@@ -1,0 +1,17 @@
+{
+    "chunk_id": 3,
+    "visual_notes": "Introduction to the concept of training in neural networks using a character-based dialogue.",
+    "important_information": [],
+    "ocr_text": "How does training work? Okay, but recognizing loops is just as hard!",
+    "visual_type": "slide",
+    "teaching_stage": "introduction",
+    "importance_score": 3,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_336.jpg"
+    ],
+    "start": 304.38,
+    "end": 407.38,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

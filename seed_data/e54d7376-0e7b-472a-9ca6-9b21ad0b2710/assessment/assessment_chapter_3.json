@@ -1,0 +1,62 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "The Distortions of Price Controls",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 3,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Price Ceiling",
+                "Shortage"
+            ],
+            "question": "What is the primary economic effect of a price ceiling set below the market equilibrium?",
+            "options": [
+                "A surplus of goods",
+                "A shortage of goods",
+                "An increase in product quality",
+                "Market equilibrium is restored"
+            ],
+            "answer": "A shortage of goods",
+            "explanation": "A price ceiling below equilibrium increases quantity demanded while decreasing quantity supplied, creating a shortage.",
+            "flashcard_front": "What happens when a price ceiling is set below equilibrium?",
+            "flashcard_back": "It creates a market shortage.",
+            "flashcard_explanation": "Demand increases while supply decreases, preventing the market from clearing."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 3,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Rent Control",
+                "Market Distortion"
+            ],
+            "question": "Why does rent control often lead to a decline in the quality of housing?",
+            "options": [],
+            "answer": "Landlords lack the incentive or financial capital to perform maintenance when rents are capped below market rates.",
+            "explanation": "Capped revenue limits the funds available for repairs and removes the competitive pressure to maintain quality to attract tenants.",
+            "flashcard_front": "Why does rent control degrade housing quality?",
+            "flashcard_back": "Landlords lack revenue and incentives to maintain properties.",
+            "flashcard_explanation": "Capped rents prevent landlords from covering maintenance costs or competing for tenants."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 3,
+            "type": "Conceptual",
+            "difficulty": "Hard",
+            "concepts": [
+                "Price Mechanism",
+                "Resource Allocation"
+            ],
+            "question": "Explain how prices function as an 'information signal' in a market economy.",
+            "options": [],
+            "answer": "Prices communicate the relative scarcity and intensity of demand for goods, guiding producers and consumers toward efficient resource allocation.",
+            "explanation": "Prices allow decentralized actors to respond to changes in supply and demand without needing a central planner.",
+            "flashcard_front": "What is the role of prices as an information signal?",
+            "flashcard_back": "They communicate scarcity and demand to guide resource allocation.",
+            "flashcard_explanation": "Prices allow market participants to make informed decisions about production and consumption."
+        }
+    ]
+}

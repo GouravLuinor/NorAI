@@ -1,0 +1,17 @@
+{
+    "chunk_id": 2,
+    "visual_notes": "Introductory slide for neural networks featuring a brain icon and the title 'Neural network'.",
+    "important_information": [
+        "Topic: Neural network"
+    ],
+    "ocr_text": "Neural network What are the neurons?",
+    "visual_type": "slide",
+    "teaching_stage": "introduction",
+    "importance_score": 3,
+    "include_in_notes": false,
+    "source_screenshots": [],
+    "start": 208.78,
+    "end": 304.38,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

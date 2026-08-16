@@ -1,0 +1,21 @@
+{
+    "chunk_id": 6,
+    "visual_notes": "Explanation of how a single neuron in a neural network processes input using a weighted sum and a sigmoid activation function. The neuron activates when the weighted sum exceeds a threshold (e.g., 10).",
+    "important_information": [
+        "Sigmoid function: σ(w1a1 + w2a2 + ... + wnan)",
+        "Neuron activation threshold: weighted sum > 10",
+        "Input layer size: 784 neurons"
+    ],
+    "ocr_text": "Sigmoid How positive is this? σ(w1a1 + w2a2 + w3a3 + ... + wnan) 784 Only activate meaningfully when weighted sum > 10",
+    "visual_type": "architecture_diagram",
+    "teaching_stage": "conceptual_explanation",
+    "importance_score": 9,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_664.jpg"
+    ],
+    "start": 607.38,
+    "end": 697.38,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

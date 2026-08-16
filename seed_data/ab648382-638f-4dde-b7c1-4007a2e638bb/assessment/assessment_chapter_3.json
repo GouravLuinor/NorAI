@@ -1,0 +1,59 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "Mathematical Mechanisms: Weights, Biases, and Activation",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 3,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Bias"
+            ],
+            "question": "What is the primary role of the bias term in a neural network neuron?",
+            "options": [
+                "To scale the input values",
+                "To shift the activation threshold",
+                "To normalize the output to 1",
+                "To increase the number of weights"
+            ],
+            "answer": "To shift the activation threshold",
+            "explanation": "The bias acts as an additive constant that determines how easily a neuron reaches a high activation state.",
+            "flashcard_front": "What is the function of a bias term?",
+            "flashcard_back": "It acts as a thresholding mechanism to shift the neuron's activation sensitivity.",
+            "flashcard_explanation": "Bias allows the network to control the input level required for a neuron to fire."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 3,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Matrix Representation"
+            ],
+            "question": "Given a layer with 100 inputs and 50 neurons, how many parameters (weights and biases) are there?",
+            "options": [],
+            "answer": "5050",
+            "explanation": "Calculation: (100 inputs * 50 neurons) + 50 biases = 5000 + 50 = 5050.",
+            "flashcard_front": "How to calculate total parameters in a layer?",
+            "flashcard_back": "(Inputs * Neurons) + Biases.",
+            "flashcard_explanation": "Each connection needs a weight, and each neuron needs a bias."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 3,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Sigmoid Function"
+            ],
+            "question": "Why is the sigmoid function used in neural networks?",
+            "options": [],
+            "answer": "To constrain the output to a range between 0 and 1 and introduce non-linearity.",
+            "explanation": "The sigmoid function maps any input to (0, 1), which is useful for probability-like activations, and its non-linear nature allows the network to learn complex patterns.",
+            "flashcard_front": "Why use the sigmoid function?",
+            "flashcard_back": "To bound outputs between 0 and 1 and provide non-linearity.",
+            "flashcard_explanation": "Non-linearity is essential for learning complex, non-linear relationships in data."
+        }
+    ]
+}

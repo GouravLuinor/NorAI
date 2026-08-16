@@ -28,6 +28,7 @@ import time
 from pathlib import Path
 
 import chromadb
+from chromadb.config import Settings
 
 from tutor.chunker import chunk_glob
 from tutor.embedding import GeminiEmbeddingFunction
@@ -41,6 +42,19 @@ from tutor.retrieval_config import (
 from tutor.retrieval_config import CHROMA_DIR as DEFAULT_CHROMA_DIR
 
 BATCH_SIZE = 20  # chunks per embed call; keeps us under free-tier rate limits
+
+
+def get_persistent_client(path) -> chromadb.PersistentClient:
+    """Chroma client factory with telemetry disabled.
+
+    Shared by all indexers + the orchestrator + the tutor retriever so one
+    place controls client construction. anonymized_telemetry=False stops the
+    (unnecessary) anonymous product-usage POST on first contact.
+    """
+    return chromadb.PersistentClient(
+        path=str(path),
+        settings=Settings(anonymized_telemetry=False),
+    )
 
 
 def _make_chroma_id(chunk: dict, idx: int) -> str:
@@ -100,7 +114,7 @@ def build_index(reset: bool = False) -> None:
 
     # ── 2. Chroma client ───────────────────────────────────────────────────────
     CHROMA_DIR.mkdir(parents=True, exist_ok=True)
-    client = chromadb.PersistentClient(path=str(CHROMA_DIR))
+    client = get_persistent_client(CHROMA_DIR)
 
     if reset:
         try:
@@ -155,7 +169,7 @@ def build_index(reset: bool = False) -> None:
 
 def _smoke_test(query: str = "What is a binary search tree?") -> None:
     """Quick sanity check: query the just-built index and print top results."""
-    client = chromadb.PersistentClient(path=str(CHROMA_DIR))
+    client = get_persistent_client(CHROMA_DIR)
     query_ef = GeminiEmbeddingFunction(role="query")
     collection = client.get_collection(name=NOTES_COLLECTION, embedding_function=query_ef)
 

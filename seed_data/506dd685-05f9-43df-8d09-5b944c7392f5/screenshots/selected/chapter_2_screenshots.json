@@ -1,0 +1,23 @@
+{
+  "chapter_id": 2,
+  "screenshots": [
+    {
+      "path": "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_400.jpg",
+      "reason": "A detailed performance evaluation chart comparing GLM-5.3 against other models across multiple benchmarks, providing critical data on the model's capabilities.",
+      "section": "Performance Metrics and Benchmarks",
+      "importance": 10
+    },
+    {
+      "path": "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_448.jpg",
+      "reason": "A side-by-side comparison of model performance in a gaming/simulation environment, illustrating the competitive testing of GLM 5.3 against GPT 5.6.",
+      "section": "Competitive Landscape",
+      "importance": 6
+    },
+    {
+      "path": "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_336.jpg",
+      "reason": "A social media post discussing Google's strategic focus on smaller, efficient models and their long-term approach to AI development.",
+      "section": "Market Dynamics and Strategy",
+      "importance": 5
+    }
+  ]
+}

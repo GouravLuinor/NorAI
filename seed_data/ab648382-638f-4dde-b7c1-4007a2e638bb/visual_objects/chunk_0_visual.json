@@ -1,0 +1,20 @@
+{
+    "chunk_id": 0,
+    "visual_notes": "Illustration of a handwritten digit '3' represented as a 28x28 grid of pixel intensity values, mapping to a classification output layer (0-9).",
+    "important_information": [
+        "Handwritten digit representation as pixel intensity grid",
+        "Neural network classification output layer (0-9)"
+    ],
+    "ocr_text": "0 1 2 3 4 5 ? 6 7 8 9",
+    "visual_type": "architecture_diagram",
+    "teaching_stage": "introduction",
+    "importance_score": 9,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb/screenshots/keyframes/frame_64.jpg"
+    ],
+    "start": 4.45,
+    "end": 112.48,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

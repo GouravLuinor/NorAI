@@ -1,0 +1,24 @@
+{
+    "chunk_id": 9,
+    "visual_notes": "Illustration of a farmer with pumpkins, followed by a scene where the pumpkins have rotted, and a map of India with a businessman holding a money bag, representing agricultural economic context.",
+    "important_information": [
+        "Agricultural production context",
+        "Economic impact on farmers",
+        "Geographic focus: India"
+    ],
+    "ocr_text": "",
+    "visual_type": "slide",
+    "teaching_stage": "introduction",
+    "importance_score": 4,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_576.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_584.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_592.jpg",
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_608.jpg"
+    ],
+    "start": 575.0,
+    "end": 627.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

@@ -1,0 +1,44 @@
+{
+    "object_type": "merged_object",
+    "chunk_id": 8,
+    "topic": "Channel Promotion and Audience Engagement",
+    "transcript": "Follow our new newsletter as well at universeofai.beehive.com, as well subscribe to the main channel World of AI and support us on X by following the Universe of AIZ as well.",
+    "lecture_notes": "The speaker provides promotional information regarding their digital presence. This includes a newsletter hosted on the Beehiiv platform, a primary YouTube channel titled World of AI, and a social media presence on X under the handle Universe of AIZ.",
+    "visual_notes": "Comparison of Gemini 3.7 Flash and GLM 5.3 performance in a simulated task, highlighting time taken for completion.",
+    "key_points": [
+        "The speaker maintains a newsletter at universeofai.beehive.com.",
+        "The primary content channel is identified as World of AI.",
+        "The speaker requests audience support via the X platform account Universe of AIZ."
+    ],
+    "concepts": [
+        "Audience engagement",
+        "Cross-platform promotion",
+        "Digital content distribution"
+    ],
+    "important_information": [
+        "The speaker maintains a newsletter at universeofai.beehive.com.",
+        "The primary content channel is identified as World of AI.",
+        "The speaker requests audience support via the X platform account Universe of AIZ.",
+        "Gemini 3.7 Flash: 10 mins",
+        "GLM 5.3: 1 hour"
+    ],
+    "inferred_knowledge": [
+        "The speaker utilizes a multi-channel strategy to distribute content and maintain audience connection.",
+        "The speaker relies on external platforms to facilitate newsletter subscriptions and social media interaction."
+    ],
+    "visual_information": [
+        "Gemini 3.7 Flash: 10 mins",
+        "GLM 5.3: 1 hour"
+    ],
+    "ocr_text": "Gemini 3.7 Flash GLM-5.3",
+    "visual_type": "slide",
+    "teaching_stage": "analysis",
+    "importance_score": 8,
+    "include_in_notes": true,
+    "screenshots": [
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_592.jpg"
+    ],
+    "selected_screenshots": [],
+    "start": 584.5,
+    "end": 594.0
+}

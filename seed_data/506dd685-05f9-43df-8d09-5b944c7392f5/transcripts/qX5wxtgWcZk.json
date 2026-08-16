@@ -1,0 +1,865 @@
+{
+    "source": {
+        "video_id": "qX5wxtgWcZk",
+        "title": "Qwen 3.8 And GLM 5.3 Just Embarrassed The Closed Labs!",
+        "source_type": "youtube",
+        "duration": 594,
+        "source_url": "https://www.youtube.com/watch?v=qX5wxtgWcZk",
+        "uploader": "Universe of AI",
+        "video_path": "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/videos/qX5wxtgWcZk.mp4",
+        "audio_path": "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/audio/qX5wxtgWcZk.mp3"
+    },
+    "transcription": {
+        "language": "en",
+        "language_probability": 0.999
+    },
+    "segments": [
+        {
+            "segment_id": 0,
+            "start": 0.0,
+            "end": 3.8,
+            "duration": 3.8,
+            "text": "The Qwen team just dropped the open weights for Qwen 3.8, and this model achieves Opus level performance."
+        },
+        {
+            "segment_id": 1,
+            "start": 3.8,
+            "end": 8.5,
+            "duration": 4.7,
+            "text": "But you can actually run this on your laptop, not only that, Z.AI just dropped GLM 5.3."
+        },
+        {
+            "segment_id": 2,
+            "start": 8.5,
+            "end": 16.7,
+            "duration": 8.2,
+            "text": "A model that is competing with many of the frontier labs just through post training, and lastly, Codex is getting huge upgrades next week."
+        },
+        {
+            "segment_id": 3,
+            "start": 16.7,
+            "end": 23.6,
+            "duration": 6.9,
+            "text": "It's going to make the whole thing faster to use, so let's get into it."
+        },
+        {
+            "segment_id": 4,
+            "start": 24.4,
+            "end": 28.2,
+            "duration": 3.8,
+            "text": "So the Alibaba team just dropped the Qwen open weights yesterday."
+        },
+        {
+            "segment_id": 5,
+            "start": 28.2,
+            "end": 36.2,
+            "duration": 8.0,
+            "text": "And I think we got to give them some props because what they were able to accomplish with Qwen 3.8 is something that a lot of us are going to appreciate."
+        },
+        {
+            "segment_id": 6,
+            "start": 36.2,
+            "end": 41.8,
+            "duration": 5.6,
+            "text": "Because they basically created an Opus level model that we can technically run on our MacBooks."
+        },
+        {
+            "segment_id": 7,
+            "start": 41.8,
+            "end": 46.2,
+            "duration": 4.4,
+            "text": "Yes, you might need a little bit more of a decked out MacBook, but it is possible."
+        },
+        {
+            "segment_id": 8,
+            "start": 46.2,
+            "end": 51.1,
+            "duration": 4.9,
+            "text": "And if you have your own PC setup, this is a model that you can run on your own PC."
+        },
+        {
+            "segment_id": 9,
+            "start": 51.1,
+            "end": 56.6,
+            "duration": 5.5,
+            "text": "And not only that, it can also perform pretty competitively compared to all the models out there."
+        },
+        {
+            "segment_id": 10,
+            "start": 57.1,
+            "end": 60.7,
+            "duration": 3.6,
+            "text": "You're not going to get Fable 5 level performance or Mythos 5 level performance."
+        },
+        {
+            "segment_id": 11,
+            "start": 60.7,
+            "end": 68.4,
+            "duration": 7.7,
+            "text": "But if you're able to run a model locally that is getting performance similar to Opus 4.8, a lot of us will be pretty happy with that."
+        },
+        {
+            "segment_id": 12,
+            "start": 68.4,
+            "end": 73.7,
+            "duration": 5.3,
+            "text": "And if we take a look at the benchmarks and if we just take a look at what people have been creating with this model."
+        },
+        {
+            "segment_id": 13,
+            "start": 73.7,
+            "end": 80.0,
+            "duration": 6.3,
+            "text": "It it becomes clear that the open source labs have been accelerating development in 2026."
+        },
+        {
+            "segment_id": 14,
+            "start": 80.0,
+            "end": 87.7,
+            "duration": 7.7,
+            "text": "And the Qwen team particularly has accelerated their development in 2026 and have been able to achieve some remarkable results compared to last year."
+        },
+        {
+            "segment_id": 15,
+            "start": 87.7,
+            "end": 92.6,
+            "duration": 4.9,
+            "text": "If we look at the performance benchmarks on things like agentic terminal coding."
+        },
+        {
+            "segment_id": 16,
+            "start": 92.6,
+            "end": 94.3,
+            "duration": 1.7,
+            "text": "The model achieves 73."
+        },
+        {
+            "segment_id": 17,
+            "start": 94.3,
+            "end": 102.2,
+            "duration": 7.9,
+            "text": "And then the older models were achieving 63.4 versus 64 and Opus 4.6 Max is 78.2."
+        },
+        {
+            "segment_id": 18,
+            "start": 102.2,
+            "end": 106.7,
+            "duration": 4.5,
+            "text": "So yes, this model does not beat it when it comes to agentic terminal coding."
+        },
+        {
+            "segment_id": 19,
+            "start": 106.7,
+            "end": 110.4,
+            "duration": 3.7,
+            "text": "But it matches the performance similar to Opus 4.6 level."
+        },
+        {
+            "segment_id": 20,
+            "start": 110.4,
+            "end": 112.8,
+            "duration": 2.4,
+            "text": "We can see that across the benchmarks as well."
+        },
+        {
+            "segment_id": 21,
+            "start": 112.8,
+            "end": 117.8,
+            "duration": 5.0,
+            "text": "We see in agentic coding, this model actually is better than Opus 4.6."
+        },
+        {
+            "segment_id": 22,
+            "start": 117.8,
+            "end": 121.7,
+            "duration": 3.9,
+            "text": "Agentic coding, the deep software engineering test, same thing, 42.2."
+        },
+        {
+            "segment_id": 23,
+            "start": 121.7,
+            "end": 126.7,
+            "duration": 5.0,
+            "text": "Software engineering, the model which is Qwen's own software engineering bench, so take that with a grain of salt."
+        },
+        {
+            "segment_id": 24,
+            "start": 127.2,
+            "end": 128.4,
+            "duration": 1.2,
+            "text": "It achieves 79."
+        },
+        {
+            "segment_id": 25,
+            "start": 128.4,
+            "end": 132.5,
+            "duration": 4.1,
+            "text": "Even across the board over here when it comes to agent capabilities."
+        },
+        {
+            "segment_id": 26,
+            "start": 132.5,
+            "end": 138.2,
+            "duration": 5.7,
+            "text": "This model is better than Opus 4.6, but is also better than the previous version."
+        },
+        {
+            "segment_id": 27,
+            "start": 138.2,
+            "end": 140.4,
+            "duration": 2.2,
+            "text": "And this is a 27 billion parameter model."
+        },
+        {
+            "segment_id": 28,
+            "start": 140.4,
+            "end": 142.4,
+            "duration": 2.0,
+            "text": "So when you quantize that model."
+        },
+        {
+            "segment_id": 29,
+            "start": 142.4,
+            "end": 145.5,
+            "duration": 3.1,
+            "text": "So yeah, it's definitely possible to run this model locally."
+        },
+        {
+            "segment_id": 30,
+            "start": 145.5,
+            "end": 147.6,
+            "duration": 2.1,
+            "text": "For example, somebody did the math over here."
+        },
+        {
+            "segment_id": 31,
+            "start": 147.6,
+            "end": 152.5,
+            "duration": 4.9,
+            "text": "A 27 billion model with the 61.7 on software engineering bench Pro."
+        },
+        {
+            "segment_id": 32,
+            "start": 152.5,
+            "end": 158.5,
+            "duration": 6.0,
+            "text": "Which is we're kind of, you know, used to the benchmark inflations that we get with the new and newer model."
+        },
+        {
+            "segment_id": 33,
+            "start": 158.5,
+            "end": 161.5,
+            "duration": 3.0,
+            "text": "So we are like, okay, 61.7 doesn't sound that good."
+        },
+        {
+            "segment_id": 34,
+            "start": 161.5,
+            "end": 164.4,
+            "duration": 2.9,
+            "text": "But 61.7 is still a capable score."
+        },
+        {
+            "segment_id": 35,
+            "start": 164.4,
+            "end": 169.5,
+            "duration": 5.1,
+            "text": "But what's really interesting is how small this model is that you can run it on a consumer workstation."
+        },
+        {
+            "segment_id": 36,
+            "start": 169.5,
+            "end": 175.5,
+            "duration": 6.0,
+            "text": "So if you take that 27 billion parameter model, multiply by 4 bits divided by 8."
+        },
+        {
+            "segment_id": 37,
+            "start": 175.5,
+            "end": 178.5,
+            "duration": 3.0,
+            "text": "You technically need 13.5 gigs to run this."
+        },
+        {
+            "segment_id": 38,
+            "start": 178.5,
+            "end": 183.5,
+            "duration": 5.0,
+            "text": "But if you wanted to run this model comfortably, you can run the full 256 contexts."
+        },
+        {
+            "segment_id": 39,
+            "start": 183.5,
+            "end": 186.5,
+            "duration": 3.0,
+            "text": "You would probably need around 48 gigabytes of RAM."
+        },
+        {
+            "segment_id": 40,
+            "start": 186.5,
+            "end": 193.5,
+            "duration": 7.0,
+            "text": "So yeah, it's not like maybe your laptop can excel at this, but local PCs, if you have them, you can definitely run this."
+        },
+        {
+            "segment_id": 41,
+            "start": 193.5,
+            "end": 195.5,
+            "duration": 2.0,
+            "text": "Yes, your cost might be a little bit more."
+        },
+        {
+            "segment_id": 42,
+            "start": 195.5,
+            "end": 201.5,
+            "duration": 6.0,
+            "text": "But just imagine, you're getting Opus level models that you can run locally, which I think is a big win for a lot of us."
+        },
+        {
+            "segment_id": 43,
+            "start": 201.5,
+            "end": 209.5,
+            "duration": 8.0,
+            "text": "And some other people are looking at other configurations, and according to this poster, you can actually fit this inside a 16 gig MacBook Air."
+        },
+        {
+            "segment_id": 44,
+            "start": 209.5,
+            "end": 214.5,
+            "duration": 5.0,
+            "text": "Now, that's the MacBook Air, which is obviously not the best model lineup from Apple."
+        },
+        {
+            "segment_id": 45,
+            "start": 214.5,
+            "end": 223.5,
+            "duration": 9.0,
+            "text": "If you have a MacBook Pro and if you deck out all the features, maybe your MacBook build could go up to $5,000, but you will be able to comfortably run this model as well."
+        },
+        {
+            "segment_id": 46,
+            "start": 223.5,
+            "end": 225.5,
+            "duration": 2.0,
+            "text": "And one thing I want to say is that this is just the beginning."
+        },
+        {
+            "segment_id": 47,
+            "start": 225.5,
+            "end": 229.5,
+            "duration": 4.0,
+            "text": "What we're seeing is that we're getting more and more capable models."
+        },
+        {
+            "segment_id": 48,
+            "start": 229.5,
+            "end": 236.5,
+            "duration": 7.0,
+            "text": "But the Qwen team specifically is specialized in this area where they're kind of producing local models that people can actually run on their laptops."
+        },
+        {
+            "segment_id": 49,
+            "start": 236.5,
+            "end": 243.5,
+            "duration": 7.0,
+            "text": "Originally, I would say like the Z.AI team or the Moonshot team was kind of focused on the same goal."
+        },
+        {
+            "segment_id": 50,
+            "start": 243.5,
+            "end": 252.5,
+            "duration": 9.0,
+            "text": "But it looks like the only labs I see from China at the moment working on creating capable local models are the Qwen team as well the DeepSeek team."
+        },
+        {
+            "segment_id": 51,
+            "start": 252.5,
+            "end": 258.5,
+            "duration": 6.0,
+            "text": "Those two labs are particularly the ones I'm interested in tracking to see if they're able to continue this progress."
+        },
+        {
+            "segment_id": 52,
+            "start": 258.5,
+            "end": 262.5,
+            "duration": 4.0,
+            "text": "And then just to show you guys an example, somebody put this again, Opus 4.6."
+        },
+        {
+            "segment_id": 53,
+            "start": 262.5,
+            "end": 267.5,
+            "duration": 5.0,
+            "text": "And what we're seeing over here, which was to create a three Atlantis fly through using 3.js."
+        },
+        {
+            "segment_id": 54,
+            "start": 267.5,
+            "end": 273.5,
+            "duration": 6.0,
+            "text": "The Qwen 3.8 27 billion model is technically free because he's running it on his own local, you know, device and everything."
+        },
+        {
+            "segment_id": 55,
+            "start": 273.5,
+            "end": 278.5,
+            "duration": 5.0,
+            "text": "And then we have Cloud Opus 4.6, which cost about 21 cents."
+        },
+        {
+            "segment_id": 56,
+            "start": 278.5,
+            "end": 286.5,
+            "duration": 8.0,
+            "text": "In their results, it looks like the Qwen 3.8 model beat Opus 4.6 basically and it's free, as I mentioned."
+        },
+        {
+            "segment_id": 57,
+            "start": 286.5,
+            "end": 290.5,
+            "duration": 4.0,
+            "text": "So yeah, that's the benefit of running these models locally."
+        },
+        {
+            "segment_id": 58,
+            "start": 290.5,
+            "end": 297.5,
+            "duration": 7.0,
+            "text": "And I think this success is kind of noticed worldwide because Alibaba's open weight models have had more than 3 billion global downloads."
+        },
+        {
+            "segment_id": 59,
+            "start": 297.5,
+            "end": 308.5,
+            "duration": 11.0,
+            "text": "In the past six months, this passes Meta, Alphabet and domestic peers, meaning other Chinese lab to become the world's number one artificial intelligence model when it comes to local models, obviously."
+        },
+        {
+            "segment_id": 60,
+            "start": 308.5,
+            "end": 312.5,
+            "duration": 4.0,
+            "text": "So this tells you the Qwen team is on a roll because they just overtook Meta."
+        },
+        {
+            "segment_id": 61,
+            "start": 312.5,
+            "end": 316.5,
+            "duration": 4.0,
+            "text": "Same thing with Google, which is a way bigger company than the Alibaba team."
+        },
+        {
+            "segment_id": 62,
+            "start": 316.5,
+            "end": 321.5,
+            "duration": 5.0,
+            "text": "And and this shows you that Meta and Google are probably going to feel the pressure."
+        },
+        {
+            "segment_id": 63,
+            "start": 321.5,
+            "end": 326.5,
+            "duration": 5.0,
+            "text": "And that is why we're seeing Meta kind of produce Muse Spark, accelerate their AI development."
+        },
+        {
+            "segment_id": 64,
+            "start": 326.5,
+            "end": 328.5,
+            "duration": 2.0,
+            "text": "Google, I don't know what's happening."
+        },
+        {
+            "segment_id": 65,
+            "start": 328.5,
+            "end": 332.5,
+            "duration": 4.0,
+            "text": "But we just got an update recently from another post from a Google team member."
+        },
+        {
+            "segment_id": 66,
+            "start": 332.5,
+            "end": 337.5,
+            "duration": 5.0,
+            "text": "What they're saying is that somebody said that Google is basically focusing on smaller, cheaper, faster models."
+        },
+        {
+            "segment_id": 67,
+            "start": 337.5,
+            "end": 343.5,
+            "duration": 6.0,
+            "text": "But their Logan Kill Patrick, who works at Google, just mentioned that Gemini 4 is our most ambitious pre-training yet."
+        },
+        {
+            "segment_id": 68,
+            "start": 343.5,
+            "end": 346.5,
+            "duration": 3.0,
+            "text": "And this is not going to be a model you can run locally, obviously."
+        },
+        {
+            "segment_id": 69,
+            "start": 346.5,
+            "end": 349.5,
+            "duration": 3.0,
+            "text": "This is more like the typical LLMs that we're used to."
+        },
+        {
+            "segment_id": 70,
+            "start": 349.5,
+            "end": 356.5,
+            "duration": 7.0,
+            "text": "So yeah, it looks like even Google is, even though they have been dropping flash models recently, I think it's just a short-term thing."
+        },
+        {
+            "segment_id": 71,
+            "start": 356.5,
+            "end": 359.5,
+            "duration": 3.0,
+            "text": "They're still focused on creating larger models."
+        },
+        {
+            "segment_id": 72,
+            "start": 359.5,
+            "end": 365.5,
+            "duration": 6.0,
+            "text": "So the only labs I see kind of focused on this is Qwen and, you know, DeepSeek."
+        },
+        {
+            "segment_id": 73,
+            "start": 365.5,
+            "end": 371.5,
+            "duration": 6.0,
+            "text": "Google does have the Gemma lineup, we might see an update coming from that soon, but at least at the moment, they're focused on Gemini 4."
+        },
+        {
+            "segment_id": 74,
+            "start": 372.5,
+            "end": 376.5,
+            "duration": 4.0,
+            "text": "And yesterday, the Z.AI team also dropped GLM 5.3."
+        },
+        {
+            "segment_id": 75,
+            "start": 376.5,
+            "end": 381.5,
+            "duration": 5.0,
+            "text": "Which is now their top tier coding and agentic model, and all of this was achieved through post training."
+        },
+        {
+            "segment_id": 76,
+            "start": 381.5,
+            "end": 385.5,
+            "duration": 4.0,
+            "text": "This is not a new model or there was not like a new base for this model."
+        },
+        {
+            "segment_id": 77,
+            "start": 385.5,
+            "end": 391.5,
+            "duration": 6.0,
+            "text": "They took GLM 5.2, did some post training on it and basically made the model much better."
+        },
+        {
+            "segment_id": 78,
+            "start": 391.5,
+            "end": 396.5,
+            "duration": 5.0,
+            "text": "Which tells you something about how important the post training process is."
+        },
+        {
+            "segment_id": 79,
+            "start": 396.5,
+            "end": 400.5,
+            "duration": 4.0,
+            "text": "Because if we look at the benchmarks, one area that this model got really strong in is cybersecurity."
+        },
+        {
+            "segment_id": 80,
+            "start": 400.5,
+            "end": 403.5,
+            "duration": 3.0,
+            "text": "This model is 84.5, which is better than."
+        },
+        {
+            "segment_id": 81,
+            "start": 403.5,
+            "end": 410.5,
+            "duration": 7.0,
+            "text": "Which is better than Kimi K3, Mythos/Fable 5 level model and GPT 5.6 so."
+        },
+        {
+            "segment_id": 82,
+            "start": 410.5,
+            "end": 417.5,
+            "duration": 7.0,
+            "text": "Which is an interesting area that this model excels in, but it looks like they're really focused on cybersecurity, making this model stronger in that area."
+        },
+        {
+            "segment_id": 83,
+            "start": 417.5,
+            "end": 421.5,
+            "duration": 4.0,
+            "text": "But across the benchmarks, we can see that it's competing with the frontier labs."
+        },
+        {
+            "segment_id": 84,
+            "start": 421.5,
+            "end": 424.5,
+            "duration": 3.0,
+            "text": "We see on terminal bench, it achieves 28.3."
+        },
+        {
+            "segment_id": 85,
+            "start": 424.5,
+            "end": 429.5,
+            "duration": 5.0,
+            "text": "But what's really important, their last model GLM 5.2 was 4.6."
+        },
+        {
+            "segment_id": 86,
+            "start": 429.5,
+            "end": 436.5,
+            "duration": 7.0,
+            "text": "So only through post training they made a big jump and that is better than Kimi K3, close to obviously Fable 5 and GPT 5.6 so."
+        },
+        {
+            "segment_id": 87,
+            "start": 436.5,
+            "end": 446.5,
+            "duration": 10.0,
+            "text": "But in short, I think the biggest lesson we can take away from GLM 5.3 is that post training is very important and you can do a lot if you train your models properly."
+        },
+        {
+            "segment_id": 88,
+            "start": 446.5,
+            "end": 451.5,
+            "duration": 5.0,
+            "text": "So now you're looking at a couple of examples of outputs from GLM 5.3 versus the frontier labs."
+        },
+        {
+            "segment_id": 89,
+            "start": 451.5,
+            "end": 454.5,
+            "duration": 3.0,
+            "text": "There are some areas where this model excels at."
+        },
+        {
+            "segment_id": 90,
+            "start": 454.5,
+            "end": 457.5,
+            "duration": 3.0,
+            "text": "There are some areas where this model kind of sucks at when it comes to UI."
+        },
+        {
+            "segment_id": 91,
+            "start": 457.5,
+            "end": 463.5,
+            "duration": 6.0,
+            "text": "I think this model is okay, but other models especially have an advantage on that."
+        },
+        {
+            "segment_id": 92,
+            "start": 463.5,
+            "end": 470.5,
+            "duration": 7.0,
+            "text": "Especially the Entropic model lineups, I think they're way better at UI or design capabilities versus GLM 5.3."
+        },
+        {
+            "segment_id": 93,
+            "start": 470.5,
+            "end": 475.5,
+            "duration": 5.0,
+            "text": "But if we just compare for like, you know, being able to code something that works."
+        },
+        {
+            "segment_id": 94,
+            "start": 475.5,
+            "end": 477.5,
+            "duration": 2.0,
+            "text": "Yes, this model can get the job done."
+        },
+        {
+            "segment_id": 95,
+            "start": 477.5,
+            "end": 482.5,
+            "duration": 5.0,
+            "text": "But I don't think it's at a point yet where it's going to be a direct replacement for Opus 5."
+        },
+        {
+            "segment_id": 96,
+            "start": 482.5,
+            "end": 487.5,
+            "duration": 5.0,
+            "text": "Yes, this model is a little bit cheaper than the Opus 5 lineup and everything like that."
+        },
+        {
+            "segment_id": 97,
+            "start": 487.5,
+            "end": 494.5,
+            "duration": 7.0,
+            "text": "But it's not something like Qwen 3.8 where, you know, it's revolutionary on pricing or it's local that you can run it easily on your laptops."
+        },
+        {
+            "segment_id": 98,
+            "start": 494.5,
+            "end": 496.5,
+            "duration": 2.0,
+            "text": "That's not the case with this model."
+        },
+        {
+            "segment_id": 99,
+            "start": 496.5,
+            "end": 501.5,
+            "duration": 5.0,
+            "text": "It's merely focused on giving developers another alternative to OpenAI and Entropic."
+        },
+        {
+            "segment_id": 100,
+            "start": 502.5,
+            "end": 506.5,
+            "duration": 4.0,
+            "text": "Andrew Amersino, who works at OpenAI, just confirmed that."
+        },
+        {
+            "segment_id": 101,
+            "start": 506.5,
+            "end": 510.5,
+            "duration": 4.0,
+            "text": "Chat GPT and Codex are getting way better at handling extremely long conversations."
+        },
+        {
+            "segment_id": 102,
+            "start": 510.5,
+            "end": 512.5,
+            "duration": 2.0,
+            "text": "Based off of the results that they have seen internally."
+        },
+        {
+            "segment_id": 103,
+            "start": 512.5,
+            "end": 516.5,
+            "duration": 4.0,
+            "text": "This is going to make the whole experience 94% faster."
+        },
+        {
+            "segment_id": 104,
+            "start": 516.5,
+            "end": 520.5,
+            "duration": 4.0,
+            "text": "You have 87.8% less conversation render."
+        },
+        {
+            "segment_id": 105,
+            "start": 520.5,
+            "end": 523.5,
+            "duration": 3.0,
+            "text": "41.2% less whole app memory growth."
+        },
+        {
+            "segment_id": 106,
+            "start": 523.5,
+            "end": 529.5,
+            "duration": 6.0,
+            "text": "98.2% fewer requests and 99.6% fewer transcript items loaded."
+        },
+        {
+            "segment_id": 107,
+            "start": 529.5,
+            "end": 536.5,
+            "duration": 7.0,
+            "text": "In short, this makes the whole experience much faster as well less heavy on your local devices."
+        },
+        {
+            "segment_id": 108,
+            "start": 536.5,
+            "end": 540.5,
+            "duration": 4.0,
+            "text": "So I think this is a good usability update because you can have the strongest model."
+        },
+        {
+            "segment_id": 109,
+            "start": 540.5,
+            "end": 545.5,
+            "duration": 5.0,
+            "text": "But if they're slow, which we have actually noticed with the GLM 5.3 model lineup."
+        },
+        {
+            "segment_id": 110,
+            "start": 545.5,
+            "end": 552.5,
+            "duration": 7.0,
+            "text": "Someone tried creating something with Gemini, the 3.7 flash model versus GLM 5.3 on the same prompt."
+        },
+        {
+            "segment_id": 111,
+            "start": 552.5,
+            "end": 556.5,
+            "duration": 4.0,
+            "text": "Gemini took 10 minutes, GLM took one hour."
+        },
+        {
+            "segment_id": 112,
+            "start": 556.5,
+            "end": 559.5,
+            "duration": 3.0,
+            "text": "And the results, if you were to just look at it through the naked eye."
+        },
+        {
+            "segment_id": 113,
+            "start": 559.5,
+            "end": 561.5,
+            "duration": 2.0,
+            "text": "They're kind of similar."
+        },
+        {
+            "segment_id": 114,
+            "start": 561.5,
+            "end": 567.5,
+            "duration": 6.0,
+            "text": "Obviously the 3.7 flash one in my opinion produce a better result compared to the GLM 5.3."
+        },
+        {
+            "segment_id": 115,
+            "start": 567.5,
+            "end": 569.5,
+            "duration": 2.0,
+            "text": "But that's just my opinion."
+        },
+        {
+            "segment_id": 116,
+            "start": 569.5,
+            "end": 576.5,
+            "duration": 7.0,
+            "text": "But yeah, sometimes I think having a model just because it's really good at benchmarks doesn't mean much if it's slower."
+        },
+        {
+            "segment_id": 117,
+            "start": 576.5,
+            "end": 579.5,
+            "duration": 3.0,
+            "text": "Which people are noticing with GLM 5.3."
+        },
+        {
+            "segment_id": 118,
+            "start": 579.5,
+            "end": 581.5,
+            "duration": 2.0,
+            "text": "But that's it for today's video."
+        },
+        {
+            "segment_id": 119,
+            "start": 581.5,
+            "end": 584.5,
+            "duration": 3.0,
+            "text": "Make sure you guys are subscribed to the channel."
+        },
+        {
+            "segment_id": 120,
+            "start": 584.5,
+            "end": 594.0,
+            "duration": 9.5,
+            "text": "Follow our new newsletter as well at universeofai.beehive.com, as well subscribe to the main channel World of AI and support us on X by following the Universe of AIZ as well."
+        }
+    ]
+}

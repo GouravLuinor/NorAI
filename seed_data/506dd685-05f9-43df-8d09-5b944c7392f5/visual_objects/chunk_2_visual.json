@@ -1,0 +1,20 @@
+{
+    "chunk_id": 2,
+    "visual_notes": "Chart showing Mean KL divergence vs BF16 for different quantization levels of Qwen3.8-27B, demonstrating the efficiency of Dynamic Quants.",
+    "important_information": [
+        "Dynamic Quants allow Qwen3.8-27B to be compressed from 8-bit (28.9GB) to 1-bit (8.5GB).",
+        "The model maintains high performance (92.4% next token match) despite significant compression."
+    ],
+    "ocr_text": "Atomic has released Dynamic Quants for Qwen3.8-27B-GGUF, a quantized version of Qwen3.8 27B, compressed from 8-bit (28.9GB) to 1-bit (8.5GB). Qwen 3.8 27B held-out 2x RTX 5090 CUDA 13.0",
+    "visual_type": "chart",
+    "teaching_stage": "technical_explanation",
+    "importance_score": 9,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_152.jpg"
+    ],
+    "start": 145.5,
+    "end": 214.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

@@ -16,7 +16,7 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
 
 # Import app Base + all models so autogenerate sees the full metadata.
-from backend.db.database import Base, DATABASE_URL
+from backend.db.database import Base, DATABASE_URL, get_engine_kwargs
 import backend.db.models  # noqa: F401  (registers tables on Base.metadata)
 
 config = context.config
@@ -61,7 +61,11 @@ async def run_async_migrations() -> None:
     # Build the engine directly from the app URL instead of
     # async_engine_from_config: ConfigParser %-interpolation would choke on the
     # URL-encoded characters in real DATABASE_URL passwords (e.g. Supabase).
-    connectable = create_async_engine(get_url(), poolclass=pool.NullPool)
+    # Reuse the app's engine kwargs so the Transaction Pooler (port 6543) gets
+    # statement_cache_size=0 here too.
+    connectable = create_async_engine(
+        get_url(), poolclass=pool.NullPool, **get_engine_kwargs(get_url())
+    )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
     await connectable.dispose()

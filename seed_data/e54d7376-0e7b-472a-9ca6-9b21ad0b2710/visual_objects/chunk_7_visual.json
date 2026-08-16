@@ -1,0 +1,20 @@
+{
+    "chunk_id": 7,
+    "visual_notes": "The video transitions to a discussion on price ceilings, using an apple stand with a $5 price tag as an example. It then shows a city skyline and a person in poverty to illustrate the social impact of such policies.",
+    "important_information": [
+        "Price ceilings often lead to shortages.",
+        "Price controls can result in the loss of goods or services."
+    ],
+    "ocr_text": "$5 #4",
+    "visual_type": "slide",
+    "teaching_stage": "explanation",
+    "importance_score": 8,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710/screenshots/keyframes/frame_496.jpg"
+    ],
+    "start": 468.5,
+    "end": 521.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

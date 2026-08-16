@@ -1,0 +1,21 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "Mathematical Mechanisms: Weights, Biases, and Activation",
+    "flashcards": [
+        {
+            "front": "What is the function of a bias term?",
+            "back": "It acts as a thresholding mechanism to shift the neuron's activation sensitivity.",
+            "explanation": "Bias allows the network to control the input level required for a neuron to fire."
+        },
+        {
+            "front": "How to calculate total parameters in a layer?",
+            "back": "(Inputs * Neurons) + Biases.",
+            "explanation": "Each connection needs a weight, and each neuron needs a bias."
+        },
+        {
+            "front": "Why use the sigmoid function?",
+            "back": "To bound outputs between 0 and 1 and provide non-linearity.",
+            "explanation": "Non-linearity is essential for learning complex, non-linear relationships in data."
+        }
+    ]
+}

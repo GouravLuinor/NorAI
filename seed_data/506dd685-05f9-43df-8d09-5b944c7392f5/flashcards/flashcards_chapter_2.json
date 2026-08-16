@@ -1,0 +1,21 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Competitive Landscape and Architectural Strategies",
+    "flashcards": [
+        {
+            "front": "How did GLM 5.3 achieve its significant performance improvements?",
+            "back": "Through targeted post-training techniques applied to the existing GLM 5.2 base model.",
+            "explanation": "Post-training allows for high-leverage performance gains without the computational expense of full retraining."
+        },
+        {
+            "front": "What is the primary deployment target for Google's Gemini 4?",
+            "back": "Cloud infrastructure.",
+            "explanation": "Gemini 4 is a large-scale, high-ambition model designed for cloud, not local, execution."
+        },
+        {
+            "front": "What does Terminal Bench measure in an LLM?",
+            "back": "Agentic and command-line execution capabilities.",
+            "explanation": "Terminal Bench scores reflect a model's ability to operate effectively within a terminal environment."
+        }
+    ]
+}

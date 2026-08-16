@@ -1,0 +1,28 @@
+{
+    "chunk_id": 9,
+    "start": 575.0,
+    "end": 627.5,
+    "topic": "Economic Consequences of Price Controls",
+    "transcript": "Because selling at the controlled price meant losing money, so they didn't sell.\n\nPeople starved while crops rotted on farms.\n\nThis is what happens when you set prices too low.\n\nNow let me show you what happens when you set the prices too high.\n\nIndia, early 2000s.\n\nThe government wanted to help farmers.\n\nSo they guaranteed a high price for wheat.\n\nNo matter what happens, farmers get paid well.\n\nSounds great, right?\n\nWrong again.\n\nIf the government guarantees a high price, farmers grow more wheat to make a profit.\n\nSo that is what they did.\n\nThey produced way more wheat than anyone could need.\n\nAnd the government had to buy it all.\n\n11 million tons of wheat piled up in warehouses.",
+    "lecture_notes": "The lecture examines the market distortions caused by government-imposed price controls. When prices are set below market equilibrium (price ceilings), suppliers are disincentivized to sell, leading to shortages and waste. Conversely, when prices are set above market equilibrium (price floors), such as government-guaranteed prices for agricultural products, it creates a surplus. In the case of India's wheat policy, the guaranteed high price incentivized overproduction, resulting in an excess supply that exceeded consumer demand and necessitated government intervention to purchase and store the surplus.",
+    "key_points": [
+        "Price ceilings below market equilibrium lead to supply shortages and resource waste.",
+        "Price floors above market equilibrium incentivize overproduction.",
+        "Government-guaranteed prices can lead to massive inventory surpluses that require state management.",
+        "Market distortions occur when artificial price controls override natural supply and demand dynamics."
+    ],
+    "concepts": [
+        "Price Ceiling",
+        "Price Floor",
+        "Market Equilibrium",
+        "Supply and Demand",
+        "Surplus",
+        "Shortage",
+        "Government Intervention"
+    ],
+    "inferred_knowledge": [
+        "Artificial price setting prevents the market from clearing efficiently.",
+        "Guaranteed pricing models can create fiscal burdens for governments due to the requirement to purchase excess inventory.",
+        "Price controls create misaligned incentives for producers that do not reflect actual consumer needs."
+    ]
+}

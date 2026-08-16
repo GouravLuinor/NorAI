@@ -1,0 +1,65 @@
+{
+  "chapter_id": 1,
+  "frames": {
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_0.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_16.jpg": {
+      "ocr_text": "LLM Performance Evaluation 9 benchmarks: Terminal Bench 3.0, DeepSWE, Agents' Last Exam (CLI), AutomationBench, HLE w/ Tools, GDPVal-AA v2, CyberGym, ExploitBench, ExploitGym GLM-5.3 GLM-5.2 Kimi K3 Mythos / Fable 5 GPT-5.6 Sol",
+      "importance_score": 8,
+      "visual_type": "table",
+      "include_in_notes": true
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_24.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_32.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_88.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_96.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_152.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_216.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_264.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false
+    },
+    "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_272.jpg": {
+      "ocr_text": "ONE PROMPT - 3D ATLANTIS FLYTHROUGH, THREE.JS Claude Opus 4.6 $0.21 Qwen 3.8 27B Free",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true
+    }
+  }
+}

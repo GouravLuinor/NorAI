@@ -1,0 +1,22 @@
+{
+    "chunk_id": 5,
+    "visual_notes": "Performance evaluation charts comparing GLM-5.3 against other models (GLM-5.2, Kimi K3, Mythos/Fable 5, GPT-5.6 Sol) across 9 benchmarks including coding, agentic capabilities, and cybersecurity.",
+    "important_information": [
+        "GLM-5.3 is designed for coding and cyber defense.",
+        "Performance metrics show GLM-5.3 leading in several benchmarks like Terminal Bench 3.0, DeepSWE, and HLE w/ Tools.",
+        "The model uses a 743B base model architecture."
+    ],
+    "ocr_text": "Introducing GLM-5.3: Built to Code. Ready for Cyber Defense. LLM Performance Evaluation. 9 benchmarks: Terminal Bench 3.0, DeepSWE, Agents' Last Exam (CLI), AutomationBench, HLE w/ Tools, GDPVal-AA v2, CyberGym, ExploitBench, ExploitGym",
+    "visual_type": "table",
+    "teaching_stage": "analysis",
+    "importance_score": 10,
+    "include_in_notes": true,
+    "source_screenshots": [
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_400.jpg",
+        "outputs/506dd685-05f9-43df-8d09-5b944c7392f5/screenshots/keyframes/frame_448.jpg"
+    ],
+    "start": 376.5,
+    "end": 454.5,
+    "object_type": "visual_object",
+    "generated_by": "gemini-3.1-flash-lite"
+}

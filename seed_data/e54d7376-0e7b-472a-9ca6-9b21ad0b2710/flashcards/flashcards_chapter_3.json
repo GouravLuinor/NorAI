@@ -1,0 +1,21 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "The Distortions of Price Controls",
+    "flashcards": [
+        {
+            "front": "What happens when a price ceiling is set below equilibrium?",
+            "back": "It creates a market shortage.",
+            "explanation": "Demand increases while supply decreases, preventing the market from clearing."
+        },
+        {
+            "front": "Why does rent control degrade housing quality?",
+            "back": "Landlords lack revenue and incentives to maintain properties.",
+            "explanation": "Capped rents prevent landlords from covering maintenance costs or competing for tenants."
+        },
+        {
+            "front": "What is the role of prices as an information signal?",
+            "back": "They communicate scarcity and demand to guide resource allocation.",
+            "explanation": "Prices allow market participants to make informed decisions about production and consumption."
+        }
+    ]
+}
