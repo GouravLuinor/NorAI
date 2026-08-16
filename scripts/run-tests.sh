@@ -11,6 +11,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PY="${1:-$ROOT/venv/bin/python}"
 cd "$ROOT"
 
+# Ensure offline tests have fallback env vars when run in CI (where .env is absent)
+export GEMINI_API_KEY="${GEMINI_API_KEY:-test-offline-key-dummy}"
+export NORAI_DEV_ACCESS="${NORAI_DEV_ACCESS:-1}"
+export DATABASE_URL="${DATABASE_URL:-sqlite+aiosqlite:////tmp/norai_ci_test.db}"
+
 # Tests that need a running backend / paid services — kept out of the offline suite.
 EXCLUDED="backend/test_api_contract.py"
 
