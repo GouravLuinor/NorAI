@@ -138,6 +138,28 @@ def test_process_requires_auth():
     check("process 401 without token", r.status_code == 401)
 
 
+def test_process_allows_guest_with_header():
+    client = TestClient(main_mod.app)
+    r = client.post(
+        "/process",
+        headers={"X-Guest-Id": "test_guest_device"},
+        data={"source_type": "youtube", "url": "https://youtube.com/watch?v=abc123"},
+    )
+    # Guest resolves to a User row, so auth passes; the request must fail on
+    # validation/quota, NOT on a 401.
+    check("process guest not 401", r.status_code != 401)
+
+
+def test_guest_has_trial_quota():
+    client = TestClient(main_mod.app)
+    r = client.get("/quota", headers={"X-Guest-Id": "test_guest_quota"})
+    data = r.json()
+    check("guest quota 200", r.status_code == 200)
+    check("guest is_anonymous", data.get("is_anonymous") is True)
+    check("guest trial quota 15", data.get("monthly_minutes_quota") == 15)
+    check("guest remaining 15", data.get("remaining_minutes") == 15)
+
+
 def test_process_enforces_pre_download_quota():
     asyncio.run(_seed(used=14, quota=15))  # only 1 minute left
     client = TestClient(main_mod.app)
@@ -209,6 +231,8 @@ if __name__ == "__main__":
     test_billing_returns_plan_usage_and_links()
     test_billing_requires_auth()
     test_process_requires_auth()
+    test_process_allows_guest_with_header()
+    test_guest_has_trial_quota()
     test_process_enforces_pre_download_quota()
     test_process_rejects_exhausted_quota()
     test_process_rejects_over_free_trial_duration()

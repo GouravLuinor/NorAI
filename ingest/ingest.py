@@ -2,6 +2,7 @@ import os
 import re
 import json
 import logging
+import urllib.request
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -9,6 +10,8 @@ import gdown
 import shutil
 import yt_dlp
 import ffmpeg
+
+import config
 
 
 # -----------------------------
@@ -163,36 +166,48 @@ def _get_youtube_cookiefile() -> str | None:
             pass
     return None
 
-# Multi-tier fallback extraction strategies to prevent YouTube HTTP 403 Forbidden & bot-throttling errors.
-# 'tv' and 'tv_embedded' are resilient on cloud/datacenter IP ranges where web/android_vr are challenged.
+
+def _pot_server_url() -> str | None:
+    """Return the POT provider base URL if the server is reachable, else None.
+
+    The Docker image runs `bgutil-pot server` (bgutil-ytdlp-pot-provider-rs) on
+    `NORAI_POT_SERVER_URL`. yt-dlp's `web` client then issues a proof-of-origin
+    token through the `youtubepot-bgutilhttp` plugin. When the server is absent
+    (local dev) we skip the extractor arg entirely so the fallback strategies
+    behave exactly as before.
+    """
+    url = config.POT_SERVER_URL.strip().rstrip("/")
+    if not url:
+        return None
+    try:
+        with urllib.request.urlopen(f"{url}/ping", timeout=2) as resp:
+            if resp.status == 200:
+                return url
+    except Exception:
+        pass
+    return None
+
+# Principled download strategy tiers (P8.x). The old 5-guess chain swapped
+# between ad-hoc client lists; with a PO-token provider installed (bgutil-pot in
+# the Docker image) the `web` client becomes viable on datacenter IPs, so we
+# keep exactly three tiers: web+POT (primary, most compatible), TV/embedded
+# (datacenter-resilient), then Android (progressive last resort). yt-dlp
+# auto-detects the installed POT plugin and issues tokens for the `web` client.
 YOUTUBE_FALLBACK_STRATEGIES = [
     {
-        "name": "Smart TV & Embedded (Datacenter-Resilient)",
-        "player_client": ["tv_embedded", "tv", "android", "web"],
+        "name": "Web + POT (Primary)",
+        "player_client": ["web"],
         "format": "bestvideo[height<=720][vcodec^=avc1]+bestaudio/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
     },
     {
-        "name": "Android VR + Android (H.264 Preferred)",
-        "player_client": ["android_vr", "android", "web"],
-        "format": "bestvideo[height<=720][vcodec^=avc1]+bestaudio/bestvideo[height<=720][vcodec^=avc]+bestaudio/bestvideo[height<=720][vcodec^=h264]+bestaudio/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+        "name": "Smart TV & Embedded (Datacenter-Resilient)",
+        "player_client": ["tv_embedded", "tv", "web"],
+        "format": "bestvideo[height<=720][vcodec^=avc1]+bestaudio/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
     },
     {
-        "name": "iOS + Mobile Web (Low-Restriction Stream)",
-        "player_client": ["ios", "mweb", "web"],
-        "format": "bestvideo[vcodec^=avc1]+bestaudio/bestvideo+bestaudio/best",
-    },
-    {
-        "name": "Android + Web (Progressive Fallback)",
+        "name": "Android (Progressive Fallback)",
         "player_client": ["android", "web"],
         "format": "best[height<=720][vcodec^=avc1]/best[height<=720]/bestvideo[height<=720]+bestaudio/best",
-    },
-    {
-        "name": "Generic Direct Format (Emergency Fallback)",
-        "player_client": ["web"],
-        "format": "best",
-        "http_headers": {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-        },
     },
 ]
 
@@ -230,9 +245,19 @@ def extract_from_youtube(
     info = None
     last_error = None
     cookiefile = _get_youtube_cookiefile()
+    pot_url = _pot_server_url()
 
     for strategy in YOUTUBE_FALLBACK_STRATEGIES:
         logger.info(f"Attempting YouTube download with strategy: {strategy['name']}")
+        extractor_args: dict[str, dict] = {
+            "youtube": {
+                "player_client": strategy["player_client"],
+            }
+        }
+        if pot_url:
+            extractor_args["youtubepot-bgutilhttp"] = {
+                "base_url": pot_url,
+            }
         ydl_opts: dict[str, Any] = {
             "format": strategy["format"],
             "outtmpl": os.path.join(
@@ -246,11 +271,7 @@ def extract_from_youtube(
             "fragment_retries": 5,
             "nocheckcertificate": True,
             "socket_timeout": 15,
-            "extractor_args": {
-                "youtube": {
-                    "player_client": strategy["player_client"],
-                }
-            },
+            "extractor_args": extractor_args,
         }
 
         if cookiefile:
@@ -436,26 +457,29 @@ def probe_video_metadata(url: str) -> dict | None:
     except Exception as e:
         logger.debug(f"oEmbed probe skipped: {e}")
 
-    # 2. Extract exact duration with yt-dlp across multiple client strategies
+    # 2. Extract exact duration with yt-dlp across client strategies (aligned
+    #    with YOUTUBE_FALLBACK_STRATEGIES; POT is used when the server is up).
     cookiefile = _get_youtube_cookiefile()
-    for clients in [
-        ["tv_embedded", "tv", "android"],
-        ["android_vr", "android", "web"],
-        ["ios", "mweb", "web"],
-        ["web"],
-    ]:
+    pot_url = _pot_server_url()
+    for strategy in YOUTUBE_FALLBACK_STRATEGIES:
+        clients = strategy["player_client"]
         try:
+            extractor_args: dict[str, dict] = {
+                "youtube": {
+                    "player_client": clients,
+                }
+            }
+            if pot_url:
+                extractor_args["youtubepot-bgutilhttp"] = {
+                    "base_url": pot_url,
+                }
             ydl_opts: dict[str, Any] = {
                 "quiet": True,
                 "no_warnings": True,
                 "skip_download": True,
                 "noplaylist": True,
                 "socket_timeout": 5,
-                "extractor_args": {
-                    "youtube": {
-                        "player_client": clients,
-                    }
-                },
+                "extractor_args": extractor_args,
             }
             if cookiefile:
                 ydl_opts["cookiefile"] = cookiefile
@@ -469,7 +493,6 @@ def probe_video_metadata(url: str) -> dict | None:
                 }
         except Exception as err:
             logger.debug(f"yt-dlp probe with {clients} failed: {err}")
-
     # 3. If oEmbed retrieved title but duration was blocked on datacenter IP:
     if oembed_title:
         return {

@@ -4,7 +4,11 @@ import { X, Mail, Lock, User as UserIcon, ArrowRight, Sparkles } from 'lucide-re
 import { useAuthStore } from '../../stores/useAuthStore'
 import { supabase } from '../../lib/supabaseClient'
 
-export function AuthModal() {
+interface AuthModalProps {
+  onContinueAsGuest?: () => void
+}
+
+export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
   const { isAuthModalOpen, authModalTab, closeAuthModal } = useAuthStore()
   const [tab, setTab] = useState<'login' | 'signup'>(authModalTab)
   const [email, setEmail] = useState('')
@@ -64,15 +68,11 @@ export function AuthModal() {
   }
 
   const handleGuestTrial = async () => {
+    // Device-scoped guest identity is automatic (X-Guest-Id header attached to
+    // every request), so no Supabase anonymous sign-in is needed here.
     setError('')
-    setLoading(true)
-    try {
-      const { error: guestError } = await supabase.auth.signInAnonymously()
-      if (guestError) throw guestError
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Unable to start a guest session.')
-      setLoading(false)
-    }
+    closeAuthModal()
+    onContinueAsGuest?.()
   }
 
   return (

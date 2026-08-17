@@ -194,24 +194,110 @@ async def get_or_create_dev_user(db: AsyncSession) -> User:
     return user
 
 
+# Device-scoped guest identities (P8.x): a frontend-generated persistent
+# X-Guest-Id lets unauthenticated visitors process lectures under the free-trial
+# quota without any Supabase token. The id is client-minted, so it only gates
+# the 15-minute trial tier — real accounts (Bearer token) always win over it.
+_GUEST_HEADER = "X-Guest-Id"
+_GUEST_ID_MAX_LEN = 48  # keeps derived User.id within String(64)
+
+
+def guest_id_from_request(request: Optional[Request]) -> Optional[str]:
+    """Return a sanitized X-Guest-Id header value, or None."""
+    if request is None:
+        return None
+    guest_id = request.headers.get(_GUEST_HEADER, "").strip()
+    if not guest_id:
+        return None
+    if len(guest_id) > _GUEST_ID_MAX_LEN:
+        guest_id = guest_id[:_GUEST_ID_MAX_LEN]
+    return guest_id
+
+
+async def get_or_create_guest_user(db: AsyncSession, guest_id: str) -> User:
+    """Find or create an anonymous device-scoped User + free-trial Subscription."""
+    user_id = f"guest-{guest_id}"
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        user = User(
+            id=user_id,
+            email=f"{guest_id}@guest.norai",
+            full_name="Guest",
+            is_anonymous=True,
+        )
+        db.add(user)
+        db.add(
+            Subscription(
+                user_id=user_id,
+                status="trial",
+                plan_tier="free",
+                monthly_minutes_quota=15,  # 15 mins free trial
+                used_minutes_this_month=0,
+            )
+        )
+        try:
+            await db.flush()
+        except IntegrityError:
+            await db.rollback()
+            result = await db.execute(select(User).where(User.id == user_id))
+            user = result.scalar_one_or_none()
+            if user is None:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Unable to resolve guest account",
+                )
+
+    # Ensure the resolved guest always has a Subscription row
+    sub_result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+    if not sub_result.scalar_one_or_none():
+        db.add(
+            Subscription(
+                user_id=user.id,
+                status="trial",
+                plan_tier="free",
+                monthly_minutes_quota=15,
+                used_minutes_this_month=0,
+            )
+        )
+        await db.flush()
+
+    return user
+
+
 async def get_current_user_optional(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    request: Request = None,
     db: AsyncSession = Depends(get_db),
 ) -> Optional[User]:
     """
-    Optional dependency: returns User if valid Bearer token provided, otherwise None.
+    Optional dependency: returns User if a valid Bearer token is provided.
+
+    Otherwise, when NOT in local dev mode, falls back to a device-scoped guest
+    user derived from the `X-Guest-Id` header (so unauthenticated visitors can
+    process lectures under the free-trial quota). Returns None only when neither
+    a valid token nor a guest id is present.
     """
-    if not credentials or not credentials.credentials:
-        return None
+    if credentials and credentials.credentials:
+        payload = decode_supabase_jwt(credentials.credentials)
+        if payload:
+            try:
+                return await get_or_create_user_from_token(payload, db)
+            except Exception:
+                return None
 
-    payload = decode_supabase_jwt(credentials.credentials)
-    if not payload:
-        return None
+    # Local dev keeps its automatic dev-user escape hatch instead of guests.
+    if not is_dev_access():
+        guest_id = guest_id_from_request(request)
+        if guest_id:
+            try:
+                return await get_or_create_guest_user(db, guest_id)
+            except Exception:
+                return None
 
-    try:
-        return await get_or_create_user_from_token(payload, db)
-    except Exception:
-        return None
+    return None
 
 
 async def get_current_user(

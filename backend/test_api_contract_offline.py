@@ -95,11 +95,20 @@ def main() -> int:
             and data.get("remaining_minutes") == 15,
         )
 
-        # ── Auth-negative (no token; fails fast, no Supabase call) ────────────
+        # ── Auth-negative (no token, no guest id; fails fast) ────────────────
         r = client.post("/process")
         check("POST /process 401 unauthenticated", r.status_code == 401)
         r = client.get("/billing")
         check("GET /billing 401 unauthenticated", r.status_code == 401)
+
+        # ── Guest (X-Guest-Id) must NOT be blocked by auth ───────────────────
+        r = client.post("/process", headers={"X-Guest-Id": "contract_test_guest"})
+        check(
+            "POST /process guest reaches validation (no 401)",
+            r.status_code != 401 and r.status_code in (400, 422),
+        )
+        r = client.get("/billing", headers={"X-Guest-Id": "contract_test_guest"})
+        check("GET /billing guest 200", r.status_code == 200)
 
         # ── Validation-negative (authenticated as a fake user) ───────────────
         main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()

@@ -107,6 +107,13 @@ def model_price(
         + (output_tokens / 1_000_000) * price.get("output_per_1M", 0.0)
     )
 
+# ── YouTube PO-token provider (P8.x) ──────────────────────────────────────────
+# The Docker image runs `bgutil-pot server` (bgutil-ytdlp-pot-provider-rs) on
+# this host/port. yt-dlp's `web` client issues a proof-of-origin token through
+# the provider so downloads survive YouTube's bot check on datacenter IPs. When
+# unset / unreachable, ingest falls back to the non-POT strategies below.
+POT_SERVER_URL = os.environ.get("NORAI_POT_SERVER_URL", "http://127.0.0.1:4416")
+
 # ── Seeded Public Demo Lectures (P5.4) ───────────────────────────────────────
 # Canonical IDs of the 3 permanently-public demo workspaces hydrated from
 # seed_data/ at startup. Shared by backend/main.py (display + access bypass) and
