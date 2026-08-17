@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabaseClient'
 import { apiFetch } from '../lib/http'
+import { getGuestId } from '../lib/guestId'
 
 export interface UserProfile {
   id: string
@@ -65,11 +66,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setSession: (token, user) => set({ token, user, isAuthModalOpen: false }),
 
   refreshQuota: async () => {
-    const { token } = get()
-    if (!token) {
-      set({ quota: null })
-      return
-    }
+    // Works for both authenticated users (Bearer) and device guests (X-Guest-Id).
     try {
       const quota = await apiFetch<QuotaInfo>('/quota')
       if (!quota) {
@@ -109,6 +106,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   initAuth: async () => {
+    getGuestId()
     const { data } = await supabase.auth.getSession()
     const { token, user } = mapSession(data.session)
     set({ token, user })
@@ -116,15 +114,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     supabase.auth.onAuthStateChange((_event, session) => {
       const next = mapSession(session)
       set({ ...next, isAuthModalOpen: false })
-      if (next.token) {
-        void get().refreshQuota()
-      } else {
-        set({ quota: null })
-      }
+      void get().refreshQuota()
     })
 
-    if (token) {
-      await get().refreshQuota()
-    }
+    await get().refreshQuota()
   },
 }))

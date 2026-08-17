@@ -9,8 +9,8 @@
 
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
+| **OpenCode** (CLI) | 🟢 In Progress / Completed | **Production fixes: device-scoped guest auth + PO-token provider for YouTube downloads (P8.x).** Guests can now process <15min lectures with zero Bearer token (X-Guest-Id header → anonymous User + 15-min trial Subscription); `/process` no longer 401s for guests. YouTube downloads: 5-guess fallback collapsed to 3 principled tiers, `bgutil-pot` Rust provider + yt-dlp plugin added to Docker image (entrypoint runs the POT server on :4416), verified end-to-end (`PO Token Providers: bgutil:http-0.8.1`). Offline suite 40/40, Vitest 73/73, oxlint + tsc/vite build clean. Docs updated. Uncommitted. | 2026-08-17 UTC |
 | **Antigravity** (IDE) | 🟢 Idle / Ready | **Render Staging Prep & Pre-Deployment Hardening Complete**: Completed all remaining items from `RENDER_STAGING_PREP.md` (WAL truncated checkpoints in `seed_data/`, `git add -f seed_data` with 435 clean tracked files, Chroma telemetry disabled, asyncpg pooler hardening, dynamic PORT/VITE build args in Dockerfile, and .dockerignore cleanup). All 39 backend test suites and frontend build passing cleanly. Ready for git push and Render staging deployment. | 2026-08-16 UTC |
-| **OpenCode** (CLI) | 🟢 Idle / Completed | **Chief-reviewer pass + fixes on Antigravity's scaling work — committed `b66db59` and pushed to `origin/fix/threads-and-pdf` (2026-08-15).** Audited commits `5b31878`→`13f5d07` via 3 parallel subagents + offline suites; findings logged in `fix.md` (2 CRIT / 5 HIGH / 6 MED / 9 LOW). All 22 fixed. | 2026-08-15 UTC |
 
 ---
 
@@ -33,6 +33,19 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-17] — OpenCode: Device-scoped guest auth + PO-token provider (P8.x)
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed — offline suite 40/40, Vitest 73/73, oxlint 0, `tsc -b && vite build` clean, live guest smoke tested on dev backend. Uncommitted.
+- **Files Created / Modified**:
+  - **Guest auth (backend)** — `backend/auth.py`: `guest_id_from_request()` reads the `X-Guest-Id` header (bounded to 48 chars), `get_or_create_guest_user()` finds/creates an anonymous `User` (`id=guest-<id>`, `email=<id>@guest.norai`, `is_anonymous=True`) + 15-min trial `Subscription` (IntegrityError-safe), and `get_current_user_optional()` now falls back to the guest user when no valid Bearer token exists — **unless** `is_dev_access()` (local dev keeps its dev-user escape hatch). Precedence: real token > guest header > None.
+  - `backend/main.py` — no change needed: `/process`, `/billing`, `/quota`, `/lectures` all flow through `get_current_user(_optional)` so guests work automatically. `ensure_lecture_access` passes via lecture ownership.
+  - **Tests** — `backend/test_api_contract_offline.py`: guest-with-header must reach validation (400) not 401; `GET /billing` guest → 200. `backend/test_billing_quota.py`: new `test_process_allows_guest_with_header` (no 401) + `test_guest_has_trial_quota` (`is_anonymous`, 15-min quota, remaining 15).
+  - **Guest auth (frontend)** — `frontend/src/lib/guestId.ts` [NEW] (localStorage `norai_guest_id`, `crypto.randomUUID()`); `frontend/src/lib/authHeaders.ts` always attaches `X-Guest-Id`; `frontend/src/stores/useAuthStore.ts` seeds the id in `initAuth` and `refreshQuota()` now works without a token (guests get quota too); `frontend/src/components/auth/AuthModal.tsx` "Continue as Guest" no longer calls `supabase.auth.signInAnonymously()` (fragile — needs Supabase anonymous sign-in enabled) — it just closes the modal + fires `onContinueAsGuest`; `frontend/src/App.tsx` `AuthModalBridge` navigates to `/app`.
+  - **YouTube downloads** — `ingest/ingest.py`: 5-guess fallback collapsed to 3 principled tiers (Web+POT primary → TV/embedded → Android progressive); `_pot_server_url()` health-checks `NORAI_POT_SERVER_URL/ping` (2s timeout) and adds `youtubepot-bgutilhttp:base_url` extractor arg when the provider is reachable; probe `probe_video_metadata` mirrors the same 3 tiers + POT. `config.py` — new `POT_SERVER_URL` (env `NORAI_POT_SERVER_URL`, default `http://127.0.0.1:4416`).
+  - **Docker** — `Dockerfile`: installs `bgutil-pot` binary (`bgutil-pot-linux-x86_64`) + yt-dlp plugin zip (`bgutil-ytdlp-pot-provider-rs.zip`, pinned tag `v0.8.1` — verified asset names against the GitHub API) into `/root/.config/yt-dlp/plugins`; failure to download is non-fatal (falls back). `scripts/entrypoint.sh` [NEW]: spawns `bgutil-pot server` on :4416 then `exec`s uvicorn. `backend/test_pot_provider.py` [NEW]: offline smoke test that skips when the provider isn't installed, else asserts `bgutil` shows as a PO Token Provider.
+- **Verification**: `scripts/run-tests.sh` **40/40**; `npm run lint` 0 errors; `npm run build` clean; `npm run test` **73/73**. Live dev smoke: `X-Guest-Id: test` → `/quota` returns anonymous trial (15 min), `/billing` 200, `/process` bad-url → 400 (not 401). POT e2e verified: with binary on PATH + plugin in `~/.config/yt-dlp/plugins`, `yt-dlp --verbose` prints `PO Token Providers: bgutil:cli-0.8.1 (external), bgutil:http-0.8.1 (external)` and extraction proceeds.
+- **Hand-off Notes / Next Steps**: Commit + push to `origin/fix/threads-and-pdf`, then Render rebuild. On Render set `MAX_FREE_DURATION_MIN` (default 15) and confirm the container logs `[entrypoint] starting bgutil POT server`. Real (non-demo) guest processing is gated by the 15-min trial quota as designed; email + Google sign-in flows unchanged (verify Supabase providers enabled). The upload-direct fallback remains the manual escape hatch for YouTube bot checks that POT can't beat.
 
 ### [2026-08-16] — Antigravity: Fixed Estimation, YouTube Ingestion, Share Links, and AI Tutor Thread State
 - **Agent**: Antigravity (IDE)

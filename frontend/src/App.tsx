@@ -46,6 +46,11 @@ function PricingRouteWrapper() {
   )
 }
 
+function AuthModalBridge() {
+  const navigate = useNavigate()
+  return <AuthModal onContinueAsGuest={() => navigate('/app')} />
+}
+
 export default function App() {
   return (
     <AppErrorBoundary>
@@ -58,7 +63,7 @@ export default function App() {
             Skip to main content
           </a>
           <ToastContainer />
-          <AuthModal />
+          <AuthModalBridge />
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/" element={<LandingRouteWrapper />} />
