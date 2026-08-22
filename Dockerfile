@@ -43,12 +43,16 @@ RUN apt-get update \
 # (port 4416) via scripts/entrypoint.sh; yt-dlp reaches it over the loopback
 # NORAI_POT_SERVER_URL. The matching yt-dlp plugin zip is unzipped into the
 # plugin dir so yt-dlp advertises `bgutil:http-...` as a PO Token Provider.
-# Pinned release 1.2.2 (both artifacts match). If the download ever fails the
-# build still succeeds with POT disabled — the fallback strategies remain.
+# Pinned release v0.8.1 (both artifacts match). Binary is sha256-verified so a
+# compromised upstream release can't ship into the image. If the download ever
+# fails the build still succeeds with POT disabled — the fallback strategies remain.
 ARG BGUTIL_POT_VERSION=v0.8.1
+# sha256(bgutil-pot-linux-x86_64) @ v0.8.1 — verify before bumping the ARG.
+ARG BGUTIL_POT_SHA256=e7c264a574fa2705b6e5dc62283a8a4e80130f27b9d7e9df44e6b09aa6151a87
 RUN set -eux; \
     curl -fsSL -o /usr/local/bin/bgutil-pot \
       "https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases/download/${BGUTIL_POT_VERSION}/bgutil-pot-linux-x86_64"; \
+    echo "${BGUTIL_POT_SHA256}  /usr/local/bin/bgutil-pot" | sha256sum -c -; \
     chmod +x /usr/local/bin/bgutil-pot; \
     mkdir -p /root/.config/yt-dlp/plugins; \
     curl -fsSL -o /tmp/bgutil-ytdlp-pot-provider-rs.zip \

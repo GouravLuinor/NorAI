@@ -36,6 +36,36 @@ export function cleanImageSrc(src: string): string {
   return src
 }
 
+// P1.8: remote image allowlist — LLM-generated markdown may point at arbitrary
+// hosts (tracking pixels, mixed content, surprise payloads). Mirrors the
+// backend CSP img-src list (backend/middleware.py) — keep both in sync.
+const ALLOWED_IMAGE_HOSTS = new Set([
+  'i.ytimg.com',
+  'img.youtube.com',
+  'upload.wikimedia.org',
+  'commons.wikimedia.org',
+])
+
+export interface ResolvedImage {
+  src: string
+  blockedHost?: string
+}
+
+export function resolveImageSrc(src: string): ResolvedImage {
+  const resolved = cleanImageSrc(src)
+  if (/^https?:\/\//i.test(resolved)) {
+    try {
+      const host = new URL(resolved).hostname.toLowerCase()
+      if (!ALLOWED_IMAGE_HOSTS.has(host)) {
+        return { src: resolved, blockedHost: host }
+      }
+    } catch {
+      return { src: resolved, blockedHost: '(invalid url)' }
+    }
+  }
+  return { src: resolved }
+}
+
 // ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
@@ -102,19 +132,30 @@ export function createMarkdownComponents(options: MarkdownComponentsOptions = {}
     td: ({ children }) => (
       <td className="p-2 border-b border-bdr last:border-none">{children}</td>
     ),
-    img: ({ src, alt }) => (
-      <img
-        src={cleanImageSrc(src || '')}
-        alt={alt || ''}
-        width="1600"
-        height="900"
-        className={isChat
-          ? 'rounded-lg border border-bdr my-2 max-h-60 object-contain shadow-ev1 w-auto h-auto'
-          : 'rounded-lg border border-bdr my-3 max-h-72 object-contain shadow-ev1 w-auto h-auto'}
-        loading="lazy"
-        decoding="async"
-      />
-    ),
+    img: ({ src, alt }) => {
+      const resolved = resolveImageSrc(src || '')
+      if (resolved.blockedHost) {
+        return (
+          <span className="inline-flex items-center gap-1 rounded border border-bdr bg-ns px-2 py-1 my-2 text-2xs text-nt3 font-mono">
+            external image blocked · {resolved.blockedHost}
+          </span>
+        )
+      }
+      return (
+        <img
+          src={resolved.src}
+          alt={alt || ''}
+          referrerPolicy="no-referrer"
+          width="1600"
+          height="900"
+          className={isChat
+            ? 'rounded-lg border border-bdr my-2 max-h-60 object-contain shadow-ev1 w-auto h-auto'
+            : 'rounded-lg border border-bdr my-3 max-h-72 object-contain shadow-ev1 w-auto h-auto'}
+          loading="lazy"
+          decoding="async"
+        />
+      )
+    },
     ...(withHeadingIds
       ? {
           h3: ({ children }: { children?: React.ReactNode }) => (

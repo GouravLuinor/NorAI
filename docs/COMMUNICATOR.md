@@ -819,3 +819,21 @@
   8. Tutor: quiz answer-key KeyError guarded (`quiz_nodes.py`); answer-stream LLM failure degrades gracefully instead of killing SSE turn (`nodes.py`).
 - **Verification**: `scripts/run-tests.sh` 40/40 PASS · `npm run lint` clean · `tsc -b && vite build` OK · vitest 73/73.
 - **Pending / Next**: Phase 1 (authz & abuse hardening) per AUDIT_2026-08-22.md §5. No commit made yet — awaiting user instruction.
+
+---
+
+### [2026-08-22] — OpenCode: Phase 1 "Authorization & Abuse Hardening" Complete
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed — all gates green (backend 41/41 suites · oxlint clean · vitest 73/73 · vite build OK)
+- **Context**: Phase 1 of AUDIT_2026-08-22.md. Plan: `.opencode/plans/phase1-hardening.md`. Decisions: hand-rolled limiter, image allowlist, prod-only CSP.
+- **Done**:
+  1. `backend/middleware.py` [NEW] — pure-ASGI `RateLimitMiddleware` (token buckets keyed bearer-hash→guest-id→IP; chat 30/min, quiz 30/min, process+estimate 10/hr, threads 60/min; env-tunable NORAI_RATE_*; 429 + Retry-After) and `SecurityHeadersMiddleware` (nosniff/DENY/Referrer-Policy/HSTS-behind-TLS/CSP prod-only). Wired after CORS in main.py.
+  2. CORS fail-closed: dropped `*.onrender.com` allow_origin_regex.
+  3. Guest caps: `/process` rejects guests after NORAI_GUEST_LECTURES_PER_DAY (3) per IP/day; demo/default tutor turns capped globally at NORAI_DEMO_TURNS_PER_DAY (1000).
+  4. Upload magic-byte sniffing (ftyp/EBML/RIFF-AVI) post stream-write → unlink + 415.
+  5. Persona hardening: `_effective_persona_instructions` — owner-only (guests/strangers/demo stripped), 500-char cap, delimiter-wrapped as preferences-not-instructions.
+  6. Quiz/ratings scoping: user_id column on quiz_attempts (lazy ALTER), flashcard_ratings PK rebuilt with user_id (legacy rows orphaned by design); all 6 endpoints filter by caller id.
+  7. Frontend: markdown image host allowlist (ytimg/img.youtube.com/wikimedia — mirrors CSP img-src) + placeholder chip + referrerPolicy=no-referrer (`lib/markdown.tsx`); friendly 429 copy in `lib/http.ts`.
+  8. Dockerfile: BGUTIL_POT binary now sha256-verified (v0.8.1 hash pinned via ARG).
+- **Tests**: NEW backend/test_phase1_hardening.py (53 checks: buckets, counters, ASGI limiter/headers, magic bytes, persona scoping, cross-user quiz/ratings via TestClient). test_webhooks.py extended with handler-level branches (bad sig 401, bad JSON 400, missing user_id ignored, unknown event no-op, tier upgrade/cancel, replay idempotency). test_billing_quota fake upload now carries ftyp bytes. run-tests.sh exports generous NORAI_RATE_* so offline suites never trip the limiter.
+- **Pending / Next**: Phase 2 (stability & data integrity: jobs heartbeat/classification, concurrency fixes, auth IntegrityError narrowing) per AUDIT_2026-08-22.md §5. Nothing committed yet — awaiting user instruction.

@@ -255,10 +255,13 @@ def test_process_allows_within_quota_upload():
     client = TestClient(main_mod.app)
     main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
     try:
+        # P1.5 magic-byte sniffing: the payload must at least look like mp4
+        # (ftyp box) for the endpoint to accept it.
+        fake_mp4 = b"\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00" + b"fakedata"
         r = client.post(
             "/process",
             data={"source_type": "upload", "duration": "2"},
-            files={"file": ("v.mp4", b"fakedata", "video/mp4")},
+            files={"file": ("v.mp4", fake_mp4, "video/mp4")},
         )
         # Returns a task id and starts the pipeline; we just assert 200/202-ish
         # contract (the background thread will fail fast on the fake file, but

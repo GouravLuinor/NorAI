@@ -48,6 +48,10 @@ interface JsonLike {
 }
 
 async function parseError(res: Response): Promise<string> {
+  // P1: friendly copy for rate-limited requests (backend middleware 429s).
+  if (res.status === 429) {
+    return "You're doing that a bit too fast — take a short breath and try again."
+  }
   try {
     const body = (await res.json()) as JsonLike
     const detail = body?.detail
