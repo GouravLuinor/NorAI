@@ -6,19 +6,16 @@ from concurrent.futures import (
 import json
 import logging
 import os
-import random
-import time
 from pathlib import Path
 
 import imagehash
 from PIL import Image as PILImage
-from google import genai
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
 load_dotenv()
 
-from backend.ratelimit import rate_limiter as _limiter
+from backend.gemini_client import get_client, invoke_with_policy
 from backend.usage_ledger import record_generate_usage
 from cache_util import outputs_current, write_marker
 
@@ -108,23 +105,7 @@ def load_llm():
     Load Gemini model.
     """
 
-    api_key = os.getenv(
-        "GEMINI_API_KEY"
-    )
-
-    if not api_key:
-        raise ValueError(
-            "GEMINI_API_KEY not found."
-        )
-
-    client = genai.Client(
-        api_key=api_key
-    )
-
-    return client
-
-
-client = load_llm()
+    return get_client()
 
 
 from google.genai import types
@@ -455,7 +436,7 @@ def upload_single_screenshot(
 
     try:
 
-        return client.files.upload(
+        return load_llm().files.upload(
 
             file=path
 
@@ -578,114 +559,72 @@ def score_frames_batch(
 
     ]
 
-    last_error = None
+    def _pass1_call():
 
-    for attempt in range(
+        response = (
 
-        MAX_RETRIES
+            load_llm().models.generate_content(
 
-    ):
-
-        try:
-            _limiter.wait()
-            response = (
-
-                client.models.generate_content(
-
-                    model=MODEL_NAME,
-                    contents=contents,
-                    config=types.GenerateContentConfig(
-                        temperature=0.2,
-                        response_mime_type="application/json",
-                        response_schema=FrameQualityBatch,
-                    )
+                model=MODEL_NAME,
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    temperature=0.2,
+                    response_mime_type="application/json",
+                    response_schema=FrameQualityBatch,
                 )
             )
-            record_generate_usage("screenshot_selection", MODEL_NAME, response)
+        )
+        record_generate_usage("screenshot_selection", MODEL_NAME, response)
 
-            try:
-                if response and response.text:
-                    data = json.loads(response.text)
-                    if isinstance(data, dict) and "scores" in data:
-                        raw_scores = data["scores"]
-                    elif isinstance(data, list):
-                        raw_scores = data
-                    else:
-                        raw_scores = []
+        try:
+            if response and response.text:
+                data = json.loads(response.text)
+                if isinstance(data, dict) and "scores" in data:
+                    raw_scores = data["scores"]
+                elif isinstance(data, list):
+                    raw_scores = data
                 else:
                     raw_scores = []
-            except Exception:
+            else:
                 raw_scores = []
+        except Exception:
+            raw_scores = []
 
-            # PRECONDITION: valid_paths must be deduplicated by canonical path upstream (via dedup_paths)
-            filename_to_path = {}
-            collisions = []
-            for p in valid_paths:
-                name = Path(p).name
-                if name in filename_to_path and filename_to_path[name] != p:
-                    collisions.append((name, filename_to_path[name], p))
-                filename_to_path[name] = p
+        # PRECONDITION: valid_paths must be deduplicated by canonical path upstream (via dedup_paths)
+        filename_to_path = {}
+        collisions = []
+        for p in valid_paths:
+            name = Path(p).name
+            if name in filename_to_path and filename_to_path[name] != p:
+                collisions.append((name, filename_to_path[name], p))
+            filename_to_path[name] = p
 
-            if collisions:
-                logger.warning(f"Basename collisions in valid_paths — filename remap may be unsafe: {collisions}")
+        if collisions:
+            logger.warning(f"Basename collisions in valid_paths — filename remap may be unsafe: {collisions}")
 
-            scores = []
+        scores = []
 
-            for idx, entry in enumerate(raw_scores):
+        for idx, entry in enumerate(raw_scores):
 
-                try:
+            try:
 
-                    fq_score = FrameQualityScore(**entry)
-                    p = fq_score.path
-                    if p in valid_paths:
-                        pass
-                    elif Path(p).name in filename_to_path:
-                        remapped = filename_to_path[Path(p).name]
-                        logger.info(f"Chapter {chapter_id} Pass 1: Remapped path by filename '{p}' -> '{remapped}'.")
-                        fq_score.path = remapped
-                    elif idx < len(valid_paths):
-                        logger.info(
-                            f"Chapter {chapter_id} Pass 1: Remapped synthetic path '{p}' -> '{valid_paths[idx]}' by position."
-                        )
-                        fq_score.path = valid_paths[idx]
-
-                    scores.append(fq_score)
-
-                except Exception as entry_error:
-
-                    logger.error(
-
-                        f"Chapter "
-                        f"{chapter_id}"
-                        f" batch "
-                        f"{batch_index}"
-                        f": skipping malformed Pass 1 "
-                        f"entry "
-                        f"{entry}"
-                        f": "
-                        f"{entry_error}"
+                fq_score = FrameQualityScore(**entry)
+                p = fq_score.path
+                if p in valid_paths:
+                    pass
+                elif Path(p).name in filename_to_path:
+                    remapped = filename_to_path[Path(p).name]
+                    logger.info(f"Chapter {chapter_id} Pass 1: Remapped path by filename '{p}' -> '{remapped}'.")
+                    fq_score.path = remapped
+                elif idx < len(valid_paths):
+                    logger.info(
+                        f"Chapter {chapter_id} Pass 1: Remapped synthetic path '{p}' -> '{valid_paths[idx]}' by position."
                     )
+                    fq_score.path = valid_paths[idx]
 
-            valid_path_set = set(
+                scores.append(fq_score)
 
-                valid_paths
-
-            )
-
-            scored_path_set = {
-
-                score.path
-                for score in scores
-
-            }
-
-            missing_paths = (
-
-                valid_path_set
-                - scored_path_set
-            )
-
-            if missing_paths:
+            except Exception as entry_error:
 
                 logger.error(
 
@@ -693,30 +632,18 @@ def score_frames_batch(
                     f"{chapter_id}"
                     f" batch "
                     f"{batch_index}"
-                    f": Pass 1 response missing scores for "
-                    f"{len(missing_paths)}"
-                    f" frame(s), retrying batch: "
-                    f"{sorted(missing_paths)}"
+                    f": skipping malformed Pass 1 "
+                    f"entry "
+                    f"{entry}"
+                    f": "
+                    f"{entry_error}"
                 )
 
-                raise ValueError(
-                    f"Pass 1 batch {batch_index} missing scores for "
-                    f"{len(missing_paths)} frame(s)"
-                )
-            scores = [
+        valid_path_set = set(valid_paths)
+        scored_path_set = {score.path for score in scores}
+        missing_paths = valid_path_set - scored_path_set
 
-                score
-                for score in scores
-
-                if score.path in valid_path_set
-
-            ]
-
-            return scores + synthesized
-
-        except Exception as e:
-
-            last_error = e
+        if missing_paths:
 
             logger.error(
 
@@ -724,29 +651,45 @@ def score_frames_batch(
                 f"{chapter_id}"
                 f" batch "
                 f"{batch_index}"
-                f" Pass 1 attempt "
-                f"{attempt + 1}"
-                f"/"
-                f"{MAX_RETRIES}"
-                f" failed: "
-                f"{e}"
+                f": Pass 1 response missing scores for "
+                f"{len(missing_paths)}"
+                f" frame(s), retrying batch: "
+                f"{sorted(missing_paths)}"
             )
 
-            time.sleep(
-
-                2 ** attempt
-
+            raise ValueError(
+                f"Pass 1 batch {batch_index} missing scores for "
+                f"{len(missing_paths)} frame(s)"
             )
 
-    logger.error(
+        filtered = [
+            score
+            for score in scores
+            if score.path in valid_path_set
+        ]
 
-        f"Chapter "
-        f"{chapter_id}"
-        f" batch "
-        f"{batch_index}"
-        f": giving up on Pass 1 batch scoring: "
-        f"{last_error}"
-    )
+        return filtered + synthesized
+
+    # Shared retry/RPM policy (backend.gemini_client). The missing-scores
+    # ValueError above is a deliberate transient signal, so ValueErrors retry.
+    try:
+        return invoke_with_policy(
+            _pass1_call,
+            node=f"Chapter {chapter_id} batch {batch_index}",
+            max_retries=MAX_RETRIES,
+            retry_value_errors=True,
+        )
+    except Exception as e:
+
+        logger.error(
+
+            f"Chapter "
+            f"{chapter_id}"
+            f" batch "
+            f"{batch_index}"
+            f": giving up on Pass 1 batch scoring: "
+            f"{e}"
+        )
 
     return synthesized
 
@@ -1311,58 +1254,33 @@ def generate_selection(
 
     ]
 
-    last_error = None
+    def _pass2_call():
 
-    for attempt in range(
+        response = (
 
-        MAX_RETRIES
+            load_llm().models.generate_content(
 
-    ):
-
-        try:
-            _limiter.wait()
-            response = (
-
-                client.models.generate_content(
-
-                    model=MODEL_NAME,
-                    contents=contents,
-                    config=types.GenerateContentConfig(
-                        temperature=0.2,
-                        response_mime_type="application/json",
-                        response_schema=ChapterScreenshots,
-                    )
+                model=MODEL_NAME,
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    temperature=0.2,
+                    response_mime_type="application/json",
+                    response_schema=ChapterScreenshots,
                 )
             )
-            record_generate_usage("screenshot_selection", MODEL_NAME, response)
+        )
+        record_generate_usage("screenshot_selection", MODEL_NAME, response)
 
-            return response.text, original_count, valid_paths
+        return response.text
 
-        except Exception as e:
-
-            last_error = e
-
-            logger.error(
-
-                f"Chapter "
-                f"{chapter_id}"
-                f" Pass 2 attempt "
-                f"{attempt + 1}"
-                f"/"
-                f"{MAX_RETRIES}"
-                f" failed: "
-                f"{e}"
-            )
-
-            time.sleep(5 * (attempt + 1) + random.uniform(0.5, 3.0))
-
-    raise RuntimeError(
-
-        f"All retries failed for chapter "
-        f"{chapter_id}"
-        f": "
-        f"{last_error}"
+    # Shared retry/RPM policy (backend.gemini_client).
+    selection_text = invoke_with_policy(
+        _pass2_call,
+        node=f"Chapter {chapter_id} Pass 2",
+        max_retries=MAX_RETRIES,
     )
+
+    return selection_text, original_count, valid_paths
 
 
 def parse_selection(

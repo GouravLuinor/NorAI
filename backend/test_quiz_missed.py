@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from backend.main import _compute_missed_ids  # noqa: E402
+from backend.routers.quiz import _compute_missed_ids  # noqa: E402
 
 
 def _q(qid, qtype, answer, user_answer=""):

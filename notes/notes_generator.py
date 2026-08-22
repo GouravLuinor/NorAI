@@ -18,18 +18,14 @@ from concurrent.futures import (
 )
 import json
 import logging
-import random
 import re
 from pathlib import Path
-import os
-import time
-from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 from notes.notes_prompt import NOTES_PROMPT
 load_dotenv()
 
-from backend.ratelimit import rate_limiter as _limiter
+from backend.gemini_client import get_client, invoke_with_policy
 from backend.usage_ledger import record_generate_usage
 
 logging.basicConfig(
@@ -60,26 +56,7 @@ def load_llm():
     Load Gemini model.
     """
 
-    api_key = os.getenv(
-        "GEMINI_API_KEY"
-    )
-
-    if not api_key:
-        raise ValueError(
-            "GEMINI_API_KEY not found."
-        )
-
-    client = genai.Client(
-        api_key=api_key
-    )
-
-    return client
-
-
-# client = load_llm()
-
-
-client = load_llm()
+    return get_client()
 
 
 # Load Chapters
@@ -415,56 +392,43 @@ def generate_chapter_notes(
         next_outline
     )
 
-    for attempt in range(
-        MAX_RETRIES
-    ):
-        logger.info(
-            f"Chapter "
-            f"{chapter['chapter_id']} "
-            f"Prompt Size: "
-            f"{len(prompt)} chars"
+    logger.info(
+        f"Chapter "
+        f"{chapter['chapter_id']} "
+        f"Prompt Size: "
+        f"{len(prompt)} chars"
+    )
+
+    def _notes_call():
+        response = get_client().models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
         )
-        try:
-            _limiter.wait()
-            response = client.models.generate_content(
-                model=MODEL_NAME,
-                contents=prompt,
+        record_generate_usage("notes", MODEL_NAME, response)
+
+        if not response or not response.text:
+            raise ValueError("Empty response from model")
+
+        return (
+            response.text
+            .replace(
+                "```markdown",
+                ""
             )
-            record_generate_usage("notes", MODEL_NAME, response)
-
-            if not response or not response.text:
-                raise ValueError("Empty response from model")
-
-            markdown = (
-                response.text
-                .replace(
-                    "```markdown",
-                    ""
-                )
-                .replace(
-                    "```",
-                    ""
-                )
-                .strip()
+            .replace(
+                "```",
+                ""
             )
+            .strip()
+        )
 
-            return markdown
-
-        except Exception as e:
-
-            logger.warning(
-                f"Chapter "
-                f"{chapter['chapter_id']} "
-                f"Attempt "
-                f"{attempt+1} "
-                f"failed: {e}"
-            )
-
-        time.sleep(5 * (attempt + 1) + random.uniform(0.5, 3.0))
-
-    raise RuntimeError(
-        f"Failed chapter "
-        f"{chapter['chapter_id']}"
+    # Shared retry/RPM policy (backend.gemini_client). An empty/blocked
+    # response is a deliberate transient signal here, so ValueErrors retry.
+    return invoke_with_policy(
+        _notes_call,
+        node=f"Chapter {chapter['chapter_id']} notes",
+        max_retries=MAX_RETRIES,
+        retry_value_errors=True,
     )
 
 
@@ -869,87 +833,94 @@ Produce a valid JSON object matching MergedChapterArtifactsModel:
         )
         return
 
-    for attempt in range(MAX_RETRIES):
-        try:
-            _limiter.wait()
-            client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-            response = client.models.generate_content(
-                model=MODEL_NAME,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.3,
-                    max_output_tokens=8192,
-                    response_mime_type="application/json",
-                    response_schema=MergedChapterArtifactsModel,
-                )
+    def _artifacts_call():
+        response = get_client().models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.3,
+                max_output_tokens=8192,
+                response_mime_type="application/json",
+                response_schema=MergedChapterArtifactsModel,
             )
-            record_generate_usage("notes", MODEL_NAME, response)
-            if not response or not response.text:
-                raise ValueError("Gemini returned empty or blocked response (response.text is None)")
-            data = json.loads(response.text)
-            model = MergedChapterArtifactsModel(**data)
+        )
+        record_generate_usage("notes", MODEL_NAME, response)
+        return response
 
-            # 1a. Render & Save Unified Markdown for chapter_N.md (for RAG tutor, combine_notes, etc.)
-            md_lines = [f"# {model.study_notes_title}\n"]
-            for sec in model.study_notes_sections:
-                if sec.title:
-                    md_lines.append(f"## {sec.title}")
-                md_lines.append(f"{sec.content_markdown}\n")
-            full_notes_md = "\n\n".join(md_lines)
+    try:
+        # Shared retry/RPM policy (backend.gemini_client) for transport
+        # errors; parse/validation failures below are terminal and fall
+        # through to the graceful-degradation path immediately.
+        response = invoke_with_policy(
+            _artifacts_call,
+            node=f"Chapter {chapter_id} artifacts",
+            max_retries=MAX_RETRIES,
+        )
+        if not response or not response.text:
+            raise ValueError("Gemini returned empty or blocked response (response.text is None)")
+        data = json.loads(response.text)
+        model = MergedChapterArtifactsModel(**data)
 
-            notes_file = notes_dir / f"chapter_{chapter_id}.md"
-            with open(notes_file, "w", encoding="utf-8") as f:
-                f.write(full_notes_md)
+        # 1a. Render & Save Unified Markdown for chapter_N.md (for RAG tutor, combine_notes, etc.)
+        md_lines = [f"# {model.study_notes_title}\n"]
+        for sec in model.study_notes_sections:
+            if sec.title:
+                md_lines.append(f"## {sec.title}")
+            md_lines.append(f"{sec.content_markdown}\n")
+        full_notes_md = "\n\n".join(md_lines)
 
-            # 1b. Save Structured JSON for 100% deterministic frontend card rendering
-            notes_json_file = notes_dir / f"chapter_{chapter_id}.json"
-            notes_json_data = {
-                "chapter_id": chapter_id,
-                "title": model.study_notes_title,
-                "sections": [s.model_dump() for s in model.study_notes_sections]
-            }
-            with open(notes_json_file, "w", encoding="utf-8") as f:
-                json.dump(notes_json_data, f, indent=4, ensure_ascii=False)
+        notes_file = notes_dir / f"chapter_{chapter_id}.md"
+        with open(notes_file, "w", encoding="utf-8") as f:
+            f.write(full_notes_md)
 
-            # 2. Render & Save Revision Markdown
-            rev_md = render_revision_markdown(
-                chapter_id=chapter_id,
-                chapter_title=chapter_title,
-                revision_summary=model.revision_summary,
-                core_concepts_breakdown=model.core_concepts_breakdown,
-            )
-            rev_file = revision_dir / f"revision_chapter_{chapter_id}.md"
-            with open(rev_file, "w", encoding="utf-8") as f:
-                f.write(rev_md)
+        # 1b. Save Structured JSON for 100% deterministic frontend card rendering
+        notes_json_file = notes_dir / f"chapter_{chapter_id}.json"
+        notes_json_data = {
+            "chapter_id": chapter_id,
+            "title": model.study_notes_title,
+            "sections": [s.model_dump() for s in model.study_notes_sections]
+        }
+        with open(notes_json_file, "w", encoding="utf-8") as f:
+            json.dump(notes_json_data, f, indent=4, ensure_ascii=False)
 
-            # 3. Save Assessment Questions JSON
-            questions_dicts = [q.model_dump() for q in model.assessment_questions]
-            ass_data = {
-                "chapter_id": chapter_id,
-                "chapter_title": chapter_title,
-                "questions": questions_dicts,
-            }
-            ass_file = assessment_dir / f"assessment_chapter_{chapter_id}.json"
-            with open(ass_file, "w", encoding="utf-8") as f:
-                json.dump(ass_data, f, indent=4, ensure_ascii=False)
+        # 2. Render & Save Revision Markdown
+        rev_md = render_revision_markdown(
+            chapter_id=chapter_id,
+            chapter_title=chapter_title,
+            revision_summary=model.revision_summary,
+            core_concepts_breakdown=model.core_concepts_breakdown,
+        )
+        rev_file = revision_dir / f"revision_chapter_{chapter_id}.md"
+        with open(rev_file, "w", encoding="utf-8") as f:
+            f.write(rev_md)
 
-            # 4. Save Flashcards JSON (0-call transformation)
-            cards = convert_assessment_to_flashcards(questions_dicts)
-            cards_data = {
-                "chapter_id": chapter_id,
-                "chapter_title": chapter_title,
-                "flashcards": cards,
-            }
-            cards_file = flashcards_dir / f"flashcards_chapter_{chapter_id}.json"
-            with open(cards_file, "w", encoding="utf-8") as f:
-                json.dump(cards_data, f, indent=4, ensure_ascii=False)
+        # 3. Save Assessment Questions JSON
+        questions_dicts = [q.model_dump() for q in model.assessment_questions]
+        ass_data = {
+            "chapter_id": chapter_id,
+            "chapter_title": chapter_title,
+            "questions": questions_dicts,
+        }
+        ass_file = assessment_dir / f"assessment_chapter_{chapter_id}.json"
+        with open(ass_file, "w", encoding="utf-8") as f:
+            json.dump(ass_data, f, indent=4, ensure_ascii=False)
 
-            logger.info(f"Chapter {chapter_id} consolidated artifacts generated successfully.")
-            write_marker(marker, chapter_json)
-            return
-        except Exception as e:
-            logger.warning(f"Chapter {chapter_id} consolidated artifacts attempt {attempt+1} failed: {e}")
-            time.sleep(2 * (attempt + 1))
+        # 4. Save Flashcards JSON (0-call transformation)
+        cards = convert_assessment_to_flashcards(questions_dicts)
+        cards_data = {
+            "chapter_id": chapter_id,
+            "chapter_title": chapter_title,
+            "flashcards": cards,
+        }
+        cards_file = flashcards_dir / f"flashcards_chapter_{chapter_id}.json"
+        with open(cards_file, "w", encoding="utf-8") as f:
+            json.dump(cards_data, f, indent=4, ensure_ascii=False)
+
+        logger.info(f"Chapter {chapter_id} consolidated artifacts generated successfully.")
+        write_marker(marker, chapter_json)
+        return
+    except Exception as e:
+        logger.warning(f"Chapter {chapter_id} consolidated artifacts failed: {e}")
 
     # Graceful degradation: write fallback files for all 4 artifacts with incomplete: true
     logger.error(f"Chapter {chapter_id} consolidated artifacts failed after 3 retries. Marking incomplete.")

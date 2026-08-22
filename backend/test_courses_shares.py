@@ -39,6 +39,7 @@ if _TMP_REGISTRY.exists():
 _reg.REGISTRY_PATH = _TMP_REGISTRY
 
 from backend import main as main_mod  # noqa: E402
+import backend.dependencies as _bdeps  # noqa: E402  (canonical tutor stub point)
 from backend.db.models import User as _User, Lecture as _Lecture, ShareLink as _ShareLink  # noqa: E402
 from backend.db.database import AsyncSessionLocal  # noqa: E402
 
@@ -285,8 +286,11 @@ def main() -> int:
         r = client.get("/share/expired-slug")
         check("expired share slug 404", r.status_code == 404)
 
-        # Stub the tutor so the gate is the only thing under test.
-        main_mod.ainvoke_tutor = _stub_tutor
+        # Stub the tutor so the gate is the only thing under test. P5.1: /chat
+        # moved to routers/tutor.py and calls through backend.dependencies —
+        # patch there (canonical), not on main.
+        _orig_ainvoke_tutor = _bdeps.ainvoke_tutor
+        _bdeps.ainvoke_tutor = _stub_tutor
         try:
             chat_body = {
                 "thread_id": "t1",
@@ -308,8 +312,7 @@ def main() -> int:
             )
             check("anon flashcards rating on tutor-disabled share 404", r.status_code == 404)
         finally:
-            main_mod.ainvoke_tutor = None
-            del main_mod.ainvoke_tutor
+            _bdeps.ainvoke_tutor = _orig_ainvoke_tutor
             _clear_auth()
 
         # Owner re-enables tutor chat on the share.
@@ -321,7 +324,7 @@ def main() -> int:
             _clear_auth()
 
         _clear_auth()
-        main_mod.ainvoke_tutor = _stub_tutor
+        _bdeps.ainvoke_tutor = _stub_tutor
         try:
             chat_body = {
                 "thread_id": "t1",
@@ -331,8 +334,7 @@ def main() -> int:
             r = client.post("/chat", json=chat_body)
             check("anon chat on tutor-enabled share passes gate (stub 200)", r.status_code == 200)
         finally:
-            main_mod.ainvoke_tutor = None
-            del main_mod.ainvoke_tutor
+            _bdeps.ainvoke_tutor = _orig_ainvoke_tutor
             _clear_auth()
 
         # Revoking kills anonymous read access.

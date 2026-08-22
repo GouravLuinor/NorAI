@@ -22,11 +22,9 @@ from google.genai import types
 
 from config import (
     MODEL_NAME,
-    DEFAULT_MAX_RETRIES,
     NORAI_AUDIO_CHUNK_MINUTES,
-    get_api_key,
 )
-from backend.ratelimit import rate_limiter as _limiter
+from backend.gemini_client import get_client, invoke_with_policy
 from backend.usage_ledger import record_generate_usage
 from transcription.transcribe import (
     load_metadata,
@@ -55,8 +53,7 @@ class GeminiTranscriptResponse(BaseModel):
 # ── Gemini Client Helper ─────────────────────────────────────────────────────
 
 def _get_gemini_client() -> genai.Client:
-    api_key = get_api_key()
-    return genai.Client(api_key=api_key)
+    return get_client()
 
 
 # ── Audio Slicing Helper ─────────────────────────────────────────────────────
@@ -154,31 +151,25 @@ def _transcribe_audio_slice(
         f"4. Do not summarize or stop early; provide full continuous verbatim transcription."
     )
 
-    response = None
-    last_err = None
     contents_payload: Any = [audio_upload, prompt]
-    for attempt in range(DEFAULT_MAX_RETRIES):
-        try:
-            _limiter.wait()
-            response = client.models.generate_content(
-                model=model_name,
-                contents=contents_payload,
-                config=types.GenerateContentConfig(
-                    temperature=0.1,
-                    response_mime_type="application/json",
-                    response_schema=GeminiTranscriptResponse,
-                    max_output_tokens=65536,
-                ),
-            )
-            record_generate_usage("transcription", model_name, response)
-            break
-        except Exception as e:
-            last_err = e
-            wait_time = (2 ** attempt) + 1.0
-            logger.warning(
-                f"Audio slice {slice_idx+1} attempt {attempt+1} failed ({e}); retrying in {wait_time:.1f}s..."
-            )
-            time.sleep(wait_time)
+
+    def _generate_once() -> Any:
+        response = client.models.generate_content(
+            model=model_name,
+            contents=contents_payload,
+            config=types.GenerateContentConfig(
+                temperature=0.1,
+                response_mime_type="application/json",
+                response_schema=GeminiTranscriptResponse,
+                max_output_tokens=65536,
+            ),
+        )
+        record_generate_usage("transcription", model_name, response)
+        return response
+
+    # Shared retry/RPM policy (backend.gemini_client): RPM-gated attempts,
+    # exponential backoff + jitter, ValueError treated as terminal.
+    response = invoke_with_policy(_generate_once, node=f"Audio slice {slice_idx+1}")
 
     # Clean up uploaded file from Gemini Files API
     try:
@@ -188,7 +179,7 @@ def _transcribe_audio_slice(
         logger.warning(f"Failed to delete uploaded file {audio_upload.name if audio_upload else 'unknown'}: {e}")
 
     if not response or not response.text:
-        raise RuntimeError(f"Transcription failed for audio slice {slice_idx+1}: {last_err}")
+        raise RuntimeError(f"Transcription failed for audio slice {slice_idx+1}")
 
     parsed = json.loads(response.text)
     raw_segments = parsed.get("segments", [])
@@ -211,7 +202,7 @@ def _transcribe_audio_slice(
 def transcribe_with_gemini(
     audio_path: str,
     metadata_path: str,
-    output_dir: str = "outputs",
+    output_dir: str,
     model_name: str = MODEL_NAME,
     chunk_minutes: int = NORAI_AUDIO_CHUNK_MINUTES,
 ) -> dict[str, Any]:

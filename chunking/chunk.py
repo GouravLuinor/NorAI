@@ -168,7 +168,7 @@ def save_chunks(
 
 def chunk_transcript(
     transcript_json_path,
-    output_dir="outputs",
+    output_dir,
     segments_per_chunk=None
 ):
     """
@@ -240,7 +240,8 @@ def chunk_transcript(
 if __name__ == "__main__":
 
     result = chunk_transcript(
-        "outputs/transcripts/ciHThtTVNto.json"
+        "outputs/transcripts/ciHThtTVNto.json",
+        "outputs"
     )
 
     print(json.dumps(

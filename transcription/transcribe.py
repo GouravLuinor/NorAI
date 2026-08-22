@@ -297,7 +297,7 @@ def save_json_transcript(
 def transcribe_audio(
     audio_path: str,
     metadata_path: str,
-    output_dir: str = "outputs",
+    output_dir: str,
     backend: str | None = None,
     model_size: str = DEFAULT_MODEL_SIZE,
     vad_filter: bool = DEFAULT_VAD_FILTER,
@@ -429,8 +429,9 @@ if __name__ == "__main__":
     )
 
     result = transcribe_audio(
-        audio_path=audio_path,
-        metadata_path=metadata_path,
+        audio_path,
+        metadata_path,
+        "outputs",
         model_size="base"
     )
 

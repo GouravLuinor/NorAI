@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useThreadStore } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { useLectureStore } from '../../stores/useLectureStore'   // ← added
-import { buildReferences } from '../../lib/references'
+import { buildReferences, stripSources } from '../../lib/references'
 import { sendChatMessage } from '../../lib/chatApi'
+import { genId } from '../../lib/id'
 import { Sparkles } from 'lucide-react'
 import { Button } from '../ui/Button'
 
@@ -17,8 +18,6 @@ export function HighlightAsk() {
 
   // ── Lecture‑aware ───────────────────────────────────────────────────────
   const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
-
-  const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
   const clearSelection = useCallback(() => {
     setSelection(null)
@@ -107,7 +106,7 @@ export function HighlightAsk() {
         buildReferences(data.retrieved_chunks ?? [], data.retrieved_images ?? [], '', data.verified_citations ?? [])
       )
 
-      const cleanAnswer = data.answer.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
+      const cleanAnswer = stripSources(data.answer)
 
       // RC-FIX2: Atomic dedup — same guard as ChatArea.
       // If loadThreadMessages already injected this response from the backend

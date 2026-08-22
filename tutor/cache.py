@@ -45,7 +45,8 @@ from pathlib import Path
 from google import genai
 from google.genai import types
 
-from config import MODEL_NAME, TUTOR_CACHE_TTL_SECONDS, get_api_key
+from config import MODEL_NAME, TUTOR_CACHE_TTL_SECONDS
+from backend.gemini_client import get_client as _shared_gemini_client
 
 logger = logging.getLogger(__name__)
 
@@ -59,19 +60,13 @@ DEFAULT_TTL_SECONDS = TUTOR_CACHE_TTL_SECONDS
 #                 "created": epoch seconds}
 _registry: dict[str, dict] = {}
 _registry_lock = threading.Lock()
-_client: genai.Client | None = None
-_client_lock = threading.Lock()
 
 
 def _get_client() -> genai.Client:
-    """Return a lazily-created, module-shared genai.Client (thread-safe)."""
-    global _client
-    if _client is not None:
-        return _client
-    with _client_lock:
-        if _client is None:
-            _client = genai.Client(api_key=get_api_key())
-        return _client
+    """Return the shared genai.Client (lazy, thread-safe, cached — see
+    backend.gemini_client). Kept as a thin wrapper so tests can keep patching
+    ``tutor.cache._get_client``."""
+    return _shared_gemini_client()
 
 
 def estimate_tokens(text: str) -> int:

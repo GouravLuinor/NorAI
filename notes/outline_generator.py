@@ -1,15 +1,14 @@
 import json
 import logging
 from pathlib import Path
-import os
 
-from google import genai
 from dotenv import load_dotenv
 from notes.outline_prompts import OUTLINE_PROMPT
 
 
 load_dotenv()
 
+from backend.gemini_client import get_client
 from backend.ratelimit import rate_limiter as _limiter
 from backend.usage_ledger import record_generate_usage
 from cache_util import outputs_current, write_marker
@@ -31,27 +30,7 @@ def load_llm():
     Load Gemini model.
     """
 
-    api_key = os.getenv(
-        "GEMINI_API_KEY"
-    )
-
-    if not api_key:
-        raise ValueError(
-            "GEMINI_API_KEY not found."
-        )
-
-    client = genai.Client(
-        api_key=api_key
-    )
-
-    return client
-
-
-
-# client = load_llm()
-
-
-client = load_llm()
+    return get_client()
 
 
 
@@ -164,6 +143,8 @@ def generate_outline(
     prompt = build_prompt(
         chapters
     )
+
+    client = load_llm()
 
     _limiter.wait()
 
@@ -397,8 +378,8 @@ def generate_lecture_outline(
 
 def main():
     result = generate_lecture_outline(
-        objects_dir="outputs/merged_objects",
-        output_dir="outputs",
+        "outputs/merged_objects",
+        "outputs",
     )
     logger.info(f"Outline generated: {result}")
 

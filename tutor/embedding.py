@@ -42,16 +42,13 @@ Usage:
 
 from __future__ import annotations
 
-import os
 from typing import List
 
 from chromadb import EmbeddingFunction, Embeddings
 
 from tutor.retrieval_config import EMBEDDING_DIMS, EMBEDDING_MODEL
 from backend.usage_ledger import record_embed_usage
-from dotenv import load_dotenv
-
-load_dotenv()
+from backend.gemini_client import get_client, invoke_with_policy
 
 # P1.8: monotonically increasing count of embedding batch calls (each __call__
 # is one batchEmbedContents request). Snapshot before/after a pipeline run to
@@ -67,6 +64,10 @@ def reset_embed_counter() -> None:
 
 def snapshot_embed_batches() -> int:
     return TOTAL_EMBED_BATCHES
+
+# Retry attempts for one embed batch (pre-existing local cap, now routed
+# through the shared policy in backend.gemini_client).
+_EMBED_MAX_RETRIES = 3
 
 class GeminiEmbeddingFunction(EmbeddingFunction):
     """
@@ -102,13 +103,12 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
                 "Install it with: pip install google-genai"
             ) from exc
 
-        resolved_key = api_key or os.environ.get("GEMINI_API_KEY")
+        resolved_key = api_key
         if not resolved_key:
-            raise ValueError(
-                "Gemini API key not found. Set GEMINI_API_KEY or pass api_key=."
-            )
-
-        self._client = genai.Client(api_key=resolved_key)
+            # Shared factory: config.get_api_key() (env + .env + validation).
+            self._client = get_client()
+        else:
+            self._client = genai.Client(api_key=resolved_key)
         self._types = genai_types
         self._model = EMBEDDING_MODEL
 
@@ -153,27 +153,28 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
             for t in formatted
         ]
 
-        import time
-        max_retries = 3
-        for attempt in range(max_retries):
+        def _embed_once() -> Embeddings:
+            result = self._client.models.embed_content(
+                model=self._model,
+                contents=contents,
+                config=types.EmbedContentConfig(output_dimensionality=self._dims),
+            )
+            billable = None
             try:
-                result = self._client.models.embed_content(
-                    model=self._model,
-                    contents=contents,
-                    config=types.EmbedContentConfig(output_dimensionality=self._dims),
-                )
+                meta = result.metadata
+                billable = getattr(meta, "billable_character_count", None)
+            except Exception:  # noqa: BLE001
                 billable = None
-                try:
-                    meta = result.metadata
-                    billable = getattr(meta, "billable_character_count", None)
-                except Exception:  # noqa: BLE001
-                    billable = None
-                if not billable:
-                    billable = sum(len(t) for t in formatted)
-                record_embed_usage("embed", self._model, billable)
-                return [e.values for e in result.embeddings]
-            except Exception as e:
-                if attempt == max_retries - 1:
-                    raise
-                # Exponential backoff: 2s, 4s, 8s...
-                time.sleep(2 ** (attempt + 1))
+            if not billable:
+                billable = sum(len(t) for t in formatted)
+            record_embed_usage("embed", self._model, billable)
+            return [e.values for e in result.embeddings]
+
+        # Shared retry policy; embeddings draw on a separate quota, so they
+        # were never RPM-gated (rate_limited=False preserves that).
+        return invoke_with_policy(
+            _embed_once,
+            node="embed",
+            max_retries=_EMBED_MAX_RETRIES,
+            rate_limited=False,
+        )

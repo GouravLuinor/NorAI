@@ -35,6 +35,7 @@ import { create } from 'zustand'
 import { useQuizStore } from './useQuizStore'
 import { apiFetch, sendChatMessage, sendChatMessageStream } from '../lib/chatApi'
 import { buildReferences } from '../lib/references'
+import { genId } from '../lib/id'
 import {
   getLectureId,
   getPersistedThreads,
@@ -97,8 +98,6 @@ interface ThreadState {
   getThreadLabel: (threadId: string) => string
   resetForLectureChange: () => void
 }
-
-const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
 // ---------------------------------------------------------------------------
 // Store
