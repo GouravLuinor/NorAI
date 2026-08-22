@@ -22,6 +22,7 @@ if os.path.exists(_TMP_DB):
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{_TMP_DB}"
 
 import asyncio
+from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 
 from backend.db.database import Base, engine
@@ -44,7 +45,8 @@ FAKE_USER_ID = "user_test_1"
 
 
 async def _seed(user_id: str = FAKE_USER_ID, used: int = 0, quota: int = 15,
-                tier: str = "free", status: str = "trial", ls_sub: str | None = None):
+                tier: str = "free", status: str = "trial", ls_sub: str | None = None,
+                elapsed_period: bool = False):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     from sqlalchemy import select
@@ -66,6 +68,13 @@ async def _seed(user_id: str = FAKE_USER_ID, used: int = 0, quota: int = 15,
                 monthly_minutes_quota=quota, used_minutes_this_month=used,
                 lemon_squeezy_subscription_id=ls_sub,
             ))
+        if elapsed_period:
+            now = datetime.now(timezone.utc)
+            target = sub or next(
+                x for x in s.new if isinstance(x, Subscription) and x.user_id == user_id
+            )
+            target.current_period_start = now - timedelta(days=40)
+            target.current_period_end = now - timedelta(days=10)
         await s.commit()
 
 
@@ -192,6 +201,39 @@ def test_process_rejects_exhausted_quota():
         main_mod.app.dependency_overrides.clear()
 
 
+def test_quota_rolls_over_expired_period():
+    # P0 regression: /quota must roll an elapsed billing period forward
+    # instead of reporting a permanently exhausted quota.
+    asyncio.run(_seed(used=15, quota=15, elapsed_period=True))
+    client = TestClient(main_mod.app)
+    main_mod.app.dependency_overrides[main_mod.get_current_user_optional] = _fake_user()
+    try:
+        r = client.get("/quota")
+        data = r.json()
+        check("expired-period quota 200", r.status_code == 200)
+        check("expired-period used rolled to 0", data["used_minutes_this_month"] == 0)
+        check("expired-period remaining restored", data["remaining_minutes"] == 15)
+    finally:
+        main_mod.app.dependency_overrides.clear()
+
+
+def test_process_unlocked_after_period_rollover():
+    # P0 regression: rollover used to run only on pipeline completion, which
+    # this very gate blocked — expired-period users were 429-locked forever.
+    asyncio.run(_seed(used=15, quota=15, elapsed_period=True))
+    client = TestClient(main_mod.app)
+    main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
+    try:
+        r = client.post(
+            "/process",
+            data={"source_type": "upload", "duration": "1"},
+            files={"file": ("v.mp4", b"fakedata", "video/mp4")},
+        )
+        check("process not 429 after period rollover", r.status_code != 429)
+    finally:
+        main_mod.app.dependency_overrides.clear()
+
+
 def test_process_rejects_over_free_trial_duration():
     asyncio.run(_seed(used=0, quota=15))
     client = TestClient(main_mod.app)
@@ -235,6 +277,8 @@ if __name__ == "__main__":
     test_guest_has_trial_quota()
     test_process_enforces_pre_download_quota()
     test_process_rejects_exhausted_quota()
+    test_quota_rolls_over_expired_period()
+    test_process_unlocked_after_period_rollover()
     test_process_rejects_over_free_trial_duration()
     test_process_allows_within_quota_upload()
     print(f"\n{PASSED} passed, {FAILED} failed")

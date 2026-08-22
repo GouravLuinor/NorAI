@@ -341,16 +341,24 @@ async def generate_answer_node(state: dict, config: RunnableConfig, output_dir: 
 
     # Extract text if the chunk content is a list of blocks (handling
     # 'thinking' models): append the block's "text" fragments in stream order.
+    # P0 fix: guard the stream — an unguarded Gemini outage used to kill the
+    # whole turn mid-flight, leaving the SSE client without a final frame.
     text_parts: list[str] = []
-    async for chunk in llm.astream(prompt_messages):
-        content = chunk.content
-        if isinstance(content, str):
-            if content:
-                text_parts.append(content)
-        elif isinstance(content, list):
-            for block in content:
-                if isinstance(block, dict) and block.get("text"):
-                    text_parts.append(block["text"])
+    try:
+        async for chunk in llm.astream(prompt_messages):
+            content = chunk.content
+            if isinstance(content, str):
+                if content:
+                    text_parts.append(content)
+            elif isinstance(content, list):
+                for block in content:
+                    if isinstance(block, dict) and block.get("text"):
+                        text_parts.append(block["text"])
+    except Exception:
+        logger.exception("generate_answer_node: LLM stream failed")
+        text_parts.append(
+            "I couldn't reach the AI service just now. Please try again in a moment."
+        )
     answer_text = "".join(text_parts)
 
     logger.debug(f"generate_answer_node: answered ({len(answer_text)} chars)")

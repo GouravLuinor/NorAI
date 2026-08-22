@@ -801,3 +801,21 @@
 - **Files Touched**: `COMMUNICATOR.md`, `AGENTS.md`
 - **Summary**: Established `COMMUNICATOR.md` as the official handoff bridge between Antigravity and OpenCode per user request. Read all codebase `.md` docs for full project context.
 - **Hand-off Notes**: Ready to collaborate with OpenCode on ongoing feature developments.
+
+---
+
+### [2026-08-22] — OpenCode: Phase 0 "Stop the Bleeding" (audit fixes) Complete
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed — all gates green
+- **Context**: Follows `AUDIT_2026-08-22.md` (10-agent deep audit). This was Phase 0 of the 6-phase plan.
+- **Done**:
+  1. Prod guard: backend refuses to boot when `NORAI_DEV_ACCESS`/`NORAI_DEV_INSECURE_AUTH=1` with `NORAI_ENV=production` (`auth.py`, `main.py`); `.env.example` default flipped to `0`.
+  2. `/threads*` endpoints now gated via `ensure_lecture_access` (reads: owner/share-link; create/delete: tutor-gate like `/chat`); raw `str(e)` leak in `GET /threads/{id}` replaced with logged generic 500.
+  3. New `_assert_task_access`: `/process/{id}/status` owner-or-share gated, `/process/{id}/cancel` owner-only; pipeline error messages sanitized (paths stripped, 300-char cap).
+  4. Quota rollover deadlock fixed: `rollover_if_needed()` now runs before the compare in `/quota` + `/process`; +2 regression tests in `test_billing_quota.py`.
+  5. Upload estimate unit bug fixed: frontend sends minutes to `/estimate` (was seconds → ~60× inflation).
+  6. AuthModal rebuilt on house `Dialog` primitive (focus trap/Escape/restore); 12 fake Tailwind classes replaced; label/htmlFor pairs; aria-label close.
+  7. Dead Copy buttons wired via new `ui/CopyButton.tsx` (NotesView + RevisionView); missing `--text-24`/`--text-32` tokens added to ramp.
+  8. Tutor: quiz answer-key KeyError guarded (`quiz_nodes.py`); answer-stream LLM failure degrades gracefully instead of killing SSE turn (`nodes.py`).
+- **Verification**: `scripts/run-tests.sh` 40/40 PASS · `npm run lint` clean · `tsc -b && vite build` OK · vitest 73/73.
+- **Pending / Next**: Phase 1 (authz & abuse hardening) per AUDIT_2026-08-22.md §5. No commit made yet — awaiting user instruction.

@@ -31,6 +31,16 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "")
 DEV_INSECURE_AUTH = os.environ.get("NORAI_DEV_INSECURE_AUTH", "") == "1"
 
+# Fail closed: the insecure-auth escape hatch decodes JWTs WITHOUT signature
+# verification (any `sub` claim impersonates any account). It must never be
+# active when the process claims to run in production — refuse to even import.
+IS_PROD = os.environ.get("NORAI_ENV") == "production"
+if IS_PROD and DEV_INSECURE_AUTH:
+    raise RuntimeError(
+        "Refusing to start: NORAI_DEV_INSECURE_AUTH=1 disables JWT signature "
+        "verification and must never be set while NORAI_ENV=production."
+    )
+
 # Supabase access tokens are issued with aud "authenticated" for both
 # email/OAuth users and anonymous (signInAnonymously) sessions.
 ALLOWED_AUDIENCES = {"authenticated", "anon"}
@@ -57,7 +67,7 @@ def decode_supabase_jwt(token: str) -> Optional[Dict[str, Any]]:
             key = _jwks_client.get_signing_key_from_jwt(token).key
         elif alg == "HS256" and SUPABASE_JWT_SECRET:
             key = SUPABASE_JWT_SECRET
-        elif DEV_INSECURE_AUTH:
+        elif DEV_INSECURE_AUTH and not IS_PROD:
             # Local-only escape hatch: decode without signature verification.
             payload = pyjwt.decode(token, options={"verify_signature": False})
             if not payload.get("sub"):
