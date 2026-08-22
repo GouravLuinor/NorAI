@@ -13,9 +13,12 @@ import { SlidersHorizontal } from 'lucide-react'
 import { FOCUS_RING } from '../ui/shared'
 
 export function AIPanel() {
-  const { activeChapterId } = useChapterStore()
+  const activeChapterId = useChapterStore((s) => s.activeChapterId)
   const activeLectureId = useLectureStore(s => s.activeLectureId)
-  const { aiMode, setMode, startQuiz, setQuizLoading } = useQuizStore()
+  const aiMode = useQuizStore((s) => s.aiMode)
+  const setMode = useQuizStore((s) => s.setMode)
+  const startQuiz = useQuizStore((s) => s.startQuiz)
+  const setQuizLoading = useQuizStore((s) => s.setQuizLoading)
   const addToast = useToastStore(s => s.addToast)
   const [settingsOpen, setSettingsOpen] = useState(false)
 

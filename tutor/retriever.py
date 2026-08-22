@@ -126,13 +126,26 @@ def _get_bm25_corpus(chroma_dir: Optional[str] = None):
     return {"ids": ids, "docs": docs, "texts": documents, "metadatas": metadatas, "bm25": bm25}
 
 
+def _unmap_chapter_id(value) -> Optional[int]:
+    """P2.5: chroma metadata stores the sentinel -1 for 'no chapter' (Chroma
+    rejects None values). Map it — and any other negative/garbage value — back
+    to None so chunks/citations/frontend never see -1."""
+    if value is None or value == "":
+        return None
+    try:
+        cid = int(value)
+    except (TypeError, ValueError):
+        return None
+    return cid if cid >= 0 else None
+
+
 def _chunk_from_doc(doc_id: str, text: str, meta: dict, distance: Optional[float]) -> dict:
     """Build a RetrievedChunk dict, computing the P3.8 `relevant` flag."""
     return {
         "text": text,
         "heading": meta.get("heading", ""),
         "heading_path": meta.get("heading_path", ""),
-        "chapter_id": meta.get("chapter_id") or None,
+        "chapter_id": _unmap_chapter_id(meta.get("chapter_id")),
         "source": meta.get("source", ""),
         "distance": distance,
         "chunk_id": doc_id,

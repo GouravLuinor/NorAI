@@ -218,6 +218,14 @@ async def rewrite_query_node(state: dict, config: RunnableConfig) -> dict:
     # conversational context, just the tutor prompt rebuilt each turn)
     all_messages = state.get("messages", [])
     conversational = [m for m in all_messages if not isinstance(m, SystemMessage)]
+
+    # P3.1 latency: with no prior conversation there is nothing to
+    # de-reference, so the rewrite LLM hop (+0.5–2s TTFT) buys nothing on a
+    # first turn — retrieve directly against the raw question.
+    if not conversational:
+        logger.debug("rewrite_query_node: first turn — skipping rewrite LLM call")
+        return {"search_query": question, "retrieved_chunks": [], "retrieved_images": []}
+
     recent = conversational[-(_REWRITE_HISTORY_TURNS * 2) :]  # last N turns
 
     # Build a compact history snippet for the rewrite prompt

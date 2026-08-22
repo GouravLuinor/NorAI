@@ -18,7 +18,9 @@ import { ShareModal } from '../doc/ShareModal'
 export function DocPanel() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
-  const { activeDocTab, setDocTab, activeChapterId } = useChapterStore()
+  const activeDocTab = useChapterStore((s) => s.activeDocTab)
+  const setDocTab = useChapterStore((s) => s.setDocTab)
+  const activeChapterId = useChapterStore((s) => s.activeChapterId)
   const addToast = useToastStore((s) => s.addToast)
   const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
 

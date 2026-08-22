@@ -29,12 +29,13 @@ import re
 import shutil
 import threading
 import time
+from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
 from config import (
@@ -44,13 +45,15 @@ from config import (
     ORPHAN_DIR_GC_AGE_DAYS,
     PIPELINE_HEARTBEAT_INTERVAL_SEC,
     PIPELINE_MAX_ATTEMPTS,
+    PIPELINE_MAX_RUNTIME_SEC,
     PIPELINE_POLL_INTERVAL_SEC,
     PIPELINE_STUCK_TIMEOUT_SEC,
     UPLOAD_GC_AGE_HOURS,
 )
 from backend.db.database import DATABASE_URL, get_engine_kwargs
 from backend.db.models import Lecture
-from backend.orchestrator import PipelineCancelled, run_pipeline
+from backend.orchestrator import PipelineCancelled, TerminalPipelineError, run_pipeline
+from backend.timeutil import ensure_utc as _normalize
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +61,43 @@ _DEFAULT_UPLOAD_DIR = Path("outputs") / "uploads"
 _UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)
 
 
+# P3.1: engine construction is not free and the 1.5s status poll used to pay
+# it on every tick. Engines are cached per (running event loop, DATABASE_URL):
+# an async engine's connections are bound to the loop that created them, and
+# helpers here run under asyncio.run() from worker threads (a fresh loop per
+# call), so a single module-level engine would be wrong — but the hot path
+# (FastAPI's main loop) gets a stable cache hit. NullPool stays: pooled
+# connections would outlive their creating loop.
+_engine_cache_lock = threading.Lock()
+_engine_cache: "OrderedDict[tuple[int, str], AsyncEngine]" = OrderedDict()
+_ENGINE_CACHE_MAX = 16
+
+
+def _get_engine() -> AsyncEngine:
+    try:
+        loop = asyncio.get_running_loop()
+        key = (id(loop), DATABASE_URL)
+    except RuntimeError:
+        key = None  # no running loop → transient engine, nothing to reuse
+
+    if key is None:
+        return create_async_engine(DATABASE_URL, poolclass=NullPool, **get_engine_kwargs(DATABASE_URL))
+
+    with _engine_cache_lock:
+        eng = _engine_cache.get(key)
+        if eng is None:
+            eng = create_async_engine(DATABASE_URL, poolclass=NullPool, **get_engine_kwargs(DATABASE_URL))
+            _engine_cache[key] = eng
+            while len(_engine_cache) > _ENGINE_CACHE_MAX:
+                _engine_cache.popitem(last=False)
+        else:
+            _engine_cache.move_to_end(key)
+        return eng
+
+
 def _make_session_factory():
     return async_sessionmaker(
-        bind=create_async_engine(DATABASE_URL, poolclass=NullPool, **get_engine_kwargs(DATABASE_URL)),
+        bind=_get_engine(),
         class_=AsyncSession,
         expire_on_commit=False,
         autoflush=False,
@@ -75,12 +112,6 @@ async def _run_in_session(fn):
 
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
-
-
-def _normalize(dt: datetime | None) -> datetime | None:
-    if dt is None or dt.tzinfo is not None:
-        return dt
-    return dt.replace(tzinfo=timezone.utc)
 
 
 # ── Progress / status persistence (called from the worker thread) ────────────
@@ -118,8 +149,22 @@ def _get_live_progress(lecture_id: str) -> dict | None:
         return _live_progress.get(lecture_id)
 
 
+_disk_completed_lock = threading.Lock()
+# P3.1: artifact completion is terminal — once notes + chroma exist on disk
+# they stay (there is no lecture-output deletion endpoint), so the 1.5s status
+# poll can skip the three Path.exists stats after the first hit.
+_disk_completed: set[str] = set()
+
+
+def _invalidate_disk_completed(lecture_id: str):
+    with _disk_completed_lock:
+        _disk_completed.discard(lecture_id)
+
+
 def check_disk_completed(lecture_id: str) -> bool:
     """Check if lecture artifacts are complete on disk."""
+    if lecture_id in _disk_completed:
+        return True
     lec_dir = Path("outputs") / lecture_id
     if not lec_dir.is_dir():
         return False
@@ -127,13 +172,16 @@ def check_disk_completed(lecture_id: str) -> bool:
     outline_json = lec_dir / "notes" / "lecture_outline.json"
     chroma_db = lec_dir / "tutor" / "chroma" / "chroma.sqlite3"
     if (notes_md.exists() or outline_json.exists()) and chroma_db.exists():
+        with _disk_completed_lock:
+            _disk_completed.add(lecture_id)
         return True
     return False
 
 
-def update_job_progress(lecture_id: str, stage: str | None, message: str | None, percent: float):
+def update_job_progress(lecture_id: str, stage: str | None, message: str | None, percent: float | None):
     """Persist stage/message/percent + refresh heartbeat. `stage=None` is a
-    heartbeat-only refresh (long single stages must not look stuck)."""
+    heartbeat-only refresh (long single stages must not look stuck). A None
+    percent leaves the displayed progress untouched."""
     _update_live_progress(
         lecture_id,
         stage=stage,
@@ -205,11 +253,21 @@ def _is_cancel_requested(lecture_id: str) -> bool:
         return _cancel_flags.get(lecture_id, False)
 
 
+_TERMINAL_STATUSES = ("completed", "failed", "cancelled")
+
+
 async def request_cancel(lecture_id: str) -> bool:
-    """Persist cancel_requested + set the in-memory flag (async endpoint)."""
+    """Persist cancel_requested + set the in-memory flag (async endpoint).
+
+    P2.1: refuses to mark already-terminal jobs — a cancel against a
+    completed/failed/cancelled lecture must not pretend it did anything.
+    Returns True only when the cancel request was actually recorded.
+    """
     async def _do(session):
         lecture = await session.get(Lecture, lecture_id)
         if lecture is None:
+            return False
+        if lecture.status in _TERMINAL_STATUSES:
             return False
         lecture.cancel_requested = True
         await session.commit()
@@ -309,8 +367,26 @@ def _resolve_upload_path(job) -> str | None:
 
 
 def _heartbeat(lecture_id: str, stop: threading.Event):
+    """Refresh the heartbeat while the pipeline runs.
+
+    P2.1: heartbeats carry percent=None (never reset live progress to 0), and
+    stop entirely once PIPELINE_MAX_RUNTIME_SEC has elapsed — a hung stage
+    then looks stale to the supervisor, which re-queues or fails the job
+    instead of holding a worker slot forever.
+    """
+    started = time.monotonic()
+    capped = False
     while not stop.wait(PIPELINE_HEARTBEAT_INTERVAL_SEC):
-        update_job_progress(lecture_id, None, None, 0.0)
+        if not capped and time.monotonic() - started > PIPELINE_MAX_RUNTIME_SEC:
+            capped = True
+            logger.error(
+                "Pipeline %s exceeded the %ss wall-clock cap — stopping heartbeats so "
+                "the supervisor can recover it",
+                lecture_id, PIPELINE_MAX_RUNTIME_SEC,
+            )
+        if capped:
+            continue
+        update_job_progress(lecture_id, None, None, None)
 
 
 def _run_job(lecture_id: str):
@@ -365,16 +441,41 @@ def _run_job(lecture_id: str):
 
 
 def _handle_failure(lecture_id: str, exc: Exception, file_path: str | None = None):
+    # P2.1: validation errors can never succeed on retry — fail immediately
+    # instead of burning PIPELINE_MAX_ATTEMPTS full paid re-runs.
+    if isinstance(exc, TerminalPipelineError):
+        update_job_progress(
+            lecture_id,
+            "error",
+            exc.friendly[:4000],
+            0.0,
+        )
+        _set_status(lecture_id, "failed", error_message=exc.friendly[:4000])
+        logger.error("Pipeline %s failed terminally (no retry): %s", lecture_id, exc)
+        if file_path:
+            try:
+                Path(file_path).unlink(missing_ok=True)
+            except Exception as e:
+                logger.warning("Failed to delete upload %s: %s", file_path, e)
+        return
+
     attempts = 0
     async def _get():
         async def _do(session):
             lecture = await session.get(Lecture, lecture_id)
-            return (lecture.attempts or 0) if lecture else 0
+            return lecture if lecture else None
         return await _run_in_session(_do)
     try:
-        attempts = asyncio.run(_get())
-    except Exception:
-        pass
+        lecture_row = asyncio.run(_get())
+        attempts = (lecture_row.attempts or 0) if lecture_row is not None else 0
+    except Exception as db_exc:
+        # P2.1: fail closed. If we cannot read the attempt counter, assume the
+        # worst so an exhausted job can never loop through requeues forever.
+        logger.error(
+            "Could not read attempts for %s (%s) — treating as exhausted",
+            lecture_id, db_exc,
+        )
+        attempts = PIPELINE_MAX_ATTEMPTS
 
     if attempts < PIPELINE_MAX_ATTEMPTS:
         update_job_progress(
@@ -500,17 +601,10 @@ def _supervisor_loop():
 # ── Status (async, for the /process/{id}/status endpoint) ───────────────────
 
 async def get_job_status(lecture_id: str) -> dict | None:
-    # 1. Check if artifacts on disk indicate complete
-    if check_disk_completed(lecture_id):
-        return {
-            "status": "completed",
-            "stage": "complete",
-            "message": "All done!",
-            "progress": 100.0,
-            "error_message": None,
-        }
-
-    # 2. Try DB query
+    # 1. P2.1: the DB row is the source of truth. A job cancelled or failed
+    # after artifacts landed on disk must report its real status, so disk
+    # checks only apply when there is no row (legacy/demo lectures) or the
+    # DB is unreachable.
     try:
         async def _do(session):
             lecture = await session.get(Lecture, lecture_id)
@@ -527,7 +621,10 @@ async def get_job_status(lecture_id: str) -> dict | None:
         status = await _run_in_session(_do)
         if status:
             if status.get("status") == "completed" or (
-                status.get("progress") and status["progress"] >= 100.0
+                status.get("status") != "failed"
+                and status.get("status") != "cancelled"
+                and status.get("progress")
+                and status["progress"] >= 100.0
             ):
                 status["status"] = "completed"
                 status["stage"] = "complete"
@@ -536,6 +633,16 @@ async def get_job_status(lecture_id: str) -> dict | None:
             return status
     except Exception as exc:
         logger.warning("DB get_job_status failed for %s: %s", lecture_id, exc)
+
+    # 2. No DB row (or DB down): fall back to artifact completion on disk.
+    if check_disk_completed(lecture_id):
+        return {
+            "status": "completed",
+            "stage": "complete",
+            "message": "All done!",
+            "progress": 100.0,
+            "error_message": None,
+        }
 
     # 3. Try in-memory live progress
     live = _get_live_progress(lecture_id)

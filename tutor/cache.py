@@ -39,6 +39,7 @@ import json
 import logging
 import threading
 import time
+from collections import OrderedDict
 from pathlib import Path
 
 from google import genai
@@ -86,6 +87,15 @@ def reset_registry() -> None:
 
 # ── Prefix assembly ───────────────────────────────────────────────────────────
 
+# P3.1: lecture artifacts are stable post-pipeline, but this loader re-read
+# up to MAX_PREFIX_CHARS (~40K chars) of outline+notes+transcript on EVERY
+# tutor turn. Key the cache by a stat signature (path, mtime_ns, size) so an
+# edited/regenerated lecture invalidates itself for free.
+_context_cache_lock = threading.Lock()
+_context_cache: "OrderedDict[tuple, str]" = OrderedDict()
+_CONTEXT_CACHE_MAX = 8
+
+
 def _load_lecture_context(lecture_dir: str | Path | None) -> str:
     """Assemble stable, quality-neutral lecture context to pad the prefix past
     the 4096-token minimum.
@@ -102,6 +112,29 @@ def _load_lecture_context(lecture_dir: str | Path | None) -> str:
     if not lecture_dir:
         return ""
     root = Path(lecture_dir)
+
+    notes_dir = root / "notes"
+    outline_path = notes_dir / "lecture_outline.json"
+    try:
+        candidates = [outline_path]
+        candidates.extend(sorted(notes_dir.glob("chapter_*.md")))
+        candidates.extend(sorted((root / "transcripts").glob("*.txt")))
+        signature = tuple(
+            (str(p), st.st_mtime_ns, st.st_size)
+            for p in candidates
+            if (st := p.stat()) is not None
+        )
+        cache_key: tuple | None = (str(root), signature)
+    except OSError:
+        cache_key = None
+
+    if cache_key is not None:
+        with _context_cache_lock:
+            hit = _context_cache.get(cache_key)
+            if hit is not None:
+                _context_cache.move_to_end(cache_key)
+                return hit
+
     blocks: list[str] = []
 
     outline_path = root / "notes" / "lecture_outline.json"
@@ -140,6 +173,12 @@ def _load_lecture_context(lecture_dir: str | Path | None) -> str:
     joined = "\n\n".join(blocks)
     if len(joined) > MAX_PREFIX_CHARS:
         joined = joined[:MAX_PREFIX_CHARS]
+
+    if cache_key is not None:
+        with _context_cache_lock:
+            _context_cache[cache_key] = joined
+            while len(_context_cache) > _CONTEXT_CACHE_MAX:
+                _context_cache.popitem(last=False)
     return joined
 
 

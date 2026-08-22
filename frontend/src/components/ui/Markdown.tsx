@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -24,8 +25,17 @@ const COMPONENTS: Record<MarkdownVariant, typeof docMarkdownComponents> = {
   chat: chatMarkdownComponents,
 }
 
-/** Single shared ReactMarkdown renderer for every markdown surface. */
-export function Markdown({
+// P3.3: plugin arrays are hoisted to module scope. ReactMarkdown diffs its
+// config per render; a fresh array literal invalidates the internal plugin
+// memoization and forces a full mdast/hast re-parse (highlight + KaTeX) on
+// every parent re-render even when `children` is unchanged.
+const REMARK_PLUGINS = [remarkGfm, remarkMath]
+const REHYPE_PLUGINS = [rehypeHighlight, rehypeKatex]
+
+/** Single shared ReactMarkdown renderer for every markdown surface.
+ *  Memoized: markdown surfaces are leaf nodes whose text rarely changes —
+ *  parent re-renders skip the parse entirely when children/variant match. */
+export const Markdown = memo(function Markdown({
   children,
   variant = 'doc',
 }: {
@@ -34,11 +44,11 @@ export function Markdown({
 }) {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm, remarkMath]}
-      rehypePlugins={[rehypeHighlight, rehypeKatex]}
+      remarkPlugins={REMARK_PLUGINS}
+      rehypePlugins={REHYPE_PLUGINS}
       components={COMPONENTS[variant]}
     >
       {children}
     </ReactMarkdown>
   )
-}
+})

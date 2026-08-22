@@ -152,6 +152,11 @@ PIPELINE_POLL_INTERVAL_SEC = 2.0
 # (crashed worker / server restart) and is re-queued or failed.
 PIPELINE_STUCK_TIMEOUT_SEC = int(os.environ.get("NORAI_PIPELINE_STUCK_TIMEOUT_MIN", "15")) * 60
 PIPELINE_MAX_ATTEMPTS = int(os.environ.get("NORAI_PIPELINE_MAX_ATTEMPTS", "3"))
+# P2.1: hard wall-clock cap for a single pipeline run. The heartbeat thread
+# stops refreshing past this, so the supervisor's stale-heartbeat recovery
+# re-queues/fails the job — a hung yt-dlp/ffmpeg/Gemini call can no longer
+# starve the worker slots forever.
+PIPELINE_MAX_RUNTIME_SEC = int(os.environ.get("NORAI_PIPELINE_MAX_RUNTIME_MIN", "90")) * 60
 # Worker touches heartbeat_at on the Lecture row every this many seconds so
 # long single stages (e.g. transcription) never look stuck.
 PIPELINE_HEARTBEAT_INTERVAL_SEC = 30

@@ -18,17 +18,25 @@ _registry_lock = threading.Lock()
 
 def _load() -> dict:
     with _registry_lock:
-        if not REGISTRY_PATH.exists():
-            return {}
-        with open(REGISTRY_PATH, encoding="utf-8") as f:
-            return json.load(f)
+        return _load_unlocked()
+
+
+def _load_unlocked() -> dict:
+    if not REGISTRY_PATH.exists():
+        return {}
+    with open(REGISTRY_PATH, encoding="utf-8") as f:
+        return json.load(f)
 
 
 def _save(data: dict):
     with _registry_lock:
-        REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with open(REGISTRY_PATH, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
+        _save_unlocked(data)
+
+
+def _save_unlocked(data: dict):
+    REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(REGISTRY_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
 
 
 def create_lecture(lecture_id: str, title: str = "Untitled Lecture") -> Path:
@@ -40,27 +48,31 @@ def create_lecture(lecture_id: str, title: str = "Untitled Lecture") -> Path:
                 "screenshots/selected", "flashcards", "pdfs", "tutor"):
         (lecture_dir / sub).mkdir(parents=True, exist_ok=True)
 
-    data = _load()
-    if lecture_id not in data:
-        data[lecture_id] = {
-            "lecture_id": lecture_id,
-            "title": title,
-            "created_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-            "output_dir": str(lecture_dir),
-        }
-        _save(data)
+    # P2.3: read-modify-write must be atomic — separate locked load/save calls
+    # let concurrent creates overwrite each other's entries.
+    with _registry_lock:
+        data = _load_unlocked()
+        if lecture_id not in data:
+            data[lecture_id] = {
+                "lecture_id": lecture_id,
+                "title": title,
+                "created_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                "output_dir": str(lecture_dir),
+            }
+            _save_unlocked(data)
 
     return lecture_dir
 
 
 def update_lecture_title(lecture_id: str, title: str):
-    """Update lecture title in registry thread-safely."""
+    """Update lecture title in registry thread-safely (atomic RMW)."""
     if not title or title.strip() in ("", "Untitled Lecture"):
         return
-    data = _load()
-    if lecture_id in data:
-        data[lecture_id]["title"] = title.strip()
-        _save(data)
+    with _registry_lock:
+        data = _load_unlocked()
+        if lecture_id in data:
+            data[lecture_id]["title"] = title.strip()
+            _save_unlocked(data)
 
 
 def get_lecture(lecture_id: str) -> Optional[dict]:
@@ -68,9 +80,14 @@ def get_lecture(lecture_id: str) -> Optional[dict]:
 
 
 def list_lectures() -> list[dict]:
-    lectures = list(_load().values())
-    dirty = False
-    data = _load()
+    # P2.3: one consistent snapshot; expensive per-lecture artifact scans run
+    # OUTSIDE the lock; discovered titles are merged back under the lock so a
+    # concurrent create/update is never clobbered.
+    with _registry_lock:
+        data = _load_unlocked()
+
+    lectures = list(data.values())
+    title_updates: dict[str, str] = {}
 
     for lec in lectures:
         output_dir = Path(lec.get("output_dir", ""))
@@ -107,10 +124,14 @@ def list_lectures() -> list[dict]:
             clean_t = real_title.strip()
             lec["title"] = clean_t
             if lec.get("lecture_id") in data:
-                data[lec["lecture_id"]]["title"] = clean_t
-                dirty = True
+                title_updates[lec["lecture_id"]] = clean_t
 
-    if dirty:
-        _save(data)
+    if title_updates:
+        with _registry_lock:
+            fresh = _load_unlocked()
+            for lid, clean_t in title_updates.items():
+                if lid in fresh:
+                    fresh[lid]["title"] = clean_t
+            _save_unlocked(fresh)
 
     return sorted(lectures, key=lambda x: x.get("created_at", ""), reverse=True)

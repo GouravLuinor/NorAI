@@ -438,6 +438,7 @@ async def save_memory_node(state: dict, config: RunnableConfig) -> dict:
     transcript_str = "\n".join(transcript_lines)
 
     # Summarise via LLM
+    summarised = False
     try:
         from tutor.llm import make_chat_llm
         llm = make_chat_llm(node="save_memory_node", temperature=0.0)
@@ -452,20 +453,25 @@ async def save_memory_node(state: dict, config: RunnableConfig) -> dict:
                 if isinstance(block, dict) and "text" in block
             )
         summary_text = summary_text.strip()
+        summarised = bool(summary_text)
     except Exception as exc:
         logger.error(f"save_memory_node: summarisation failed ({exc})")
         summary_text = "[Earlier conversation truncated.]"
 
     summary_msg = SystemMessage(content=f"{_SUMMARY_PREFIX}\n{summary_text}")
 
-    # P3.6: remove the summarised messages from the persisted transcript so the
-    # store stays bounded. RemoveMessage matches by message id under the
-    # add_messages reducer; messages without an id are left in place.
-    removals = [
-        RemoveMessage(id=m.id)
-        for m in to_summarise
-        if getattr(m, "id", None)
-    ]
+    # P3.6/P2.5: remove the summarised messages from the persisted transcript
+    # ONLY when the LLM actually produced a summary. On a Gemini outage the
+    # originals MUST stay — deleting them and keeping a placeholder would be
+    # permanent transcript loss. Next turn simply retries the summarisation.
+    if summarised:
+        removals = [
+            RemoveMessage(id=m.id)
+            for m in to_summarise
+            if getattr(m, "id", None)
+        ]
+    else:
+        removals = []
 
     # Append the summary as a record in the transcript so load_memory_node can
     # pick it up next turn. The UI filters SystemMessages out of the response.

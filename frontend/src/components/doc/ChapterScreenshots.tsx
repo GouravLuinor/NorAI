@@ -22,26 +22,45 @@ export function ChapterScreenshots({
   lazyLoad?: boolean
 }) {
   const [open, setOpen] = useState(startExpanded)
+  // P3.2: the section is collapsed by default — don't pay for N screenshot
+  // list requests per notes view until the user actually expands it once.
+  const [shouldLoad, setShouldLoad] = useState(startExpanded)
   const [screenshots, setScreenshots] = useState<Screenshot[]>([])
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
 
-  const lectureId = useLectureStore(s => s.activeLectureId) || 'default' 
+  const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
 
   useEffect(() => {
-    if (!chapterId) return
+    if (!chapterId || !shouldLoad) return
+    let cancelled = false
     apiGet<Screenshot[]>(`/screenshots/${chapterId}?lecture_id=${lectureId}`)
-      .then((data) => setScreenshots(data ?? []))
-      .catch(() => setScreenshots([]))
-  }, [chapterId, lectureId])  
+      .then((data) => {
+        if (!cancelled) setScreenshots(data ?? [])
+      })
+      .catch(() => {
+        if (!cancelled) setScreenshots([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [chapterId, lectureId, shouldLoad])
 
   if (!screenshots.length) return null
+
+  const toggleOpen = () => {
+    setOpen((prev) => {
+      const next = !prev
+      if (next) setShouldLoad(true)
+      return next
+    })
+  }
 
   const cleanPath = (raw: string) => raw.replace(/^outputs\//, '')
 
   return (
     <div className="mt-8">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={toggleOpen}
         aria-expanded={open}
         className={`flex items-center gap-2 text-3xs font-semibold text-nt3 uppercase tracking-wider hover:text-nt transition ${FOCUS_RING}`}
       >

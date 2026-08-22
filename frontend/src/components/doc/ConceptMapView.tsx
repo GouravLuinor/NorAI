@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { ZoomIn, ZoomOut, Maximize2, Sparkles, MessageSquare, Compass, X } from 'lucide-react'
 import { useLectureStore } from '../../stores/useLectureStore'
@@ -44,6 +44,10 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const askInFlightRef = useRef(false)
+  // P3.3: rAF coalescing refs for pan dragging (declared before early returns
+  // to keep hook order stable).
+  const panRafRef = useRef<number | null>(null)
+  const pendingPanRef = useRef<{ x: number; y: number } | null>(null)
 
   const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -148,10 +152,16 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
 
   // Calculate layout coordinates for nodes via the shared layout engine.
   // Computed before the early returns so the fit hook below is unconditional.
+  // P3.3: memoized — the layout pass is O(V+E) and was re-running on every
+  // render (each pan/zoom tick included).
   const hasNodes = !!data && !!data.nodes && data.nodes.length > 0
-  const nodePositions = hasNodes
-    ? layoutConceptMap(data.nodes, data.edges, layoutMode, { height: 600 })
-    : {}
+  const nodePositions = useMemo(
+    () =>
+      hasNodes && data
+        ? layoutConceptMap(data.nodes, data.edges, layoutMode, { height: 600 })
+        : {},
+    [hasNodes, data, layoutMode],
+  )
 
   // Auto-fit: on load / layout switch, zoom + pan so the full node cloud fits
   // the viewport (dense maps grow beyond 600px and would otherwise open
@@ -193,7 +203,8 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
     )
   }
 
-  // Drag handlers
+  // Drag handlers — P3.3: pan updates are coalesced to one setState per
+  // animation frame instead of one per mousemove event.
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).tagName === 'button' || (e.target as HTMLElement).closest('.concept-card')) return
     setIsDragging(true)
@@ -202,10 +213,22 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return
-    setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y })
+    pendingPanRef.current = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }
+    if (panRafRef.current !== null) return
+    panRafRef.current = requestAnimationFrame(() => {
+      panRafRef.current = null
+      const next = pendingPanRef.current
+      if (next) setPan(next)
+    })
   }
 
-  const handleMouseUp = () => setIsDragging(false)
+  const handleMouseUp = () => {
+    setIsDragging(false)
+    if (panRafRef.current !== null) {
+      cancelAnimationFrame(panRafRef.current)
+      panRafRef.current = null
+    }
+  }
 
   return (
     <div className="flex flex-col h-full bg-nb relative overflow-hidden select-none">

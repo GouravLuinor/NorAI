@@ -11,24 +11,24 @@ import { scrollToHeading } from '../../lib/cite'
 import { FOCUS_RING } from '../ui/shared'
 
 export function QuizPanel() {
-  const {
-    questions,
-    currentIndex,
-    confidences,
-    score,
-    evaluation,
-    isQuizLoading,
-    quizStartTime,
-    submitAnswer,
-    nextQuestion,
-    endQuiz,
-    finishAttempt,
-    reset,
-    retakeQuiz,
-    setConfidence,
-  } = useQuizStore()
+  // P3.2: narrow selectors — the quiz store also carries evaluation/streaming
+  // state; subscribing wholesale cascades re-renders into this panel.
+  const questions = useQuizStore((s) => s.questions)
+  const currentIndex = useQuizStore((s) => s.currentIndex)
+  const confidences = useQuizStore((s) => s.confidences)
+  const score = useQuizStore((s) => s.score)
+  const evaluation = useQuizStore((s) => s.evaluation)
+  const isQuizLoading = useQuizStore((s) => s.isQuizLoading)
+  const quizStartTime = useQuizStore((s) => s.quizStartTime)
+  const submitAnswer = useQuizStore((s) => s.submitAnswer)
+  const nextQuestion = useQuizStore((s) => s.nextQuestion)
+  const endQuiz = useQuizStore((s) => s.endQuiz)
+  const finishAttempt = useQuizStore((s) => s.finishAttempt)
+  const reset = useQuizStore((s) => s.reset)
+  const retakeQuiz = useQuizStore((s) => s.retakeQuiz)
+  const setConfidence = useQuizStore((s) => s.setConfidence)
 
-  const { setDocTab } = useChapterStore()
+  const setDocTab = useChapterStore((s) => s.setDocTab)
 
   const [selectedAnswer, setSelectedAnswer] = useState('')
   const [showFeedback, setShowFeedback] = useState(false)

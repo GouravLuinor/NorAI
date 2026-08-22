@@ -31,7 +31,7 @@ from typing import Any, List, Optional
 import sqlite3
 import time
 from datetime import datetime, timezone
-from backend.dependencies import get_lecture_db_path, _aget_or_create_lecture_graph, sanitize_lecture_id, configure_sqlite
+from backend.dependencies import get_lecture_db_path, _aget_or_create_lecture_graph, sanitize_lecture_id, configure_sqlite, ThreadDeletedError
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,6 +47,7 @@ from ingest.ingest import probe_video_metadata
 from backend.estimator import estimate_pipeline
 from backend.auth import get_current_user_optional, get_current_user
 from backend.middleware import DailyCounter
+from backend.timeutil import ensure_utc
 from backend.db.database import get_db
 from backend.db.models import User, Subscription, Lecture, UsageLog, Course, CourseLecture, ShareLink
 from backend.usage import record_pipeline_outcome, rollover_if_needed
@@ -744,6 +745,9 @@ async def chat(
         )
         await _flush_tutor_usage_async(user, req.lecture_id or "default", _tutor_before, diff_usage)
         return result
+    except ThreadDeletedError:
+        # P2.2: user-input condition, not a server fault — 409, not 500.
+        raise HTTPException(status_code=409, detail="This conversation was deleted. Please start a new one.")
     except HTTPException as e:
         # P6.4: let access-gate 404s (unshared / tutor-disabled) propagate as-is.
         raise e
@@ -797,6 +801,10 @@ async def chat_stream(
                 yield f"data: {json_lib.dumps(frame)}\n\n"
             yield "data: [DONE]\n\n"
             await _flush_tutor_usage_async(user, req.lecture_id or "default", _tutor_before, diff_usage)
+        except ThreadDeletedError:
+            # P2.2: honest terminal frame for a deleted thread.
+            logging.getLogger("norai").info("Stream aborted: thread %s was deleted", req.thread_id)
+            yield "data: [ERROR] This conversation was deleted. Please start a new one.\n\n"
         except Exception as exc:
             logging.getLogger("norai").exception("POST /chat/stream failed")
             yield "data: [ERROR] An internal error occurred while streaming the answer.\n\n"
@@ -1913,73 +1921,129 @@ async def get_usage(
     else:
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
-    base = select(UsageLog).where(
-        UsageLog.user_id == user.id,
-        UsageLog.created_at >= start,
+    scope = (
+        select(
+            func.coalesce(func.sum(UsageLog.calls), 0).label("calls"),
+            func.coalesce(func.sum(UsageLog.input_tokens), 0).label("input_tokens"),
+            func.coalesce(func.sum(UsageLog.output_tokens), 0).label("output_tokens"),
+            func.coalesce(func.sum(UsageLog.estimated_cost_usd), 0.0).label("cost_usd"),
+        ).where(
+            UsageLog.user_id == user.id,
+            UsageLog.created_at >= start,
+        )
+    )
+    totals_row = (await db.execute(scope)).one()
+
+    # `is_estimated`: any embed-stage row in the period.
+    embed_hit = await db.execute(
+        select(UsageLog.id).where(
+            UsageLog.user_id == user.id,
+            UsageLog.created_at >= start,
+            UsageLog.stage == "embed",
+        ).limit(1)
+    )
+    is_estimated = embed_hit.first() is not None
+
+    _agg_cols = (
+        UsageLog.stage,
+        func.coalesce(func.sum(UsageLog.calls), 0).label("calls"),
+        func.coalesce(func.sum(UsageLog.input_tokens), 0).label("input_tokens"),
+        func.coalesce(func.sum(UsageLog.output_tokens), 0).label("output_tokens"),
+        func.coalesce(func.sum(UsageLog.estimated_cost_usd), 0.0).label("cost_usd"),
+    )
+    _lec_agg_cols = (
+        UsageLog.lecture_id,
+        func.coalesce(func.sum(UsageLog.calls), 0).label("calls"),
+        func.coalesce(func.sum(UsageLog.input_tokens), 0).label("input_tokens"),
+        func.coalesce(func.sum(UsageLog.output_tokens), 0).label("output_tokens"),
+        func.coalesce(func.sum(UsageLog.estimated_cost_usd), 0.0).label("cost_usd"),
     )
 
-    rows: list[Any] = list((await db.execute(base.order_by(UsageLog.created_at))).scalars().all())
+    by_stage_rows = (
+        await db.execute(
+            select(*_agg_cols)
+            .where(UsageLog.user_id == user.id, UsageLog.created_at >= start)
+            .group_by(UsageLog.stage)
+            .order_by(func.sum(UsageLog.estimated_cost_usd).desc())
+        )
+    ).all()
+    by_stage_list = [
+        {
+            "stage": str(r.stage),
+            "calls": int(r.calls),
+            "input_tokens": int(r.input_tokens),
+            "output_tokens": int(r.output_tokens),
+            "cost_usd": float(r.cost_usd),
+        }
+        for r in by_stage_rows
+    ]
 
-    input_tokens = sum(int(r.input_tokens or 0) for r in rows)
-    output_tokens = sum(int(r.output_tokens or 0) for r in rows)
-    calls = sum(int(r.calls or 0) for r in rows)
-    cost = sum(float(r.estimated_cost_usd or 0.0) for r in rows)
+    # Day bucketing is dialect-specific (strftime vs to_char).
+    dialect = db.bind.dialect.name if db.bind is not None else "sqlite"
+    if dialect == "postgresql":
+        day_key = func.to_char(UsageLog.created_at, "YYYY-MM-DD")
+    else:
+        day_key = func.strftime("%Y-%m-%d", UsageLog.created_at)
+
+    by_day_rows = (
+        await db.execute(
+            select(
+                day_key.label("day"),
+                func.coalesce(func.sum(UsageLog.calls), 0).label("calls"),
+                func.coalesce(func.sum(UsageLog.estimated_cost_usd), 0.0).label("cost_usd"),
+                func.coalesce(func.sum(UsageLog.input_tokens), 0).label("input_tokens"),
+                func.coalesce(func.sum(UsageLog.output_tokens), 0).label("output_tokens"),
+            )
+            .where(UsageLog.user_id == user.id, UsageLog.created_at >= start)
+            .group_by(day_key)
+            .order_by(day_key)
+        )
+    ).all()
+    by_day_list = [
+        {
+            "date": str(r.day) if r.day is not None else "unknown",
+            "calls": int(r.calls),
+            "cost_usd": float(r.cost_usd),
+            "input_tokens": int(r.input_tokens),
+            "output_tokens": int(r.output_tokens),
+        }
+        for r in by_day_rows
+    ]
+
+    by_lec_rows = (
+        await db.execute(
+            select(*_lec_agg_cols)
+            .where(UsageLog.user_id == user.id, UsageLog.created_at >= start)
+            .group_by(UsageLog.lecture_id)
+            .order_by(func.sum(UsageLog.estimated_cost_usd).desc())
+        )
+    ).all()
+    by_lecture_list = [
+        {
+            "lecture_id": str(r.lecture_id),
+            "calls": int(r.calls),
+            "cost_usd": float(r.cost_usd),
+            "input_tokens": int(r.input_tokens),
+            "output_tokens": int(r.output_tokens),
+        }
+        for r in by_lec_rows
+    ]
 
     # Quota minutes consumed this month (for the summary card).
     result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
     sub = result.scalar_one_or_none()
     minutes = sub.used_minutes_this_month if sub else 0
 
-    by_stage: dict[str, dict] = {}
-    for r in rows:
-        stage_name = str(r.stage)
-        s = by_stage.setdefault(
-            stage_name,
-            {"stage": stage_name, "calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0},
-        )
-        s["calls"] += int(r.calls or 0)
-        s["input_tokens"] += int(r.input_tokens or 0)
-        s["output_tokens"] += int(r.output_tokens or 0)
-        s["cost_usd"] += float(r.estimated_cost_usd or 0.0)
-
-    by_day: dict[str, dict] = {}
-    for r in rows:
-        day = (r.created_at if r.created_at.tzinfo else r.created_at.replace(tzinfo=timezone.utc))
-        key = str(day.strftime("%Y-%m-%d"))
-        d = by_day.setdefault(
-            key, {"date": key, "calls": 0, "cost_usd": 0.0, "input_tokens": 0, "output_tokens": 0}
-        )
-        d["calls"] += int(r.calls or 0)
-        d["cost_usd"] += float(r.estimated_cost_usd or 0.0)
-        d["input_tokens"] += int(r.input_tokens or 0)
-        d["output_tokens"] += int(r.output_tokens or 0)
-
-    by_lecture: dict[str, dict] = {}
-    for r in rows:
-        lk = str(r.lecture_id)
-        lec = by_lecture.setdefault(
-            lk, {"lecture_id": lk, "calls": 0, "cost_usd": 0.0, "input_tokens": 0, "output_tokens": 0}
-        )
-        lec["calls"] += int(r.calls or 0)
-        lec["cost_usd"] += float(r.estimated_cost_usd or 0.0)
-        lec["input_tokens"] += int(r.input_tokens or 0)
-        lec["output_tokens"] += int(r.output_tokens or 0)
-
-    # Sort by cost desc so the frontend can render top contributors.
-    by_stage_list = sorted(by_stage.values(), key=lambda x: x["cost_usd"], reverse=True)
-    by_day_list = sorted(by_day.values(), key=lambda x: x["date"])
-    by_lecture_list = sorted(by_lecture.values(), key=lambda x: x["cost_usd"], reverse=True)
-
     return {
         "user_id": str(user.id) if user else None,
         "is_anonymous": user.is_anonymous if user else True,
         "period": period,
-        "is_estimated": any(r.stage == "embed" for r in rows),
+        "is_estimated": is_estimated,
         "totals": {
-            "api_calls": calls,
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "cost_usd": round(cost, 6),
+            "api_calls": int(totals_row.calls),
+            "input_tokens": int(totals_row.input_tokens),
+            "output_tokens": int(totals_row.output_tokens),
+            "cost_usd": round(float(totals_row.cost_usd), 6),
             "minutes": minutes,
         },
         "by_stage": by_stage_list,
@@ -2716,9 +2780,7 @@ async def resolve_share_link(
         raise HTTPException(status_code=404, detail="Share link not found")
     now = datetime.now(timezone.utc)
     if link.expires_at is not None:
-        expires_at = link.expires_at
-        if expires_at.tzinfo is None:  # SQLite stores naive UTC datetimes
-            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        expires_at = ensure_utc(link.expires_at)  # SQLite stores naive UTC
         if expires_at < now:
             raise HTTPException(status_code=404, detail="Share link has expired")
     lecture = (
@@ -3082,6 +3144,16 @@ async def cancel_processing_task(
                 raise HTTPException(status_code=404, detail="Task not found")
     cancelled = await jobs.request_cancel(task_id)
     if not cancelled:
+        # P2.1: distinguish "no such task" from "already finished — nothing
+        # to cancel" instead of lying with a success body either way.
+        row = await db.get(Lecture, task_id)
+        if row is None:
+            raise HTTPException(status_code=404, detail="Task not found")
+        if row.status in ("completed", "failed", "cancelled"):
+            raise HTTPException(
+                status_code=409,
+                detail=f"This lecture already finished (status: {row.status}) — nothing to cancel.",
+            )
         raise HTTPException(status_code=404, detail="Task not found")
     return {"cancelled": True}
 

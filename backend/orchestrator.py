@@ -55,6 +55,15 @@ class PipelineCancelled(Exception):
     """Raised when the user requests cancellation and a stage boundary is hit."""
 
 
+class TerminalPipelineError(ValueError):
+    """P2.1: a validation error that retrying can never fix (e.g. lecture
+    duration over the free-trial ceiling). The job queue must fail the run
+    immediately instead of burning paid re-runs."""
+    def __init__(self, message: str, friendly: str | None = None):
+        super().__init__(message)
+        self.friendly = friendly or message
+
+
 # ── Cleanup (P4.2) ───────────────────────────────────────────────────────────
 
 # Transient dirs always removed after a run, on success OR failure.
@@ -176,10 +185,19 @@ def run_pipeline(
                 and os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true"
                 and os.environ.get("NORAI_DEV_ACCESS", "0") != "1"
             ):
-                raise ValueError(
+                raise TerminalPipelineError(
                     f"Lecture duration ({duration_sec / 60:.1f} mins) exceeds the Free Trial limit "
-                    f"of {max_duration_sec / 60:.0f} minutes. Please upgrade to Starter or Pro."
+                    f"of {max_duration_sec / 60:.0f} minutes. Please upgrade to Starter or Pro.",
+                    friendly=(
+                        f"This lecture is {duration_sec / 60:.1f} minutes long — over the "
+                        f"{max_duration_sec / 60:.0f}-minute free-trial limit. Please upgrade to continue."
+                    ),
                 )
+        except json_lib.JSONDecodeError as e:
+            # P2.5: JSONDecodeError subclasses ValueError — it must NOT hit the
+            # terminal re-raise below. Corrupt metadata is a warn-skip: the
+            # pipeline proceeds without duration enforcement.
+            logger.warning(f"Corrupt video metadata ({meta_path}): {e}")
         except ValueError:
             raise
         except Exception as e:

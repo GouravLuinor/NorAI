@@ -52,6 +52,8 @@ export function ProcessingPage() {
     const MAX_DELAY_MS = 10000
     let timer: ReturnType<typeof setTimeout> | null = null
     let delay = BASE_DELAY_MS
+    let lastSignature = ''
+    let stopped = false
 
     const processEventData = (data: ProcessEvent) => {
       const stage = data.stage
@@ -100,14 +102,25 @@ export function ProcessingPage() {
     }
 
     const scheduleNext = () => {
+      // P3.4: hidden tabs don't need live progress — defer polling until the
+      // tab is visible again instead of burning a request every 1.5s for an
+      // hour-long pipeline.
+      if (document.hidden || stopped) return
       timer = setTimeout(poll, delay)
     }
 
     const poll = async () => {
+      timer = null
+      if (stopped) return
+      if (document.hidden) {
+        scheduleNext()  // reschedules only once visible
+        return
+      }
       try {
         const res = await apiFetchRaw(`/process/${taskId}/status`, { signal: controller.signal })
         if (res.status === 404) {
           // Task no longer exists (e.g. GC'd) — nothing left to poll for.
+          stopped = true
           setErrored(true)
           setMessage('Error: This processing task no longer exists.')
           return
@@ -118,10 +131,17 @@ export function ProcessingPage() {
           scheduleNext()
           return
         }
-        delay = BASE_DELAY_MS
         const data = await res.json()
         processEventData(data)
-        if (data.stage === 'complete' || data.stage === 'error') return
+        if (data.stage === 'complete' || data.stage === 'error') {
+          stopped = true
+          return
+        }
+        // P3.4: unchanged payload → stretch the interval; any change snaps
+        // back to fast polling so stage transitions still feel instant.
+        const signature = `${data.stage}|${data.progress}|${data.message}`
+        delay = signature === lastSignature ? Math.min(delay * 1.5, MAX_DELAY_MS) : BASE_DELAY_MS
+        lastSignature = signature
         scheduleNext()
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') return
@@ -131,10 +151,17 @@ export function ProcessingPage() {
       }
     }
 
+    const handleVisibility = () => {
+      if (!document.hidden && timer === null && !stopped) poll()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
     poll()
 
     return () => {
+      stopped = true
       controller.abort()
+      document.removeEventListener('visibilitychange', handleVisibility)
       if (timer) clearTimeout(timer)
     }
   }, [taskId])

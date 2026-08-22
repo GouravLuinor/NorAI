@@ -18,11 +18,15 @@ const AI_MIN_QUIZ_CARDS = 400
 const AI_MAX = 550
 
 export function Workspace() {
-  const { sidebarCollapsed, toggleSidebar } = useChapterStore()
+  // P3.2: subscribe narrowly — bare useStore() returns the whole state and
+  // re-renders this layout shell on ANY chapter/lecture/quiz change.
+  const sidebarCollapsed = useChapterStore((s) => s.sidebarCollapsed)
+  const toggleSidebar = useChapterStore((s) => s.toggleSidebar)
   const { lectureId } = useParams<{ lectureId: string }>()
-  const { setActiveLecture, loadLectures } = useLectureStore()
-  const { loadChapters } = useChapterStore()
-  const { aiMode } = useQuizStore()
+  const setActiveLecture = useLectureStore((s) => s.setActiveLecture)
+  const loadLectures = useLectureStore((s) => s.loadLectures)
+  const loadChapters = useChapterStore((s) => s.loadChapters)
+  const aiMode = useQuizStore((s) => s.aiMode)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(220)
   const [aiPanelWidth, setAiPanelWidth] = useState(268)
