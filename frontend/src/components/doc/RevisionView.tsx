@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Bookmark, GitBranch, Clock, Lightbulb, AlertTriangle, Code, List, FileText, FlaskConical } from 'lucide-react'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { apiFetchRaw } from '../../lib/http'
 import { headingToId } from '../../lib/markdown'
 import { Markdown } from '../ui/Markdown'
 import { Card, CardHeader } from '../ui/Card'
-import { FOCUS_RING } from '../ui/shared'
+import { CopyButton } from '../ui/CopyButton'
 import { PartialContentBadge } from '../ui/PartialContentBadge'
 import { NotesSkeleton } from '../ui/SkeletonCard'
 
@@ -166,6 +166,7 @@ function FormulaCard({ heading, children }: { heading: string; children: React.R
 }
 
 function CodeCard({ heading, children, lang }: { heading: string; children: React.ReactNode; lang?: string }) {
+  const preRef = useRef<HTMLPreElement>(null)
   return (
     <div className="mb-6">
       {heading && (
@@ -177,10 +178,10 @@ function CodeCard({ heading, children, lang }: { heading: string; children: Reac
         {lang && (
           <div className="flex justify-between items-center bg-ns px-4 py-2 border-b border-bdr font-mono text-2xs text-nt3">
             <span>{lang}</span>
-            <button className={`flex items-center gap-1 bg-transparent border-none text-nt3 hover:text-nt cursor-pointer font-inherit ${FOCUS_RING}`}>Copy</button>
+            <CopyButton getValue={() => preRef.current?.textContent ?? ''} />
           </div>
         )}
-        <pre className="p-4 m-0 overflow-x-auto font-mono text-13 text-nt2 leading-relaxed">{children}</pre>
+        <pre ref={preRef} className="p-4 m-0 overflow-x-auto font-mono text-13 text-nt2 leading-relaxed">{children}</pre>
       </Card>
     </div>
   )

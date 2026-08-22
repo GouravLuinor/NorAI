@@ -122,7 +122,9 @@ export function UploadPage() {
         formData.append('url', url.trim())
       } else if (inputType === 'upload' && file) {
         const duration = await readVideoDuration(file)
-        formData.append('duration', String(duration ?? 0))
+        // Backend contract: `duration` is MINUTES on both /estimate and
+        // /process (readVideoDuration returns SECONDS).
+        formData.append('duration', String(duration ? duration / 60 : 0))
       }
       try {
         const res = await apiFetchRaw('/estimate', { method: 'POST', body: formData })

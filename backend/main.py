@@ -48,7 +48,7 @@ from backend.estimator import estimate_pipeline
 from backend.auth import get_current_user_optional, get_current_user
 from backend.db.database import get_db
 from backend.db.models import User, Subscription, Lecture, UsageLog, Course, CourseLecture, ShareLink
-from backend.usage import record_pipeline_outcome
+from backend.usage import record_pipeline_outcome, rollover_if_needed
 from tutor.llm import make_chat_llm
 from flashcards.sm2 import apply_sm2, due_in_days
 from flashcards.anki import build_package
@@ -665,8 +665,14 @@ async def chat_stream(
 # ---------------------------------------------------------------------------
 
 @app.get("/threads")
-async def list_threads(lecture_id: str = "default"):
+async def list_threads(
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     """Return all thread IDs for a lecture."""
+    # P6.4: thread listing is a lecture-scoped read — owner or valid share link.
+    await ensure_lecture_access(lecture_id, user, db)
     db_path = get_lecture_db_path(lecture_id)
     if not db_path.exists():
         return {"threads": ["default"]}
@@ -717,8 +723,16 @@ async def list_threads(lecture_id: str = "default"):
 
 
 @app.post("/threads")
-async def create_thread_endpoint(request: Request, lecture_id: str = "default"):
+async def create_thread_endpoint(
+    request: Request,
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     """Create a new conversation thread in a lecture."""
+    # Threads power the AI tutor, so creation follows the same tutor-gated
+    # write rule as POST /chat (owner or share link with tutor chat enabled).
+    await ensure_lecture_access(lecture_id, user, db, require_tutor=True)
     thread_id = None
     try:
         body = await request.json()
@@ -746,8 +760,15 @@ async def create_thread_endpoint(request: Request, lecture_id: str = "default"):
 
 
 @app.get("/threads/{thread_id}")
-async def get_thread(thread_id: str, lecture_id: str = "default"):
+async def get_thread(
+    thread_id: str,
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     """Return the full message history for a thread in a specific lecture."""
+    # Thread transcripts are private tutor conversations — same gate as /chat.
+    await ensure_lecture_access(lecture_id, user, db, require_tutor=True)
     try:
         graph, _ = await _aget_or_create_lecture_graph(lecture_id)
         config = {"configurable": {"thread_id": thread_id}}
@@ -796,13 +817,23 @@ async def get_thread(thread_id: str, lecture_id: str = "default"):
             "verified_citations": snapshot.values.get("verified_citations", []),
             "answer": snapshot.values.get("answer", ""),
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        logging.getLogger("norai").exception("GET /threads/%s failed", thread_id)
+        raise HTTPException(status_code=500, detail="Internal error loading thread")
 
 
 @app.delete("/threads/{thread_id}")
-async def delete_thread(thread_id: str, lecture_id: str = "default"):
+async def delete_thread(
+    thread_id: str,
+    lecture_id: str = "default",
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     """Delete a thread from a lecture."""
+    # Destructive tutor-write: same gate as POST /chat.
+    await ensure_lecture_access(lecture_id, user, db, require_tutor=True)
     db_path = get_lecture_db_path(lecture_id)
     if db_path.exists():
         try:
@@ -1565,6 +1596,14 @@ NORAI_DEV_ACCESS = (
     or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
 )
 
+# Fail closed: this flag silently bypasses lecture ownership checks. It must
+# never be active when the process claims to run in production.
+if is_prod and NORAI_DEV_ACCESS:
+    raise RuntimeError(
+        "Refusing to start: NORAI_DEV_ACCESS=1 disables lecture ownership "
+        "checks and must never be set while NORAI_ENV=production."
+    )
+
 
 async def ensure_lecture_access(
     lecture_id: str,
@@ -1622,7 +1661,12 @@ async def get_user_quota(
     # Fetch user subscription
     result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
     sub = result.scalar_one_or_none()
-    
+
+    # P0 fix: roll the billing period forward BEFORE reporting usage, else an
+    # expired period shows a permanently exhausted quota in the UI.
+    if sub is not None and rollover_if_needed(sub):
+        await db.commit()
+
     quota = sub.monthly_minutes_quota if sub else 15
     used = sub.used_minutes_this_month if sub else 0
     remaining = max(0, quota - used)
@@ -1880,6 +1924,11 @@ async def start_processing(
     if not NORAI_DEV_ACCESS:
         result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
         sub = result.scalar_one_or_none()
+        # P0 fix: roll the billing period forward BEFORE comparing usage.
+        # Rollover used to run only on pipeline completion — unreachable once
+        # this gate 429s — which permanently locked expired-period users out.
+        if sub is not None and rollover_if_needed(sub):
+            await db.commit()
         quota = sub.monthly_minutes_quota if sub else 15
         used = sub.used_minutes_this_month if sub else 0
         if used >= quota:
@@ -2754,9 +2803,54 @@ async def get_concept_map(
 
 
 
+_PIPELINE_ERR_PATH_RE = re.compile(r"(?:[A-Za-z]:)?(?:/|\\)[^\s'\"`)\],]+")
+
+
+def _sanitize_pipeline_error(message) -> str:
+    """Scrub filesystem paths and internals from pipeline errors before they
+    reach clients (raw tracebacks stay in logs only)."""
+    text = str(message or "").strip()
+    if not text:
+        return ""
+    text = _PIPELINE_ERR_PATH_RE.sub("[path]", text)
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    return (lines[-1] if lines else "Pipeline failed.")[:300]
+
+
+async def _assert_task_access(task_id: str, user: Optional[User], db: AsyncSession) -> None:
+    """Ownership gate for pipeline task state (P6.4 hardening).
+
+    Demo lectures stay public; DB-tracked lectures are visible to their owner
+    or via a valid share link; legacy filesystem-only lectures (no Lecture row)
+    keep working as before.
+    """
+    if task_id in (None, "", "default") or task_id in DEMO_LECTURE_IDS:
+        return
+    if NORAI_DEV_ACCESS and (
+        get_lecture(task_id) is not None or (Path("outputs") / task_id).exists()
+    ):
+        return
+    result = await db.execute(select(Lecture.id).where(Lecture.id == task_id))
+    if result.scalar_one_or_none() is None:
+        return  # legacy/local-registry lecture — no owner row to check
+    if user is None:
+        await _assert_shared_or_404(task_id, db)
+        return
+    owned = await db.execute(
+        select(Lecture.id).where(Lecture.id == task_id, Lecture.user_id == user.id)
+    )
+    if owned.scalar_one_or_none() is None:
+        await _assert_shared_or_404(task_id, db)
+
+
 @app.get("/process/{task_id}/status")
-async def get_task_status(task_id: str):
+async def get_task_status(
+    task_id: str,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     """Return current progress as a single JSON object (P4.1 DB-backed)."""
+    await _assert_task_access(task_id, user, db)
     try:
         status = await jobs.get_job_status(task_id)
     except Exception as exc:
@@ -2775,7 +2869,7 @@ async def get_task_status(task_id: str):
     if status.get("status") in ("failed", "cancelled"):
         return {
             "stage": "error",
-            "message": status.get("error_message") or "Pipeline failed.",
+            "message": _sanitize_pipeline_error(status.get("error_message")) or "Pipeline failed.",
             "progress": status.get("progress") or 0,
         }
     return {
@@ -2786,8 +2880,23 @@ async def get_task_status(task_id: str):
 
 
 @app.post("/process/{task_id}/cancel")
-async def cancel_processing_task(task_id: str):
+async def cancel_processing_task(
+    task_id: str,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     """Request cancellation of a queued/running pipeline (P4.1)."""
+    # Cancel is a destructive write: owner only (share viewers may watch, not stop).
+    if task_id not in (None, "", "default") and task_id not in DEMO_LECTURE_IDS:
+        if not NORAI_DEV_ACCESS:
+            owned = await db.execute(
+                select(Lecture.id).where(
+                    Lecture.id == task_id,
+                    Lecture.user_id == (user.id if user else "__anonymous__"),
+                )
+            )
+            if owned.scalar_one_or_none() is None:
+                raise HTTPException(status_code=404, detail="Task not found")
     cancelled = await jobs.request_cancel(task_id)
     if not cancelled:
         raise HTTPException(status_code=404, detail="Task not found")

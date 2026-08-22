@@ -218,11 +218,16 @@ async def quiz_llm_evaluate(state: dict, config: RunnableConfig) -> dict:
     prompt_lines.append("")
 
     for i, a in enumerate(quiz_answers, 1):
-        prompt_lines.append(f"Q{i} ({a.get('type', '')}): {a['question']}")
-        if a.get("options"):
-            prompt_lines.append(f"Options: {', '.join(a['options'])}")
+        if not isinstance(a, dict):
+            continue
+        prompt_lines.append(f"Q{i} ({a.get('type', '')}): {a.get('question', '(question unavailable)')}")
+        options = a.get("options")
+        if options:
+            prompt_lines.append(f"Options: {', '.join(str(o) for o in options)}")
         prompt_lines.append(f"Your answer: {a.get('user_answer', '')}")
-        prompt_lines.append(f"Correct answer: {a['answer']}")
+        # .get() everywhere: a malformed/legacy answer entry must degrade to
+        # a placeholder line instead of crashing the whole turn (P0 fix).
+        prompt_lines.append(f"Correct answer: {a.get('answer', '(answer key missing)')}")
         if a.get("explanation"):
             prompt_lines.append(f"Explanation: {a['explanation']}")
         prompt_lines.append("")
