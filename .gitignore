@@ -80,3 +80,5 @@ frontend/.tmp/
 
 # Personal OpenCode guide & opinion docs
 opencode-guide/
+# opencode CLI working files
+.opencode/

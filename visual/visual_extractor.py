@@ -3,7 +3,6 @@ import logging
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from google import genai
 from google.genai import types
 import time
 import random
@@ -21,7 +20,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 from pydantic import BaseModel, Field
-from backend.ratelimit import rate_limiter as _limiter
+from backend.gemini_client import get_client, invoke_with_policy
 from backend.usage_ledger import record_generate_usage
 from config import MODEL_NAME, DEFAULT_MAX_RETRIES
 from cache_util import outputs_current, write_marker
@@ -34,17 +33,8 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-API_KEY = os.getenv(
-    "GEMINI_API_KEY"
-)
-
-if not API_KEY:
-    raise ValueError(
-        "GEMINI_API_KEY not found."
-    )
-client = genai.Client(
-    api_key=API_KEY
-)
+# Shared client (backend.gemini_client.get_client) — lazy + cached; importing
+# this module must NOT build a network client or require GEMINI_API_KEY.
 
 
 # Load Mapping
@@ -81,7 +71,7 @@ def upload_images(
 
     def _upload(p):
         logger.info(f"Uploading: {p}")
-        return client.files.upload(file=p)
+        return get_client().files.upload(file=p)
 
     with ThreadPoolExecutor(max_workers=min(len(image_paths), 6)) as executor:
         return list(executor.map(_upload, image_paths))
@@ -121,43 +111,27 @@ def analyze_chunk_images(
         + "\n".join(image_listing)
     )
 
-    for attempt in range(DEFAULT_MAX_RETRIES):
-
-        try:
-            _limiter.wait()
-            response = (
-                client.models.generate_content(
-                    model=MODEL_NAME,
-                    contents=[
-                        *uploaded_files,
-                        enhanced_prompt
-                    ],
-                    config=types.GenerateContentConfig(
-                        temperature=0.2,
-                        response_mime_type="application/json",
-                        response_schema=VisualChunkKnowledgeModel,
-                    )
+    def _analyze_once():
+        response = (
+            get_client().models.generate_content(
+                model=MODEL_NAME,
+                contents=[
+                    *uploaded_files,
+                    enhanced_prompt
+                ],
+                config=types.GenerateContentConfig(
+                    temperature=0.2,
+                    response_mime_type="application/json",
+                    response_schema=VisualChunkKnowledgeModel,
                 )
             )
-            record_generate_usage("visual", MODEL_NAME, response)
+        )
+        record_generate_usage("visual", MODEL_NAME, response)
 
-            return response.text
+        return response.text
 
-        except Exception as e:
-
-            logger.warning(
-                f"Attempt "
-                f"{attempt + 1} failed: "
-                f"{e}"
-            )
-
-            time.sleep(
-                5 * (attempt + 1)
-            )
-
-    raise RuntimeError(
-        f"Gemma failed after {DEFAULT_MAX_RETRIES} attempts."
-    )
+    # Shared retry/RPM policy (backend.gemini_client).
+    return invoke_with_policy(_analyze_once, node="visual")
 
 
 
@@ -680,97 +654,104 @@ For each chunk with screenshots in this chapter:
 Return a JSON matching ChapterVisualKnowledgeModel.
 """
 
-    for attempt in range(DEFAULT_MAX_RETRIES):
-        try:
-            _limiter.wait()
-            client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-            response = client.models.generate_content(
-                model=MODEL_NAME,
-                contents=[*uploaded_files, prompt],
-                config=types.GenerateContentConfig(
-                    temperature=0.2,
-                    response_mime_type="application/json",
-                    response_schema=ChapterVisualKnowledgeModel,
-                    max_output_tokens=3000,
-                )
+    def _chapter_call():
+        response = get_client().models.generate_content(
+            model=MODEL_NAME,
+            contents=[*uploaded_files, prompt],
+            config=types.GenerateContentConfig(
+                temperature=0.2,
+                response_mime_type="application/json",
+                response_schema=ChapterVisualKnowledgeModel,
+                max_output_tokens=3000,
             )
-            record_generate_usage("visual", MODEL_NAME, response)
-            if not response or not response.text:
-                raise ValueError("Gemini returned empty or blocked response (response.text is None)")
-            data = json.loads(response.text)
-            batch_result = ChapterVisualKnowledgeModel(**data)
-            
-            # Save visual objects for each chunk in chapter
-            processed_chunk_ids = set()
-            chunk_times = {c["chunk_id"]: c for c in chapter_chunks}
-            # Resolve each chunk's informative screenshots once so the saved
-            # object and the persisted per-frame analysis agree (L5).
-            resolved_by_chunk = {}
-            for vo in batch_result.visual_objects:
-                chunk_shots = chunk_image_map.get(vo.chunk_id, [])
-                chunk_basenames = {Path(p).name: p for p in chunk_shots}
-                resolved_shots = []
-                for sp in vo.source_screenshots:
-                    if sp in chunk_shots:
-                        resolved_shots.append(sp)
-                    elif Path(sp).name in chunk_basenames:
-                        resolved_shots.append(chunk_basenames[Path(sp).name])
-                resolved_by_chunk[vo.chunk_id] = resolved_shots
+        )
+        record_generate_usage("visual", MODEL_NAME, response)
+        return response
 
-            for vo in batch_result.visual_objects:
-                obj_dict = vo.model_dump()
-                obj_dict["start"] = chunk_times.get(vo.chunk_id, {}).get("start", 0.0)
-                obj_dict["end"] = chunk_times.get(vo.chunk_id, {}).get("end", 0.0)
-                # Filter source_screenshots to valid paths mapped to this chunk
-                chunk_shots = chunk_image_map.get(vo.chunk_id, [])
-                resolved_shots = resolved_by_chunk.get(vo.chunk_id, [])
-                obj_dict["source_screenshots"] = resolved_shots or (chunk_shots if vo.include_in_notes and vo.visual_type not in ("talking_head", "presenter", "face", "none") else [])
-                obj_dict["object_type"] = "visual_object"
-                obj_dict["generated_by"] = MODEL_NAME
-                save_visual_object(obj_dict, output_dir)
-                processed_chunk_ids.add(vo.chunk_id)
+    try:
+        # Shared retry/RPM policy (backend.gemini_client) for transport
+        # errors; parse/validation failures below are terminal and fall
+        # through to the graceful-degradation path immediately.
+        response = invoke_with_policy(
+            _chapter_call,
+            node=f"Chapter {chapter_id} visual batch",
+            max_retries=DEFAULT_MAX_RETRIES,
+        )
+        if not response or not response.text:
+            raise ValueError("Gemini returned empty or blocked response (response.text is None)")
+        data = json.loads(response.text)
+        batch_result = ChapterVisualKnowledgeModel(**data)
 
-            # Persist per-frame analysis so screenshot selection (Stage 12)
-            # can reuse it instead of re-uploading + re-scoring the same keyframes.
-            # Only frames that genuinely depict slides/diagrams get high importance;
-            # presenter webcam / talking head frames are marked as decorative.
-            frames = {}
-            for vo in batch_result.visual_objects:
-                # Use the SAME resolved list the saved object used (L5); when it
-                # is empty no frame in the chunk is treated as a slide (C2).
-                informative_basenames = {Path(p).name for p in resolved_by_chunk.get(vo.chunk_id, [])}
-                for path in chunk_image_map.get(vo.chunk_id, []):
-                    norm_p = os.path.normpath(str(path))
-                    # A frame shared across chunks (mapper fallback can assign the
-                    # same screenshot to adjacent chunks) must not be overwritten
-                    # by a later chunk re-labeling it (L4).
-                    if norm_p in frames:
-                        continue
-                    is_frame_slide = Path(path).name in informative_basenames
-                    frames[norm_p] = {
-                        "ocr_text": vo.ocr_text if is_frame_slide else "",
-                        "importance_score": vo.importance_score if is_frame_slide else 1,
-                        "visual_type": vo.visual_type if is_frame_slide else "talking_head",
-                        "include_in_notes": is_frame_slide,
-                    }
-            if frames:
-                analysis_path = Path(output_dir) / f"visual_analysis_ch{chapter_id}.json"
-                with open(analysis_path, "w", encoding="utf-8") as f:
-                    json.dump({"chapter_id": chapter_id, "frames": frames}, f, indent=2, ensure_ascii=False)
-                logger.info(f"Chapter {chapter_id}: persisted analysis for {len(frames)} frame(s).")
+        # Save visual objects for each chunk in chapter
+        processed_chunk_ids = set()
+        chunk_times = {c["chunk_id"]: c for c in chapter_chunks}
+        # Resolve each chunk's informative screenshots once so the saved
+        # object and the persisted per-frame analysis agree (L5).
+        resolved_by_chunk = {}
+        for vo in batch_result.visual_objects:
+            chunk_shots = chunk_image_map.get(vo.chunk_id, [])
+            chunk_basenames = {Path(p).name: p for p in chunk_shots}
+            resolved_shots = []
+            for sp in vo.source_screenshots:
+                if sp in chunk_shots:
+                    resolved_shots.append(sp)
+                elif Path(sp).name in chunk_basenames:
+                    resolved_shots.append(chunk_basenames[Path(sp).name])
+            resolved_by_chunk[vo.chunk_id] = resolved_shots
 
-            # Fallback for any chunks in chapter missing from LLM response
-            for c in chapter_chunks:
-                if c["chunk_id"] not in processed_chunk_ids:
-                    fallback = create_empty_visual_object(c)
-                    save_visual_object(fallback, output_dir)
-            return
-        except Exception as e:
-            logger.warning(f"Chapter {chapter_id} visual batch attempt {attempt+1} failed: {e}")
-            time.sleep(2 * (attempt + 1))
+        for vo in batch_result.visual_objects:
+            obj_dict = vo.model_dump()
+            obj_dict["start"] = chunk_times.get(vo.chunk_id, {}).get("start", 0.0)
+            obj_dict["end"] = chunk_times.get(vo.chunk_id, {}).get("end", 0.0)
+            # Filter source_screenshots to valid paths mapped to this chunk
+            chunk_shots = chunk_image_map.get(vo.chunk_id, [])
+            resolved_shots = resolved_by_chunk.get(vo.chunk_id, [])
+            obj_dict["source_screenshots"] = resolved_shots or (chunk_shots if vo.include_in_notes and vo.visual_type not in ("talking_head", "presenter", "face", "none") else [])
+            obj_dict["object_type"] = "visual_object"
+            obj_dict["generated_by"] = MODEL_NAME
+            save_visual_object(obj_dict, output_dir)
+            processed_chunk_ids.add(vo.chunk_id)
+
+        # Persist per-frame analysis so screenshot selection (Stage 12)
+        # can reuse it instead of re-uploading + re-scoring the same keyframes.
+        # Only frames that genuinely depict slides/diagrams get high importance;
+        # presenter webcam / talking head frames are marked as decorative.
+        frames = {}
+        for vo in batch_result.visual_objects:
+            # Use the SAME resolved list the saved object used (L5); when it
+            # is empty no frame in the chunk is treated as a slide (C2).
+            informative_basenames = {Path(p).name for p in resolved_by_chunk.get(vo.chunk_id, [])}
+            for path in chunk_image_map.get(vo.chunk_id, []):
+                norm_p = os.path.normpath(str(path))
+                # A frame shared across chunks (mapper fallback can assign the
+                # same screenshot to adjacent chunks) must not be overwritten
+                # by a later chunk re-labeling it (L4).
+                if norm_p in frames:
+                    continue
+                is_frame_slide = Path(path).name in informative_basenames
+                frames[norm_p] = {
+                    "ocr_text": vo.ocr_text if is_frame_slide else "",
+                    "importance_score": vo.importance_score if is_frame_slide else 1,
+                    "visual_type": vo.visual_type if is_frame_slide else "talking_head",
+                    "include_in_notes": is_frame_slide,
+                }
+        if frames:
+            analysis_path = Path(output_dir) / f"visual_analysis_ch{chapter_id}.json"
+            with open(analysis_path, "w", encoding="utf-8") as f:
+                json.dump({"chapter_id": chapter_id, "frames": frames}, f, indent=2, ensure_ascii=False)
+            logger.info(f"Chapter {chapter_id}: persisted analysis for {len(frames)} frame(s).")
+
+        # Fallback for any chunks in chapter missing from LLM response
+        for c in chapter_chunks:
+            if c["chunk_id"] not in processed_chunk_ids:
+                fallback = create_empty_visual_object(c)
+                save_visual_object(fallback, output_dir)
+        return
+    except Exception as e:
+        logger.warning(f"Chapter {chapter_id} visual batch failed: {e}")
 
     # Graceful degradation on failure: write incomplete fallback objects for this chapter
-    logger.error(f"Chapter {chapter_id} visual batch failed after 3 retries. Marking incomplete.")
+    logger.error(f"Chapter {chapter_id} visual batch failed. Marking incomplete.")
     for c in chapter_chunks:
         fallback = create_empty_visual_object(c)
         fallback["incomplete"] = True

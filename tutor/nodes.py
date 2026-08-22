@@ -45,46 +45,6 @@ into a concise paragraph. Include:
 - The student's apparent level of understanding (if evident).
 Keep the summary factual and brief — no more than 7 sentences."""
 
-def chapter_summary_node(state: dict, config: RunnableConfig, output_dir: str | None = None) -> dict:
-    """
-    Load the pre-made revision summary for a chapter and return it as the answer.
-
-    Reads:  state['summary_chapter_id']
-    Writes: state['answer'], state['messages'], clears summary flags
-    """
-    chapter_id = state.get("summary_chapter_id")
-    if chapter_id is None:
-        # Fallback: try the current chapter_id from conversation
-        chapter_id = state.get("chapter_id")
-
-    if chapter_id is None:
-        msg = "Which chapter would you like me to summarize?"
-        return {
-            "messages": [AIMessage(content=msg)],
-            "answer": msg,
-            "summary_requested": False,
-        }
-
-    base = Path(output_dir) if output_dir else Path("outputs")
-    path = base / "revision" / f"revision_chapter_{chapter_id}.md"
-    if not path.exists():
-        msg = f"Sorry, I don't have a summary for chapter {chapter_id}."
-        return {
-            "messages": [AIMessage(content=msg)],
-            "answer": msg,
-            "summary_requested": False,
-        }
-
-    content = path.read_text(encoding="utf-8")
-    logger.info(f"chapter_summary_node: loaded summary for chapter {chapter_id}")
-
-    return {
-        "messages": [AIMessage(content=content)],
-        "answer": content,
-        "summary_requested": False,
-        "summary_chapter_id": None,
-    }
-
 # ── load_memory (rebuilds the prompt window from the transcript) ─────────────
 
 def _msg_char_count(m) -> int:

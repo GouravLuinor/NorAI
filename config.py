@@ -32,6 +32,17 @@ MAX_FRAME_HEIGHT = 720  # Max screenshot resolution (720p) for storage & OCR eff
 
 TEMPERATURE = 0.4
 
+# ── Shared Gemini Retry Policy (audit P5.2) ───────────────────────────────────
+# THE single backoff formula used by backend/gemini_client.invoke_with_policy:
+#   wait = RETRY_BACKOFF_BASE * (attempt + 1) + uniform(RETRY_JITTER_MIN,
+#                                                       RETRY_JITTER_MAX)
+# Attempt count comes from DEFAULT_MAX_RETRIES; every attempt is gated on the
+# shared RPM limiter (DEFAULT_RPM_LIMIT / env NORAI_RPM_LIMIT). Env-tunable so
+# deployments can soften/flatten the curve without code changes.
+RETRY_BACKOFF_BASE = float(os.environ.get("NORAI_RETRY_BACKOFF_BASE", "5"))
+RETRY_JITTER_MIN = float(os.environ.get("NORAI_RETRY_JITTER_MIN", "0.5"))
+RETRY_JITTER_MAX = float(os.environ.get("NORAI_RETRY_JITTER_MAX", "3.0"))
+
 # ── Transcription Backend & Chunking ─────────────────────────────────────────
 NORAI_TRANSCRIPTION_BACKEND = os.environ.get("NORAI_TRANSCRIPTION_BACKEND", "gemini")
 NORAI_AUDIO_CHUNK_MINUTES = int(os.environ.get("NORAI_AUDIO_CHUNK_MINUTES", "18"))

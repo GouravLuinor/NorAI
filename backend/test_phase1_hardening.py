@@ -297,7 +297,10 @@ def test_quiz_flashcard_scoping():
 
         created = client.post("/quiz/attempts", json={
             "lecture_id": SCOPED_LEK, "chapter_id": 1,
-            "difficulty": "All", "questions": [{"q": "2+2?", "answer": "4"}],
+            "difficulty": "All",
+            "questions": [{"id": 1, "type": "MCQ", "question": "2+2?",
+                           "options": ["3", "4"], "answer": "4",
+                           "explanation": "basic arithmetic"}],
         })
         check("attempt created for owner", created.status_code == 200)
         attempt_id = created.json().get("attempt_id", "")

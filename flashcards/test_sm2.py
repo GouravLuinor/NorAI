@@ -144,7 +144,7 @@ def test_apply_sm2_does_not_mutate_input():
 
 def test_db_round_trip_through_real_schema():
     """Persist SM-2 state through the exact backend DDL (incl. lazy ALTER)."""
-    from backend.main import _ensure_flashcard_ratings_table
+    from backend.lecture_db import _ensure_flashcard_ratings_table
 
     with tempfile.TemporaryDirectory() as tmp:
         conn = sqlite3.connect(Path(tmp) / "ck.sqlite")

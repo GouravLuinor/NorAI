@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useThreadStore } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
-import { sendChatMessageStream } from '../../lib/chatApi'
 import { friendlyError } from '../../lib/errorCopy'
-import { buildReferences, stripSources } from '../../lib/references'
 import { scrollToHeading } from '../../lib/cite'
+import { genId } from '../../lib/id'
+import { useAskNora, chatTimestamp } from '../../hooks/useAskNora'
 import type { Reference } from '../../types'
 import { useTutorSettingsStore } from '../../stores/useTutorSettingsStore'
 import { MessageBubble } from './MessageBubble'
@@ -14,17 +14,13 @@ import { ShimmerLoader } from './ShimmerLoader'
 import { Lightbox } from '../ui/Lightbox'
 
 // ── Stable, collision‑free ID generator ────────────────────────────────────
-const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-
 export function ChatArea() {
   const messages   = useThreadStore(s => s.messages)
   const addMessage = useThreadStore(s => s.addMessage)
-  const setLoading = useThreadStore(s => s.setLoading)
   const threadId   = useThreadStore(s => s.threadId)
   const isLoading  = useThreadStore(s => s.isLoading)
 
   const streamingText    = useThreadStore(s => s.streamingText)
-  const setStreamingText = useThreadStore(s => s.setStreamingText)
 
   const liveReferences    = useThreadStore(s => s.liveReferences)
   const setLiveReferences = useThreadStore(s => s.setLiveReferences)
@@ -35,12 +31,27 @@ export function ChatArea() {
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
-  // synchronous in‑flight guard
-  const inFlightRef = useRef(false)
+  // stable thread tracker
+  const activeThreadRef = useRef(threadId)
 
-  // per‑request abort + stable thread tracker
-  const activeThreadRef    = useRef(threadId)
-  const abortControllerRef = useRef<AbortController | null>(null)
+  const { send, abort } = useAskNora({
+    onReferences: (refs, targetThreadId) => {
+      if (activeThreadRef.current === targetThreadId) {
+        setLiveReferences(refs)
+      }
+    },
+    onStreamError: (err, targetThreadId) => {
+      console.error('Chat error:', err)
+      if (activeThreadRef.current === targetThreadId) {
+        addMessage({
+          id: genId(),
+          role: 'assistant',
+          content: friendlyError(err),
+          timestamp: chatTimestamp(),
+        })
+      }
+    },
+  })
 
   // RC-FIX: Keep activeThreadRef in sync so guards in handleSend
   // always compare against the *current* thread, not the one at mount time.
@@ -49,137 +60,12 @@ export function ChatArea() {
   useEffect(() => {
     const previous = activeThreadRef.current
     activeThreadRef.current = threadId
-    if (previous !== threadId) abortControllerRef.current?.abort()
-  }, [threadId])
+    if (previous !== threadId) abort()
+  }, [threadId, abort])
 
 const handleSend = useCallback(async (text: string) => {
-    if (inFlightRef.current) return
-    inFlightRef.current = true
-
-    const targetThreadId = threadId
-
-    // 1. Add user message immediately
-    const userMsg = {
-      id: genId(),
-      role: 'user' as const,
-      content: text,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    }
-    addMessage(userMsg)
-
-    setLoading(true)
-
-    const controller = new AbortController()
-    abortControllerRef.current = controller
-
-    // 2. Stream the answer — chunks feed the transient streaming bubble, the
-    //    final event carries the checkpoint refs. Never slower than the
-    //    non-stream path (the backend streams an already-computed answer).
-    //
-    //    P3.3: chunk-by-chunk setState made the streaming bubble re-parse the
-    //    FULL accumulated string through highlight+KaTeX per chunk (O(n²)
-    //    cumulative work). Accumulate in a local and commit to the store at
-    //    most every STREAM_FLUSH_MS; the final event always flushes.
-    let acc = ''
-    let pendingFlush: number | null = null
-    const flushNow = () => {
-      if (pendingFlush !== null) {
-        window.clearTimeout(pendingFlush)
-        pendingFlush = null
-      }
-      setStreamingText(stripSources(acc))
-    }
-    const scheduleFlush = () => {
-      if (pendingFlush !== null) return
-      pendingFlush = window.setTimeout(() => {
-        pendingFlush = null
-        setStreamingText(stripSources(acc))
-      }, 100)
-    }
-    try {
-      for await (const chunk of sendChatMessageStream(
-        targetThreadId,
-        text,
-        '',
-        controller.signal,
-        { messageId: userMsg.id, studyMode, persona },
-      )) {
-        if (controller.signal.aborted) return
-
-        if (typeof chunk === 'string') {
-          acc += chunk
-          scheduleFlush()
-          continue
-        }
-
-        // 3. Final event — commit the real assistant message under the ORIGINAL
-        //    thread (targetThreadId), even if the user navigated away while waiting.
-        const data = chunk.data
-        flushNow()
-        setStreamingText('')
-
-        const cleanAnswer = stripSources(acc)
-
-        const assistantMsg = {
-          id: data.assistant_message_id || genId(),
-          role: 'assistant' as const,
-          content: cleanAnswer,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        }
-
-        // RC-FIX2: Fully atomic read-check-write inside a single setState.
-        // This eliminates the race where loadThreadMessages could inject the
-        // same assistant message between a getState() snapshot and a separate
-        // setState() call, causing duplicates.
-        useThreadStore.setState((s) => {
-          const currentMessages = s.threadId === targetThreadId
-            ? s.messages
-            : (s._messagesCache[targetThreadId] ?? [])
-
-          // Guard: if loadThreadMessages already brought in this response
-          // (because the backend checkpoint was updated before we got here),
-          // skip the append to avoid a duplicate.
-          if (currentMessages.some(m => m.role === 'assistant' && m.content === cleanAnswer)) {
-            return {}
-          }
-
-          const updated = [...currentMessages, assistantMsg]
-          return {
-            _messagesCache: { ...s._messagesCache, [targetThreadId]: updated },
-            ...(s.threadId === targetThreadId ? { messages: updated } : {}),
-          }
-        })
-
-        // 4. Build references (only show if still on the target thread)
-        if (activeThreadRef.current === targetThreadId) {
-          setLiveReferences(buildReferences(data.retrieved_chunks ?? [], data.retrieved_images ?? [], cleanAnswer, data.verified_citations ?? []))
-        }
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') return
-      console.error('Chat error:', err)
-      if (activeThreadRef.current === targetThreadId) {
-        const errorText = friendlyError(err)
-        addMessage({
-          id: genId(),
-          role: 'assistant',
-          content: errorText,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        })
-      }
-    } finally {
-      // RC-FIX: Always clear loading and inflight state regardless of which
-      // thread is active. The old code guarded this behind activeThreadRef
-      // which could be stale, leaving the shimmer loader permanently visible.
-      if (pendingFlush !== null) {
-        window.clearTimeout(pendingFlush)
-        pendingFlush = null
-      }
-      setStreamingText('')
-      setLoading(false)
-      inFlightRef.current = false
-    }
-  }, [threadId, addMessage, setLoading, setStreamingText, setLiveReferences, studyMode, persona])
+    await send(text, { studyMode, persona })
+  }, [send, studyMode, persona])
 
   // ── Reference handlers ────────────────────────────────────────────────────
   const handleReferenceClick = useCallback((ref: Reference) => {

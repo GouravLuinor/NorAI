@@ -7,9 +7,9 @@ import { Badge } from '../ui/Badge'
 import { useToastStore } from '../../stores/useToastStore'
 import { useThreadStore } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
-import { sendChatMessageStream } from '../../lib/chatApi'
 import { apiGet } from '../../lib/http'
-import { buildReferences } from '../../lib/references'
+import { genId } from '../../lib/id'
+import { useAskNora, chatTimestamp } from '../../hooks/useAskNora'
 import { ConceptSkeleton } from '../ui/SkeletonCard'
 import { FOCUS_RING } from '../ui/shared'
 import {
@@ -23,8 +23,6 @@ import {
 
 export type { ConceptNode, ConceptEdge, ConceptMapResponse }
 
-const stripSources = (text: string) => text.replace(/\*\*Sources\*\*[\s\S]*$/, '').trim()
-
 interface ConceptMapViewProps {
   chapterId: number
 }
@@ -32,8 +30,7 @@ interface ConceptMapViewProps {
 export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
   const lectureId = useLectureStore((s) => s.activeLectureId) || 'default'
   const addToast = useToastStore((s) => s.addToast)
-  const addMessage = useThreadStore((s) => s.addMessage)
-  
+
   const [data, setData] = useState<ConceptMapResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedNode, setSelectedNode] = useState<ConceptNode | null>(null)
@@ -44,89 +41,29 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
   const [layoutMode, setLayoutMode] = useState<ConceptLayoutMode>('tree')
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const askInFlightRef = useRef(false)
   // P3.3: rAF coalescing refs for pan dragging (declared before early returns
   // to keep hook order stable).
   const panRafRef = useRef<number | null>(null)
   const pendingPanRef = useRef<{ x: number; y: number } | null>(null)
 
-  const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+  const { send } = useAskNora({
+    emptyAnswerFallback: 'Here is the detailed explanation for this concept.',
+    referenceAnswer: () => '',
+    onStreamError: (err) => console.error('Failed to stream Nora response:', err),
+  })
 
   const handleAskNora = useCallback(async (conceptLabel: string) => {
-    if (askInFlightRef.current) return
-    askInFlightRef.current = true
-
     const text = `Explain the concept "${conceptLabel}" from Chapter ${chapterId} in detail with examples.`
-    const userMsg = {
+    useThreadStore.getState().addMessage({
       id: genId(),
-      role: 'user' as const,
+      role: 'user',
       content: text,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    }
-    
-    // 1. Add user message and switch to Tutor mode
-    addMessage(userMsg)
+      timestamp: chatTimestamp(),
+    })
     useQuizStore.getState().setMode('tutor')
-
-    // 2. Stream response from backend Gemini API
-    const storeState = useThreadStore.getState()
-    const targetThreadId = storeState.threadId || 'default'
-    storeState.setLoading(true)
-
-    let acc = ''
-    try {
-      for await (const chunk of sendChatMessageStream(
-        targetThreadId,
-        text,
-        '',
-        undefined,
-        { messageId: userMsg.id }
-      )) {
-        if (typeof chunk === 'string') {
-          acc += chunk
-          useThreadStore.getState().setStreamingText(stripSources(acc))
-        } else if (chunk?.data) {
-          useThreadStore.getState().setStreamingText('')
-          const cleanAnswer = stripSources(acc) || 'Here is the detailed explanation for this concept.'
-          const assistantMsg = {
-            id: chunk.data.assistant_message_id || genId(),
-            role: 'assistant' as const,
-            content: cleanAnswer,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          }
-
-          // RC-FIX2: Atomic read-check-write — same guard as ChatArea/HighlightAsk.
-          // If loadThreadMessages already injected this response from the backend
-          // checkpoint, skip the append to avoid duplicates.
-          useThreadStore.setState((s) => {
-            const currentMessages = s.threadId === targetThreadId
-              ? s.messages
-              : (s._messagesCache[targetThreadId] ?? [])
-            if (currentMessages.some(m => m.role === 'assistant' && m.content === cleanAnswer)) {
-              return {}
-            }
-            const updated = [...currentMessages, assistantMsg]
-            return {
-              _messagesCache: { ...s._messagesCache, [targetThreadId]: updated },
-              ...(s.threadId === targetThreadId ? { messages: updated } : {}),
-            }
-          })
-
-          useThreadStore.getState().setLiveReferences(
-            buildReferences(chunk.data.retrieved_chunks ?? [], chunk.data.retrieved_images ?? [], '', chunk.data.verified_citations ?? [])
-          )
-        }
-      }
-    } catch (err) {
-      console.error('Failed to stream Nora response:', err)
-    } finally {
-      useThreadStore.getState().setLoading(false)
-      useThreadStore.getState().setStreamingText('')
-      askInFlightRef.current = false
-    }
-
+    await send(text)
     addToast(`Asked Nora about "${conceptLabel}"`, 'success')
-  }, [chapterId, addMessage, addToast])
+  }, [chapterId, send, addToast])
 
   useEffect(() => {
     let cancelled = false

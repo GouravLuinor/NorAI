@@ -1,14 +1,10 @@
 import json
-import os
 import logging
 from pathlib import Path
-import time
 from dotenv import load_dotenv
 from google import genai
-import random
-from extract.models import (
-    KnowledgeObject
-)
+from google.genai import types
+from extract.models import KnowledgeObject, ChunkKnowledgeModel
 
 from extract.prompts import (
     EXTRACTION_SYSTEM_PROMPT,
@@ -19,7 +15,7 @@ from concurrent.futures import (
     ThreadPoolExecutor,
     as_completed
 )
-from backend.ratelimit import rate_limiter as _limiter
+from backend.gemini_client import get_client, invoke_with_policy
 from backend.usage_ledger import record_generate_usage
 from cache_util import outputs_current, write_marker
 from config import MODEL_NAME, DEFAULT_MAX_RETRIES
@@ -41,18 +37,11 @@ logger = logging.getLogger(__name__)
 
 def load_llm():
 
-    api_key = os.getenv(
-        "GEMINI_API_KEY"
-    )
+    """
+    Shared Gemini client (backend.gemini_client.get_client).
+    """
 
-    if not api_key:
-        raise ValueError(
-            "GEMINI_API_KEY not found."
-        )
-
-    return genai.Client(
-        api_key=api_key
-    )
+    return get_client()
 
 
 # Prompt Builder
@@ -78,9 +67,6 @@ matching this schema:
 
 # Extraction
 
-from google.genai import types
-from extract.models import KnowledgeObject, ChunkKnowledgeModel
-
 def extract_knowledge_object(
     chunk
 ):
@@ -94,7 +80,6 @@ def extract_knowledge_object(
     prompt = build_prompt(
         chunk["text"]
     )
-    _limiter.wait()
     response = (
         client.models.generate_content(
             model=MODEL_NAME,
@@ -140,49 +125,25 @@ def extract_knowledge_object(
 def process_chunk_with_retry(
     chunk,
     max_retries=DEFAULT_MAX_RETRIES,
-    output_dir="outputs/objects"
+    *,
+    output_dir
 ):
     """
-    Process chunk with retry logic.
+    Process chunk with retry logic
+    (shared policy — backend.gemini_client.invoke_with_policy).
     """
 
-    for attempt in range(
-        max_retries
-    ):
+    def _once():
 
-        try:
+        return process_chunk(
+            chunk,
+            output_dir
+        )
 
-            return process_chunk(
-                chunk,
-                output_dir
-            )
-
-        except Exception as e:
-
-            wait_time = (
-                5 * (attempt + 1) + random.uniform(0.5, 3.0)
-            )
-
-            logger.warning(
-                f"Chunk "
-                f"{chunk['chunk_id']} "
-                f"failed ({e}). "
-                f"Retry "
-                f"{attempt + 1}/"
-                f"{max_retries}. "
-                f"Waiting "
-                f"{wait_time}s."
-            )
-
-            time.sleep(
-                wait_time
-            )
-
-    raise RuntimeError(
-        f"Failed chunk "
-        f"{chunk['chunk_id']} "
-        f"after "
-        f"{max_retries} retries."
+    return invoke_with_policy(
+        _once,
+        node=f"Chunk {chunk['chunk_id']}",
+        max_retries=max_retries,
     )
 
 
@@ -190,7 +151,7 @@ def process_chunk_with_retry(
 
 def save_knowledge_object(
     knowledge_object,
-    output_dir="outputs/objects"
+    output_dir
 ):
     """
     Save object as JSON to the given output directory.
@@ -234,7 +195,7 @@ def save_knowledge_object(
 
 def process_chunk(
     chunk,
-    output_dir="outputs/objects"
+    output_dir
 ):
     """
     Extract and save a single chunk.
@@ -324,8 +285,8 @@ def extract_all_chunks(
             executor.submit(
                 process_chunk_with_retry,
                 ch,
-                DEFAULT_MAX_RETRIES,
-                str(objects_dir)
+                max_retries=DEFAULT_MAX_RETRIES,
+                output_dir=str(objects_dir)
             )
             for ch in chunks
         ]
@@ -358,7 +319,7 @@ if __name__ == "__main__":
 
     result = extract_all_chunks(
         CHUNKS_FILE,
-        output_dir="outputs"
+        "outputs"
     )
 
     print(json.dumps(result, indent=4))
