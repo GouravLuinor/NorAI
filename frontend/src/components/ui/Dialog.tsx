@@ -21,7 +21,7 @@ export function Dialog({
   labelledBy,
   ariaDescribedBy,
   onClose,
-  overlayClassName = 'bg-black/50 backdrop-blur-sm',
+  overlayClassName = 'flex items-center justify-center bg-black/50 backdrop-blur-sm',
   panelClassName = '',
   children,
 }: DialogProps) {
@@ -87,7 +87,9 @@ export function Dialog({
   }
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center ${overlayClassName}`} onClick={onClose}>
+    // P4.4: alignment lives in the (overridable) overlay classes so drawers
+    // can anchor to an edge instead of centering.
+    <div className={`fixed inset-0 z-50 flex ${overlayClassName}`} onClick={onClose}>
       <div
         ref={panelRef}
         role="dialog"

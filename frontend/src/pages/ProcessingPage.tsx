@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Check, ArrowRight } from 'lucide-react'
+import { Check, ArrowRight, RotateCcw } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { useAuthStore } from '../stores/useAuthStore'
 import { apiFetchRaw } from '../lib/http'
+import { friendlyError } from '../lib/errorCopy'
 import type { ProcessEvent } from '../types'
 
 interface StageInfo {
@@ -76,7 +77,7 @@ export function ProcessingPage() {
       }
       if (stage === 'error') {
         setErrored(true)
-        setMessage(`Error: ${data.message || 'Something went wrong.'}`)
+        setMessage(friendlyError(data.message || 'Something went wrong.'))
         return
       }
       if (!stage) return
@@ -122,7 +123,7 @@ export function ProcessingPage() {
           // Task no longer exists (e.g. GC'd) — nothing left to poll for.
           stopped = true
           setErrored(true)
-          setMessage('Error: This processing task no longer exists.')
+          setMessage('This processing task no longer exists — it may have expired. Upload the lecture again to retry.')
           return
         }
         if (!res.ok) {
@@ -199,13 +200,13 @@ export function ProcessingPage() {
         <div className="w-full mb-6">
           <div className="h-1.5 bg-transparent border-t border-dashed border-nt4 relative overflow-hidden">
             <div
-              className="absolute left-0 top-0 bottom-0 border-t-2 border-np transition-all duration-500"
+              className="absolute left-0 top-0 bottom-0 border-t-2 border-np transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
           <div className="flex justify-between mt-1.5">
             <span className="spec-label">Progress</span>
-            <span className="spec-label text-np">{Math.round(progress)}%</span>
+            <span className="spec-label text-np tabular-nums">{Math.round(progress)}%</span>
           </div>
         </div>
 
@@ -245,7 +246,7 @@ export function ProcessingPage() {
                   </span>
                   <div className="w-[14px] shrink-0 flex items-center justify-center relative z-10">
                     {isActive ? (
-                      <div className="w-2 h-2 bg-np animate-pulse rounded-[1px]" />
+                      <div className="w-2 h-2 bg-np animate-pulse rounded-xs" />
                     ) : isComplete ? (
                       <Check size={12} strokeWidth={1.5} className="text-ng shrink-0" />
                     ) : (
@@ -269,6 +270,27 @@ export function ProcessingPage() {
             Go to Workspace
             <ArrowRight size={15} strokeWidth={1.5} />
           </Button>
+        )}
+
+        {/* P4.3: errored runs get a recovery action, not a dead end. */}
+        {errored && (
+          <div className="flex flex-col gap-2 mt-8">
+            <Button
+              variant="primary"
+              onClick={() => window.location.reload()}
+              className="w-full gap-2 py-3 rounded-md text-13 fold-marks relative"
+            >
+              <RotateCcw size={14} strokeWidth={1.5} />
+              Retry Processing
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/app')}
+              className="w-full py-2 rounded-md text-xs"
+            >
+              Start a new upload instead
+            </Button>
+          </div>
         )}
       </div>
     </div>

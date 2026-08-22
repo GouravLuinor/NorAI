@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, Sparkles, ShieldCheck, ArrowRight } from 'lucide-react'
 import { useAuthStore } from '../stores/useAuthStore'
+import { FOCUS_RING } from '../components/ui/shared'
 
 interface PricingPageProps {
   onStartWorkspace?: () => void
@@ -105,7 +106,7 @@ export function PricingPage({ onStartWorkspace }: PricingPageProps) {
             role="switch"
             aria-checked={isAnnual}
             aria-label="Billing period"
-            className="relative w-12 h-6 bg-ns2 border border-bdr rounded-full p-0.5 transition-colors cursor-pointer"
+            className={`relative w-12 h-6 bg-ns2 border border-bdr rounded-full p-0.5 transition-colors cursor-pointer hover:border-nt4 ${FOCUS_RING}`}
           >
             <motion.div
               animate={{ x: isAnnual ? 24 : 0 }}

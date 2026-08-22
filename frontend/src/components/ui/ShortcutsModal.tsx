@@ -11,7 +11,6 @@ const shortcuts = [
   { keys: 'Enter', description: 'Send chat message' },
   { keys: 'Shift + Enter', description: 'New line in chat' },
   { keys: 'Escape', description: 'Close sidebar / Cancel' },
-  { keys: 'Ctrl + F', description: 'Search in document' },
 ]
 
 export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps) {

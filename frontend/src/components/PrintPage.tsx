@@ -38,7 +38,7 @@ function PrintPageContent() {
     return (
       <div className="print-document bg-nb text-nt">
         <div className="print-chapter px-8 py-6">
-          <div className="border border-red-500/50 p-6 rounded-lg bg-red-900/10 text-red-400">
+          <div className="border border-nrbr p-6 rounded-lg bg-nrb text-nr">
             <h1 className="text-xl font-bold mb-2">Data Fetch Error</h1>
             <p className="font-mono text-sm">{globalError}</p>
           </div>

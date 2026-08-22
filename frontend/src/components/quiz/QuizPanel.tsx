@@ -160,8 +160,8 @@ export function QuizPanel() {
             {evaluation.per_question_feedback.length > 0 && (
               <div className="w-full max-w-md mb-6 space-y-3">
                 {evaluation.per_question_feedback.map((fb) => (
-                  <div key={fb.question_number} className="bg-nb border border-bdr2 rounded-lg p-3.5 shadow-ev1">
-                    <div className="flex items-start gap-2.5">
+                  <div key={fb.question_number} className="bg-nb border border-bdr2 rounded-lg p-4 shadow-ev1">
+                    <div className="flex items-start gap-2">
                       <div className="w-5 h-5 rounded-sm bg-npf flex items-center justify-center text-2xs font-bold text-npfg shrink-0 mt-0.5">
                         {fb.question_number}
                       </div>
@@ -173,7 +173,7 @@ export function QuizPanel() {
             )}
 
             {/* Nora overall summary */}
-            <div className="flex items-start gap-3.5 w-full max-w-md pt-6 border-t border-bdr mb-8">
+            <div className="flex items-start gap-3 w-full max-w-md pt-6 border-t border-bdr mb-8">
               <div className="w-7 h-7 rounded-sm bg-npf flex items-center justify-center text-xs font-bold text-npfg shrink-0 mt-0.5 shadow-ev1">
                 N
               </div>
@@ -181,7 +181,7 @@ export function QuizPanel() {
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col gap-2.5 w-full max-w-md pb-4">
+            <div className="flex flex-col gap-2 w-full max-w-md pb-4">
               <div className="flex gap-3 w-full">
                 <Button
                   variant="surface"
@@ -295,7 +295,7 @@ export function QuizPanel() {
           <Badge tone="default">{q.difficulty || 'Medium'}</Badge>
         </div>
 
-        <p className="text-[15px] text-nt leading-relaxed mb-6">{q.question}</p>
+        <p className="text-15 text-nt leading-relaxed mb-6">{q.question}</p>
 
         {q.type === 'MCQ' && (
           <div className="space-y-3">
@@ -310,8 +310,8 @@ export function QuizPanel() {
               return (
                 <button key={opt} onClick={() => handleSelectAnswer(opt)} disabled={isAnswered}
                   aria-pressed={isSelected}
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg border border-bdr2 bg-nb text-left transition ${isSelected && !showFeedback ? 'bg-ns3 border-np' : 'hover:bg-ns2 hover:border-bdr'} ${stateClass}`}>
-                  <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${showFeedback && opt === q.answer ? 'bg-ng text-white' : showFeedback && isSelected ? 'bg-nr text-white' : 'bg-ns3 text-nt2'}`}>{letter}</span>
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg border border-bdr2 bg-nb text-left transition ${FOCUS_RING} active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 ${isSelected && !showFeedback ? 'bg-ns3 border-np' : 'hover:bg-ns2 hover:border-bdr'} ${stateClass}`}>
+                  <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold tabular-nums ${showFeedback && opt === q.answer ? 'bg-ng text-npfg' : showFeedback && isSelected ? 'bg-nr text-npfg' : 'bg-ns3 text-nt2'}`}>{letter}</span>
                   <span className="text-sm text-nt2">{opt}</span>
                   {showFeedback && opt === q.answer && <Check size={16} strokeWidth={1.5} className="ml-auto text-ng" />}
                   {showFeedback && isSelected && opt !== q.answer && <X size={16} strokeWidth={1.5} className="ml-auto text-nr" />}
@@ -333,7 +333,7 @@ export function QuizPanel() {
               return (
                 <button key={val} onClick={() => handleSelectAnswer(val)} disabled={isAnswered}
                   aria-pressed={isSelected}
-                  className={`flex-1 py-3 rounded-lg border border-bdr2 bg-nb text-sm font-medium text-nt2 transition ${isSelected && !showFeedback ? 'bg-ns3 border-np' : 'hover:bg-ns2'} ${stateClass}`}>
+                  className={`flex-1 py-3 rounded-lg border border-bdr2 bg-nb text-sm font-medium text-nt2 transition ${FOCUS_RING} active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 ${isSelected && !showFeedback ? 'bg-ns3 border-np' : 'hover:bg-ns2'} ${stateClass}`}>
                   {val}
                 </button>
               )
@@ -391,7 +391,7 @@ export function QuizPanel() {
           </div>
         )}
 
-        {showFeedback && isAutoGraded && (
+        {showFeedback && isAutoGraded && !evaluating && (
           <div className="mt-5 pt-5 border-t border-dashed border-bdr flex items-center gap-2 flex-wrap">
             <span className="text-xs text-nt3 font-medium mr-2">How confident were you?</span>
             {['Guess', 'Unsure', 'Confident', 'Very Confident'].map((lvl) => (
@@ -403,7 +403,7 @@ export function QuizPanel() {
           </div>
         )}
 
-        {showFeedback && isAutoGraded && (
+        {showFeedback && isAutoGraded && !evaluating && (
           <div className="mt-6 flex justify-end">
             <Button
               variant="primary"
@@ -416,7 +416,10 @@ export function QuizPanel() {
         )}
 
         {evaluating && (
-          <div className="mt-8 text-center text-nt3 text-sm">Evaluating your answers…</div>
+          <div role="status" className="mt-8 flex flex-col items-center gap-2 text-nt3 text-sm">
+            <span className="h-4 w-4 rounded-full border-2 border-ns3 border-t-np animate-spin" aria-hidden="true" />
+            Evaluating your answers…
+          </div>
         )}
 
         {evaluateError && !evaluating && (

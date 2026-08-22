@@ -6,6 +6,7 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { PanelLeftOpen, HelpCircle, Bot, BookOpen, X, Menu } from 'lucide-react'
 import { ShortcutsModal } from '../ui/ShortcutsModal'
+import { Dialog } from '../ui/Dialog'
 import { IconButton } from '../ui/IconButton'
 import { useParams } from 'react-router-dom'
 import { useLectureStore } from '../../stores/useLectureStore'
@@ -234,8 +235,9 @@ export function Workspace() {
             <button
               type="button"
               onClick={() => setMobileTab('doc')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition ${
-                mobileTab === 'doc' ? 'bg-ns3 text-nt shadow-ev1' : 'text-nt3'
+              aria-pressed={mobileTab === 'doc'}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition ${FOCUS_RING} active:translate-y-[1px] ${
+                mobileTab === 'doc' ? 'bg-ns3 text-nt shadow-ev1' : 'text-nt3 hover:text-nt2'
               }`}
             >
               <BookOpen size={13} strokeWidth={1.5} /> Notes
@@ -243,8 +245,9 @@ export function Workspace() {
             <button
               type="button"
               onClick={() => setMobileTab('ai')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition ${
-                mobileTab === 'ai' ? 'bg-ns3 text-nt shadow-ev1' : 'text-nt3'
+              aria-pressed={mobileTab === 'ai'}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition ${FOCUS_RING} active:translate-y-[1px] ${
+                mobileTab === 'ai' ? 'bg-ns3 text-nt shadow-ev1' : 'text-nt3 hover:text-nt2'
               }`}
             >
               <Bot size={13} strokeWidth={1.5} /> AI Tutor
@@ -265,17 +268,17 @@ export function Workspace() {
           {mobileTab === 'doc' ? <DocPanel /> : <AIPanel />}
         </div>
 
-        {/* Mobile Sidebar Slide-Over Drawer */}
+        {/* Mobile Sidebar Slide-Over Drawer — P4.4: mounted via the house
+            Dialog primitive (focus trap, Escape, aria-modal). */}
         {sidebarDrawerOpenMobile && (
-          <div className="fixed inset-0 z-50 flex">
-            <div
-              className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-              onClick={() => setSidebarDrawerOpenMobile(false)}
-            />
-            <div className="relative w-72 max-w-[80vw] h-full bg-nb z-10 shadow-ev3 border-r border-bdr2">
-              <Sidebar forceExpanded onToggleCollapse={() => setSidebarDrawerOpenMobile(false)} />
-            </div>
-          </div>
+          <Dialog
+            ariaLabel="Navigation menu"
+            onClose={() => setSidebarDrawerOpenMobile(false)}
+            overlayClassName="flex items-stretch justify-start bg-black/50 backdrop-blur-xs"
+            panelClassName="relative w-72 max-w-[80vw] h-full bg-nb z-10 shadow-ev3 border-r border-bdr2"
+          >
+            <Sidebar forceExpanded onToggleCollapse={() => setSidebarDrawerOpenMobile(false)} />
+          </Dialog>
         )}
 
         <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
@@ -317,9 +320,14 @@ export function Workspace() {
           </button>
         </div>
 
-        {/* AI Panel Slide-Over Drawer for Tablet */}
+        {/* AI Panel Slide-Over Drawer for Tablet — Dialog-mounted (P4.4) */}
         {aiDrawerOpenTablet && (
-          <div className="fixed inset-y-0 right-0 z-50 w-[380px] max-w-[90vw] bg-ns border-l border-bdr2 shadow-ev3 flex flex-col">
+          <Dialog
+            ariaLabel="Nora AI Tutor panel"
+            onClose={() => setAiDrawerOpenTablet(false)}
+            overlayClassName="flex items-stretch justify-end bg-black/50 backdrop-blur-xs"
+            panelClassName="relative w-[380px] max-w-[90vw] h-full bg-ns border-l border-bdr2 shadow-ev3 flex flex-col"
+          >
             <div className="flex items-center justify-between px-3 py-2 border-b border-bdr bg-ns2">
               <span className="font-display font-medium text-xs text-nt">Nora AI Tutor</span>
               <IconButton
@@ -333,7 +341,7 @@ export function Workspace() {
             <div className="flex-1 overflow-hidden">
               <AIPanel />
             </div>
-          </div>
+          </Dialog>
         )}
 
         <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />

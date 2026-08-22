@@ -35,7 +35,7 @@ export const ReferencesPanel = memo(function ReferencesPanel({ references, onRef
         <div className="flex items-center gap-1 text-2xs font-medium text-nt3">
           <Bookmark size={12} strokeWidth={1.5} />
           References
-          <span className="text-3xs bg-ns3 px-1.5 py-0.5 rounded-sm text-nt2">
+          <span className="text-3xs bg-ns3 px-1.5 py-0.5 rounded-sm text-nt2 tabular-nums">
             {references.length}
           </span>
         </div>

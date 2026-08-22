@@ -15,6 +15,7 @@ interface SelectProps {
   placeholder?: string
   className?: string
   id?: string
+  disabled?: boolean
 }
 
 export function Select({
@@ -25,10 +26,14 @@ export function Select({
   placeholder = 'Select option...',
   className = '',
   id,
+  disabled = false,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
+  const typeaheadRef = useRef('')
+  const typeaheadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const generatedId = useId()
   const listboxId = id ? `${id}-listbox` : `select-${generatedId}-listbox`
 
@@ -44,6 +49,10 @@ export function Select({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  useEffect(() => () => {
+    if (typeaheadTimerRef.current) clearTimeout(typeaheadTimerRef.current)
+  }, [])
+
   useEffect(() => {
     if (isOpen) {
       const idx = options.findIndex((opt) => opt.value === value)
@@ -51,11 +60,45 @@ export function Select({
     }
   }, [isOpen, options, value])
 
+  // P4.1: Home/End jump, printable keys typeahead (500ms buffer), Escape
+  // returns focus to the trigger.
+  const handleTypeahead = (e: KeyboardEvent<HTMLButtonElement>) => {
+    typeaheadRef.current += e.key.toLowerCase()
+    if (typeaheadTimerRef.current) clearTimeout(typeaheadTimerRef.current)
+    typeaheadTimerRef.current = setTimeout(() => {
+      typeaheadRef.current = ''
+    }, 500)
+
+    const query = typeaheadRef.current
+    let start = highlightedIndex + 1
+    let match = -1
+    for (let i = 0; i < options.length; i++) {
+      const idx = (start + i) % options.length
+      if (options[idx].label.toLowerCase().startsWith(query)) {
+        match = idx
+        break
+      }
+    }
+    if (match === -1 && query.length > 1) {
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].label.toLowerCase().startsWith(query[0])) {
+          match = i
+          break
+        }
+      }
+    }
+    if (match !== -1) setHighlightedIndex(match)
+  }
+
   const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    if (disabled) return
     if (!isOpen) {
       if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) {
         e.preventDefault()
         setIsOpen(true)
+      } else if (e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        setIsOpen(true)
+        handleTypeahead(e)
       }
       return
     }
@@ -69,6 +112,14 @@ export function Select({
         e.preventDefault()
         setHighlightedIndex((prev) => (prev - 1 + options.length) % options.length)
         break
+      case 'Home':
+        e.preventDefault()
+        setHighlightedIndex(0)
+        break
+      case 'End':
+        e.preventDefault()
+        setHighlightedIndex(options.length - 1)
+        break
       case 'Enter':
       case ' ':
         e.preventDefault()
@@ -80,16 +131,23 @@ export function Select({
       case 'Escape':
         e.preventDefault()
         setIsOpen(false)
+        triggerRef.current?.focus()
         break
+      default:
+        if (e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          handleTypeahead(e)
+        }
     }
   }
 
   return (
     <div ref={containerRef} className={`relative w-full ${className}`}>
       <button
+        ref={triggerRef}
         type="button"
         role="combobox"
         id={id}
+        disabled={disabled}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-controls={isOpen ? listboxId : undefined}
@@ -97,7 +155,7 @@ export function Select({
         aria-label={ariaLabel}
         onClick={() => setIsOpen((prev) => !prev)}
         onKeyDown={handleKeyDown}
-        className={`w-full flex items-center justify-between gap-1.5 bg-nb border border-bdr2 rounded-md px-2.5 py-1.5 text-11 text-nt hover:border-nt4 transition cursor-pointer ${FOCUS_RING}`}
+        className={`w-full flex items-center justify-between gap-1.5 bg-nb border border-bdr2 rounded-md px-2.5 py-1.5 text-11 text-nt hover:border-nt4 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none ${FOCUS_RING}`}
       >
         <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
         <ChevronDown

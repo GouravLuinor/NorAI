@@ -327,7 +327,7 @@ export function UploadPage() {
               <div className="mt-3 rounded-md border border-bdr2 bg-nb/60 px-3 py-2.5">
                 <div className="flex items-start gap-2">
                   <Info size={12} strokeWidth={1.5} className="text-nt3 mt-0.5 shrink-0" />
-                  <div className="text-2xs text-nt2 leading-relaxed">
+                  <div className="text-2xs text-nt2 leading-relaxed tabular-nums">
                     {estimate.duration_min !== undefined && (
                       <span>≈ {estimate.duration_min.toFixed(1)} min lecture</span>
                     )}
@@ -348,7 +348,7 @@ export function UploadPage() {
                   </div>
                 </div>
                 {estimate.free_trial_ok === false && (
-                  <div className="mt-2 flex items-center gap-1.5 text-2xs text-red-400">
+                  <div className="mt-2 flex items-center gap-1.5 text-2xs text-nr">
                     <AlertTriangle size={11} strokeWidth={1.5} />
                     <span>
                       Over the {estimate.free_trial_min ?? 15}-minute free-trial limit — this lecture
@@ -367,7 +367,7 @@ export function UploadPage() {
             )}
 
             {submitError && (
-              <div className="mt-3 flex items-start gap-1.5 text-2xs text-red-400 rounded-md border border-red-900/40 bg-red-950/20 px-3 py-2">
+              <div className="mt-3 flex items-start gap-1.5 text-2xs text-nr rounded-md border border-nrbr bg-nrb px-3 py-2">
                 <AlertTriangle size={11} strokeWidth={1.5} className="mt-0.5 shrink-0" />
                 <span>{submitError}</span>
               </div>
@@ -445,7 +445,7 @@ export function UploadPage() {
                   <button
                     key={lec.lecture_id}
                     onClick={() => navigate(`/workspace/${lec.lecture_id}`)}
-                    className="w-full text-left bg-ns border border-bdr2 rounded-lg p-4 flex items-center gap-4 hover:bg-ns2 transition group cursor-pointer shadow-ev1 fold-marks relative"
+                    className={`w-full text-left bg-ns border border-bdr2 rounded-lg p-4 flex items-center gap-4 hover:bg-ns2 transition group cursor-pointer shadow-ev1 fold-marks relative ${FOCUS_RING} active:translate-y-[1px] active:shadow-none`}
                   >
                     <div className="w-10 h-10 rounded-md bg-ns3 border border-bdr flex flex-col items-center justify-center shrink-0">
                       <BookOpen size={16} strokeWidth={1.5} className="text-nt3 group-hover:text-np transition" />
@@ -463,7 +463,7 @@ export function UploadPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-3 text-2xs text-nt4">
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1 tabular-nums">
                           <BookOpen size={10} strokeWidth={1.5} />
                           {lec.chapter_count || 0} chapters
                         </span>

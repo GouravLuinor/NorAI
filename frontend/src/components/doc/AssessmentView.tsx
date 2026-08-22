@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Eye, EyeOff, Play, History, RefreshCw } from 'lucide-react'
+import { Eye, EyeOff, Play, History, RefreshCw, AlertTriangle } from 'lucide-react'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore, fetchQuizQuestions, fetchQuizIncomplete, explainQuizQuestion, fetchQuizAttempts, fetchQuizMissed, type QuizDifficulty, type QuizCitation, type QuizAttempt } from '../../stores/useQuizStore'
 import { useLectureStore } from '../../stores/useLectureStore' 
@@ -8,6 +8,9 @@ import type { Question } from '../../stores/useQuizStore'
 import { PartialContentBadge } from '../ui/PartialContentBadge'
 import { useToastStore } from '../../stores/useToastStore'
 import { Button } from '../ui/Button'
+import { SegmentedControl } from '../ui/SegmentedControl'
+import { EmptyState } from '../ui/EmptyState'
+import { friendlyError } from '../../lib/errorCopy'
 import { CitationBox } from '../quiz/CitationBox'
 import { QuizSkeleton } from '../ui/SkeletonCard'
 import { scrollToHeading } from '../../lib/cite'
@@ -33,6 +36,7 @@ export function AssessmentView() {
   const [difficulty, setDifficulty] = useState<QuizDifficulty | 'All'>('All')
   const [citations, setCitations] = useState<Record<number, QuizCitation | null>>({})
   const [citingIds, setCitingIds] = useState<Record<number, boolean>>({})
+  const [loadError, setLoadError] = useState('')
   const [citeErrors, setCiteErrors] = useState<Record<number, string>>({})
 
   const handleExplain = async (question: Question) => {
@@ -59,7 +63,12 @@ export function AssessmentView() {
       .then((data) => {
         if (!cancelled) { setQuestions(data); setShowAnswers(false); setLoading(false) }
       })
-      .catch(() => { if (!cancelled) { setQuestions([]); setLoading(false) } })
+      .catch((err) => {
+        if (cancelled) return
+        setQuestions([])
+        setLoadError(friendlyError(err))
+        setLoading(false)
+      })
     fetchQuizIncomplete(activeChapterId, lectureId)
       .then((flag) => { if (!cancelled) setIncomplete(flag) })
       .catch(() => { if (!cancelled) setIncomplete(false) })
@@ -92,6 +101,14 @@ export function AssessmentView() {
     if (qs.length > 0) {
       await createAttempt(qs, activeChapterId, difficultyParam)
       addToast('Quiz started', 'success')
+    } else {
+      // P4.3: a zero-match filter must say so instead of doing nothing.
+      addToast(
+        difficultyParam
+          ? `No questions available for the ${difficultyParam} difficulty in this chapter.`
+          : 'No questions generated for this chapter yet.',
+        'info',
+      )
     }
   }
 
@@ -109,6 +126,25 @@ export function AssessmentView() {
   }
 
   if (loading) return <QuizSkeleton />
+
+  // P4.3: fetch failures surface honestly instead of silently rendering an
+  // empty question set.
+  if (loadError) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <EmptyState
+          icon={<AlertTriangle size={16} strokeWidth={1.5} />}
+          title="Couldn't load the assessment"
+          hint={loadError}
+          action={
+            <Button variant="outline" className="text-xs px-3 py-1.5" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          }
+        />
+      </div>
+    )
+  }
 
   const tf = questions.filter(q => q.type === 'True/False')
   const hasOptions = (q: Question) => Array.isArray(q.options) && q.options.length > 0
@@ -141,48 +177,47 @@ export function AssessmentView() {
       <div className="flex items-center px-4 h-[40px] border-b border-bdr bg-ns shrink-0 gap-4">
         <div className="flex-1 flex flex-col justify-center">
           <div className="text-sm font-semibold text-nt tracking-tight">Ch {String(activeChapterId).padStart(2, '0')} — Assessment</div>
-          <div className="text-11 text-nt3">{questions.length} question{questions.length === 1 ? '' : 's'}{difficulty !== 'All' ? ` · ${difficulty}` : ''}</div>
+          <div className="text-11 text-nt3 tabular-nums">{questions.length} question{questions.length === 1 ? '' : 's'}{difficulty !== 'All' ? ` · ${difficulty}` : ''}</div>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 p-0.5 rounded-md bg-ns2 border border-bdr2" role="group">
-            <button
-              type="button"
-              onClick={() => setViewMode('questions')}
-              className={`px-2.5 py-1 rounded-[5px] text-2xs font-medium transition ${
-                viewMode === 'questions' ? 'bg-np text-ns shadow-sm' : 'text-nt3 hover:text-nt2'
-              }`}
-            >
-              Questions
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('history')}
-              className={`px-2.5 py-1 rounded-[5px] text-2xs font-medium transition flex items-center gap-1 ${
-                viewMode === 'history' ? 'bg-np text-ns shadow-sm' : 'text-nt3 hover:text-nt2'
-              }`}
-            >
-              <History size={12} />
-              <span>History ({attempts.length})</span>
-            </button>
-          </div>
+          <SegmentedControl<'questions' | 'history'>
+            containerClass="flex items-center gap-1 p-0.5 rounded-md bg-ns2 border border-bdr2"
+            itemClass="px-2.5 py-1 rounded-sm text-2xs font-medium transition"
+            activeClass="bg-np text-npfg shadow-sm"
+            inactiveClass="text-nt3 hover:text-nt2"
+            value={viewMode}
+            onChange={(v) => setViewMode(v)}
+            options={[
+              {
+                value: 'questions',
+                label: 'Questions',
+              },
+              {
+                value: 'history',
+                label: (
+                  <span className="flex items-center gap-1">
+                    <History size={12} />
+                    <span>History ({attempts.length})</span>
+                  </span>
+                ),
+              },
+            ]}
+          />
 
           {viewMode === 'questions' && (
             <>
-              <div className="flex items-center gap-1 p-0.5 rounded-md bg-ns2 border border-bdr2" role="group" aria-label="Question difficulty">
-                {DIFFICULTY_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => resetFilter(opt.value)}
-                    className={`px-2 py-1 rounded-[5px] text-2xs font-medium transition ${difficulty === opt.value ? 'bg-np text-ns shadow-sm' : 'text-nt3 hover:text-nt2'}`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl<QuizDifficulty | 'All'>
+                containerClass="flex items-center gap-1 p-0.5 rounded-md bg-ns2 border border-bdr2"
+                itemClass="px-2 py-1 rounded-sm text-2xs font-medium transition"
+                activeClass="bg-np text-npfg shadow-sm"
+                inactiveClass="text-nt3 hover:text-nt2"
+                value={difficulty}
+                onChange={(v) => resetFilter(v)}
+                options={DIFFICULTY_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+              />
 
-              <Button onClick={() => setShowAnswers(!showAnswers)} variant="outline" className="gap-1.5 px-3 py-1.5 rounded-sm text-2xs active:translate-y-[1px]">
+              <Button onClick={() => setShowAnswers(!showAnswers)} variant="outline" className="gap-1.5 px-3 py-1.5 rounded-sm text-2xs">
                 {showAnswers ? <EyeOff size={13} strokeWidth={1.5} /> : <Eye size={13} strokeWidth={1.5} />}
                 {showAnswers ? 'Hide Key' : 'Reveal Key'}
               </Button>

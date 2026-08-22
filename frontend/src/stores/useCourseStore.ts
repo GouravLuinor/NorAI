@@ -4,6 +4,7 @@ import type { CourseDetail, CourseSummary } from '../types'
 
 interface CourseState {
   courses: CourseSummary[]
+  coursesLoading: boolean
   loadCourses: () => Promise<void>
   createCourse: (name: string, description?: string) => Promise<CourseSummary | null>
   deleteCourse: (courseId: string) => Promise<void>
@@ -14,12 +15,14 @@ interface CourseState {
 
 export const useCourseStore = create<CourseState>((set) => ({
   courses: [],
+  coursesLoading: true,
   loadCourses: async () => {
+    set({ coursesLoading: true })
     try {
       const data = await apiGet<{ courses: CourseSummary[] }>('/courses')
-      set({ courses: data?.courses ?? [] })
+      set({ courses: data?.courses ?? [], coursesLoading: false })
     } catch {
-      set({ courses: [] })
+      set({ courses: [], coursesLoading: false })
     }
   },
   createCourse: async (name, description) => {

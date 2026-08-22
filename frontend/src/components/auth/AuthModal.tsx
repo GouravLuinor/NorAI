@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { X, Mail, Lock, User as UserIcon, ArrowRight, Sparkles } from 'lucide-react'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { supabase } from '../../lib/supabaseClient'
+import { friendlyError } from '../../lib/errorCopy'
 import { Dialog } from '../ui/Dialog'
 import { FOCUS_RING } from '../ui/shared'
 
@@ -48,7 +49,8 @@ export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
         if (signInError) throw signInError
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to authenticate. Please check your credentials.')
+      // P4.3: raw Supabase messages read like stack traces — map to friendly copy.
+      setError(friendlyError(err) || 'Failed to authenticate. Please check your credentials.')
     } finally {
       setLoading(false)
     }
@@ -64,7 +66,7 @@ export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
       })
       if (oAuthError) throw oAuthError
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Google sign-in is not configured yet.')
+      setError(friendlyError(err) || 'Google sign-in is not configured yet.')
       setLoading(false)
     }
   }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Layers } from 'lucide-react'
 import {
   fetchGeneratedFlashcards,
   fetchFlashcardRatings,
@@ -13,6 +13,7 @@ import { useLectureStore } from '../../stores/useLectureStore'
 import { getCardKey } from '../../lib/hash'
 import { isCardDue, dueLabel } from '../../lib/flashcardSchedule'
 import { Button } from '../ui/Button'
+import { EmptyState } from '../ui/EmptyState'
 import { SegmentedControl } from '../ui/SegmentedControl'
 import { useToastStore } from '../../stores/useToastStore'
 import { FOCUS_RING } from '../ui/shared'
@@ -135,9 +136,12 @@ export function FlashcardsPanel() {
 
   if (allCards.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-nt3 text-sm">
-        No flashcards available.
-      </div>
+      <EmptyState
+        icon={<Layers size={16} strokeWidth={1.5} />}
+        title="No flashcards for this chapter yet"
+        hint="Flashcards are generated from your chapter notes. Try another chapter, or check back after the lecture finishes processing."
+        className="flex-1"
+      />
     )
   }
 
@@ -198,7 +202,7 @@ export function FlashcardsPanel() {
               type="button"
               aria-pressed={filter === m}
               onClick={() => { setFilter(m); setCurrent(0) }}
-              className={`px-2.5 py-1 rounded-[3px] text-[11px] font-medium transition ${
+              className={`px-2.5 py-1 rounded-sm text-11 font-medium transition ${
                 filter === m ? 'bg-npf text-npfg shadow-ev2' : 'text-nt2 hover:bg-ns3'
               }`}
             >
@@ -306,7 +310,7 @@ export function FlashcardsPanel() {
           >
             <ChevronLeft size={15} strokeWidth={1.5} /> Prev
           </Button>
-          <span className="text-xs text-nt3">
+          <span className="text-xs text-nt3 tabular-nums">
             {current + 1} / {total}
           </span>
           <Button

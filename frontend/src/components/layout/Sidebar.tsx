@@ -56,6 +56,7 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
   const lectures            = useLectureStore(s => s.lectures)
   const activeLectureId     = useLectureStore(s => s.activeLectureId)
   const chapters         = useChapterStore(s => s.chapters)           // ← add
+  const chaptersLoading  = useChapterStore(s => s.chaptersLoading)
   const setActiveLecture    = useLectureStore(s => s.setActiveLecture)
   const loadLectures        = useLectureStore(s => s.loadLectures)
   const navigate = useNavigate()
@@ -127,9 +128,9 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
         }`}
       >
         {/* Header */}
-        <div className="p-3.5 pb-3">
+        <div className="p-4 pb-3">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-5.5 h-5.5 rounded-sm bg-npf flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 tracking-tight fold-marks relative">
+            <div className="w-6 h-6 rounded-sm bg-npf flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 tracking-tight fold-marks relative">
               N
             </div>
             <span className="font-display text-13 font-medium text-nt tracking-tight">NorAI</span>
@@ -168,7 +169,16 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
 
           {/* Chapter list */}
           <div className="spec-label mb-1.5">Chapters</div>
-          <ul className="space-y-0.5">
+          {chaptersLoading ? (
+            <div className="space-y-1.5" aria-hidden="true">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="h-5 rounded-md bg-ns2 animate-pulse" style={{ width: `${88 - i * 9}%` }} />
+              ))}
+            </div>
+          ) : chapters.length === 0 ? (
+            <p className="text-11 text-nt4 px-1.5 py-2">No chapters yet — finish processing this lecture first.</p>
+          ) : (
+            <ul className="space-y-0.5">
             {chapters.map((ch) => {
               const chTime = videoMap?.chapters.find((c) => c.chapter_id === ch.id)
               const showSeek = videoEmbeddable && chTime?.start_sec != null
@@ -203,7 +213,8 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
                 </li>
               )
             })}
-          </ul>
+            </ul>
+          )}
         </div>
 
         <div className="h-px bg-bdr mx-3.5" />
@@ -211,6 +222,11 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
         {/* Thread list */}
         <div className="flex-1 overflow-hidden px-3.5 py-3.5">
           <div className="spec-label mb-1.5">Threads</div>
+          {threads.length === 0 && (
+            <p className="text-11 text-nt4 px-1.5 py-2">
+              No conversations yet — ask the tutor something to start one.
+            </p>
+          )}
           {threads.map((t) => (
             <div
               key={t}
@@ -270,11 +286,11 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
               aria-label="Monthly lecture minutes used"
             >
               <div
-                className="bg-np h-full rounded-full transition-all duration-300"
+                className="bg-np h-full rounded-full transition-all duration-200"
                 style={{ width: quotaPct(quota) }}
               />
             </div>
-            <div className="text-10 text-nt3 flex justify-between">
+            <div className="text-10 text-nt3 flex justify-between tabular-nums">
               <span>
                 Used: {quota?.used_minutes_this_month ?? 0} / {quota?.monthly_minutes_quota ?? 15} mins
               </span>
@@ -305,7 +321,7 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
         </div>
 
         {/* New thread */}
-        <div className="p-3.5 pt-2.5">
+        <div className="p-4 pt-2">
         <Button
           variant="outline"
           onClick={handleCreateThread}

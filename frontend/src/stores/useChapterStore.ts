@@ -11,6 +11,7 @@ interface ChapterState {
   activeDocTab: 'notes' | 'revision' | 'assessment' | 'guide' | 'concepts'
   sidebarCollapsed: boolean
   chapters: Chapter[]
+  chaptersLoading: boolean
   setChapter: (id: number) => void
   setDocTab: (tab: 'notes' | 'revision' | 'assessment' | 'guide' | 'concepts') => void
   toggleSidebar: () => void
@@ -24,6 +25,7 @@ export const useChapterStore = create<ChapterState>((set) => ({
   activeDocTab: 'revision',
   sidebarCollapsed: false,
   chapters: [],
+  chaptersLoading: false,
 
   setChapter: (id) => set({ activeChapterId: id }),
   setDocTab: (tab) => set({ activeDocTab: tab }),
@@ -31,6 +33,7 @@ export const useChapterStore = create<ChapterState>((set) => ({
 
   loadChapters: async (lectureId: string) => {
     const gen = ++_loadChapterGeneration
+    set({ chaptersLoading: true })
     try {
       const outline = await apiGet<{ chapters?: { chapter_id?: number; id?: number; title?: string }[] }>(
         `/outline?lecture_id=${lectureId}&_t=${Date.now()}`,
@@ -40,7 +43,7 @@ export const useChapterStore = create<ChapterState>((set) => ({
       const chs = outline?.chapters || []
 
       if (chs.length === 0) {
-        set({ chapters: [], activeChapterId: 1 })
+        set({ chapters: [], activeChapterId: 1, chaptersLoading: false })
         return
       }
 
@@ -52,11 +55,12 @@ export const useChapterStore = create<ChapterState>((set) => ({
       set({
         chapters,
         activeChapterId: chapters[0]?.id || 1,
+        chaptersLoading: false,
       })
     } catch {
       if (gen !== _loadChapterGeneration) return
       console.warn('Failed to load chapters — /outline endpoint may not be available')
-      set({ chapters: [], activeChapterId: 1 })
+      set({ chapters: [], activeChapterId: 1, chaptersLoading: false })
     }
   },
 }))
