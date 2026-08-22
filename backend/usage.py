@@ -23,15 +23,16 @@ Metering rules (decided for P2):
 import asyncio
 import math
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import NullPool
-from sqlalchemy import select
+from sqlalchemy import func, select, update
 
 from backend.db.database import DATABASE_URL, get_engine_kwargs
 from backend.db.models import Lecture, Subscription, UsageLog
+from backend.timeutil import ensure_utc
 
 logger = logging.getLogger(__name__)
 
@@ -52,10 +53,11 @@ def rollover_if_needed(sub: Subscription, now: Optional[datetime] = None) -> boo
     end = sub.current_period_end
     if end is None:
         start = sub.current_period_start or sub.created_at or now
-        end = start + __import__("datetime").timedelta(days=30)
-    # SQLite returns naive datetimes; assume any naive timestamp is UTC.
-    if end.tzinfo is None:
-        end = end.replace(tzinfo=timezone.utc)
+        end = start + timedelta(days=30)
+    # SQLite returns naive datetimes; normalize at one helper (P2.6).
+    end = ensure_utc(end)
+    if end is None:
+        return False
     if now >= end:
         sub.used_minutes_this_month = 0
         sub.current_period_start = now
@@ -108,14 +110,31 @@ async def _record_outcome(
             await session.commit()
             return
 
-        # Meter only successful runs.
+        # Meter only successful runs. P2.3: the minute increment is applied
+        # atomically in SQL (used = used + n) — the previous ORM
+        # read-modify-write lost increments under concurrent completions.
         result = await session.execute(select(Subscription).where(Subscription.user_id == user_id))
         sub = result.scalar_one_or_none()
         minutes = meter_minutes(duration_sec)
         if sub is not None:
-            rollover_if_needed(sub)
-            sub.used_minutes_this_month = (sub.used_minutes_this_month or 0) + minutes
-            session.add(sub)
+            rolled = rollover_if_needed(sub)
+            if rolled:
+                # Rollover first, committed on its own so the increment below
+                # starts from a clean period.
+                await session.commit()
+            await session.execute(
+                update(Subscription)
+                .where(Subscription.user_id == user_id)
+                .values(
+                    used_minutes_this_month=func.coalesce(
+                        Subscription.used_minutes_this_month, 0
+                    )
+                    + minutes,
+                    current_period_start=(
+                        sub.current_period_start if rolled else Subscription.current_period_start
+                    ),
+                )
+            )
 
         # P6.5: one UsageLog row per pipeline stage. Falls back to a single
         # coarse "pipeline" row when no per-stage ledger data is available.

@@ -295,17 +295,18 @@ async def get_current_user_optional(
         if payload:
             try:
                 return await get_or_create_user_from_token(payload, db)
-            except Exception:
+            except IntegrityError:
+                # P2.4: a genuine insert race — fall back to anonymous rather
+                # than failing the request. ANY other DB error must propagate
+                # as a 500 instead of silently degrading the caller to
+                # anonymous (which surfaced as misleading 401s downstream).
                 return None
 
     # Local dev keeps its automatic dev-user escape hatch instead of guests.
     if not is_dev_access():
         guest_id = guest_id_from_request(request)
         if guest_id:
-            try:
-                return await get_or_create_guest_user(db, guest_id)
-            except Exception:
-                return None
+            return await get_or_create_guest_user(db, guest_id)
 
     return None
 

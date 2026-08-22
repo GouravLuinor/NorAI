@@ -17,7 +17,8 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 export function LandingPage({ onStartWorkspace }: LandingPageProps) {
-  const { user, openAuthModal } = useAuthStore()
+  const user = useAuthStore((s) => s.user)
+  const openAuthModal = useAuthStore((s) => s.openAuthModal)
   const [activeTab, setActiveTab] = useState<TabId>('notes')
   const [mobileOpen, setMobileOpen] = useState(false)
 

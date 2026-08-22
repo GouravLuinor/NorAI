@@ -45,6 +45,16 @@ _lecture_graphs: OrderedDict[str, dict] = OrderedDict()
 _cache_lock = asyncio.Lock()
 
 
+class ThreadDeletedError(ValueError):
+    """P2.2: a turn targeted a thread that has been deleted.
+
+    Subclasses ValueError (backward compatible) but lets routes map it to an
+    honest 409 instead of a generic 500."""
+    def __init__(self, thread_id: str):
+        super().__init__(f"Thread {thread_id} was deleted.")
+        self.thread_id = thread_id
+
+
 def sanitize_lecture_id(lecture_id: str) -> str:
     """Ensure lecture_id is a safe alphanumeric/UUID string to prevent directory traversal."""
     clean_id = Path(lecture_id).name
@@ -86,28 +96,48 @@ async def _aget_or_create_lecture_graph(lecture_id: str):
     Return (graph, lock) for the given lecture, building and caching it on
     first use. LRU-bounded: when the cache exceeds TUTOR_MAX_CACHED_GRAPHS the
     least-recently-used lecture's connection is closed and its graph dropped.
+
+    P2.3: the slow build runs OUTSIDE `_cache_lock` (double-checked insert) so
+    one lecture's slow connect/checkpointer.setup never serializes lookups for
+    every other lecture.
     """
     clean_id = sanitize_lecture_id(lecture_id)
+
     async with _cache_lock:
         entry = _lecture_graphs.get(clean_id)
         if entry is not None:
             _lecture_graphs.move_to_end(clean_id)
             return entry["graph"], entry["lock"]
 
-        graph, checkpointer, db_path = await _build_graph_for_lecture(clean_id)
-        entry = {
-            "graph": graph,
-            "lock": asyncio.Lock(),
-            "conn": checkpointer.conn,
-            "db_path": db_path,
-        }
-        _lecture_graphs[clean_id] = entry
-        _lecture_graphs.move_to_end(clean_id)
+    # Slow path (no lock held): open the checkpointer + build the graph.
+    graph, checkpointer, db_path = await _build_graph_for_lecture(clean_id)
+    new_entry = {
+        "graph": graph,
+        "lock": asyncio.Lock(),
+        "conn": checkpointer.conn,
+        "db_path": db_path,
+    }
 
-        evicted: list[tuple[str, dict]] = []
-        while len(_lecture_graphs) > TUTOR_MAX_CACHED_GRAPHS:
-            _old_id, old_entry = _lecture_graphs.popitem(last=False)
-            evicted.append((_old_id, old_entry))
+    evicted: list[tuple[str, dict]] = []
+    async with _cache_lock:
+        entry = _lecture_graphs.get(clean_id)
+        if entry is not None:
+            # Another concurrent builder won the race — use theirs.
+            _lecture_graphs.move_to_end(clean_id)
+        else:
+            _lecture_graphs[clean_id] = new_entry
+            _lecture_graphs.move_to_end(clean_id)
+            entry = new_entry
+            while len(_lecture_graphs) > TUTOR_MAX_CACHED_GRAPHS:
+                _old_id, old_entry = _lecture_graphs.popitem(last=False)
+                evicted.append((_old_id, old_entry))
+
+    if entry is not new_entry and entry["graph"] is not graph:
+        # We lost the build race — close OUR freshly-opened connection.
+        try:
+            await checkpointer.conn.close()
+        except Exception:  # noqa: BLE001
+            pass
 
     # Close evicted connections and drop their context caches outside the
     # cache lock so a slow close/delete never blocks other lookups.
@@ -125,7 +155,7 @@ async def _aget_or_create_lecture_graph(lecture_id: str):
         except Exception:
             pass
 
-    return graph, entry["lock"]
+    return entry["graph"], entry["lock"]
 
 
 async def _aget_default_graph():
@@ -316,7 +346,7 @@ async def ainvoke_tutor(
         # been deleted while we were waiting in the queue.
         db_path = get_lecture_db_path(lecture_id) if lecture_id else CHECKPOINT_DB_PATH
         if not await asyncio.to_thread(_thread_exists, db_path, thread_id):
-            raise ValueError(f"Thread {thread_id} was deleted.")
+            raise ThreadDeletedError(thread_id)
         await asyncio.to_thread(_register_thread_if_needed, db_path, thread_id)
 
         result = await graph.ainvoke(input_state, config)
@@ -404,7 +434,7 @@ async def astream_tutor_tokens(
         # Prevent zombie-thread resurrections (same guard as ainvoke_tutor).
         db_path = get_lecture_db_path(lecture_id) if lecture_id else CHECKPOINT_DB_PATH
         if not await asyncio.to_thread(_thread_exists, db_path, thread_id):
-            raise ValueError(f"Thread {thread_id} was deleted.")
+            raise ThreadDeletedError(thread_id)
         await asyncio.to_thread(_register_thread_if_needed, db_path, thread_id)
 
         streamed_any = False

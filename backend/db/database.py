@@ -86,7 +86,26 @@ def get_engine_kwargs(url: str | None = None) -> dict[str, Any]:
     return kwargs
 
 
+def _sqlite_pragmas(dbapi_conn, _record):
+    """P3.1: WAL + busy_timeout on every new SQLite connection.
+
+    The main app DB previously ran the default rollback journal, so concurrent
+    writes (status polls + pipeline progress + webhooks) serialized with
+    SQLITE_BUSY errors. Setting pragmas via a connect event listener runs them
+    exactly once per pooled connection instead of ad-hoc per call site.
+    """
+    cursor = dbapi_conn.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA busy_timeout=5000;")
+    cursor.close()
+
+
 engine = create_async_engine(DATABASE_URL, **get_engine_kwargs(DATABASE_URL))
+
+if DATABASE_URL.startswith("sqlite"):
+    from sqlalchemy import event
+
+    event.listen(engine.sync_engine, "connect", _sqlite_pragmas)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

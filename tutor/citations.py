@@ -83,14 +83,29 @@ def _chunk_candidates(chunk: dict) -> list[str]:
     return [chunk.get("heading_path") or "", chunk.get("heading") or ""]
 
 
-def _matches(citation_norm: str, chunk: dict) -> bool:
-    for cand in _chunk_candidates(chunk):
-        cn = _normalize(cand)
-        if not cn:
-            continue
-        if citation_norm == cn or citation_norm in cn or cn in citation_norm:
-            return True
-    return False
+def _best_chunk_for(citation_norm: str, chunks: list[dict]) -> dict | None:
+    """P2.5: deterministic citation→chunk matching.
+
+    Old behaviour was first-match-wins over a bidirectional substring test,
+    which bound short/generic names ("Intro", "Summary") — and duplicate
+    headings — to whichever chunk happened to come first. Now:
+      1. exact normalized match on any candidate wins outright;
+      2. otherwise containment matches compete, most-specific (longest
+         normalized candidate) wins, with alphabetical tiebreak.
+    """
+    best: tuple[dict, tuple[int, str]] | None = None
+    for chunk in chunks:
+        for cand in _chunk_candidates(chunk):
+            cn = _normalize(cand)
+            if not cn:
+                continue
+            if cn == citation_norm:
+                return chunk  # exact match: nothing can beat it
+            if citation_norm in cn or cn in citation_norm:
+                key = (len(cn), cn)
+                if best is None or key > best[1]:
+                    best = (chunk, key)
+    return best[0] if best else None
 
 
 def verify_citations(answer: str, chunks: list[dict]) -> list[dict]:
@@ -105,7 +120,7 @@ def verify_citations(answer: str, chunks: list[dict]) -> list[dict]:
     result: list[dict] = []
     for citation in parse_citations(answer):
         norm = _normalize(citation)
-        match = next((c for c in chunks if _matches(norm, c)), None)
+        match = _best_chunk_for(norm, chunks)
         result.append(
             {
                 "section": citation,

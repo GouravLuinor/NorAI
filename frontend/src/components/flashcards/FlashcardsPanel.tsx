@@ -22,7 +22,7 @@ type Rating = 'Again' | 'Hard' | 'Good' | 'Easy'
 type FilterMode = 'all' | 'missed' | 'due'
 
 export function FlashcardsPanel() {
-  const { activeChapterId } = useChapterStore()
+  const activeChapterId = useChapterStore((s) => s.activeChapterId)
   const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
   const addToast = useToastStore(s => s.addToast)
 
@@ -36,31 +36,45 @@ export function FlashcardsPanel() {
   const [filter, setFilter] = useState<FilterMode>('all')
   const [exporting, setExporting] = useState(false)
 
-  // Load cards and compute keys
+  // Load cards and compute keys (P3.2: stale-response guard — chapter can
+  // switch while a fetch is in flight; only the latest may commit state).
   useEffect(() => {
+    let cancelled = false
     fetchGeneratedFlashcards(activeChapterId, lectureId)
       .then(async (fetched) => {
-        setAllCards(fetched)
+        if (cancelled) return
         const keys = await Promise.all(fetched.map((c) => getCardKey(c.front)))
+        if (cancelled) return
+        setAllCards(fetched)
         setCardKeys(keys)
       })
       .catch(() => {
+        if (cancelled) return
         setAllCards([])
         setCardKeys([])
       })
+    return () => {
+      cancelled = true
+    }
   }, [activeChapterId, lectureId])
 
-  // Load persisted ratings + SM-2 schedule
+  // Load persisted ratings + SM-2 schedule (same stale-response guard)
   useEffect(() => {
+    let cancelled = false
     fetchFlashcardRatings(lectureId, activeChapterId)
       .then((data) => {
+        if (cancelled) return
         setRatings(data.ratings as Record<string, Rating>)
         setSchedule(data.schedule)
       })
       .catch(() => {
+        if (cancelled) return
         setRatings({})
         setSchedule({})
       })
+    return () => {
+      cancelled = true
+    }
   }, [lectureId, activeChapterId])
 
   // Apply the active deck filter

@@ -129,7 +129,9 @@ def test_real_token_streaming():
 
         with tempfile.TemporaryDirectory() as tmp:
             async with _make_graph(tmp) as graph:
-                fake = GenericFakeChatModel(messages=iter([_REWRITE_TEXT, _GEN_ANSWER]))
+                # P3.1: a first turn skips the rewrite hop entirely, so the
+                # queue holds ONLY the answer call.
+                fake = GenericFakeChatModel(messages=iter([_GEN_ANSWER]))
                 orig_llm = _patch_llm(fake)
 
                 import backend.dependencies as deps
@@ -164,7 +166,7 @@ def test_only_generate_answer_tokens_surfaced():
 
         with tempfile.TemporaryDirectory() as tmp:
             async with _make_graph(tmp) as graph:
-                fake = GenericFakeChatModel(messages=iter([_REWRITE_TEXT, _GEN_ANSWER]))
+                fake = GenericFakeChatModel(messages=iter([_GEN_ANSWER]))
                 orig_llm = _patch_llm(fake)
 
                 import backend.dependencies as deps
@@ -181,6 +183,46 @@ def test_only_generate_answer_tokens_surfaced():
             f"rewrite_query_node tokens leaked into the stream: {joined!r}"
         )
         assert joined == _GEN_ANSWER
+
+    asyncio.run(run())
+
+
+def test_rewrite_runs_and_is_filtered_on_followup_turns():
+    """P3.1 regression: turn 2 HAS prior history, so the rewrite LLM hop runs
+    (consuming the first queued message) — and its tokens still never leak."""
+
+    async def run():
+        from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
+
+        with tempfile.TemporaryDirectory() as tmp:
+            async with _make_graph(tmp) as graph:
+                import backend.dependencies as deps
+                orig_get, orig_path = await _patch_graph_into_deps(graph, tmp)
+
+                # Turn 1: rewrite skipped → only the answer call is queued.
+                fake1 = GenericFakeChatModel(messages=iter([_GEN_ANSWER]))
+                orig_llm = _patch_llm(fake1)
+                try:
+                    await _stream_turn(deps, "th-followup", "What is a stack?")
+                finally:
+                    _restore_llm(orig_llm)
+
+                # Turn 2: prior Human+AI messages exist → rewrite fires.
+                fake2 = GenericFakeChatModel(messages=iter([_REWRITE_TEXT, _GEN_ANSWER]))
+                orig_llm = _patch_llm(fake2)
+                try:
+                    frames = await _stream_turn(deps, "th-followup", "Why is it LIFO?")
+                finally:
+                    _restore_graph_patch(deps, orig_get, orig_path)
+                    _restore_llm(orig_llm)
+
+        tokens, finals = _frames(frames)
+        joined = "".join(tokens)
+        assert _REWRITE_TEXT not in joined, (
+            f"rewrite tokens leaked on follow-up turn: {joined!r}"
+        )
+        assert joined == _GEN_ANSWER
+        assert len(finals) == 1
 
     asyncio.run(run())
 

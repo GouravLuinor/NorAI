@@ -67,7 +67,15 @@ async def handle_lemonsqueezy_webhook(
     raw_body = await request.body()
     signature = request.headers.get("X-Signature", "")
 
-    if not verify_signature(raw_body, signature, LEMONSQUEEZY_WEBHOOK_SECRET):
+    # P2: the unsigned escape hatch was dead code — an empty secret always
+    # failed verify_signature regardless of NORAI_ALLOW_UNSIGNED_WEBHOOKS.
+    if LEMONSQUEEZY_WEBHOOK_SECRET:
+        if not verify_signature(raw_body, signature, LEMONSQUEEZY_WEBHOOK_SECRET):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid signature header",
+            )
+    elif not ALLOW_UNSIGNED_WEBHOOKS:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid signature header",

@@ -123,9 +123,11 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
     if (isOpen) inputRef.current?.focus()
   }, [isOpen])
 
-  // Search on query change
+  // Search on query change (P3.3: debounced — performSearch walks the whole
+  // DOM marking highlights; per-keystroke execution janks fast typing)
   useEffect(() => {
-    performSearch(query)
+    const t = window.setTimeout(() => performSearch(query), 200)
+    return () => window.clearTimeout(t)
   }, [query, performSearch])
 
   if (!isOpen) return null

@@ -74,7 +74,27 @@ const handleSend = useCallback(async (text: string) => {
     // 2. Stream the answer — chunks feed the transient streaming bubble, the
     //    final event carries the checkpoint refs. Never slower than the
     //    non-stream path (the backend streams an already-computed answer).
+    //
+    //    P3.3: chunk-by-chunk setState made the streaming bubble re-parse the
+    //    FULL accumulated string through highlight+KaTeX per chunk (O(n²)
+    //    cumulative work). Accumulate in a local and commit to the store at
+    //    most every STREAM_FLUSH_MS; the final event always flushes.
     let acc = ''
+    let pendingFlush: number | null = null
+    const flushNow = () => {
+      if (pendingFlush !== null) {
+        window.clearTimeout(pendingFlush)
+        pendingFlush = null
+      }
+      setStreamingText(stripSources(acc))
+    }
+    const scheduleFlush = () => {
+      if (pendingFlush !== null) return
+      pendingFlush = window.setTimeout(() => {
+        pendingFlush = null
+        setStreamingText(stripSources(acc))
+      }, 100)
+    }
     try {
       for await (const chunk of sendChatMessageStream(
         targetThreadId,
@@ -87,13 +107,14 @@ const handleSend = useCallback(async (text: string) => {
 
         if (typeof chunk === 'string') {
           acc += chunk
-          setStreamingText(stripSources(acc))
+          scheduleFlush()
           continue
         }
 
         // 3. Final event — commit the real assistant message under the ORIGINAL
         //    thread (targetThreadId), even if the user navigated away while waiting.
         const data = chunk.data
+        flushNow()
         setStreamingText('')
 
         const cleanAnswer = stripSources(acc)
@@ -152,6 +173,10 @@ const handleSend = useCallback(async (text: string) => {
       // RC-FIX: Always clear loading and inflight state regardless of which
       // thread is active. The old code guarded this behind activeThreadRef
       // which could be stale, leaving the shimmer loader permanently visible.
+      if (pendingFlush !== null) {
+        window.clearTimeout(pendingFlush)
+        pendingFlush = null
+      }
       setStreamingText('')
       setLoading(false)
       inFlightRef.current = false

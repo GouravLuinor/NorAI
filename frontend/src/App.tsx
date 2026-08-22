@@ -1,13 +1,21 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
-import { MotionConfig } from 'framer-motion'
 import { ToastContainer } from './components/ui/ToastContainer'
-import { AuthModal } from './components/auth/AuthModal'
 import { AppErrorBoundary } from './components/AppErrorBoundary'
 
 // Route-level code-splitting (P5.6): each page ships in its own chunk so the
 // marketing routes never pull in the workspace/print stack (KaTeX, highlight,
 // doc views).
+//
+// P3.4: framer-motion (MotionConfig + AuthModal's animations) is lazy too —
+// the runtime loads as an async chunk after hydration instead of inflating
+// the entry bundle every route pays for.
+const MotionProvider = lazy(() =>
+  import('./components/ui/MotionProvider').then(m => ({ default: m.MotionProvider })),
+)
+const AuthModal = lazy(() =>
+  import('./components/auth/AuthModal').then(m => ({ default: m.AuthModal })),
+)
 const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })))
 const PricingPage = lazy(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })))
 const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })))
@@ -55,31 +63,33 @@ export default function App() {
   return (
     <AppErrorBoundary>
       <BrowserRouter>
-        <MotionConfig reducedMotion="user">
-          <a
-            href="#main"
-            className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-np focus:text-npfg focus:px-4 focus:py-2 focus:rounded-md focus:shadow-bp"
-          >
-            Skip to main content
-          </a>
-          <ToastContainer />
-          <AuthModalBridge />
-          <Suspense fallback={<RouteFallback />}>
-            <Routes>
-              <Route path="/" element={<LandingRouteWrapper />} />
-              <Route path="/pricing" element={<PricingRouteWrapper />} />
-              <Route path="/billing" element={<BillingPage />} />
-              <Route path="/usage" element={<UsagePage />} />
-              <Route path="/app" element={<UploadPage />} />
-              <Route path="/courses" element={<CoursesPage />} />
-              <Route path="/share/:slug" element={<ShareRedirect />} />
-              <Route path="/process/:taskId" element={<ProcessingPage />} />
-              <Route path="/workspace" element={<Workspace />} />
-              <Route path="/workspace/:lectureId" element={<Workspace />} />
-              <Route path="/print" element={<PrintPage />} />
-            </Routes>
-          </Suspense>
-        </MotionConfig>
+        <Suspense fallback={null}>
+          <MotionProvider>
+            <a
+              href="#main"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-np focus:text-npfg focus:px-4 focus:py-2 focus:rounded-md focus:shadow-bp"
+            >
+              Skip to main content
+            </a>
+            <ToastContainer />
+            <AuthModalBridge />
+            <Suspense fallback={<RouteFallback />}>
+              <Routes>
+                <Route path="/" element={<LandingRouteWrapper />} />
+                <Route path="/pricing" element={<PricingRouteWrapper />} />
+                <Route path="/billing" element={<BillingPage />} />
+                <Route path="/usage" element={<UsagePage />} />
+                <Route path="/app" element={<UploadPage />} />
+                <Route path="/courses" element={<CoursesPage />} />
+                <Route path="/share/:slug" element={<ShareRedirect />} />
+                <Route path="/process/:taskId" element={<ProcessingPage />} />
+                <Route path="/workspace" element={<Workspace />} />
+                <Route path="/workspace/:lectureId" element={<Workspace />} />
+                <Route path="/print" element={<PrintPage />} />
+              </Routes>
+            </Suspense>
+          </MotionProvider>
+        </Suspense>
       </BrowserRouter>
     </AppErrorBoundary>
   )

@@ -262,6 +262,121 @@ def test_failure_requeues_until_attempts_exhausted():
             jobs.PIPELINE_MAX_ATTEMPTS = original_max
 
 
+# ── Test 5 (P2.1): terminal validation errors fail immediately, no retry ─────
+
+def _terminal_pipeline(task_id, source_type, url=None, file_path=None, user_id=None,
+                       *, on_progress=None, should_cancel=None):
+    from backend.orchestrator import TerminalPipelineError
+    raise TerminalPipelineError(
+        "Lecture duration (25.0 mins) exceeds the Free Trial limit of 15 minutes.",
+        friendly="This lecture is over the free-trial limit. Please upgrade.",
+    )
+
+
+def test_terminal_error_fails_immediately():
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        url = _mk_url(tmp)
+        asyncio.run(_create_schema(url))
+
+        original_url = jobs.DATABASE_URL
+        jobs.DATABASE_URL = url
+        try:
+            factory = jobs._make_session_factory()
+            asyncio.run(_insert_lecture(
+                factory,
+                id="lec-5", user_id="u1", title="Test",
+                source_type="youtube", source_url="https://example.com/vid.mp4",
+                status="queued", attempts=0,
+                queued_at=_utcnow() - timedelta(seconds=10),
+            ))
+
+            original_pipeline = jobs.run_pipeline
+            jobs.run_pipeline = _terminal_pipeline
+            try:
+                jobs._run_job("lec-5")
+            finally:
+                jobs.run_pipeline = original_pipeline
+
+            lec = asyncio.run(_get(factory, "lec-5"))
+            check("terminal: failed on first error", lec.status == "failed")
+            check("terminal: attempts NOT incremented", (lec.attempts or 0) == 0)
+            check("terminal: friendly message stored",
+                  lec.error_message and "free-trial limit" in lec.error_message)
+        finally:
+            jobs.DATABASE_URL = original_url
+
+
+# ── Test 6 (P2.1): cancel-after-terminal is refused ──────────────────────────
+
+def test_request_cancel_refuses_terminal_jobs():
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        url = _mk_url(tmp)
+        asyncio.run(_create_schema(url))
+
+        original_url = jobs.DATABASE_URL
+        jobs.DATABASE_URL = url
+        try:
+            factory = jobs._make_session_factory()
+            asyncio.run(_insert_lecture(
+                factory,
+                id="lec-6", user_id="u1", title="Test",
+                source_type="youtube", status="completed", attempts=0,
+            ))
+            ok = asyncio.run(jobs.request_cancel("lec-6"))
+            lec = asyncio.run(_get(factory, "lec-6"))
+            check("cancel: completed job refuses cancel", ok is False)
+            check("cancel: status untouched + flag unset",
+                  lec.status == "completed" and not lec.cancel_requested)
+
+            # A queued job still accepts cancellation.
+            async def _set_queued():
+                async with factory() as session:
+                    lec = await session.get(Lecture, "lec-6")
+                    lec.status = "queued"
+                    await session.commit()
+            asyncio.run(_set_queued())
+            ok = asyncio.run(jobs.request_cancel("lec-6"))
+            check("cancel: queued job accepts cancel", ok is True)
+        finally:
+            jobs.DATABASE_URL = original_url
+
+
+# ── Test 7 (P2.1): get_job_status consults the DB BEFORE disk artifacts ──────
+
+def test_status_db_first_precedence():
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        url = _mk_url(tmp)
+        asyncio.run(_create_schema(url))
+
+        original_url = jobs.DATABASE_URL
+        jobs.DATABASE_URL = url
+        try:
+            factory = jobs._make_session_factory()
+            # A FAILED row whose stage message claims completion — the old
+            # disk-first path would have reported 'completed' for any dir
+            # that happens to contain finished artifacts.
+            asyncio.run(_insert_lecture(
+                factory,
+                id="lec-7", user_id="u1", title="Test",
+                source_type="youtube", status="failed",
+                stage="error", stage_message="boom",
+                progress=90, error_message="Gemini outage mid-run",
+            ))
+            status = asyncio.run(jobs.get_job_status("lec-7"))
+            check("db-first: DB row consulted first", status is not None)
+            check("db-first: failed stays failed even with progress 90",
+                  status["status"] == "failed" and status["progress"] == 90)
+
+            missing = asyncio.run(jobs.get_job_status("no-such-lek"))
+            check("db-first: unknown id → None (no fake completion)",
+                  missing is None)
+        finally:
+            jobs.DATABASE_URL = original_url
+
+
 if __name__ == "__main__":
     import traceback
 

@@ -837,3 +837,32 @@
   8. Dockerfile: BGUTIL_POT binary now sha256-verified (v0.8.1 hash pinned via ARG).
 - **Tests**: NEW backend/test_phase1_hardening.py (53 checks: buckets, counters, ASGI limiter/headers, magic bytes, persona scoping, cross-user quiz/ratings via TestClient). test_webhooks.py extended with handler-level branches (bad sig 401, bad JSON 400, missing user_id ignored, unknown event no-op, tier upgrade/cancel, replay idempotency). test_billing_quota fake upload now carries ftyp bytes. run-tests.sh exports generous NORAI_RATE_* so offline suites never trip the limiter.
 - **Pending / Next**: Phase 2 (stability & data integrity: jobs heartbeat/classification, concurrency fixes, auth IntegrityError narrowing) per AUDIT_2026-08-22.md §5. Nothing committed yet — awaiting user instruction.
+
+---
+
+### [2026-08-22] — OpenCode: Phase 2 "Stability & Data Integrity" Complete
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed — all gates green (backend 42/42 suites · oxlint clean · vitest 73/73 · vite build OK). NOT yet committed.
+- **Context**: Phase 2 of AUDIT_2026-08-22.md §5.
+- **Done**:
+  1. Jobs (2.1): `TerminalPipelineError` typed exception (orchestrator) for over-duration validation → `_handle_failure` fails immediately (no paid retries); attempts-read fails CLOSED on DB error; heartbeat thread carries percent=None (never resets progress) + hard wall-clock cap (`NORAI_PIPELINE_MAX_RUNTIME_MIN`, default 90) after which heartbeats stop so supervisor recovery kicks in; `get_job_status` DB-first precedence (disk only when no row/DB down); cancel-after-terminal refused (endpoint returns 409 with honest copy).
+  2. Async hygiene (2.2): `ThreadDeletedError(ValueError)` raised by zombie-thread guard → /chat maps to HTTP 409, /chat/stream emits honest terminal frame. to_thread wrappers verified intact.
+  3. Concurrency (2.3): graph build moved OUTSIDE `_cache_lock` (double-checked insert, race loser closes its own connection); lecture_registry RMW atomic under one lock (create/title/list merge-write pattern); usage minutes increment via atomic SQL `used = used + n` (rollover committed first).
+  4. Auth (2.4): blanket `except Exception → None` narrowed to IntegrityError-only; other DB errors propagate as honest 500s instead of silent identity downgrade → misleading 401s.
+  5. Tutor integrity (2.5): save_memory_node emits RemoveMessage ONLY on successful summarization (outage keeps originals); chapter_id −1 sentinel unmapped at retrieval (`_unmap_chapter_id`); citations exact-match-first then longest-candidate containment tiebreak (`_best_chunk_for`); orchestrator JSONDecodeError now warn-skip instead of fatal ValueError re-raise; NORAI_ALLOW_UNSIGNED_WEBHOOKS escape hatch actually works now (was dead code).
+  6. Datetimes (2.6): new backend/timeutil.py `ensure_utc()` replaces ad-hoc tzinfo patches (jobs/usage/main ×4 sites).
+- **Tests**: NEW backend/test_phase2_integrity.py (20 checks: outage transcript preservation incl. happy-path guard, 24-thread parallel registry creates lose nothing, citation determinism, sentinel unmap, heartbeat cap quiescence). test_jobs_restart.py extended (+3 tests: terminal classification, cancel-refusal, DB-first status).
+- **Pending / Next**: Phase 3 (performance) per AUDIT_2026-08-22.md §5 — needs user go-ahead. Phase 2 changes uncommitted.
+
+---
+
+### [2026-08-22] — OpenCode: Phase 3 "Performance" Complete
+- **Agent**: OpenCode (CLI)
+- **Status**: Completed — all gates green (backend 42/42 suites · oxlint clean · vitest 73/73 · vite build OK). NOT yet committed.
+- **Done (3.1 backend/tutor)**: /usage rewritten to SQL GROUP BY aggregates (dialect-aware day bucketing strftime/to_char; response shape unchanged, test_usage_dashboard 31/31); jobs.py engines cached per (event-loop, DATABASE_URL) with NullPool retained — loop-keyed because worker threads run fresh asyncio.run loops, hot path = FastAPI main loop hits cache every 1.5s poll; disk-complete positive cache (`_disk_completed` set + `_invalidate_disk_completed` helper) kills the 3× Path.exists per tick; WAL+busy_timeout now set on MAIN DB via connect event listener in db/database.py; lecture-context loader in tutor/cache.py is mtime-keyed (~40K chars re-read per turn eliminated, stat-signature invalidation, LRU 8); rewrite_query skipped on first turn (empty prior history ⇒ non-anaphoric by construction).
+- **Done (3.2 data layer)**: narrow Zustand selectors in Workspace/DocPanel/AIPanel/QuizPanel/LandingPage/CoursesPage (bare useStore() → whole-state subscription); FlashcardsPanel fetch effects get stale-response guards; ChapterScreenshots defers fetch until first expand + guard.
+- **Done (3.3 render)**: Markdown.tsx plugin arrays hoisted to module scope + component memoized (kills full mdast/hast re-parse on parent re-renders); ChatArea streaming commits throttled to 100ms flush w/ final-event flush + timer cleanup in finally (O(n²) cumulative parse gone); ConceptMapView layout pass useMemo'd + pan coalesced via rAF; SearchBar debounced 200ms.
+- **Done (3.4 loading)**: ProcessingPage pauses polling while document.hidden (resumes on visibilitychange) and stretches interval ×1.5 up to 10s on unchanged payloads; framer-motion evicted from entry chunk — new lazy `ui/MotionProvider.tsx` (MotionConfig reducedMotion="user") + AuthModal lazy'd; dist entry now loads only index+react chunks, framer ships as async proxy chunk fetched post-hydration.
+- **Perf spot-checks (audit §Phase3 acceptance)**: turn-1 chat = exactly 1 LLM call vs 2 on follow-ups (verified via counting stub, /tmp/opencode/spotcheck_ttft.py logic mirrored in tutor/test_tutor_streaming.py::test_rewrite_runs_and_is_filtered_on_followup_turns) ⇒ one full round-trip (0.5–2s) cut from TTFT; hidden-tab polls drop from 40 req/min fixed to 0 while hidden; visible unchanged-payload polls decay 1.5s→10s (40→~13 req/min steady). Quiz INP: selector narrowing removes store-wide cascades (qualitative).
+- **Test updates**: test_tutor_streaming first-turn tests now queue only the answer call (rewrite legitimately skipped); NEW test_rewrite_runs_and_is_filtered_on_followup_turns proves rewrite still runs+filters on turn ≥2.
+- **Pending / Next**: Phase 4 (UI/UX Tier-0 polish) or Phase 5 (architecture split) per AUDIT_2026-08-22.md §5 — needs user go-ahead. Phase 2+3 changes uncommitted.
