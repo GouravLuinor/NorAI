@@ -16,6 +16,14 @@ export GEMINI_API_KEY="${GEMINI_API_KEY:-test-offline-key-dummy}"
 export NORAI_DEV_ACCESS="${NORAI_DEV_ACCESS:-1}"
 export DATABASE_URL="${DATABASE_URL:-sqlite+aiosqlite:////tmp/norai_ci_test.db}"
 
+# P1 rate limiting is exercised in test_phase1_hardening.py; every other
+# offline suite gets effectively unlimited buckets so multi-step endpoint
+# tests never trip the inbound limiter.
+export NORAI_RATE_CHAT="${NORAI_RATE_CHAT:-100000}"
+export NORAI_RATE_QUIZ="${NORAI_RATE_QUIZ:-100000}"
+export NORAI_RATE_PROCESS="${NORAI_RATE_PROCESS:-100000}"
+export NORAI_RATE_THREADS="${NORAI_RATE_THREADS:-100000}"
+
 # Tests that need a running backend / paid services — kept out of the offline suite.
 EXCLUDED="backend/test_api_contract.py"
 
