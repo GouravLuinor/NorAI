@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useThreadStore } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { sendChatMessageStream } from '../../lib/chatApi'
+import { friendlyError } from '../../lib/errorCopy'
 import { buildReferences, stripSources } from '../../lib/references'
 import { scrollToHeading } from '../../lib/cite'
 import type { Reference } from '../../types'
@@ -158,10 +159,7 @@ const handleSend = useCallback(async (text: string) => {
       if (err instanceof Error && err.name === 'AbortError') return
       console.error('Chat error:', err)
       if (activeThreadRef.current === targetThreadId) {
-        const errorText =
-          err instanceof Error && err.message && !err.message.includes('[object Object]')
-            ? err.message
-            : 'Sorry, something went wrong. Please try again.'
+        const errorText = friendlyError(err)
         addMessage({
           id: genId(),
           role: 'assistant',

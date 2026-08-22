@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useToastStore } from '../../stores/useToastStore'
 import { useState } from 'react'
 import { useLectureStore } from '../../stores/useLectureStore'
+import { friendlyError } from '../../lib/errorCopy'
 import { SegmentedControl } from '../ui/SegmentedControl'
 import { SlidersHorizontal } from 'lucide-react'
 import { FOCUS_RING } from '../ui/shared'
@@ -34,7 +35,7 @@ export function AIPanel() {
   return (
     <div className="flex flex-col min-h-0 bg-ns overflow-hidden h-full">
       {/* Header */}
-      <div className="px-3.5 py-2.5 border-b border-bdr flex items-center gap-2 shrink-0 bg-ns2/40 fold-marks relative">
+      <div className="px-4 py-2.5 border-b border-bdr flex items-center gap-2 shrink-0 bg-ns2/40 fold-marks relative">
         <div className="w-7 h-7 rounded-sm bg-npf flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 relative">
           N
           <span className="absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full bg-ng border-1.5 border-ns" />
@@ -79,9 +80,11 @@ export function AIPanel() {
                     if (qs.length > 0) {
                       startQuiz(qs, activeChapterId)
                       addToast('Quiz started', 'success')
+                    } else {
+                      addToast('No questions found for this chapter yet.', 'info')
                     }
                   })
-                  .catch(() => {})
+                  .catch((err) => addToast(friendlyError(err) || 'Could not load quiz questions.', 'error'))
                   .finally(() => setQuizLoading(false))
               } else if (mode === 'cards') {
                 setMode('cards')

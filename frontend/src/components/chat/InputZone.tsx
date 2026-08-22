@@ -56,7 +56,8 @@ export function InputZone({ onSend }: InputZoneProps) {
           label="Send message"
           variant="primary"
           onClick={handleSend}
-          className="ripple w-6.5 h-6.5 rounded-sm"
+          disabled={!value.trim()}
+          className="w-7 h-7 rounded-sm"
         >
           <ArrowUp size={13} strokeWidth={1.5} />
         </IconButton>

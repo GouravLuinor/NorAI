@@ -11,6 +11,7 @@ import { sendChatMessageStream } from '../../lib/chatApi'
 import { apiGet } from '../../lib/http'
 import { buildReferences } from '../../lib/references'
 import { ConceptSkeleton } from '../ui/SkeletonCard'
+import { FOCUS_RING } from '../ui/shared'
 import {
   layoutConceptMap,
   conceptEdgePath,
@@ -248,8 +249,8 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
             <button
               type="button"
               onClick={() => setLayoutMode('tree')}
-              className={`px-2.5 py-1 rounded-[5px] text-2xs font-medium transition ${
-                layoutMode === 'tree' ? 'bg-np text-ns shadow-sm' : 'text-nt3 hover:text-nt2'
+              className={`px-2.5 py-1 rounded-sm text-2xs font-medium transition ${FOCUS_RING} active:translate-y-[1px] ${
+                layoutMode === 'tree' ? 'bg-np text-npfg shadow-sm' : 'text-nt3 hover:text-nt2'
               }`}
             >
               Tree Layout
@@ -257,8 +258,8 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
             <button
               type="button"
               onClick={() => setLayoutMode('radial')}
-              className={`px-2.5 py-1 rounded-[5px] text-2xs font-medium transition ${
-                layoutMode === 'radial' ? 'bg-np text-ns shadow-sm' : 'text-nt3 hover:text-nt2'
+              className={`px-2.5 py-1 rounded-sm text-2xs font-medium transition ${FOCUS_RING} active:translate-y-[1px] ${
+                layoutMode === 'radial' ? 'bg-np text-npfg shadow-sm' : 'text-nt3 hover:text-nt2'
               }`}
             >
               Radial
@@ -268,6 +269,7 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
           <div className="flex items-center gap-1 bg-ns2 p-0.5 rounded-md border border-bdr2">
             <Button
               variant="outline"
+              aria-label="Zoom in"
               onClick={() => setZoom((z) => Math.min(z + 0.15, 2.5))}
               className="p-1 rounded-sm text-2xs h-7 w-7"
             >
@@ -275,6 +277,7 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
             </Button>
             <Button
               variant="outline"
+              aria-label="Zoom out"
               onClick={() => setZoom((z) => Math.max(z - 0.15, 0.4))}
               className="p-1 rounded-sm text-2xs h-7 w-7"
             >
@@ -286,6 +289,7 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
                 setZoom(1)
                 setPan({ x: 0, y: 0 })
               }}
+              aria-label="Reset zoom and pan"
               className="p-1 rounded-sm text-2xs h-7 w-7"
             >
               <Maximize2 size={13} />
@@ -361,24 +365,27 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
             const isFocus = node.type === 'focus_concept'
 
             return (
-              <div
+              <button
                 key={node.id}
+                type="button"
                 onClick={() => setSelectedNode(node)}
+                aria-pressed={isSelected}
+                aria-label={`Select concept: ${node.label}`}
                 style={{
                   left: `${pos.x}px`,
                   top: `${pos.y}px`,
                   transform: 'translate(-50%, -50%)',
                 }}
-                className={`absolute pointer-events-auto cursor-pointer transition-all duration-200 ${
+                className={`absolute pointer-events-auto cursor-pointer transition-all duration-200 ${FOCUS_RING} ${
                   isRoot
-                    ? 'px-5 py-3 rounded-full bg-np text-ns font-bold text-sm shadow-lg border-2 border-ns3 hover:scale-105'
+                    ? 'px-5 py-3 rounded-full bg-np text-npfg font-bold text-sm shadow-ev2 border-2 border-ns3 hover:scale-105'
                     : isFocus
                     ? `px-4 py-2.5 rounded-xl border font-semibold text-xs shadow-ev1 ${
                         isSelected
-                          ? 'bg-ns2 border-np text-nt shadow-md scale-105 ring-2 ring-np/30'
+                          ? 'bg-ns2 border-np text-nt scale-105 ring-2 ring-np/30'
                           : 'bg-nb border-bdr2 text-nt hover:border-np/50'
                       }`
-                    : `px-3.5 py-1.5 rounded-lg border text-2xs font-medium ${
+                    : `px-4 py-1.5 rounded-lg border text-2xs font-medium ${
                         isSelected
                           ? 'bg-ns2 border-np text-nt ring-1 ring-np/30'
                           : 'bg-ns border-bdr text-nt2 hover:border-bdr2'
@@ -393,7 +400,7 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
                     {node.label}
                   </span>
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>
@@ -417,7 +424,8 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
               <button
                 type="button"
                 onClick={() => setSelectedNode(null)}
-                className="text-nt3 hover:text-nt transition p-1"
+                aria-label="Close concept details"
+                className={`text-nt3 hover:text-nt transition p-1 rounded-sm ${FOCUS_RING}`}
               >
                 <X size={14} />
               </button>

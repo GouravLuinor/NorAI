@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Sparkles, ArrowRight, Play, Check, BookOpen, Layers, FileText, Brain, Video, ShieldCheck, Zap, ChevronRight, GitFork, Menu, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
+import { FOCUS_RING, LINK_RING } from '../components/ui/shared'
 
 interface LandingPageProps {
   onStartWorkspace: () => void
@@ -71,16 +72,16 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
           </div>
 
           <nav className="hidden md:flex items-center gap-6 font-display text-11 uppercase tracking-wider text-nt2 font-medium">
-            <a href="#features" className="hover:text-nt transition-colors">Features</a>
-            <a href="#how-it-works" className="hover:text-nt transition-colors">How It Works</a>
-            <Link to="/pricing" className="hover:text-nt transition-colors">Pricing</Link>
+            <a href="#features" className={`hover:text-nt transition-colors ${LINK_RING}`}>Features</a>
+            <a href="#how-it-works" className={`hover:text-nt transition-colors ${LINK_RING}`}>How It Works</a>
+            <Link to="/pricing" className={`hover:text-nt transition-colors ${LINK_RING}`}>Pricing</Link>
           </nav>
 
           <div className="flex items-center gap-3">
             {user ? (
               <button
                 onClick={onStartWorkspace}
-                className="bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-[background-color,transform] active:translate-y-0.5"
+                className={`bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-[background-color,transform] active:translate-y-0.5 ${FOCUS_RING}`}
               >
                 <span>Workspace</span>
                 <ArrowRight size={13} />
@@ -89,13 +90,13 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
               <>
                 <button
                   onClick={() => openAuthModal('login')}
-                  className="text-nt2 hover:text-nt font-display text-11 font-medium uppercase tracking-wider px-3 py-1.5 transition-colors cursor-pointer"
+                  className={`text-nt2 hover:text-nt font-display text-11 font-medium uppercase tracking-wider px-3 py-1.5 transition-colors cursor-pointer ${FOCUS_RING}`}
                 >
                   Log In
                 </button>
                 <button
                   onClick={() => openAuthModal('signup')}
-                  className="bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-[background-color,transform] active:translate-y-0.5"
+                  className={`bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-[background-color,transform] active:translate-y-0.5 ${FOCUS_RING}`}
                 >
                   <span>Start Free Trial</span>
                 </button>
@@ -104,7 +105,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
 
             <button
               onClick={() => setMobileOpen((o) => !o)}
-              className="md:hidden p-2 -mr-1 rounded-md text-nt2 hover:text-nt hover:bg-ns2 transition-colors cursor-pointer"
+              className={`md:hidden p-2 -mr-1 rounded-md text-nt2 hover:text-nt hover:bg-ns2 transition-colors cursor-pointer ${FOCUS_RING}`}
               aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileOpen}
             >
@@ -153,7 +154,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
 
           <button
             onClick={onStartWorkspace}
-            className="w-full sm:w-auto bg-ns hover:bg-ns2 border border-bdr text-nt font-display text-12 font-medium uppercase tracking-wider px-6 py-3.5 rounded-md shadow-ev1 flex items-center justify-center gap-2 cursor-pointer transition-colors"
+            className={`w-full sm:w-auto bg-ns hover:bg-ns2 border border-bdr text-nt font-display text-12 font-medium uppercase tracking-wider px-6 py-3.5 rounded-md shadow-ev1 flex items-center justify-center gap-2 cursor-pointer transition-[background-color,transform,box-shadow] active:translate-y-[1px] active:shadow-none ${FOCUS_RING}`}
           >
             <Play size={14} className="text-np fill-np" />
             <span>Launch Live Workspace</span>
@@ -224,7 +225,9 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
               <div className="space-y-4">
                 <div className="border-b border-bdr pb-2">
                   <span className="font-mono text-11 text-np uppercase tracking-wider font-semibold">Chapter 02 — Work-Energy Theorem</span>
-                  <h3 className="font-serif text-22 text-nt font-normal mt-1">Kinetic Energy & Mathematical Derivation</h3>
+                  {/* P4.4: demo-mock headings are decorative — <p> keeps
+                      document heading order sane (h1 → sections' h2). */}
+                  <p className="font-serif text-22 text-nt font-normal mt-1">Kinetic Energy &amp; Mathematical Derivation</p>
                 </div>
                 <p className="text-nt2 leading-relaxed">
                   The net work done on an object by external forces equals the change in its kinetic energy:
@@ -265,9 +268,9 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
                   <span>Question 2 of 8</span>
                   <span className="text-na font-semibold">Medium Difficulty</span>
                 </div>
-                <h4 className="font-serif text-16 text-nt font-normal">
+                <p className="font-serif text-16 text-nt font-normal">
                   If the velocity of an object is doubled, by what factor does its kinetic energy increase?
-                </h4>
+                </p>
                 <div className="space-y-2">
                   {['Factor of 2', 'Factor of 4 (Correct)', 'Factor of 8', 'Remains unchanged'].map((opt, i) => (
                     <div

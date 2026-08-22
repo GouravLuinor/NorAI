@@ -3,6 +3,9 @@ import { ArrowLeft, BarChart3, Database, Cpu, Sparkles, DollarSign, AlertCircle 
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
 import { apiGet } from '../lib/http'
+import { friendlyError } from '../lib/errorCopy'
+import { SkeletonCard } from '../components/ui/SkeletonCard'
+import { NumberTicker } from '../components/ui/NumberTicker'
 import { Button } from '../components/ui/Button'
 
 interface UsageTotals {
@@ -153,7 +156,7 @@ export function UsagePage() {
   if (error) {
     return (
       <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
-        <p className="text-13 text-nr mb-4">Couldn't load usage data ({error}).</p>
+        <p className="text-13 text-nr mb-4">{friendlyError(error)}</p>
         <Button variant="outline" className="px-4 py-2 rounded-md text-12 bg-transparent border-bdr2" onClick={() => navigate('/workspace')}>
           <ArrowLeft size={14} /> Back to workspace
         </Button>
@@ -164,7 +167,10 @@ export function UsagePage() {
   if (!data) {
     return (
       <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
-        <div className="text-13 text-nt3">Loading usage…</div>
+        <div className="w-full max-w-md space-y-3" aria-busy="true" aria-label="Loading usage">
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={4} />
+        </div>
       </div>
     )
   }
@@ -204,25 +210,25 @@ export function UsagePage() {
             <div className="flex items-center gap-1.5 text-11 text-nt3 mb-1">
               <DollarSign size={12} className="text-np" /> Estimated cost
             </div>
-            <div className="text-22 font-bold text-nt tabular-nums">{fmtCost(data.totals.cost_usd)}</div>
+            <div className="text-22 font-bold text-nt"><NumberTicker value={data.totals.cost_usd} format={fmtCost} /></div>
           </div>
           <div className="rounded-lg bg-ns border border-bdr p-4">
             <div className="flex items-center gap-1.5 text-11 text-nt3 mb-1">
               <Cpu size={12} className="text-np" /> API calls
             </div>
-            <div className="text-22 font-bold text-nt tabular-nums">{data.totals.api_calls.toLocaleString()}</div>
+            <div className="text-22 font-bold text-nt"><NumberTicker value={data.totals.api_calls} format={(v) => Math.round(v).toLocaleString()} /></div>
           </div>
           <div className="rounded-lg bg-ns border border-bdr p-4">
             <div className="flex items-center gap-1.5 text-11 text-nt3 mb-1">
               <Database size={12} className="text-np" /> Tokens
             </div>
-            <div className="text-22 font-bold text-nt tabular-nums">{fmtTokens(totalTokens)}</div>
+            <div className="text-22 font-bold text-nt"><NumberTicker value={totalTokens} format={fmtTokens} /></div>
           </div>
           <div className="rounded-lg bg-ns border border-bdr p-4">
             <div className="flex items-center gap-1.5 text-11 text-nt3 mb-1">
               <Sparkles size={12} className="text-np" /> Minutes used
             </div>
-            <div className="text-22 font-bold text-nt tabular-nums">{data.totals.minutes}</div>
+            <div className="text-22 font-bold text-nt"><NumberTicker value={data.totals.minutes} /></div>
           </div>
         </section>
 

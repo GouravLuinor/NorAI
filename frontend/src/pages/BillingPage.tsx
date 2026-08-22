@@ -3,7 +3,10 @@ import { ArrowLeft, ExternalLink, Sparkles, CreditCard, BarChart3 } from 'lucide
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
 import { apiGet } from '../lib/http'
+import { friendlyError } from '../lib/errorCopy'
+import { SkeletonCard } from '../components/ui/SkeletonCard'
 import { Button } from '../components/ui/Button'
+import { FOCUS_RING } from '../components/ui/shared'
 
 interface BillingData {
   user_id?: string
@@ -99,7 +102,7 @@ export function BillingPage() {
   if (error) {
     return (
       <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
-        <p className="text-13 text-nr mb-4">Couldn't load billing info ({error}).</p>
+        <p className="text-13 text-nr mb-4">{friendlyError(error)}</p>
         <Button variant="outline" className="px-4 py-2 rounded-md text-12 bg-transparent border-bdr2" onClick={() => navigate('/workspace')}>
           <ArrowLeft size={14} /> Back to workspace
         </Button>
@@ -110,7 +113,10 @@ export function BillingPage() {
   if (!data) {
     return (
       <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
-        <div className="text-13 text-nt3">Loading billing…</div>
+        <div className="w-full max-w-md space-y-3" aria-busy="true" aria-label="Loading billing">
+          <SkeletonCard lines={3} />
+          <SkeletonCard lines={4} />
+        </div>
       </div>
     )
   }
@@ -174,7 +180,7 @@ export function BillingPage() {
             aria-valuemax={data.monthly_minutes_quota}
             aria-label="Monthly lecture minutes used"
           >
-            <div className="bg-np h-full rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
+            <div className="bg-np h-full rounded-full transition-all duration-200" style={{ width: `${pct}%` }} />
           </div>
           <p className="text-11 text-nt3">
             {data.remaining_minutes > 0
@@ -195,10 +201,10 @@ export function BillingPage() {
             <h2 className="text-12 font-semibold text-nt uppercase tracking-wider mb-1">Starter</h2>
             <p className="text-11 text-nt3 mb-4">5 lecture-hours / month.</p>
             {starterUrl ? (
-              <a href={starterUrl} target="_blank" rel="noreferrer">
-                <Button variant={data.plan_tier === 'starter' ? 'surface' : 'primary'} className="w-full py-2 rounded-md text-12 gap-2">
-                  {data.plan_tier === 'starter' ? 'Current plan' : 'Choose Starter'} <ExternalLink size={13} />
-                </Button>
+              // P4.4: styled anchor, NOT a button nested in a link.
+              <a href={starterUrl} target="_blank" rel="noreferrer"
+                className={`w-full inline-flex items-center justify-center gap-2 py-2 rounded-md text-12 transition ${FOCUS_RING} active:translate-y-[1px] ${data.plan_tier === 'starter' ? 'border border-bdr2 text-nt font-medium bg-transparent cursor-pointer hover:bg-ns2' : 'bg-npf text-npfg font-medium shadow-ev2 hover:bg-npfh cursor-pointer'}`}>
+                {data.plan_tier === 'starter' ? 'Current plan' : 'Choose Starter'} <ExternalLink size={13} />
               </a>
             ) : (
               <Button variant="outline" className="w-full py-2 rounded-md text-12 bg-transparent border-bdr2" onClick={() => navigate('/pricing')}>
@@ -211,10 +217,9 @@ export function BillingPage() {
             <h2 className="text-12 font-semibold text-nt uppercase tracking-wider mb-1">Pro Student</h2>
             <p className="text-11 text-nt3 mb-4">25 lecture-hours / month, priority queue.</p>
             {proUrl ? (
-              <a href={proUrl} target="_blank" rel="noreferrer">
-                <Button variant={data.plan_tier === 'pro' ? 'surface' : 'primary'} className="w-full py-2 rounded-md text-12 gap-2">
-                  {data.plan_tier === 'pro' ? 'Current plan' : 'Choose Pro'} <ExternalLink size={13} />
-                </Button>
+              <a href={proUrl} target="_blank" rel="noreferrer"
+                className={`w-full inline-flex items-center justify-center gap-2 py-2 rounded-md text-12 transition ${FOCUS_RING} active:translate-y-[1px] ${data.plan_tier === 'pro' ? 'border border-bdr2 text-nt font-medium bg-transparent cursor-pointer hover:bg-ns2' : 'bg-npf text-npfg font-medium shadow-ev2 hover:bg-npfh cursor-pointer'}`}>
+                {data.plan_tier === 'pro' ? 'Current plan' : 'Choose Pro'} <ExternalLink size={13} />
               </a>
             ) : (
               <Button variant="outline" className="w-full py-2 rounded-md text-12 bg-transparent border-bdr2" onClick={() => navigate('/pricing')}>
@@ -230,10 +235,9 @@ export function BillingPage() {
               <h2 className="text-12 font-semibold text-nt mb-0.5">Manage subscription</h2>
               <p className="text-11 text-nt3">Update billing, cancel, or change plans.</p>
             </div>
-            <a href={data.manage_url} target="_blank" rel="noreferrer">
-              <Button variant="outline" className="px-4 py-2 rounded-md text-12 gap-2 bg-transparent border-bdr2 hover:border-nt4">
-                Manage <ExternalLink size={13} />
-              </Button>
+            <a href={data.manage_url} target="_blank" rel="noreferrer"
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md text-12 border border-bdr2 text-nt3 font-medium bg-transparent hover:border-nt4 hover:text-nt2 transition cursor-pointer ${FOCUS_RING} active:translate-y-[1px]`}>
+              Manage <ExternalLink size={13} />
             </a>
           </section>
         )}

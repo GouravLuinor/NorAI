@@ -69,6 +69,7 @@ describe('UsagePage', () => {
     authStateMock.mockReturnValue({ user: { id: 'u1', email: 'a@b.com' }, openAuthModal: openAuthModalMock })
     apiGetMock.mockRejectedValue(new Error('boom'))
     render(<UsagePage />)
-    expect(await screen.findByText(/Couldn't load usage data/)).toBeInTheDocument()
+    // P4.3: raw backend messages map to friendly copy (never dumps 'boom').
+    expect(await screen.findByText('Something went wrong. Please try again.')).toBeInTheDocument()
   })
 })

@@ -11,10 +11,10 @@ export function Badge({ type, difficulty }: { type: string; difficulty: string }
   }
   return (
     <div className="flex items-center gap-2">
-      <span className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-3xs font-semibold uppercase tracking-wide bg-nblb text-nbl">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-3xs font-semibold uppercase tracking-wide bg-nblb text-nbl">
         {type}
       </span>
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-[5px] text-3xs font-semibold uppercase tracking-wide border ${diffColors[difficulty] || 'bg-ns3 text-nt2'}`}>
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-sm text-3xs font-semibold uppercase tracking-wide border ${diffColors[difficulty] || 'bg-ns3 text-nt2'}`}>
         {difficulty}
       </span>
     </div>

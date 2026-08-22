@@ -3,3 +3,8 @@
 // quality floor (visible focus ring, no default outline).
 export const FOCUS_RING =
   'focus-visible:outline-none focus-visible:shadow-[var(--ds-focus-ring)]'
+
+// Same ring, tuned for inline text links / nav anchors where a box shadow on
+// the text block reads cleaner than an outline.
+export const LINK_RING =
+  'focus-visible:outline-none focus-visible:shadow-[var(--ds-focus-ring)] rounded-sm'

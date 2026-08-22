@@ -30,6 +30,7 @@ export function CoursesPage() {
   const { user, openAuthModal } = useAuthStore()
   const { courses, loadCourses, createCourse, deleteCourse, fetchCourse, addLecture, removeLecture } =
     useCourseStore()
+  const coursesLoading = useCourseStore((s) => s.coursesLoading)
   const { lectures, loadLectures } = useLectureStore()
 
   const [name, setName] = useState('')
@@ -182,7 +183,16 @@ export function CoursesPage() {
 
         {/* Course list */}
         <section className="flex flex-col gap-3">
-          {courses.length === 0 ? (
+          {coursesLoading ? (
+            <div className="flex flex-col gap-3" aria-hidden="true">
+              {[0, 1].map((i) => (
+                <div key={i} className="rounded-lg bg-ns border border-bdr p-4">
+                  <div className="h-4 w-40 rounded-sm bg-ns2 animate-pulse mb-2" />
+                  <div className="h-3 w-64 rounded-sm bg-ns2 animate-pulse" />
+                </div>
+              ))}
+            </div>
+          ) : courses.length === 0 ? (
             <p className="text-center text-12 text-nt3 py-10">
               No courses yet — create one above, or from the upload page.
             </p>

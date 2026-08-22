@@ -3,6 +3,7 @@ import { X, Share2, Copy, Link2, ShieldCheck, RefreshCw } from 'lucide-react'
 import { Dialog } from '../ui/Dialog'
 import { IconButton } from '../ui/IconButton'
 import { Button } from '../ui/Button'
+import { FOCUS_RING } from '../ui/shared'
 import { apiPost, apiPatch, apiDelete, apiGet } from '../../lib/http'
 import { useToastStore } from '../../stores/useToastStore'
 import type { ShareLinkInfo } from '../../types'
@@ -134,19 +135,21 @@ export function ShareModal({ lectureId, isOpen, onClose }: ShareModalProps) {
           <div className="flex items-center justify-between gap-3 rounded-md border border-bdr2 bg-ns2 px-3 py-2.5">
             <div className="flex items-center gap-2 text-2xs text-nt2">
               <ShieldCheck size={13} className="text-np" />
-              <span>Allow AI tutor chat</span>
+              <span id="share-tutor-chat-label">Allow AI tutor chat</span>
             </div>
             <button
+              type="button"
               role="switch"
               aria-checked={link.allow_tutor_chat}
+              aria-labelledby="share-tutor-chat-label"
               onClick={() => handleToggleTutor(!link.allow_tutor_chat)}
               disabled={busy}
-              className={`relative h-5 w-9 rounded-full transition-colors ${
+              className={`relative h-5 w-9 rounded-full transition-colors ${FOCUS_RING} ${
                 link.allow_tutor_chat ? 'bg-np' : 'bg-ns4'
               }`}
             >
               <span
-                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
+                className={`absolute top-0.5 h-4 w-4 rounded-full bg-nb border border-bdr2 transition-transform ${
                   link.allow_tutor_chat ? 'translate-x-[18px]' : 'translate-x-0.5'
                 }`}
               />
@@ -158,7 +161,7 @@ export function ShareModal({ lectureId, isOpen, onClose }: ShareModalProps) {
           </p>
 
           <div className="flex items-center justify-between">
-            <Button variant="outline" onClick={handleRevoke} disabled={busy} className="gap-1.5 px-3 py-1.5 rounded-md text-2xs text-nr bg-transparent border-red-900/40">
+            <Button variant="outline" onClick={handleRevoke} disabled={busy} className="gap-1.5 px-3 py-1.5 rounded-md text-2xs text-nr bg-transparent border-nrbr">
               <RefreshCw size={12} /> Revoke
             </Button>
             <span className="text-2xs text-nt4">Revoking kills the link instantly.</span>

@@ -13,7 +13,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  'inline-flex items-center justify-center transition select-none disabled:cursor-not-allowed'
+  'inline-flex items-center justify-center transition select-none disabled:cursor-not-allowed disabled:opacity-60'
 
 const variants: Record<ButtonVariant, string> = {
   // Red-pencil fill, hard shadow, press-down. Default CTA.
@@ -25,9 +25,9 @@ const variants: Record<ButtonVariant, string> = {
   // Hairline ink border. Border + background color passed per-site so
   // selected states (e.g. `bg-npb border-npbr`) never collide with a baked
   // value. Press-down is opt-in via className (some outline sites lack it).
-  outline: 'border text-nt3 hover:bg-ns2 hover:text-nt2',
+  outline: 'border text-nt3 hover:bg-ns2 hover:text-nt2 active:translate-y-[1px]',
   // Muted surface on a panel background; bg/hover come from the call site.
-  surface: 'border border-bdr2 text-nt font-medium',
+  surface: 'border border-bdr2 text-nt font-medium active:translate-y-[1px]',
   // Borderless text button.
   ghost: 'text-nt3 hover:bg-ns2 hover:text-nt2',
 }

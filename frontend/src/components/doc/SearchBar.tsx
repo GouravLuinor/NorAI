@@ -147,7 +147,7 @@ export function SearchBar({ isOpen, onClose }: SearchBarProps) {
           className="text-2xs placeholder:text-nt4 w-32"
         />
         {matchCount > 0 && (
-          <span className="text-3xs text-nt3 whitespace-nowrap">
+          <span className="text-3xs text-nt3 whitespace-nowrap tabular-nums">
             {currentMatch}/{matchCount}
           </span>
         )}
