@@ -34,7 +34,7 @@ export function ChatArea() {
   // stable thread tracker
   const activeThreadRef = useRef(threadId)
 
-  const { send, abort } = useAskNora({
+  const { send, abort, isInFlight } = useAskNora({
     onReferences: (refs, targetThreadId) => {
       if (activeThreadRef.current === targetThreadId) {
         setLiveReferences(refs)
@@ -141,7 +141,7 @@ const handleSend = useCallback(async (text: string) => {
         onReferenceClick={handleReferenceClick}
         onScreenshotClick={handleScreenshotClick}
       />
-      <InputZone onSend={handleSend} />
+      <InputZone onSend={handleSend} disabled={isInFlight} />
 
       {lightbox && (
         <Lightbox

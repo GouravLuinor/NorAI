@@ -20,9 +20,13 @@ export const useCourseStore = create<CourseState>((set) => ({
     set({ coursesLoading: true })
     try {
       const data = await apiGet<{ courses: CourseSummary[] }>('/courses')
-      set({ courses: data?.courses ?? [], coursesLoading: false })
+      set({ courses: data?.courses ?? [] })
     } catch {
-      set({ courses: [], coursesLoading: false })
+      set({ courses: [] })
+    } finally {
+      // BUG-14 fix: always clear the loading state, even if an unexpected error
+      // escapes the catch (e.g. synchronous throw inside the try).
+      set({ coursesLoading: false })
     }
   },
   createCourse: async (name, description) => {

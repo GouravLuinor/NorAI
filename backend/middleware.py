@@ -34,7 +34,14 @@ def _env_int(name: str, default: int) -> int:
 
 # ── Route families ────────────────────────────────────────────────────────────
 # (path regex, bucket name, capacity env var, default capacity, window seconds)
+#
+# NOTE: poll routes MUST be listed first — middleware matches the first rule
+# that fires. Status polling + quota checks need a generous bucket (120/min)
+# so the pipeline progress bar never triggers a 429 storm (BUG-05 fix).
 _RATE_RULES = [
+    # Exempt status polling + quota from strict bucketing (2/sec is plenty).
+    (re.compile(r"^/process/[^/]+/status$"), "poll", "NORAI_RATE_POLL", 120, 60),
+    (re.compile(r"^/quota$"), "poll", "NORAI_RATE_POLL", 120, 60),
     (re.compile(r"^/chat"), "chat", "NORAI_RATE_CHAT", 30, 60),
     (re.compile(r"^/quiz/"), "quiz", "NORAI_RATE_QUIZ", 30, 60),
     (re.compile(r"^/(process|estimate)\b"), "process", "NORAI_RATE_PROCESS", 10, 3600),

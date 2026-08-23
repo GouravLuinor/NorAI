@@ -4,13 +4,15 @@ import { IconButton } from '../ui/IconButton'
 
 interface InputZoneProps {
   onSend: (text: string) => void
+  disabled?: boolean
 }
 
-export function InputZone({ onSend }: InputZoneProps) {
+export function InputZone({ onSend, disabled = false }: InputZoneProps) {
   const [value, setValue] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSend = () => {
+    if (disabled) return
     const trimmed = value.trim()
     if (!trimmed) return
     onSend(trimmed)
@@ -42,10 +44,11 @@ export function InputZone({ onSend }: InputZoneProps) {
           ref={textareaRef}
           name="chat-message"
           aria-label="Chat message"
-          className="flex-1 bg-transparent border-none outline-none text-11 text-nt font-sans resize-none leading-relaxed min-h-[18px] max-h-[60px] placeholder:text-nt3"
-          placeholder="Ask Nora anything…"
+          className="flex-1 bg-transparent border-none outline-none text-11 text-nt font-sans resize-none leading-relaxed min-h-[18px] max-h-[60px] placeholder:text-nt3 disabled:opacity-60"
+          placeholder={disabled ? 'Nora is thinking…' : 'Ask Nora anything…'}
           rows={1}
           value={value}
+          disabled={disabled}
           onChange={(e) => {
             setValue(e.target.value)
             handleInput()
@@ -56,7 +59,7 @@ export function InputZone({ onSend }: InputZoneProps) {
           label="Send message"
           variant="primary"
           onClick={handleSend}
-          disabled={!value.trim()}
+          disabled={disabled || !value.trim()}
           className="w-7 h-7 rounded-sm"
         >
           <ArrowUp size={13} strokeWidth={1.5} />

@@ -24,7 +24,7 @@ from backend.db.database import get_db
 from backend.db.models import Course, CourseLecture, Lecture, ShareLink, User
 from backend.dependencies import sanitize_lecture_id
 from backend.timeutil import ensure_utc
-from backend.lecture_registry import list_lectures
+from backend.lecture_registry import get_lecture, list_lectures
 from config import DEMO_LECTURE_IDS
 
 router = APIRouter()

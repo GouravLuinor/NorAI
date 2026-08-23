@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useThreadStore, type Message } from '../stores/useThreadStore'
+import { useLectureStore } from '../stores/useLectureStore'
 import { sendChatMessageStream } from '../lib/chatApi'
 import { buildReferences, stripSources } from '../lib/references'
 import { genId } from '../lib/id'
+import { getLectureId } from '../lib/threadStorage'
 import type { Reference } from '../types'
 
 export const chatTimestamp = () =>
@@ -88,10 +90,18 @@ export function useAskNora(options: UseAskNoraOptions = {}) {
     }
 
     try {
+      // BUG-13 fix: populate lecture_title from the lecture store.
+      // useLectureStore.lectures contains { lecture_id, title } entries loaded
+      // from /lectures on app mount. Matching on the current lectureId gives the
+      // tutor the lecture name so it never asks "which chapter?" unnecessarily.
+      const currentLectureId = getLectureId()
+      const lectureTitle =
+        useLectureStore.getState().lectures.find((l) => l.lecture_id === currentLectureId)?.title ?? ''
+
       for await (const chunk of sendChatMessageStream(
         targetThreadId,
         text,
-        '',
+        lectureTitle,
         controller.signal,
         { messageId: userMsg.id, studyMode: sendOpts?.studyMode, persona: sendOpts?.persona },
       )) {
