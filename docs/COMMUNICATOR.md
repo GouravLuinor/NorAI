@@ -34,6 +34,20 @@
 
 ## 📝 Task History & Handoff Log
 
+### [2026-08-23] — Antigravity: AI panel header tabs & Chapter screenshots deadlock fix
+- **Agent**: Antigravity (IDE, Gemini 3.7 Flash high-thinking)
+- **Status**: Completed — commit `1c681a3` on `fix/threads-and-pdf`. oxlint 0 errors, tsc/vite build clean, live Chrome DevTools verified.
+- **Files Modified**:
+  - `frontend/src/components/layout/Workspace.tsx` — increased default `aiPanelWidth` / `tutorAiWidth` from `268px` to `360px` and `AI_MIN_TUTOR` from `250px` to `330px`.
+  - `frontend/src/components/layout/AIPanel.tsx` — added `shrink-0` to header identity and settings elements and streamlined `SegmentedControl` tab item padding so `[Tutor | Study | Quiz | Cards]` never clips.
+  - `frontend/src/components/doc/ChapterScreenshots.tsx` — resolved the catch-22 fetch deadlock (removed `!shouldLoad` condition on metadata fetch so `/screenshots/${chapterId}` loads on mount and reveals the `Important Visuals (N)` section).
+  - `frontend/src/components/doc/NotesView.tsx` — defaulted `screenshotsExpanded` to `true` so visuals render immediately under chapter notes.
+  - `frontend/vite.config.ts` (earlier commit `93b1daf`) — added HTML bypass for `/courses` proxy to prevent Vite from returning raw backend JSON on SPA route navigation.
+- **Verification**: Verified via Chrome DevTools in live browser:
+  - Header tabs (`Tutor`, `Study`, `Quiz`, `Cards`) 100% visible by default with no clipping.
+  - Latest Kinematics lecture (Chapter 2) renders 3 high-res keyframe screenshots under the notes with working Lightbox modal zoom.
+- **Hand-off notes**: All changes committed and verified.
+
 ### [2026-08-23] — Antigravity: E2E audit fix sprint (BUG-01 → BUG-14)
 - **Agent**: Antigravity (IDE, Gemini 3.7 Flash high-thinking)
 - **Status**: Completed — commit `466d267` on `fix/threads-and-pdf`. oxlint 0 errors, tsc/vite build clean, pyflakes 0 undefined names.
