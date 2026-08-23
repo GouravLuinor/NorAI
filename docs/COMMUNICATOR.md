@@ -10,7 +10,7 @@
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
 | **OpenCode** (CLI) | 🟢 In Progress / Completed | **Production fixes: device-scoped guest auth + PO-token provider for YouTube downloads (P8.x).** Guests can now process <15min lectures with zero Bearer token (X-Guest-Id header → anonymous User + 15-min trial Subscription); `/process` no longer 401s for guests. YouTube downloads: 5-guess fallback collapsed to 3 principled tiers, `bgutil-pot` Rust provider + yt-dlp plugin added to Docker image (entrypoint runs the POT server on :4416), verified end-to-end (`PO Token Providers: bgutil:http-0.8.1`). Offline suite 40/40, Vitest 73/73, oxlint + tsc/vite build clean. Docs updated. Uncommitted. | 2026-08-17 UTC |
-| **Antigravity** (IDE) | 🟢 Idle / Ready | **Render Staging Prep & Pre-Deployment Hardening Complete**: Completed all remaining items from `RENDER_STAGING_PREP.md` (WAL truncated checkpoints in `seed_data/`, `git add -f seed_data` with 435 clean tracked files, Chroma telemetry disabled, asyncpg pooler hardening, dynamic PORT/VITE build args in Dockerfile, and .dockerignore cleanup). All 39 backend test suites and frontend build passing cleanly. Ready for git push and Render staging deployment. | 2026-08-16 UTC |
+| **Antigravity** (IDE) | ✅ Completed | **E2E audit fix sprint (BUG-01→14)**: All bugs from `docs/E2E_TEST_REPORT_2026-08-22.md` fixed and committed (`466d267`). oxlint 0 errors, tsc/vite build clean, pyflakes 0 undefined names. BUG-07 (AI panel overflow) excluded as separate sprint. See handoff entry below. | 2026-08-23 UTC |
 
 ---
 
@@ -33,6 +33,29 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-08-23] — Antigravity: E2E audit fix sprint (BUG-01 → BUG-14)
+- **Agent**: Antigravity (IDE, Gemini 3.7 Flash high-thinking)
+- **Status**: Completed — commit `466d267` on `fix/threads-and-pdf`. oxlint 0 errors, tsc/vite build clean, pyflakes 0 undefined names.
+- **Files Modified**:
+  - `backend/routers/quiz.py` — BUG-01: add `asyncio`, `HumanMessage`, `SystemMessage`, `make_chat_llm` imports (500 on quiz evaluate/explain)
+  - `backend/routers/courses.py` — BUG-02: add `get_lecture`/`list_lectures` import (500 on course endpoints)
+  - `backend/middleware.py` — BUG-05: add permissive `poll` bucket (120/min) for `/process/*/status` + `/quota` so pipeline progress bar never 429-storms
+  - `backend/main.py` — BUG-06: guest probe-fail now 400-rejects instead of silently bypassing the 15-min cap
+  - `frontend/src/components/chat/InputZone.tsx` — BUG-04: `disabled` prop locks textarea + button while stream is in-flight; placeholder changes to "Nora is thinking…"
+  - `frontend/src/components/chat/ChatArea.tsx` — BUG-04: passes `isInFlight` from `useAskNora` → `InputZone.disabled`
+  - `frontend/src/stores/useThreadStore.ts` — BUG-08: `createThread` now clears `liveReferences: []` (stale citation bleed across threads)
+  - `frontend/src/hooks/useAskNora.ts` — BUG-10/13: imports `useLectureStore` + `getLectureId`; resolves lecture title from store instead of hardcoded `''`
+  - `frontend/src/stores/useCourseStore.ts` — BUG-14: `loadCourses` now clears `coursesLoading` in `finally` (perpetual skeleton)
+  - `frontend/src/pages/UploadPage.tsx` — BUG-12: dynamic copy — guests see "Free trial: up to 15 min", signed-in users see "up to 3h"
+  - `frontend/src/pages/LandingPage.tsx` — BUG-11: raw LaTeX replaced with Unicode math `½mv²` that renders in all browsers
+  - `frontend/src/components/quiz/QuizPanel.tsx` — BUG-09: short-answer questions show "✓ Answer recorded — feedback will appear when you finish the quiz." after submit
+  - `scripts/run-tests.sh` — Tier 1 CI gate: pyflakes pass on `backend/` filters `undefined name` errors; guards against BUG-01 class recurrence
+- **Verification**: `npm run lint` → 0 errors; `npm run build` → clean; `python -m pyflakes backend/ | grep "undefined name"` → 0 hits
+- **Open / Excluded**:
+  - BUG-07 (AI panel overflow at 1440px + mobile layout) — layout refactor deferred, separate sprint
+  - The Pyrefly lint `Missing argument require_tutor in _assert_shared_or_404` (lines 769/775 of `main.py`) is a **pre-existing issue**, not introduced here
+- **Hand-off notes**: Branch `fix/threads-and-pdf` ready. Next: merge + deploy staging, or continue with BUG-07 panel layout refactor.
 
 ### [2026-08-17] — OpenCode: Device-scoped guest auth + PO-token provider (P8.x)
 - **Agent**: OpenCode (CLI)
