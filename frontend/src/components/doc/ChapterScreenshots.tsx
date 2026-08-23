@@ -22,16 +22,16 @@ export function ChapterScreenshots({
   lazyLoad?: boolean
 }) {
   const [open, setOpen] = useState(startExpanded)
-  // P3.2: the section is collapsed by default — don't pay for N screenshot
-  // list requests per notes view until the user actually expands it once.
-  const [shouldLoad, setShouldLoad] = useState(startExpanded)
   const [screenshots, setScreenshots] = useState<Screenshot[]>([])
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
 
   const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
 
   useEffect(() => {
-    if (!chapterId || !shouldLoad) return
+    if (!chapterId) {
+      setScreenshots([])
+      return
+    }
     let cancelled = false
     apiGet<Screenshot[]>(`/screenshots/${chapterId}?lecture_id=${lectureId}`)
       .then((data) => {
@@ -43,16 +43,12 @@ export function ChapterScreenshots({
     return () => {
       cancelled = true
     }
-  }, [chapterId, lectureId, shouldLoad])
+  }, [chapterId, lectureId])
 
   if (!screenshots.length) return null
 
   const toggleOpen = () => {
-    setOpen((prev) => {
-      const next = !prev
-      if (next) setShouldLoad(true)
-      return next
-    })
+    setOpen((prev) => !prev)
   }
 
   const cleanPath = (raw: string) => raw.replace(/^outputs\//, '')

@@ -35,30 +35,32 @@ export function AIPanel() {
   return (
     <div className="flex flex-col min-h-0 bg-ns overflow-hidden h-full">
       {/* Header */}
-      <div className="px-4 py-2.5 border-b border-bdr flex items-center gap-2 shrink-0 bg-ns2/40 fold-marks relative">
-        <div className="w-7 h-7 rounded-sm bg-npf flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 relative">
-          N
-          <span className="absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full bg-ng border-1.5 border-ns" />
-        </div>
-        <div>
-          <div className="font-display text-xs font-medium text-nt">Nora</div>
-          <div className="spec-label mt-0.5">
-            {String(activeChapterId).padStart(2, '0')} · {aiMode === 'quiz' ? 'Quiz' : aiMode === 'cards' ? 'Cards' : aiMode === 'socratic' ? 'Study' : 'Tutor'}
+      <div className="px-3 py-2 border-b border-bdr flex items-center justify-between gap-2 shrink-0 bg-ns2/40 fold-marks relative">
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="w-6 h-6 rounded-sm bg-npf flex items-center justify-center text-10 font-medium text-npfg shadow-ev1 relative shrink-0">
+            N
+            <span className="absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full bg-ng border-1.5 border-ns" />
+          </div>
+          <div className="shrink-0">
+            <div className="font-display text-xs font-medium text-nt leading-tight">Nora</div>
+            <div className="spec-label text-3xs text-nt3">
+              {String(activeChapterId).padStart(2, '0')} · {aiMode === 'quiz' ? 'Quiz' : aiMode === 'cards' ? 'Cards' : aiMode === 'socratic' ? 'Study' : 'Tutor'}
+            </div>
           </div>
         </div>
-        <div className="ml-auto flex items-center gap-1.5">
+        <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
             onClick={() => setSettingsOpen(true)}
             aria-label="Tutor settings (persona & study mode)"
             title="Tutor settings"
-            className={`p-1.5 rounded-md text-nt3 hover:text-nt2 hover:bg-ns3 transition ${FOCUS_RING}`}
+            className={`p-1 rounded-md text-nt3 hover:text-nt2 hover:bg-ns3 transition shrink-0 ${FOCUS_RING}`}
           >
-            <SlidersHorizontal size={14} strokeWidth={1.5} />
+            <SlidersHorizontal size={13} strokeWidth={1.5} />
           </button>
           <SegmentedControl
-            containerClass="flex gap-0.5 bg-ns2 rounded-lg p-0.5"
-            itemClass="px-2 py-1 rounded-md text-2xs transition"
+            containerClass="flex gap-0.5 bg-ns2 rounded-lg p-0.5 shrink-0"
+            itemClass="px-2 py-0.5 rounded-md text-2xs transition font-medium"
             activeClass="bg-nt4/20 text-nt shadow-ev1"
             inactiveClass="text-nt3 hover:text-nt2"
             options={[

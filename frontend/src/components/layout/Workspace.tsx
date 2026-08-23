@@ -14,7 +14,7 @@ import { FOCUS_RING } from '../ui/shared'
 
 const SIDEBAR_MIN = 160
 const SIDEBAR_MAX = 400
-const AI_MIN_TUTOR = 250
+const AI_MIN_TUTOR = 330
 const AI_MIN_QUIZ_CARDS = 400
 const AI_MAX = 550
 
@@ -30,8 +30,8 @@ export function Workspace() {
   const aiMode = useQuizStore((s) => s.aiMode)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(220)
-  const [aiPanelWidth, setAiPanelWidth] = useState(268)
-  const [tutorAiWidth, setTutorAiWidth] = useState(268)
+  const [aiPanelWidth, setAiPanelWidth] = useState(360)
+  const [tutorAiWidth, setTutorAiWidth] = useState(360)
   const [isDragging, setIsDragging] = useState(false)
 
   // Responsive state
