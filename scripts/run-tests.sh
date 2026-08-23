@@ -56,4 +56,16 @@ done
 
 echo ""
 echo "$((total - failures))/$total passed, $failures failed"
+
+# ── Pyflakes: catch undefined names before they crash prod ────────────────────
+# Specifically guards against BUG-01/02/03 class (missing imports in routers).
+echo ""
+echo "Running pyflakes on backend/ …"
+if "$PY" -m pyflakes backend/ 2>&1 | grep -E "undefined name|unable to detect"; then
+  echo "FAIL  pyflakes (undefined names found)"
+  failures=$((failures + 1))
+else
+  echo "PASS  pyflakes backend/"
+fi
+
 exit $((failures > 0))

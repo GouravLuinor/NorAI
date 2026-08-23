@@ -336,6 +336,7 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
       threadId,
       messages: [],
       isLoading: false,
+      liveReferences: [],
       labels: { ...get().labels, [threadId]: label },
     })
 

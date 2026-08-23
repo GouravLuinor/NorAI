@@ -233,7 +233,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
                   The net work done on an object by external forces equals the change in its kinetic energy:
                 </p>
                 <div className="p-3 bg-ns2 border border-bdr rounded font-mono text-10 sm:text-12 text-nt text-center my-3 overflow-x-auto">
-                  W_net = \Delta K = \frac&#123;1&#125;&#123;2&#125; m v_f^2 - \frac&#123;1&#125;&#123;2&#125; m v_i^2
+                  W<sub>net</sub> = ΔK = ½mv<sub>f</sub>² − ½mv<sub>i</sub>²
                 </div>
                 <div className="flex items-center gap-3 p-2 bg-npb border border-npbr rounded text-11 text-npt">
                   <span className="font-mono font-bold bg-np text-npfg px-1.5 py-0.5 rounded text-3xs">[08:45]</span>

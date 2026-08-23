@@ -405,7 +405,11 @@ export function UploadPage() {
 
           <div className="flex items-center justify-center gap-1.5 text-2xs text-nt4 mt-4">
             <Info size={11} strokeWidth={1.5} />
-            <span>Works with lectures up to 3 hours. We'll generate notes, quizzes & more.</span>
+            <span>
+              {user
+                ? 'Works with lectures up to 3 hours. We\'ll generate notes, quizzes & more.'
+                : 'Free trial: up to 15 min per lecture. Sign in for up to 3h.'}
+            </span>
           </div>
         </section>
 

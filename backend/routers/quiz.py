@@ -5,6 +5,7 @@ Extracted verbatim from main.py; mounted without prefixes so paths are
 unchanged.
 """
 
+import asyncio
 import json
 import logging
 import time
@@ -19,7 +20,9 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel
+from tutor.llm import make_chat_llm
 
 from backend.access import ensure_lecture_access
 from backend.auth import get_current_user_optional

@@ -506,6 +506,13 @@ async def start_processing(
         probed = probe_video_metadata(url)
         if probed:
             probed_sec = probed["duration_sec"]
+        elif _is_guest(user) and not NORAI_DEV_ACCESS:
+            # BUG-06 fix: if we can't verify duration for a guest, reject rather
+            # than silently bypass the 15-min trial cap.
+            raise HTTPException(
+                status_code=400,
+                detail="Could not verify video duration. Please try again or upload the file directly.",
+            )
     elif source_type == "upload" and duration and duration > 0:
         probed_sec = duration * 60.0
 

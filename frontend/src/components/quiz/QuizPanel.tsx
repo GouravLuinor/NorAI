@@ -355,6 +355,11 @@ export function QuizPanel() {
                 Submit Answer
               </Button>
             )}
+            {isAnswered && (
+              <p role="status" className="text-2xs text-nt3 italic">
+                ✓ Answer recorded — feedback will appear when you finish the quiz.
+              </p>
+            )}
           </div>
         )}
 
