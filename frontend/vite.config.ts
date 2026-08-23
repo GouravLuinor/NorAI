@@ -25,7 +25,13 @@ export default defineConfig({
       '/threads': 'http://localhost:8000',
       '/download': 'http://localhost:8000',
       '/lectures': 'http://localhost:8000',
-      '/courses': 'http://localhost:8000',
+      // /courses is BOTH an SPA route and an API endpoint: bypass the proxy for
+      // HTML navigations (serve the app), proxy JSON fetches to the backend.
+      '/courses': {
+        target: 'http://localhost:8000',
+        bypass: (req) =>
+          (req.headers.accept ?? '').includes('text/html') ? '/index.html' : undefined,
+      },
       // /share is BOTH an SPA route (viewer landing) and an API endpoint
       // (slug resolution): same HTML-bypass trick as /billing and /usage.
       '/share': {
