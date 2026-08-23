@@ -190,7 +190,7 @@ interface SectionItem {
   cardType?: CardType
 }
 
-export function NotesView({ chapterId, screenshotsExpanded = false }: { chapterId: number | null; screenshotsExpanded?: boolean }) {
+export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId: number | null; screenshotsExpanded?: boolean }) {
   const [sections, setSections] = useState<SectionItem[]>([])
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(true)
