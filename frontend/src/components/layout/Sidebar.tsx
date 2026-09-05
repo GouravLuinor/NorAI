@@ -95,7 +95,7 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
     loadLectures()
     // RC-FIX: cleanup flag prevents stale promise callbacks in Strict Mode
     return () => { active = false }
-  }, [activeLectureId, loadLectures, loadThreads, loadThreadMessages])
+  }, [activeLectureId, user?.id, loadLectures, loadThreads, loadThreadMessages])
 
   // RC-FIX: Debounce rapid thread clicks to prevent overlapping
   // setThreadId + loadThreadMessages calls that cause layout glitch (Bug 5)

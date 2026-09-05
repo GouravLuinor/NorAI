@@ -117,6 +117,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.warn('Supabase signOut error/network unreachable:', e)
     } finally {
       set({ token: null, user: null, quota: null })
+      void import('./useThreadStore').then(({ useThreadStore }) => {
+        useThreadStore.getState().resetForLectureChange()
+      })
     }
   },
 
@@ -127,12 +130,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ token, user, isLoadingSession: false })
 
       supabase.auth.onAuthStateChange((_event, session) => {
+        const prevUser = get().user
         const next = mapSession(session)
         set({ ...next, isLoadingSession: false, isAuthModalOpen: false })
         if (next.token) {
           void get().refreshQuota()
         } else {
           set({ quota: null })
+        }
+        if (prevUser?.id !== next.user?.id) {
+          void import('./useThreadStore').then(({ useThreadStore }) => {
+            useThreadStore.getState().resetForLectureChange()
+            void useThreadStore.getState().loadThreads().then(() => {
+              const current = useThreadStore.getState().threadId
+              if (current) {
+                void useThreadStore.getState().loadThreadMessages(current)
+              }
+            })
+          })
         }
       })
 

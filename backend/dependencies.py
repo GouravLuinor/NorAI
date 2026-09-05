@@ -258,6 +258,11 @@ def _thread_exists(db_path: Path, thread_id: str) -> bool:
         conn = sqlite3.connect(str(db_path), timeout=5.0)
         try:
             if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='deleted_threads'").fetchone():
+                del_cols = [c[1] for c in conn.execute("PRAGMA table_info(deleted_threads)").fetchall()]
+                if ":" in thread_id and "user_id" in del_cols:
+                    u_scope, bare_tid = thread_id.split(":", 1)
+                    if conn.execute("SELECT 1 FROM deleted_threads WHERE thread_id = ? AND user_id = ?", (bare_tid, u_scope)).fetchone():
+                        return False
                 if conn.execute("SELECT 1 FROM deleted_threads WHERE thread_id = ?", (thread_id,)).fetchone():
                     return False
         finally:
@@ -272,10 +277,26 @@ def _register_thread_if_needed(db_path: Path, thread_id: str) -> None:
     try:
         conn = sqlite3.connect(str(db_path), timeout=5.0)
         try:
-            conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
-            conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (thread_id,))
+            conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT, user_id TEXT DEFAULT '', PRIMARY KEY (thread_id, user_id))")
+            ut_cols = [c[1] for c in conn.execute("PRAGMA table_info(user_threads)").fetchall()]
+            if "user_id" not in ut_cols:
+                try:
+                    conn.execute("ALTER TABLE user_threads ADD COLUMN user_id TEXT DEFAULT ''")
+                except Exception:
+                    pass
+
+            u_scope = ""
+            bare_tid = thread_id
+            if ":" in thread_id:
+                u_scope, bare_tid = thread_id.split(":", 1)
+
+            conn.execute("INSERT OR IGNORE INTO user_threads (thread_id, user_id) VALUES (?, ?)", (bare_tid, u_scope))
             if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='deleted_threads'").fetchone():
-                conn.execute("DELETE FROM deleted_threads WHERE thread_id = ?", (thread_id,))
+                del_cols = [c[1] for c in conn.execute("PRAGMA table_info(deleted_threads)").fetchall()]
+                if "user_id" in del_cols and u_scope:
+                    conn.execute("DELETE FROM deleted_threads WHERE thread_id = ? AND user_id = ?", (bare_tid, u_scope))
+                else:
+                    conn.execute("DELETE FROM deleted_threads WHERE thread_id = ?", (thread_id,))
             conn.commit()
         finally:
             conn.close()
