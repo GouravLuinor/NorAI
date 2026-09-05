@@ -59,6 +59,12 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
 
 ## Recent changes
 
+- **Tutor Chat State Refresh & Multi-User Isolation on Demo Lectures (2026-09-05).**
+  - **Thread & Chat Partitioning (`backend/routers/tutor.py`)**: Gated and partitioned LangGraph checkpoints per-user on shared demo lectures (`f"{user_scope}:{thread_id}"` where `user_scope` is `user.id` or `'guest'`), preventing conversations from leaking across different user accounts.
+  - **Frontend Storage Scoping (`frontend/src/lib/threadStorage.ts`)**: Scoped all localStorage keys by user ID (`norai-threads-${userScope}-${lectureId}`) so that switching accounts or signing up on the same browser gives a clean slate with no stale threads or labels.
+  - **Auth State Synchronization (`frontend/src/stores/useAuthStore.ts`, `Sidebar.tsx`)**: Wired `useThreadStore` reset and re-fetch into `onAuthStateChange` and `Sidebar` effect dependencies so newly registered users immediately see 1 single thread ("Thread 1") and 0 messages.
+  - **Seed & DB Hygiene**: Cleaned leftover test checkpoints from `seed_data/506dd685...` and `outputs/<demo_id>/tutor/checkpoints.sqlite`. Verified across all 3 demo lectures and backend contract suites (20/20 passed).
+
 - **Phase 5 architecture & simplification (2026-08-22, audit-driven).** `backend/main.py` shrank 3175 → ~860 lines by extracting every domain cluster into `backend/routers/` (`webhooks`, `billing`, `courses`, `quiz`, `content`, `tutor`) mounted prefix-free (paths unchanged). Shared helpers moved to `backend/access.py` (access checks, guest/demo caps, persona hardening, tutor-usage flushers) and `backend/lecture_db.py` (`_db` + all DDL-ensure helpers); the concept-map graph builder became a pure function in `backend/concept_map.py`. Gemini client construction + retry/RPM backoff collapsed into one factory, `backend/gemini_client.py`, used across tutor/, extract/, transcription/, notes/, visual/. Quiz API payloads are now typed (`Question` / `AnsweredQuestion` Pydantic models mirroring the frontend interface; unknown fields tolerated, required ones enforced). All pipeline-stage functions require explicit `output_dir` (no silent `"outputs"` default). Dead code deleted (`generate_pdfs.py`, unused `init_db`, dead chapter-summary node). Frontend dedupe: shared `useAskNora` hook, `lib/id.ts` id generator, consolidated `stripSources`. Verified: suite 42/42, oxlint clean, vitest 73/73, build clean.
 
 - **Device-scoped guest auth + YouTube PO-token provider (2026-08-17).** Two production fixes targeting Render:

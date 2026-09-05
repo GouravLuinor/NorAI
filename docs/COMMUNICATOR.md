@@ -9,7 +9,7 @@
 
 | Assistant | Status | Active / Target Task | Last Updated |
 |---|---|---|---|
-| **Antigravity** (IDE) | ✅ Completed | **Sign Out Button in Workspace & Landing Page.** Added accessible Sign Out options with user email display in the Landing Page navigation header (desktop and mobile) and inside the Workspace Sidebar (both expanded user quota card and 48px collapsed rail). Oxlint clean (0 errors), Vitest 77/77 passed, tsc/vite build clean. | 2026-09-05 UTC |
+| **Antigravity** (IDE) | ✅ Completed | **Tutor Chat State Refresh & Multi-User Isolation on Demo Lectures.** Scoped thread storage & checkpoints per user ID (or guest) on demo lectures; ensured new signups start with a fresh single thread ("Thread 1") and 0 messages; purged stale checkpoints in seed data and outputs. All tests and lint green. | 2026-09-05 UTC |
 | **OpenCode** (CLI) | 🟢 Idle / Ready | Standby for next assignments. | 2026-08-17 UTC |
 
 ---
@@ -33,6 +33,22 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-09-05] — Antigravity: Tutor Chat State Refresh & Multi-User Isolation on Demo Lectures
+- **Agent**: Antigravity (IDE, Gemini 3.8 Flash high-thinking)
+- **Status**: Completed. Backend contract suite (20/20 passed), tutor async persistence suite passed, oxlint clean (0 errors), tsc/vite build clean, live Chrome DevTools verified.
+- **Files Modified**:
+  - `frontend/src/lib/threadStorage.ts` — scoped all localStorage keys by `user.id || 'guest'` (`norai-threads-${userScope}-${lectureId}`) so threads from previous users or guest sessions are completely isolated.
+  - `frontend/src/stores/useAuthStore.ts` — added dynamic `useThreadStore` reset and re-fetch trigger on `onAuthStateChange` when `user.id` changes, and on `logout`.
+  - `frontend/src/components/layout/Sidebar.tsx` — added `user?.id` to the lecture synchronization `useEffect` dependencies so that sign-in / sign-up transitions immediately reload fresh threads.
+  - `backend/routers/tutor.py` — added `_get_user_scope` and `_get_scoped_thread_id` helpers to partition LangGraph checkpoints per-user on demo lectures (`f"{user_scope}:{thread_id}"`); updated `GET /threads`, `POST /threads`, `GET /threads/{id}`, `DELETE /threads/{id}`, `POST /chat`, and `POST /chat/stream` with user-scoped isolation.
+  - `backend/dependencies.py` — updated `_thread_exists` and `_register_thread_if_needed` to support composite `(thread_id, user_id)` tables and user-scoped thread IDs.
+  - `seed_data/506dd685-05f9-43df-8d09-5b944c7392f5/tutor/checkpoints.sqlite` & `outputs/<demo_id>/tutor/checkpoints.sqlite` — purged leftover test checkpoints.
+- **Verification**:
+  - Backend isolation unit test: verified that User A's created threads are completely invisible to a new user B on the same demo lecture, and User B starts with strictly `{"threads": ["default"]}` and 0 messages.
+  - Chrome DevTools: verified across all 3 demo lectures in the live browser that the sidebar shows strictly `Thread 1` and 0 old threads or messages.
+  - Test suites: `backend/test_api_contract_offline.py` (20 passed, 0 failed), `tutor/test_async_persistence.py` (passed), `npm run lint` (0 errors), `npm run build` (built cleanly in 808ms).
+- **Hand-off notes**: Addresses the requirement for clean single-thread chat state on signup and multi-user isolation on demo lectures. Ready for commit/push.
 
 ### [2026-09-05] — Antigravity: Live Demo Workspace Selector Modal & Guest Dropdown Isolation
 - **Agent**: Antigravity (IDE, Gemini 3.8 Flash high-thinking)

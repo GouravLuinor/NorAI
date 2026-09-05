@@ -1,3 +1,4 @@
+import { useAuthStore } from '../stores/useAuthStore'
 import { useLectureStore } from '../stores/useLectureStore'
 
 // ---------------------------------------------------------------------------
@@ -8,49 +9,37 @@ const LABELS_KEY = 'norai-thread-labels'
 const COUNTER_KEY = 'norai-thread-counter'
 const THREADS_KEY = 'norai-threads'
 
-// One-time migration: move old global keys to default lecture scope
-try {
-  const oldLabels = localStorage.getItem('norai-thread-labels')
-  const oldCounter = localStorage.getItem('norai-thread-counter')
-  const oldThreads = localStorage.getItem('norai-threads')
+// ---------------------------------------------------------------------------
+// lecture- & user-scoped helpers
+// ---------------------------------------------------------------------------
 
-  if (oldLabels) {
-    localStorage.setItem('norai-thread-labels-default', oldLabels)
-    localStorage.removeItem('norai-thread-labels')
-  }
-  if (oldCounter) {
-    localStorage.setItem('norai-thread-counter-default', oldCounter)
-    localStorage.removeItem('norai-thread-counter')
-  }
-  if (oldThreads) {
-    localStorage.setItem('norai-threads-default', oldThreads)
-    localStorage.removeItem('norai-threads')
-  }
-} catch {
-  // ignore — migration is best-effort
+export function getUserScope(): string {
+  const user = useAuthStore.getState().user
+  return user?.id || 'guest'
 }
-
-// ---------------------------------------------------------------------------
-// lecture-scoped helpers
-// ---------------------------------------------------------------------------
 
 export function getLectureId(): string {
   return useLectureStore.getState().activeLectureId || 'default'
 }
 
+function getStorageKey(baseKey: string, lectureId: string): string {
+  const userScope = getUserScope()
+  return `${baseKey}-${userScope}-${lectureId}`
+}
+
 export function getLabels(): Record<string, string> {
   const lectureId = getLectureId()
-  try { return JSON.parse(localStorage.getItem(`${LABELS_KEY}-${lectureId}`) || '{}') } catch { return {} }
+  try { return JSON.parse(localStorage.getItem(getStorageKey(LABELS_KEY, lectureId)) || '{}') } catch { return {} }
 }
 
 export function saveLabels(labels: Record<string, string>) {
   const lectureId = getLectureId()
-  localStorage.setItem(`${LABELS_KEY}-${lectureId}`, JSON.stringify(labels))
+  localStorage.setItem(getStorageKey(LABELS_KEY, lectureId), JSON.stringify(labels))
 }
 
 function getNextCounter(): number {
   const lectureId = getLectureId()
-  const key = `${COUNTER_KEY}-${lectureId}`
+  const key = getStorageKey(COUNTER_KEY, lectureId)
   const next = parseInt(localStorage.getItem(key) || '0', 10) + 1
   localStorage.setItem(key, String(next))
   return next
@@ -58,12 +47,12 @@ function getNextCounter(): number {
 
 export function getPersistedThreads(): string[] {
   const lectureId = getLectureId()
-  try { return JSON.parse(localStorage.getItem(`${THREADS_KEY}-${lectureId}`) || '[]') } catch { return [] }
+  try { return JSON.parse(localStorage.getItem(getStorageKey(THREADS_KEY, lectureId)) || '[]') } catch { return [] }
 }
 
 export function persistThreads(threads: string[]) {
   const lectureId = getLectureId()
-  localStorage.setItem(`${THREADS_KEY}-${lectureId}`, JSON.stringify(threads))
+  localStorage.setItem(getStorageKey(THREADS_KEY, lectureId), JSON.stringify(threads))
 }
 
 // ---------------------------------------------------------------------------

@@ -38,10 +38,31 @@ from backend.dependencies import (
     _aget_or_create_lecture_graph,
     configure_sqlite,
     get_lecture_db_path,
+    sanitize_lecture_id,
 )
 from backend.logging_config import bind
+from config import DEMO_LECTURE_IDS
 
 router = APIRouter()
+
+
+def _get_user_scope(user: Optional[User]) -> str:
+    """Return user scope ID for partitioning demo lectures."""
+    if user and getattr(user, "id", None) and not str(user.id).startswith("guest-"):
+        return str(user.id)
+    return "guest"
+
+
+def _get_scoped_thread_id(lecture_id: Optional[str], thread_id: str, user: Optional[User]) -> str:
+    """Return scoped thread ID for storage in LangGraph checkpointer.
+    For shared demo lectures, conversations are scoped per-user so they never leak across users.
+    For user-uploaded lectures, thread_id is unchanged.
+    """
+    clean_id = sanitize_lecture_id(lecture_id or "default")
+    if clean_id in DEMO_LECTURE_IDS or clean_id == "default":
+        user_scope = _get_user_scope(user)
+        return f"{user_scope}:{thread_id}"
+    return thread_id
 
 
 class CreateThreadRequest(BaseModel):
@@ -89,8 +110,9 @@ async def chat(
         from backend.usage import record_tutor_turn
 
         _tutor_before = snapshot_usage()
+        scoped_thread_id = _get_scoped_thread_id(req.lecture_id, req.thread_id, user)
         result = await tutor_deps.ainvoke_tutor(
-            thread_id=req.thread_id,
+            thread_id=scoped_thread_id,
             user_question=req.user_question,
             lecture_title=req.lecture_title,
             lecture_id=req.lecture_id,
@@ -100,6 +122,8 @@ async def chat(
                 req.persona_instructions, user, db, req.lecture_id
             ),
         )
+        if isinstance(result, dict) and "thread_id" in result:
+            result["thread_id"] = req.thread_id
         await _flush_tutor_usage_async(user, req.lecture_id or "default", _tutor_before, diff_usage)
         return result
     except ThreadDeletedError:
@@ -144,8 +168,9 @@ async def chat_stream(
             # committed turn's metadata. The wire contract (data: {t} chunks,
             # data: {final}, data: [DONE]) is unchanged, so the frontend's
             # reassembly is untouched — only time-to-first-token changes.
+            scoped_thread_id = _get_scoped_thread_id(req.lecture_id, req.thread_id, user)
             async for frame in tutor_deps.astream_tutor_tokens(
-                thread_id=req.thread_id,
+                thread_id=scoped_thread_id,
                 user_question=req.user_question,
                 lecture_title=req.lecture_title,
                 lecture_id=req.lecture_id,
@@ -155,6 +180,8 @@ async def chat_stream(
                     req.persona_instructions, user, db, req.lecture_id
                 ),
             ):
+                if isinstance(frame, dict) and "final" in frame and isinstance(frame["final"], dict):
+                    frame["final"]["thread_id"] = req.thread_id
                 yield f"data: {json_lib.dumps(frame)}\n\n"
             yield "data: [DONE]\n\n"
             await _flush_tutor_usage_async(user, req.lecture_id or "default", _tutor_before, diff_usage)
@@ -186,6 +213,10 @@ async def list_threads(
     if not db_path.exists():
         return {"threads": ["default"]}
 
+    clean_id = sanitize_lecture_id(lecture_id)
+    is_demo = clean_id in DEMO_LECTURE_IDS or clean_id == "default"
+    user_scope = _get_user_scope(user)
+
     threads = set()
     deleted = set()
     try:
@@ -194,31 +225,48 @@ async def list_threads(
         try:
             # 0) Read deleted_threads
             if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='deleted_threads'").fetchone():
-                for row in conn.execute("SELECT thread_id FROM deleted_threads"):
-                    if row[0]:
-                        deleted.add(row[0])
+                del_cols = [c[1] for c in conn.execute("PRAGMA table_info(deleted_threads)").fetchall()]
+                if is_demo and "user_id" in del_cols:
+                    for row in conn.execute("SELECT thread_id FROM deleted_threads WHERE user_id = ?", (user_scope,)):
+                        if row[0]:
+                            deleted.add(row[0])
+                else:
+                    for row in conn.execute("SELECT thread_id FROM deleted_threads"):
+                        if row[0]:
+                            deleted.add(row[0])
 
-            # 1) Auto-migrate old threads: check if a checkpoint has HumanMessage
-            try:
-                conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
-                cursor = conn.execute("SELECT thread_id, checkpoint FROM checkpoints")
-                rows = cursor.fetchall()
-                for row in rows:
-                    tid = row[0]
-                    chk = row[1]
-                    if isinstance(chk, bytes) and b"HumanMessage" in chk and tid not in deleted:
-                        conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (tid,))
-                conn.commit()
-            except Exception:
-                pass
+            # 1) Ensure user_threads schema
+            conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT, user_id TEXT DEFAULT '', PRIMARY KEY (thread_id, user_id))")
+            ut_cols = [c[1] for c in conn.execute("PRAGMA table_info(user_threads)").fetchall()]
+            if "user_id" not in ut_cols:
+                try:
+                    conn.execute("ALTER TABLE user_threads ADD COLUMN user_id TEXT DEFAULT ''")
+                except Exception:
+                    pass
 
-            # 2) user_threads table (explicitly created or migrated user threads)
-            try:
+            # 2) For non-demo lectures, auto-migrate legacy checkpoints if user_threads is empty
+            if not is_demo:
+                try:
+                    cursor = conn.execute("SELECT thread_id, checkpoint FROM checkpoints")
+                    rows = cursor.fetchall()
+                    for row in rows:
+                        tid = row[0]
+                        chk = row[1]
+                        if isinstance(chk, bytes) and b"HumanMessage" in chk and tid not in deleted:
+                            conn.execute("INSERT OR IGNORE INTO user_threads (thread_id, user_id) VALUES (?, '')", (tid,))
+                    conn.commit()
+                except Exception:
+                    pass
+
+            # 3) Read user_threads table
+            if is_demo:
+                for row in conn.execute("SELECT thread_id FROM user_threads WHERE user_id = ?", (user_scope,)):
+                    if row[0] and row[0] not in deleted:
+                        threads.add(row[0])
+            else:
                 for row in conn.execute("SELECT thread_id FROM user_threads"):
                     if row[0] and row[0] not in deleted:
                         threads.add(row[0])
-            except Exception:
-                pass
         finally:
             conn.close()
     except Exception:
@@ -250,16 +298,33 @@ async def create_thread_endpoint(
         pass
     if not thread_id:
         thread_id = f"thread-{int(time.time() * 1000)}"
+
+    clean_id = sanitize_lecture_id(lecture_id)
+    is_demo = clean_id in DEMO_LECTURE_IDS or clean_id == "default"
+    user_scope = _get_user_scope(user)
+
     db_path = get_lecture_db_path(lecture_id)
     db_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         conn = sqlite3.connect(str(db_path), timeout=10.0)
         configure_sqlite(conn)
         try:
-            conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT PRIMARY KEY)")
-            conn.execute("INSERT OR IGNORE INTO user_threads (thread_id) VALUES (?)", (thread_id,))
+            conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT, user_id TEXT DEFAULT '', PRIMARY KEY (thread_id, user_id))")
+            ut_cols = [c[1] for c in conn.execute("PRAGMA table_info(user_threads)").fetchall()]
+            if "user_id" not in ut_cols:
+                try:
+                    conn.execute("ALTER TABLE user_threads ADD COLUMN user_id TEXT DEFAULT ''")
+                except Exception:
+                    pass
+
+            target_user_id = user_scope if is_demo else ""
+            conn.execute("INSERT OR IGNORE INTO user_threads (thread_id, user_id) VALUES (?, ?)", (thread_id, target_user_id))
             if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='deleted_threads'").fetchone():
-                conn.execute("DELETE FROM deleted_threads WHERE thread_id = ?", (thread_id,))
+                del_cols = [c[1] for c in conn.execute("PRAGMA table_info(deleted_threads)").fetchall()]
+                if is_demo and "user_id" in del_cols:
+                    conn.execute("DELETE FROM deleted_threads WHERE thread_id = ? AND user_id = ?", (thread_id, user_scope))
+                else:
+                    conn.execute("DELETE FROM deleted_threads WHERE thread_id = ?", (thread_id,))
             conn.commit()
         finally:
             conn.close()
@@ -278,9 +343,10 @@ async def get_thread(
     """Return the full message history for a thread in a specific lecture."""
     # Thread transcripts are private tutor conversations — same gate as /chat.
     await ensure_lecture_access(lecture_id, user, db, require_tutor=True)
+    scoped_thread_id = _get_scoped_thread_id(lecture_id, thread_id, user)
     try:
         graph, _ = await _aget_or_create_lecture_graph(lecture_id)
-        config = {"configurable": {"thread_id": thread_id}}
+        config = {"configurable": {"thread_id": scoped_thread_id}}
         snapshot = await graph.aget_state(config)
         if not snapshot or not snapshot.values:
             return {"thread_id": thread_id, "messages": []}
@@ -343,19 +409,36 @@ async def delete_thread(
     """Delete a thread from a lecture."""
     # Destructive tutor-write: same gate as POST /chat.
     await ensure_lecture_access(lecture_id, user, db, require_tutor=True)
+    clean_id = sanitize_lecture_id(lecture_id)
+    is_demo = clean_id in DEMO_LECTURE_IDS or clean_id == "default"
+    user_scope = _get_user_scope(user)
+    scoped_thread_id = _get_scoped_thread_id(lecture_id, thread_id, user)
+
     db_path = get_lecture_db_path(lecture_id)
     if db_path.exists():
         try:
             conn = sqlite3.connect(str(db_path), timeout=10.0)
             configure_sqlite(conn)
             try:
-                conn.execute("CREATE TABLE IF NOT EXISTS deleted_threads (thread_id TEXT PRIMARY KEY)")
-                conn.execute("INSERT OR REPLACE INTO deleted_threads (thread_id) VALUES (?)", (thread_id,))
-                for table in ["checkpoints", "checkpoint_blobs", "checkpoint_writes", "user_threads"]:
+                conn.execute("CREATE TABLE IF NOT EXISTS deleted_threads (thread_id TEXT, user_id TEXT DEFAULT '', PRIMARY KEY (thread_id, user_id))")
+                del_cols = [c[1] for c in conn.execute("PRAGMA table_info(deleted_threads)").fetchall()]
+                if "user_id" not in del_cols:
                     try:
-                        conn.execute(f"DELETE FROM {table} WHERE thread_id = ?", (thread_id,))
+                        conn.execute("ALTER TABLE deleted_threads ADD COLUMN user_id TEXT DEFAULT ''")
+                    except Exception:
+                        pass
+
+                target_user_id = user_scope if is_demo else ""
+                conn.execute("INSERT OR REPLACE INTO deleted_threads (thread_id, user_id) VALUES (?, ?)", (thread_id, target_user_id))
+                for table in ["checkpoints", "checkpoint_blobs", "checkpoint_writes"]:
+                    try:
+                        conn.execute(f"DELETE FROM {table} WHERE thread_id = ?", (scoped_thread_id,))
                     except sqlite3.OperationalError:
                         pass
+                if is_demo:
+                    conn.execute("DELETE FROM user_threads WHERE thread_id = ? AND user_id = ?", (thread_id, user_scope))
+                else:
+                    conn.execute("DELETE FROM user_threads WHERE thread_id = ?", (thread_id,))
                 conn.commit()
             finally:
                 conn.close()
