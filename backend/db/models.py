@@ -56,7 +56,7 @@ class Subscription(Base):
     lemon_squeezy_customer_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     lemon_squeezy_subscription_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     
-    monthly_minutes_quota: Mapped[int] = mapped_column(Integer, default=15)  # 15 mins for free trial, 300 for starter, 1500 for pro
+    monthly_minutes_quota: Mapped[int] = mapped_column(Integer, default=45)  # 45 mins for free trial, 300 for starter, 1500 for pro
     used_minutes_this_month: Mapped[int] = mapped_column(Integer, default=0)
     
     current_period_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)

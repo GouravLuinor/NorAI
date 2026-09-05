@@ -1,9 +1,11 @@
 import { useState, type KeyboardEvent } from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, ArrowRight, Play, Check, BookOpen, Layers, FileText, Brain, Video, ShieldCheck, Zap, ChevronRight, GitFork, Menu, X } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Sparkles, ArrowRight, Play, Check, BookOpen, Layers, FileText, Brain, Video, ShieldCheck, Zap, ChevronRight, GitFork, Menu, X, LogOut } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
 import { FOCUS_RING, LINK_RING } from '../components/ui/shared'
+import { Dialog } from '../components/ui/Dialog'
+import { ENABLE_PAYMENTS, DEMO_LECTURES_CONFIG } from '../config/features'
 
 interface LandingPageProps {
   onStartWorkspace: () => void
@@ -18,10 +20,21 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 export function LandingPage({ onStartWorkspace }: LandingPageProps) {
+  const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
+  const logout = useAuthStore((s) => s.logout)
   const openAuthModal = useAuthStore((s) => s.openAuthModal)
   const [activeTab, setActiveTab] = useState<TabId>('notes')
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [demoModalOpen, setDemoModalOpen] = useState(false)
+
+  const handleLaunchLiveWorkspace = () => {
+    if (user) {
+      onStartWorkspace()
+    } else {
+      setDemoModalOpen(true)
+    }
+  }
 
   const handleTabKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const ids = TABS.map((t) => t.id)
@@ -74,18 +87,36 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
           <nav className="hidden md:flex items-center gap-6 font-display text-11 uppercase tracking-wider text-nt2 font-medium">
             <a href="#features" className={`hover:text-nt transition-colors ${LINK_RING}`}>Features</a>
             <a href="#how-it-works" className={`hover:text-nt transition-colors ${LINK_RING}`}>How It Works</a>
-            <Link to="/pricing" className={`hover:text-nt transition-colors ${LINK_RING}`}>Pricing</Link>
+            {ENABLE_PAYMENTS && (
+              <Link to="/pricing" className={`hover:text-nt transition-colors ${LINK_RING}`}>Pricing</Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-3">
             {user ? (
-              <button
-                onClick={onStartWorkspace}
-                className={`bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-[background-color,transform] active:translate-y-0.5 ${FOCUS_RING}`}
-              >
-                <span>Workspace</span>
-                <ArrowRight size={13} />
-              </button>
+              <div className="flex items-center gap-2">
+                <span className="text-11 text-nt3 font-mono hidden lg:inline max-w-[140px] truncate" title={user.email}>
+                  {user.email}
+                </span>
+                <button
+                  onClick={async () => {
+                    await logout()
+                    navigate('/')
+                  }}
+                  className={`text-nt2 hover:text-nr font-display text-11 font-medium uppercase tracking-wider px-2.5 py-1.5 transition-colors cursor-pointer flex items-center gap-1.5 ${FOCUS_RING}`}
+                  title="Sign Out"
+                >
+                  <LogOut size={13} />
+                  <span>Sign Out</span>
+                </button>
+                <button
+                  onClick={onStartWorkspace}
+                  className={`bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-[background-color,transform] active:translate-y-0.5 ${FOCUS_RING}`}
+                >
+                  <span>Workspace</span>
+                  <ArrowRight size={13} />
+                </button>
+              </div>
             ) : (
               <>
                 <button
@@ -118,7 +149,22 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
           <div className="md:hidden bg-ns border-t border-bdr px-6 py-4 flex flex-col gap-3 font-display text-11 uppercase tracking-wider text-nt2 font-medium">
             <a href="#features" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">Features</a>
             <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">How It Works</a>
-            <Link to="/pricing" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">Pricing</Link>
+            {ENABLE_PAYMENTS && (
+              <Link to="/pricing" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">Pricing</Link>
+            )}
+            {user && (
+              <button
+                onClick={async () => {
+                  setMobileOpen(false)
+                  await logout()
+                  navigate('/')
+                }}
+                className="flex items-center gap-2 text-left hover:text-nr text-nt2 transition-colors py-1 cursor-pointer"
+              >
+                <LogOut size={13} />
+                <span>Sign Out ({user.email})</span>
+              </button>
+            )}
           </div>
         )}
       </header>
@@ -148,12 +194,12 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
             onClick={handleCTA}
             className="w-full sm:w-auto bg-np hover:bg-nph text-npfg font-display text-12 font-semibold uppercase tracking-wider px-7 py-3.5 rounded-md shadow-bp flex items-center justify-center gap-2 cursor-pointer transition-[background-color,transform,box-shadow] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none"
           >
-            <span>Try 1 Video Free (No Card)</span>
+            <span>Get 45 Mins Free Trial (No Card)</span>
             <ArrowRight size={16} />
           </button>
 
           <button
-            onClick={onStartWorkspace}
+            onClick={handleLaunchLiveWorkspace}
             className={`w-full sm:w-auto bg-ns hover:bg-ns2 border border-bdr text-nt font-display text-12 font-medium uppercase tracking-wider px-6 py-3.5 rounded-md shadow-ev1 flex items-center justify-center gap-2 cursor-pointer transition-[background-color,transform,box-shadow] active:translate-y-[1px] active:shadow-none ${FOCUS_RING}`}
           >
             <Play size={14} className="text-np fill-np" />
@@ -186,8 +232,15 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
               <span className="w-2.5 h-2.5 rounded-full bg-ng opacity-80 shrink-0" />
               <span className="font-mono text-11 text-nt3 ml-2 font-medium truncate">NorAI Workspace — MIT 8.01 Physics Lecture 04</span>
             </div>
-            <div className="flex items-center gap-2 shrink-0 hidden sm:flex">
-              <span className="px-2 py-0.5 rounded bg-ngb text-ngt font-mono text-3xs font-medium uppercase">Processing Complete</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="px-2 py-0.5 rounded bg-ngb text-ngt font-mono text-3xs font-medium uppercase hidden sm:inline-block">Processing Complete</span>
+              <button
+                onClick={() => setDemoModalOpen(true)}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-np text-npfg font-display text-10 uppercase tracking-wider font-semibold hover:bg-nph transition-colors cursor-pointer"
+              >
+                <span>Choose Live Demo</span>
+                <ArrowRight size={11} />
+              </button>
             </div>
           </div>
 
@@ -307,46 +360,18 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-npb border border-npbr text-npt font-mono text-11 font-medium mb-3">
             <Sparkles size={12} className="text-np" />
-            <span>NO SIGNUP OR PAYMENT REQUIRED</span>
+            <span>100% PUBLIC ACCESS · NO SIGNUP NEEDED</span>
           </div>
           <h2 className="font-serif text-3xl sm:text-4xl text-nt font-normal tracking-tight text-balance">
-            Explore 3 Live Demo Workspaces
+            Try 3 Live Demo Workspaces
           </h2>
           <p className="text-nt2 text-14 max-w-xl mx-auto mt-2 font-normal">
-            Click any workspace below to experience full study notes, interactive quizzes, flashcards, and Nora AI Tutor.
+            Click any workspace below to experience full study notes, interactive quizzes, flashcards, and concept maps instantly — no registration or credit card required.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              id: 'ab648382-638f-4dde-b7c1-4007a2e638bb',
-              category: 'Computer Science & Deep Learning',
-              title: 'Foundations of Neural Networks & Deep Learning',
-              chapters: '4 Chapters',
-              duration: '18 min video',
-              badge: 'Deep Learning',
-              desc: 'Mathematical parameterization, activation functions comparison (Sigmoid vs ReLU), and matrix transformations.',
-            },
-            {
-              id: 'e54d7376-0e7b-472a-9ca6-9b21ad0b2710',
-              category: 'Economics & Market Theory',
-              title: 'Foundations of Economic Thinking: Incentives & Opportunity Cost',
-              chapters: '6 Chapters',
-              duration: '19 min video',
-              badge: 'Economics',
-              desc: 'Market coordination, supply-demand distortions under price ceilings & floors, and capital flight economics.',
-            },
-            {
-              id: '506dd685-05f9-43df-8d09-5b944c7392f5',
-              category: 'Modern AI Engineering',
-              title: 'The Rise of Open-Weights Models and Local Deployment',
-              chapters: '3 Chapters',
-              duration: '10 min video',
-              badge: 'AI Systems',
-              desc: 'Memory requirements for local LLM inference, 4-bit VRAM calculations, and dynamic quantization efficiencies.',
-            },
-          ].map((demo) => (
+          {DEMO_LECTURES_CONFIG.map((demo) => (
             <Link
               key={demo.id}
               to={`/workspace/${demo.id}`}
@@ -367,14 +392,14 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
                 </h3>
 
                 <p className="font-sans text-12 text-nt2 leading-relaxed mb-4">
-                  {demo.desc}
+                  {demo.summary}
                 </p>
               </div>
 
               <div className="pt-4 border-t border-bdr flex items-center justify-between text-11 font-display uppercase tracking-wider text-nt2 font-semibold group-hover:text-np">
-                <span className="font-mono text-10 text-nt3 lowercase">{demo.chapters}</span>
+                <span className="font-mono text-10 text-nt3 lowercase">{demo.chapterCount} chapters</span>
                 <span className="flex items-center gap-1">
-                  Launch Demo <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
+                  Try Demo <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
                 </span>
               </div>
             </Link>
@@ -494,10 +519,77 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
             <span>© 2026 NorAI Inc. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6 font-display uppercase tracking-wider">
-            <Link to="/pricing" className="hover:text-nt transition-colors">Pricing</Link>
+            {ENABLE_PAYMENTS && (
+              <Link to="/pricing" className="hover:text-nt transition-colors">Pricing</Link>
+            )}
           </div>
         </div>
       </footer>
+
+      {/* Choose a Demo Workspace Modal */}
+      {demoModalOpen && (
+        <Dialog
+          ariaLabel="Choose a Live Demo Workspace"
+          onClose={() => setDemoModalOpen(false)}
+          panelClassName="w-full max-w-2xl bg-nb border border-bdr rounded-xl shadow-2xl overflow-hidden p-6 relative"
+        >
+          <div className="flex items-start justify-between pb-4 border-b border-bdr">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-npb border border-npbr text-npt font-mono text-3xs font-medium uppercase tracking-wider mb-2">
+                <Sparkles size={11} className="text-np" />
+                <span>Instant Guest Preview · No Sign-Up</span>
+              </div>
+              <h2 className="font-serif text-20 sm:text-22 font-bold text-nt tracking-tight">
+                Choose a Demo Workspace
+              </h2>
+              <p className="text-nt2 text-12 mt-1">
+                Select any of the 3 pre-processed lecture workspaces to explore notes, quizzes, and mind maps.
+              </p>
+            </div>
+            <button
+              onClick={() => setDemoModalOpen(false)}
+              className={`p-1.5 rounded-md text-nt3 hover:text-nt hover:bg-ns2 transition-colors cursor-pointer ${FOCUS_RING}`}
+              aria-label="Close demo selection dialog"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 mt-4">
+            {DEMO_LECTURES_CONFIG.map((demo) => (
+              <button
+                key={demo.id}
+                onClick={() => {
+                  setDemoModalOpen(false)
+                  navigate(`/workspace/${demo.id}`)
+                }}
+                className={`group text-left p-3.5 rounded-lg bg-ns border border-bdr hover:border-np/60 hover:bg-ns2 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${FOCUS_RING}`}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-3xs font-mono font-semibold uppercase tracking-wider text-np bg-npb px-2 py-0.5 rounded">
+                      {demo.badge}
+                    </span>
+                    <span className="text-3xs font-mono text-nt3">
+                      {demo.duration} · {demo.chapterCount} chapters
+                    </span>
+                  </div>
+                  <h3 className="font-serif text-14 font-semibold text-nt group-hover:text-np transition-colors truncate">
+                    {demo.title}
+                  </h3>
+                  <p className="font-sans text-11 text-nt3 mt-0.5 line-clamp-2 leading-relaxed">
+                    {demo.summary}
+                  </p>
+                </div>
+                <div className="shrink-0 flex items-center gap-1 text-11 font-display uppercase tracking-wider font-semibold text-np group-hover:translate-x-0.5 transition-transform">
+                  <span>Open Demo</span>
+                  <ArrowRight size={13} />
+                </div>
+              </button>
+            ))}
+          </div>
+        </Dialog>
+      )}
     </div>
   )
 }

@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabaseClient'
 import { apiFetch } from '../lib/http'
-import { getGuestId } from '../lib/guestId'
+import { DEFAULT_TRIAL_QUOTA_MINUTES } from '../config/features'
 
 export interface UserProfile {
   id: string
@@ -28,6 +28,7 @@ interface AuthState {
   user: UserProfile | null
   token: string | null
   quota: QuotaInfo | null
+  isLoadingSession: boolean
   isAuthModalOpen: boolean
   authModalTab: 'login' | 'signup'
   openAuthModal: (tab?: 'login' | 'signup') => void
@@ -45,10 +46,11 @@ const mapSession = (session: Session | null) => {
     token: session.access_token,
     user: {
       id: u.id,
-      email: u.email ?? `${u.id}@anonymous.norai`,
+      email: u.email ?? '',
       fullName: (u.user_metadata?.full_name as string) || (u.user_metadata?.name as string) || u.email?.split('@')[0],
       avatarUrl: u.user_metadata?.avatar_url as string | undefined,
       isAnonymous: u.is_anonymous ?? false,
+      monthlyQuotaMinutes: DEFAULT_TRIAL_QUOTA_MINUTES,
     } as UserProfile,
   }
 }
@@ -57,6 +59,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
   quota: null,
+  isLoadingSession: true,
   isAuthModalOpen: false,
   authModalTab: 'login',
 
@@ -66,7 +69,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setSession: (token, user) => set({ token, user, isAuthModalOpen: false }),
 
   refreshQuota: async () => {
-    // Works for both authenticated users (Bearer) and device guests (X-Guest-Id).
+    // Only query quota for authenticated users with active token
+    if (!get().token) {
+      set({ quota: null })
+      return
+    }
     try {
       const quota = await apiFetch<QuotaInfo>('/quota')
       if (!quota) {
@@ -101,22 +108,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    await supabase.auth.signOut()
-    set({ token: null, user: null, quota: null })
+    try {
+      await Promise.race([
+        supabase.auth.signOut(),
+        new Promise((resolve) => setTimeout(resolve, 1000)),
+      ])
+    } catch (e) {
+      console.warn('Supabase signOut error/network unreachable:', e)
+    } finally {
+      set({ token: null, user: null, quota: null })
+    }
   },
 
   initAuth: async () => {
-    getGuestId()
-    const { data } = await supabase.auth.getSession()
-    const { token, user } = mapSession(data.session)
-    set({ token, user })
+    try {
+      const { data } = await supabase.auth.getSession()
+      const { token, user } = mapSession(data.session)
+      set({ token, user, isLoadingSession: false })
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      const next = mapSession(session)
-      set({ ...next, isAuthModalOpen: false })
-      void get().refreshQuota()
-    })
+      supabase.auth.onAuthStateChange((_event, session) => {
+        const next = mapSession(session)
+        set({ ...next, isLoadingSession: false, isAuthModalOpen: false })
+        if (next.token) {
+          void get().refreshQuota()
+        } else {
+          set({ quota: null })
+        }
+      })
 
-    await get().refreshQuota()
+      if (token) {
+        await get().refreshQuota()
+      }
+    } catch {
+      set({ token: null, user: null, quota: null, isLoadingSession: false })
+    }
   },
 }))

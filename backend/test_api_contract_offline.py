@@ -85,30 +85,27 @@ def main() -> int:
             and isinstance(data.get("incomplete"), bool),
         )
 
+        # ── Auth-negative (no token or X-Guest-Id must fail with 401) ───────
         r = client.get("/quota")
-        data = r.json()
-        check(
-            "GET /quota anonymous 200 + trial shape",
-            r.status_code == 200
-            and data.get("is_anonymous") is True
-            and data.get("monthly_minutes_quota") == 15
-            and data.get("remaining_minutes") == 15,
-        )
-
-        # ── Auth-negative (no token, no guest id; fails fast) ────────────────
+        check("GET /quota 401 unauthenticated", r.status_code == 401)
         r = client.post("/process")
         check("POST /process 401 unauthenticated", r.status_code == 401)
         r = client.get("/billing")
         check("GET /billing 401 unauthenticated", r.status_code == 401)
 
-        # ── Guest (X-Guest-Id) must NOT be blocked by auth ───────────────────
+        # ── Guest (X-Guest-Id) must be rejected with 401 ─────────────────────
         r = client.post("/process", headers={"X-Guest-Id": "contract_test_guest"})
-        check(
-            "POST /process guest reaches validation (no 401)",
-            r.status_code != 401 and r.status_code in (400, 422),
-        )
+        check("POST /process guest rejected with 401", r.status_code == 401)
         r = client.get("/billing", headers={"X-Guest-Id": "contract_test_guest"})
-        check("GET /billing guest 200", r.status_code == 200)
+        check("GET /billing guest rejected with 401", r.status_code == 401)
+        r = client.get("/quota", headers={"X-Guest-Id": "contract_test_guest"})
+        check("GET /quota guest rejected with 401", r.status_code == 401)
+
+        # ── Demo lectures: public read-only 200, but AI tutor chat 401 ──────
+        r = client.get("/lectures/ab648382-638f-4dde-b7c1-4007a2e638bb")
+        check("GET demo lecture unauthenticated 200", r.status_code == 200)
+        r = client.post("/chat", json={"lecture_id": "ab648382-638f-4dde-b7c1-4007a2e638bb", "thread_id": "t1", "user_question": "hi"})
+        check("POST /chat demo unauthenticated 401", r.status_code == 401)
 
         # ── Validation-negative (authenticated as a fake user) ───────────────
         main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()

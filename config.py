@@ -60,7 +60,11 @@ MAX_SEGMENTS_PER_CHUNK = 30
 # 505.76s lecture ≈ 10.44 seg/min). Re-fit from real runs via calibration.
 DEFAULT_SEGS_PER_MIN = 10.5
 # Free-trial duration gate (mirrors the env override used in orchestrator).
-MAX_FREE_DURATION_MIN = int(os.environ.get("MAX_FREE_DURATION_MIN", "15"))
+MAX_FREE_DURATION_MIN = int(os.environ.get("MAX_FREE_DURATION_MIN", "45"))
+DEFAULT_TRIAL_QUOTA_MINUTES = 45
+
+# ── Feature Flags ────────────────────────────────────────────────────────────
+ENABLE_PAYMENTS = os.environ.get("ENABLE_PAYMENTS", "0") == "1"
 
 # ── Lemon Squeezy billing (P2.5) ──────────────────────────────────────────────
 # Env-driven checkout / customer-portal URLs surfaced by GET /billing.

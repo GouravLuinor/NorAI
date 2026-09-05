@@ -30,7 +30,7 @@ from backend.access import (
     _is_free_demo_access,
     ensure_lecture_access,
 )
-from backend.auth import get_current_user_optional
+from backend.auth import get_current_user, get_current_user_optional
 from backend.db.database import get_db
 from backend.db.models import User
 from backend.dependencies import (
@@ -68,7 +68,7 @@ class ChatResponse(BaseModel):
 @router.post("/chat")
 async def chat(
     req: ChatRequest,
-    user: Optional[User] = Depends(get_current_user_optional),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     try:
@@ -118,7 +118,7 @@ async def chat(
 @router.post("/chat/stream")
 async def chat_stream(
     req: ChatRequest,
-    user: Optional[User] = Depends(get_current_user_optional),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     bind(lecture_id=req.lecture_id, thread_id=req.thread_id)

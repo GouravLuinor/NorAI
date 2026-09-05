@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Check, ArrowRight, RotateCcw } from 'lucide-react'
+import { Check, ArrowRight, RotateCcw, AlertTriangle, Clock } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { useAuthStore } from '../stores/useAuthStore'
+import { useRateLimitStore } from '../stores/useRateLimitStore'
 import { apiFetchRaw } from '../lib/http'
 import { friendlyError } from '../lib/errorCopy'
 import type { ProcessEvent } from '../types'
@@ -34,6 +35,15 @@ const STAGES: StageInfo[] = [
 
 const RAIL_X = 'calc(0.75rem + 1.5rem + 0.625rem + 0.4375rem)'
 
+function formatCountdown(totalSeconds: number): string {
+  if (totalSeconds <= 0) return '00h 00m 00s'
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return `${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`
+}
+
 export function ProcessingPage() {
   const { taskId } = useParams<{ taskId: string }>()
   const navigate = useNavigate()
@@ -44,6 +54,8 @@ export function ProcessingPage() {
   const [message, setMessage] = useState('Preparing…')
   const [finished, setFinished] = useState(false)
   const [errored, setErrored] = useState(false)
+  const [isRpdLimited, setIsRpdLimited] = useState(false)
+  const { remainingSeconds } = useRateLimitStore()
 
   useEffect(() => {
     if (!taskId) return
@@ -56,7 +68,7 @@ export function ProcessingPage() {
     let lastSignature = ''
     let stopped = false
 
-    const processEventData = (data: ProcessEvent) => {
+    const processEventData = (data: ProcessEvent & { error?: string; limit_type?: string; retry_after_seconds?: number }) => {
       const stage = data.stage
       if (stage === 'complete' || (data.progress != null && data.progress >= 100)) {
         setCompletedStages(prev => {
@@ -77,7 +89,14 @@ export function ProcessingPage() {
       }
       if (stage === 'error') {
         setErrored(true)
-        setMessage(friendlyError(data.message || 'Something went wrong.'))
+        if (data.limit_type === 'rpd' || data.error === 'DAILY_QUOTA_EXHAUSTED') {
+          setIsRpdLimited(true)
+          const retrySecs = data.retry_after_seconds || 3600
+          useRateLimitStore.getState().setDailyLimit(retrySecs)
+          setMessage('Daily quota reached (500 RPD). Paused until Pacific Midnight.')
+        } else {
+          setMessage(friendlyError(data.message || 'Something went wrong.'))
+        }
         return
       }
       if (!stage) return
@@ -272,8 +291,35 @@ export function ProcessingPage() {
           </Button>
         )}
 
-        {/* P4.3: errored runs get a recovery action, not a dead end. */}
-        {errored && (
+        {/* Errored runs: graceful RPD countdown or retry action */}
+        {errored && isRpdLimited && (
+          <div className="flex flex-col gap-3 mt-8 p-4 rounded-lg bg-amber-950/50 border border-amber-500/40 text-amber-200">
+            <div className="flex items-center gap-2 text-amber-300 font-semibold text-13">
+              <AlertTriangle size={16} className="text-amber-400" />
+              <span>Google AI Studio Daily Quota Reached</span>
+            </div>
+            <p className="text-11 text-amber-200/90 leading-relaxed">
+              Processing paused because the Gemini free-tier daily rate limit (500 requests per day) was reached.
+              Your uploaded lecture stages are preserved.
+            </p>
+            <div className="flex items-center gap-2 bg-amber-900/60 border border-amber-600/40 px-3 py-1.5 rounded-md font-mono text-11 text-amber-300">
+              <Clock size={13} className="text-amber-400 animate-pulse" />
+              <span>Resets at Pacific Midnight in:</span>
+              <span className="font-bold text-amber-100">{formatCountdown(remainingSeconds)}</span>
+            </div>
+            <div className="flex flex-col gap-2 mt-2">
+              <Button
+                variant="primary"
+                onClick={() => navigate('/app')}
+                className="w-full py-2.5 rounded-md text-12"
+              >
+                Return to Dashboard
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {errored && !isRpdLimited && (
           <div className="flex flex-col gap-2 mt-8">
             <Button
               variant="primary"

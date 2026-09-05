@@ -162,6 +162,20 @@ def invoke_with_policy(
                 raise
             last_err = e
         except Exception as e:  # noqa: BLE001
+            from backend.rate_limit_handler import (
+                GeminiCooldownTracker,
+                GeminiDailyQuotaExceededException,
+                is_daily_quota_exhausted,
+            )
+            if is_daily_quota_exhausted(e):
+                logger.error(
+                    "[%s] Gemini daily quota (500 RPD) exhausted: %s. Aborting retries.",
+                    node,
+                    e,
+                )
+                GeminiCooldownTracker.record_daily_exhaustion()
+                raise GeminiDailyQuotaExceededException() from e
+
             last_err = e
 
         if attempt < attempts - 1:

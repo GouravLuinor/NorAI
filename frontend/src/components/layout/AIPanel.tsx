@@ -13,7 +13,12 @@ import { SegmentedControl } from '../ui/SegmentedControl'
 import { SlidersHorizontal } from 'lucide-react'
 import { FOCUS_RING } from '../ui/shared'
 
+import { useAuthStore } from '../../stores/useAuthStore'
+import { Lock, Sparkles, ArrowRight } from 'lucide-react'
+
 export function AIPanel() {
+  const user = useAuthStore((s) => s.user)
+  const openAuthModal = useAuthStore((s) => s.openAuthModal)
   const activeChapterId = useChapterStore((s) => s.activeChapterId)
   const activeLectureId = useLectureStore(s => s.activeLectureId)
   const aiMode = useQuizStore((s) => s.aiMode)
@@ -22,6 +27,77 @@ export function AIPanel() {
   const setQuizLoading = useQuizStore((s) => s.setQuizLoading)
   const addToast = useToastStore(s => s.addToast)
   const [settingsOpen, setSettingsOpen] = useState(false)
+
+  if (!user) {
+    return (
+      <div className="flex flex-col min-h-0 bg-ns overflow-hidden h-full">
+        {/* Header */}
+        <div className="px-3 py-2 border-b border-bdr flex items-center justify-between gap-2 shrink-0 bg-ns2/40">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-sm bg-npf flex items-center justify-center text-10 font-medium text-npfg shadow-ev1">
+              N
+            </div>
+            <div>
+              <div className="font-display text-xs font-medium text-nt leading-tight">Nora AI Tutor</div>
+              <div className="spec-label text-3xs text-nt3">Locked · Sign In Required</div>
+            </div>
+          </div>
+          <Lock size={14} className="text-nt3 mr-1" />
+        </div>
+
+        {/* Locked Preview Card */}
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center overflow-y-auto">
+          <div className="w-12 h-12 rounded-full bg-npb border border-npbr flex items-center justify-center text-np mb-4 shadow-sm">
+            <Lock size={20} />
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-npb text-npt font-mono text-10 font-medium mb-3">
+            <Sparkles size={11} className="text-np" />
+            <span>Interactive AI Tutor</span>
+          </div>
+
+          <h3 className="font-serif font-bold text-18 text-nt mb-2">
+            Unlock Nora AI Tutor
+          </h3>
+
+          <p className="text-12 text-nt2 max-w-xs mb-6 leading-relaxed">
+            Sign up for a free NorAI account to chat with Nora, ask questions grounded in this lecture, and test your understanding.
+          </p>
+
+          <div className="w-full max-w-xs space-y-2 mb-6 text-left">
+            <div className="flex items-start gap-2 text-11 text-nt2">
+              <span className="text-np font-bold">✓</span>
+              <span>100% grounded in video transcripts & slides</span>
+            </div>
+            <div className="flex items-start gap-2 text-11 text-nt2">
+              <span className="text-np font-bold">✓</span>
+              <span>Direct timestamp links to video playback</span>
+            </div>
+            <div className="flex items-start gap-2 text-11 text-nt2">
+              <span className="text-np font-bold">✓</span>
+              <span>Includes 45 minutes of free lecture processing</span>
+            </div>
+          </div>
+
+          <div className="w-full max-w-xs space-y-2">
+            <button
+              onClick={() => openAuthModal('signup')}
+              className="w-full py-2.5 px-4 bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider rounded shadow-bp flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <span>Create Free Account</span>
+              <ArrowRight size={14} />
+            </button>
+            <button
+              onClick={() => openAuthModal('login')}
+              className="w-full py-2 px-4 bg-ns border border-bdr hover:bg-ns2 text-nt font-display text-11 font-medium uppercase tracking-wider rounded transition-colors cursor-pointer"
+            >
+              <span>Sign In</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   let ActivePanel: React.ReactNode
   if (aiMode === 'quiz') {
