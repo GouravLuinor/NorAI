@@ -179,7 +179,7 @@ def run_pipeline(
                 duration_sec = float(meta_data.get("duration", 0))
             _metrics["duration_sec"] = duration_sec
 
-            max_duration_sec = int(os.environ.get("MAX_FREE_DURATION_MIN", "15")) * 60
+            max_duration_sec = int(os.environ.get("MAX_FREE_DURATION_MIN", "45")) * 60
             if (
                 duration_sec > max_duration_sec
                 and os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true"
@@ -187,10 +187,10 @@ def run_pipeline(
             ):
                 raise TerminalPipelineError(
                     f"Lecture duration ({duration_sec / 60:.1f} mins) exceeds the Free Trial limit "
-                    f"of {max_duration_sec / 60:.0f} minutes. Please upgrade to Starter or Pro.",
+                    f"of {max_duration_sec / 60:.0f} minutes.",
                     friendly=(
                         f"This lecture is {duration_sec / 60:.1f} minutes long — over the "
-                        f"{max_duration_sec / 60:.0f}-minute free-trial limit. Please upgrade to continue."
+                        f"{max_duration_sec / 60:.0f}-minute free-trial limit."
                     ),
                 )
         except json_lib.JSONDecodeError as e:

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, Info, Activity, AlertTriangle } from 'lucide-react'
+import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, Info, Activity, AlertTriangle, LogOut } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { Select } from '../components/ui/Select'
@@ -8,6 +8,8 @@ import { FOCUS_RING } from '../components/ui/shared'
 import { apiFetchRaw } from '../lib/http'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useCourseStore } from '../stores/useCourseStore'
+import { useRateLimitStore } from '../stores/useRateLimitStore'
+import { ENABLE_PAYMENTS, DEFAULT_TRIAL_QUOTA_MINUTES } from '../config/features'
 
 type InputType = 'youtube' | 'upload' | 'drive'
 
@@ -91,6 +93,7 @@ export function UploadPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { user } = useAuthStore()
   const { courses, loadCourses } = useCourseStore()
+  const { isDailyLimited } = useRateLimitStore()
 
   useEffect(() => {
     if (user) loadCourses()
@@ -152,7 +155,7 @@ export function UploadPage() {
         const valid = data.filter(
           (l) => (l.chapter_count && l.chapter_count > 0) || (l.title && l.title !== 'New Lecture')
         )
-        setLectures((valid.length > 0 ? valid : data).slice(0, 8))
+        setLectures(valid.length > 0 ? valid : data)
         setLoadingLectures(false)
       })
       .catch((err) => {
@@ -160,6 +163,9 @@ export function UploadPage() {
         setLoadingLectures(false)
       })
   }, [])
+
+  const userLectures = lectures.filter((l) => !l.is_demo)
+  const demoLectures = lectures.filter((l) => l.is_demo)
 
 
   const handleStart = async () => {
@@ -198,11 +204,49 @@ export function UploadPage() {
   }
 
   const canSubmit =
-    (inputType === 'upload' && file) ||
-    ((inputType === 'youtube' || inputType === 'drive') && url.trim())
+    !isDailyLimited &&
+    ((inputType === 'upload' && file) ||
+      ((inputType === 'youtube' || inputType === 'drive') && url.trim()))
+
+  const logout = useAuthStore((s) => s.logout)
 
   return (
-    <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center py-12 px-6">
+    <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center py-6 px-6">
+      {/* Top Header with Profile & Sign Out */}
+      <header className="w-full max-w-2xl flex items-center justify-between pb-6 mb-6 border-b border-bdr relative z-10">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 hover:opacity-85 transition-opacity cursor-pointer text-left"
+          title="Return to NorAI Home"
+        >
+          <div className="w-7 h-7 rounded bg-npf flex items-center justify-center text-xs font-semibold text-npfg shadow-ev1">
+            N
+          </div>
+          <span className="font-display text-14 font-semibold text-nt tracking-tight">
+            NorAI
+          </span>
+        </button>
+
+        <div className="flex items-center gap-3">
+          {user && (
+            <span className="font-mono text-11 text-nt3 hidden sm:inline-block">
+              {user.email}
+            </span>
+          )}
+          <button
+            onClick={async () => {
+              await logout()
+              navigate('/')
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-bdr bg-ns hover:bg-ns2 text-nt2 hover:text-nt font-display text-11 font-medium uppercase tracking-wider transition-colors cursor-pointer"
+            title="Sign out of your account"
+          >
+            <LogOut size={13} />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </header>
+
       <div className="w-full max-w-lg flex flex-col gap-10 relative z-10">
         
         {/* ───────────────────────────────────────────────────────────────── */}
@@ -351,8 +395,8 @@ export function UploadPage() {
                   <div className="mt-2 flex items-center gap-1.5 text-2xs text-nr">
                     <AlertTriangle size={11} strokeWidth={1.5} />
                     <span>
-                      Over the {estimate.free_trial_min ?? 15}-minute free-trial limit — this lecture
-                      requires Starter or Pro.
+                      Over the {estimate.free_trial_min ?? DEFAULT_TRIAL_QUOTA_MINUTES}-minute free-trial limit
+                      {ENABLE_PAYMENTS ? ' — this lecture requires Starter or Pro.' : '.'}
                     </span>
                   </div>
                 )}
@@ -363,6 +407,16 @@ export function UploadPage() {
               <div className="mt-3 flex items-center gap-1.5 text-2xs text-nt4">
                 <Info size={11} strokeWidth={1.5} />
                 <span>Estimate unavailable for this source.</span>
+              </div>
+            )}
+
+            {isDailyLimited && (
+              <div className="mt-3 flex items-start gap-2 text-2xs text-amber-300 rounded-md border border-amber-600/40 bg-amber-950/40 px-3 py-2">
+                <AlertTriangle size={12} strokeWidth={1.5} className="mt-0.5 shrink-0 text-amber-400" />
+                <span>
+                  Processing is temporarily paused due to Google AI Studio daily quota limits (500 RPD).
+                  Processing resumes automatically at Pacific Midnight.
+                </span>
               </div>
             )}
 
@@ -399,7 +453,7 @@ export function UploadPage() {
               className="w-full mt-4 gap-2 py-2.5 rounded-md text-13 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Sparkles size={14} strokeWidth={1.5} />
-              Start Processing
+              {isDailyLimited ? 'Processing Paused (Daily Quota Reached)' : 'Start Processing'}
             </Button>
           </div>
 
@@ -407,8 +461,8 @@ export function UploadPage() {
             <Info size={11} strokeWidth={1.5} />
             <span>
               {user
-                ? 'Works with lectures up to 3 hours. We\'ll generate notes, quizzes & more.'
-                : 'Free trial: up to 15 min per lecture. Sign in for up to 3h.'}
+                ? `Works with lectures up to 3 hours. New accounts include ${DEFAULT_TRIAL_QUOTA_MINUTES} minutes free trial.`
+                : `Free trial: up to ${DEFAULT_TRIAL_QUOTA_MINUTES} min per lecture. Sign in for up to 3h.`}
             </span>
           </div>
         </section>
@@ -427,66 +481,123 @@ export function UploadPage() {
 
 
         {/* ───────────────────────────────────────────────────────────────── */}
-        {/* Section 2: Your Lectures (Bottom)                                 */}
+        {/* Section 2: Your Personal Lectures                                 */}
         {/* ───────────────────────────────────────────────────────────────── */}
         <section>
-          <h2 className="spec-label mb-4 px-1">Your Recent Lectures</h2>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="spec-label">Your Lectures</h2>
+            {!loadingLectures && (
+              <span className="font-mono text-2xs text-nt4">
+                {userLectures.length} {userLectures.length === 1 ? 'lecture' : 'lectures'}
+              </span>
+            )}
+          </div>
           
           <div className="flex flex-col gap-2.5">
             {loadingLectures ? (
               <div className="flex justify-center p-6 text-nt4">
                 <span className="animate-pulse text-xs">Loading…</span>
               </div>
-            ) : lectures.length === 0 ? (
-              <div className="bg-ns border border-bdr2 rounded-lg p-8 text-center shadow-ev2">
-                <BookOpen size={24} strokeWidth={1.5} className="mx-auto text-nt4 mb-3" />
-                <h3 className="text-xs font-medium text-nt2 mb-1">No lectures yet</h3>
-                <p className="text-11 text-nt4">Your processed lectures will appear here</p>
+            ) : userLectures.length === 0 ? (
+              <div className="bg-ns border border-bdr2 rounded-lg p-6 text-center shadow-ev1">
+                <BookOpen size={24} strokeWidth={1.5} className="mx-auto text-nt4 mb-2" />
+                <h3 className="text-12 font-medium text-nt mb-1">No personal lectures yet</h3>
+                <p className="text-11 text-nt3 max-w-sm mx-auto leading-relaxed font-sans">
+                  Drop a YouTube URL or upload a video file above to process your first lecture using your 45-minute free trial credit.
+                </p>
               </div>
             ) : (
-              <>
-                {lectures.map((lec) => (
-                  <button
-                    key={lec.lecture_id}
-                    onClick={() => navigate(`/workspace/${lec.lecture_id}`)}
-                    className={`w-full text-left bg-ns border border-bdr2 rounded-lg p-4 flex items-center gap-4 hover:bg-ns2 transition group cursor-pointer shadow-ev1 fold-marks relative ${FOCUS_RING} active:translate-y-[1px] active:shadow-none`}
-                  >
-                    <div className="w-10 h-10 rounded-md bg-ns3 border border-bdr flex flex-col items-center justify-center shrink-0">
-                      <BookOpen size={16} strokeWidth={1.5} className="text-nt3 group-hover:text-np transition" />
+              userLectures.map((lec) => (
+                <button
+                  key={lec.lecture_id}
+                  onClick={() => navigate(`/workspace/${lec.lecture_id}`)}
+                  className={`w-full text-left bg-ns border border-bdr2 rounded-lg p-4 flex items-center gap-4 hover:bg-ns2 transition group cursor-pointer shadow-ev1 fold-marks relative ${FOCUS_RING} active:translate-y-[1px] active:shadow-none`}
+                >
+                  <div className="w-10 h-10 rounded-md bg-ns3 border border-bdr flex flex-col items-center justify-center shrink-0">
+                    <BookOpen size={16} strokeWidth={1.5} className="text-nt3 group-hover:text-np transition" />
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="text-13 font-medium text-nt truncate mb-1">
+                      {lec.title || 'Untitled Lecture'}
                     </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="text-13 font-medium text-nt truncate">
-                          {lec.title || 'Untitled Lecture'}
-                        </div>
-                        {lec.is_demo && (
-                          <span className="shrink-0 px-1.5 py-0.5 rounded bg-npb border border-npbr text-npt font-mono text-3xs font-semibold uppercase">
-                            Demo
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 text-2xs text-nt4">
-                        <span className="flex items-center gap-1 tabular-nums">
-                          <BookOpen size={10} strokeWidth={1.5} />
-                          {lec.chapter_count || 0} chapters
-                        </span>
+                    <div className="flex items-center gap-3 text-2xs text-nt4">
+                      <span className="flex items-center gap-1 tabular-nums">
+                        <BookOpen size={10} strokeWidth={1.5} />
+                        {lec.chapter_count || 0} chapters
+                      </span>
+                      {lec.created_at && (
                         <span className="flex items-center gap-1">
                           <Clock size={10} strokeWidth={1.5} />
                           {getRelativeTime(lec.created_at)}
                         </span>
-                      </div>
+                      )}
                     </div>
+                  </div>
 
-                    <ArrowRight 
-                      size={16} 
-                      strokeWidth={1.5}
-                      className="text-nt4 group-hover:text-nt transition group-hover:translate-x-0.5" 
-                    />
-                  </button>
-                ))}
-              </>
+                  <ArrowRight 
+                    size={16} 
+                    strokeWidth={1.5}
+                    className="text-nt4 group-hover:text-nt transition group-hover:translate-x-0.5" 
+                  />
+                </button>
+              ))
             )}
+          </div>
+        </section>
+
+        {/* ───────────────────────────────────────────────────────────────── */}
+        {/* Section 3: Featured Demo Workspaces                               */}
+        {/* ───────────────────────────────────────────────────────────────── */}
+        <section>
+          <div className="flex items-center justify-between mb-1.5 px-1">
+            <h2 className="spec-label">Featured Demo Workspaces</h2>
+            <span className="font-mono text-3xs font-semibold text-np uppercase bg-npb px-2 py-0.5 rounded border border-npbr">
+              Free Access
+            </span>
+          </div>
+          <p className="text-11 text-nt3 mb-3 px-1 font-sans">
+            Explore ready-to-use study notes, mind maps, quizzes, and flashcards without consuming credits.
+          </p>
+          
+          <div className="flex flex-col gap-2.5">
+            {demoLectures.map((lec) => (
+              <button
+                key={lec.lecture_id}
+                onClick={() => navigate(`/workspace/${lec.lecture_id}`)}
+                className={`w-full text-left bg-ns border border-bdr2 hover:border-npbr rounded-lg p-4 flex items-center gap-4 hover:bg-ns2 transition group cursor-pointer shadow-ev1 fold-marks relative ${FOCUS_RING} active:translate-y-[1px] active:shadow-none`}
+              >
+                <div className="w-10 h-10 rounded-md bg-npb border border-npbr flex flex-col items-center justify-center shrink-0">
+                  <Sparkles size={16} strokeWidth={1.5} className="text-np" />
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="text-13 font-medium text-nt truncate group-hover:text-np transition-colors">
+                      {lec.title}
+                    </div>
+                    <span className="shrink-0 px-1.5 py-0.5 rounded bg-npb border border-npbr text-npt font-mono text-3xs font-semibold uppercase">
+                      Demo
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-2xs text-nt4">
+                    {lec.category && (
+                      <span className="text-nt3 font-mono">{lec.category}</span>
+                    )}
+                    <span className="flex items-center gap-1 tabular-nums">
+                      <BookOpen size={10} strokeWidth={1.5} />
+                      {lec.chapter_count || 0} chapters
+                    </span>
+                  </div>
+                </div>
+
+                <ArrowRight 
+                  size={16} 
+                  strokeWidth={1.5}
+                  className="text-nt4 group-hover:text-np transition group-hover:translate-x-0.5" 
+                />
+              </button>
+            ))}
           </div>
         </section>
         

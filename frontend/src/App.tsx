@@ -1,21 +1,21 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useNavigate, useParams, Navigate } from 'react-router-dom'
 import { ToastContainer } from './components/ui/ToastContainer'
 import { AppErrorBoundary } from './components/AppErrorBoundary'
+import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { RateLimitBanner } from './components/ui/RateLimitBanner'
+import { ENABLE_PAYMENTS, DEMO_LECTURE_IDS } from './config/features'
+import { useAuthStore } from './stores/useAuthStore'
+import { useRateLimitStore } from './stores/useRateLimitStore'
 
-// Route-level code-splitting (P5.6): each page ships in its own chunk so the
-// marketing routes never pull in the workspace/print stack (KaTeX, highlight,
-// doc views).
-//
-// P3.4: framer-motion (MotionConfig + AuthModal's animations) is lazy too —
-// the runtime loads as an async chunk after hydration instead of inflating
-// the entry bundle every route pays for.
+// Route-level code-splitting (P5.6)
 const MotionProvider = lazy(() =>
   import('./components/ui/MotionProvider').then(m => ({ default: m.MotionProvider })),
 )
 const AuthModal = lazy(() =>
   import('./components/auth/AuthModal').then(m => ({ default: m.AuthModal })),
 )
+const AuthPage = lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AuthPage })))
 const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })))
 const PricingPage = lazy(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })))
 const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })))
@@ -40,26 +40,45 @@ function RouteFallback() {
 
 function LandingRouteWrapper() {
   const navigate = useNavigate()
-  return (
-    <LandingPage onStartWorkspace={() => navigate('/app')} />
-  )
+  return <LandingPage onStartWorkspace={() => navigate('/app')} />
 }
 
 function PricingRouteWrapper() {
   const navigate = useNavigate()
-  return (
-    <PricingPage
-      onStartWorkspace={() => navigate('/app')}
-    />
-  )
+  return <PricingPage onStartWorkspace={() => navigate('/app')} />
 }
 
 function AuthModalBridge() {
   const navigate = useNavigate()
-  return <AuthModal onContinueAsGuest={() => navigate('/app')} />
+  return <AuthModal onSuccess={() => navigate('/app')} />
+}
+
+function WorkspaceRouteWrapper() {
+  const { lectureId } = useParams<{ lectureId?: string }>()
+  const isDemo = lectureId && DEMO_LECTURE_IDS.includes(lectureId)
+
+  // Demo lectures can be viewed unauthenticated (AI Tutor in AIPanel remains locked)
+  if (isDemo) {
+    return <Workspace />
+  }
+
+  // All user-created lectures require authenticated session
+  return (
+    <ProtectedRoute>
+      <Workspace />
+    </ProtectedRoute>
+  )
 }
 
 export default function App() {
+  const initAuth = useAuthStore(s => s.initAuth)
+  const checkSystemStatus = useRateLimitStore(s => s.checkSystemStatus)
+
+  useEffect(() => {
+    void initAuth()
+    void checkSystemStatus()
+  }, [initAuth, checkSystemStatus])
+
   return (
     <AppErrorBoundary>
       <BrowserRouter>
@@ -71,21 +90,74 @@ export default function App() {
             >
               Skip to main content
             </a>
+            <RateLimitBanner />
             <ToastContainer />
             <AuthModalBridge />
             <Suspense fallback={<RouteFallback />}>
               <Routes>
                 <Route path="/" element={<LandingRouteWrapper />} />
-                <Route path="/pricing" element={<PricingRouteWrapper />} />
-                <Route path="/billing" element={<BillingPage />} />
-                <Route path="/usage" element={<UsagePage />} />
-                <Route path="/app" element={<UploadPage />} />
-                <Route path="/courses" element={<CoursesPage />} />
+                <Route path="/login" element={<AuthPage defaultMode="login" />} />
+                <Route path="/signup" element={<AuthPage defaultMode="signup" />} />
+
+                {/* Soft-disable billing & pricing when payments are off */}
+                <Route
+                  path="/pricing"
+                  element={ENABLE_PAYMENTS ? <PricingRouteWrapper /> : <Navigate to="/app" replace />}
+                />
+                <Route
+                  path="/billing"
+                  element={
+                    ENABLE_PAYMENTS ? (
+                      <ProtectedRoute>
+                        <BillingPage />
+                      </ProtectedRoute>
+                    ) : (
+                      <Navigate to="/app" replace />
+                    )
+                  }
+                />
+
+                {/* Protected routes */}
+                <Route
+                  path="/app"
+                  element={
+                    <ProtectedRoute>
+                      <UploadPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/courses"
+                  element={
+                    <ProtectedRoute>
+                      <CoursesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/usage"
+                  element={
+                    <ProtectedRoute>
+                      <UsagePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/process/:taskId"
+                  element={
+                    <ProtectedRoute>
+                      <ProcessingPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Public demo or protected user workspace */}
+                <Route path="/workspace" element={<Navigate to="/app" replace />} />
+                <Route path="/workspace/:lectureId" element={<WorkspaceRouteWrapper />} />
+
                 <Route path="/share/:slug" element={<ShareRedirect />} />
-                <Route path="/process/:taskId" element={<ProcessingPage />} />
-                <Route path="/workspace" element={<Workspace />} />
-                <Route path="/workspace/:lectureId" element={<Workspace />} />
                 <Route path="/print" element={<PrintPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
           </MotionProvider>

@@ -58,7 +58,8 @@ from backend.lecture_db import (
 from backend.lecture_registry import list_lectures, get_lecture
 from ingest.ingest import is_youtube_url, is_gdrive_url, probe_video_metadata
 from backend.estimator import estimate_pipeline
-from backend.auth import get_current_user_optional, get_current_user
+from backend.auth import get_current_user_optional, get_current_user, DEV_USER_ID
+from backend.rate_limit_handler import GeminiCooldownTracker, GeminiDailyQuotaExceededException
 from backend.middleware import DailyCounter
 from backend.timeutil import ensure_utc
 from backend.db.database import get_db
@@ -225,6 +226,22 @@ app = FastAPI(
     redoc_url=None if is_prod else "/redoc",
     openapi_url=None if is_prod else "/openapi.json",
 )
+
+
+@app.exception_handler(GeminiDailyQuotaExceededException)
+async def gemini_daily_quota_handler(request: Request, exc: GeminiDailyQuotaExceededException):
+    return JSONResponse(status_code=exc.status_code, content=exc.detail)
+
+
+@app.get("/system/rate-limit")
+async def get_system_rate_limit():
+    is_down, rem_sec, msg = GeminiCooldownTracker.is_downtime_active()
+    return {
+        "rateLimited": is_down,
+        "limitType": "rpd" if is_down else None,
+        "retryAfterSeconds": rem_sec,
+        "message": msg if is_down else "System operating normally.",
+    }
 
 
 @app.middleware("http")
@@ -472,15 +489,18 @@ async def start_processing(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # ── P1.1: guest abuse cap (before any resource is consumed) ────────────
-    if _is_guest(user):
-        guest_ip = request.client.host if request.client else "unknown"
-        if not _GUEST_LECTURES_DAILY.check_and_increment(guest_ip):
-            raise HTTPException(
-                status_code=429,
-                detail="Free-trial limit reached (3 lectures per day per device). "
-                       "Please sign up to continue.",
-            )
+    # ── RPD Downtime Check: fast-fail if Gemini daily quota is currently exhausted
+    is_down, rem_sec, dmsg = GeminiCooldownTracker.is_downtime_active()
+    if is_down:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "RATE_LIMIT_EXCEEDED",
+                "limitType": "rpd",
+                "retryAfterSeconds": rem_sec,
+                "message": dmsg,
+            },
+        )
 
     # ── Input validation (before any resource is consumed) ─────────────────
     if source_type not in ALLOWED_SOURCE_TYPES:
@@ -497,22 +517,11 @@ async def start_processing(
             raise HTTPException(status_code=400, detail="Invalid Google Drive URL")
 
     # ── Pre-download quota + free-trial enforcement (P2.2) ─────────────────
-    # Check FIRST, then consume resources. The orchestrator's post-download
-    # duration gate stays as a defense-in-depth backstop.
-    # Dev escape hatch: NORAI_DEV_ACCESS=1 skips quota + duration limits for
-    # local development (no paid plan needed to test long lectures).
     probed_sec = None
     if source_type == "youtube" and url:
         probed = probe_video_metadata(url)
         if probed:
             probed_sec = probed["duration_sec"]
-        elif _is_guest(user) and not NORAI_DEV_ACCESS:
-            # BUG-06 fix: if we can't verify duration for a guest, reject rather
-            # than silently bypass the 15-min trial cap.
-            raise HTTPException(
-                status_code=400,
-                detail="Could not verify video duration. Please try again or upload the file directly.",
-            )
     elif source_type == "upload" and duration and duration > 0:
         probed_sec = duration * 60.0
 
@@ -520,33 +529,31 @@ async def start_processing(
         result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
         sub = result.scalar_one_or_none()
         # P0 fix: roll the billing period forward BEFORE comparing usage.
-        # Rollover used to run only on pipeline completion — unreachable once
-        # this gate 429s — which permanently locked expired-period users out.
         if sub is not None and rollover_if_needed(sub):
             await db.commit()
-        quota = sub.monthly_minutes_quota if sub else 15
+        quota = sub.monthly_minutes_quota if sub else 45
         used = sub.used_minutes_this_month if sub else 0
         if used >= quota:
             raise HTTPException(
                 status_code=429,
-                detail=f"Monthly quota of {quota} lecture minutes reached. Please upgrade to Starter or Pro to continue processing.",
+                detail=f"Monthly quota of {quota} lecture minutes reached.",
             )
 
         if probed_sec:
             import math as _math
             needed = _math.ceil(probed_sec / 60.0)
-            free_limit_min = int(os.environ.get("MAX_FREE_DURATION_MIN", "15"))
+            free_limit_min = int(os.environ.get("MAX_FREE_DURATION_MIN", "45"))
             if probed_sec > free_limit_min * 60:
                 raise HTTPException(
                     status_code=429,
                     detail=f"Lecture duration ({probed_sec / 60:.1f} mins) exceeds the free-trial limit "
-                           f"of {free_limit_min} minutes. Please upgrade to Starter or Pro.",
+                           f"of {free_limit_min} minutes.",
                 )
             if used + needed > quota:
                 raise HTTPException(
                     status_code=429,
                     detail=f"This lecture needs ~{needed} of your {quota} monthly minutes "
-                           f"({used} already used). Please upgrade to continue.",
+                           f"({used} already used).",
                 )
 
     task_id = str(uuid.uuid4())
@@ -695,14 +702,6 @@ async def get_lectures(
         except Exception as exc:
             logging.getLogger("norai").warning("DB query failed in get_lectures: %s", exc)
 
-    # 3. In dev mode or when unauthenticated, merge remaining disk registry lectures
-    if user is None or NORAI_DEV_ACCESS:
-        for lec in registry_list:
-            lid = lec.get("lecture_id")
-            if lid and lid not in seen_ids:
-                seen_ids.add(lid)
-                out.append(lec)
-
     # Sort newest first, keeping demos accessible
     return out
 
@@ -799,9 +798,20 @@ async def get_task_status(
     if status.get("status") == "completed" or (status.get("progress") and status["progress"] >= 100):
         return {"stage": "complete", "message": "All done!", "progress": 100}
     if status.get("status") in ("failed", "cancelled"):
+        err_raw = status.get("error_message") or ""
+        is_down, rem_sec, dmsg = GeminiCooldownTracker.is_downtime_active()
+        if "DAILY_QUOTA" in err_raw or "RATE_LIMIT" in err_raw or is_down:
+            return {
+                "stage": "error",
+                "error": "RATE_LIMIT_EXCEEDED",
+                "limitType": "rpd",
+                "retryAfterSeconds": rem_sec,
+                "message": dmsg or "Daily system capacity reached. Free-tier quota resets at midnight Pacific Time.",
+                "progress": status.get("progress") or 0,
+            }
         return {
             "stage": "error",
-            "message": _sanitize_pipeline_error(status.get("error_message")) or "Pipeline failed.",
+            "message": _sanitize_pipeline_error(err_raw) or "Pipeline failed.",
             "progress": status.get("progress") or 0,
         }
     return {

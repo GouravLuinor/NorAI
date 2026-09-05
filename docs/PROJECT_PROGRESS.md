@@ -37,7 +37,10 @@ Video (YouTube / upload / Drive)
 - Transcription: **`NORAI_TRANSCRIPTION_BACKEND = "gemini"`** with 18-minute parallel chunking (`gemini-3.1-flash-lite`), yielding 9.2x speedup (53s for 71m lecture vs 498s CPU) with 0% server CPU. Optional local fallback via `NORAI_TRANSCRIPTION_BACKEND = "whisper"`.
 - Embeddings: `gemini-embedding-2` (768 dims) via custom Chroma embedding fn in `tutor/embedding.py` (`tutor/retrieval_config.py`). No `task_type=` arg; instructions go in the prompt.
 - Chroma store: `outputs/tutor/chroma` (override `NORAI_CHROMA_DIR`).
-- Free-tier ceiling: **15 RPM / 500 RPD** — pipeline consolidated from ~128 → ~35 LLM calls per lecture.
+- Free-tier ceiling: **15 RPM / 500 RPD** — pipeline consolidated from ~128 → ~35 LLM calls per lecture. Transient 15 RPM spikes are silently retried by internal exponential backoff; 500 RPD daily quota exhaustion fast-fails with structured 429 (`limit_type: rpd`, `retry_after_seconds`) and triggers global UI countdown banner to Midnight US Pacific Time.
+- Trial quota: **45 minutes** default free trial processing credit (increased from 15 min).
+- Authentication: **Mandatory user auth** across all routes and API endpoints. Guest mode and `X-Guest-Id` headers removed. Public read-only preview is preserved for 3 pre-loaded demo lectures (`DEMO_LECTURE_IDS`), with interactive AI Tutor locked behind sign-up.
+- Monetization: **Soft-disabled payments** non-destructively via `ENABLE_PAYMENTS` / `VITE_ENABLE_PAYMENTS` flags. UI entry points (Pricing links, Upgrade buttons) hidden and routes redirected.
 
 ## Output layout
 

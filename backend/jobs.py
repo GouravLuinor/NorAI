@@ -441,6 +441,24 @@ def _run_job(lecture_id: str):
 
 
 def _handle_failure(lecture_id: str, exc: Exception, file_path: str | None = None):
+    from backend.rate_limit_handler import (
+        GeminiCooldownTracker,
+        GeminiDailyQuotaExceededException,
+        is_daily_quota_exhausted,
+    )
+    if isinstance(exc, GeminiDailyQuotaExceededException) or is_daily_quota_exhausted(exc):
+        GeminiCooldownTracker.record_daily_exhaustion()
+        msg = "DAILY_QUOTA_EXHAUSTED: Free-tier daily limit reached. Service resumes at midnight Pacific Time."
+        update_job_progress(lecture_id, "error", msg, 0.0)
+        _set_status(lecture_id, "failed", error_message=msg)
+        logger.error("Pipeline %s aborted due to Gemini daily quota limit: %s", lecture_id, exc)
+        if file_path:
+            try:
+                Path(file_path).unlink(missing_ok=True)
+            except Exception as e:
+                logger.warning("Failed to delete upload %s: %s", file_path, e)
+        return
+
     # P2.1: validation errors can never succeed on retry — fail immediately
     # instead of burning PIPELINE_MAX_ATTEMPTS full paid re-runs.
     if isinstance(exc, TerminalPipelineError):

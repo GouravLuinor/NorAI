@@ -8,10 +8,10 @@ import { Dialog } from '../ui/Dialog'
 import { FOCUS_RING } from '../ui/shared'
 
 interface AuthModalProps {
-  onContinueAsGuest?: () => void
+  onSuccess?: () => void
 }
 
-export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
+export function AuthModal({ onSuccess }: AuthModalProps) {
   const { isAuthModalOpen, authModalTab, closeAuthModal } = useAuthStore()
   const [tab, setTab] = useState<'login' | 'signup'>(authModalTab)
   const [email, setEmail] = useState('')
@@ -43,13 +43,17 @@ export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
         if (signUpError) throw signUpError
         if (!data.session) {
           setInfo('Check your inbox — we sent a confirmation link to confirm your account.')
+        } else {
+          closeAuthModal()
+          onSuccess?.()
         }
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
         if (signInError) throw signInError
+        closeAuthModal()
+        onSuccess?.()
       }
     } catch (err: unknown) {
-      // P4.3: raw Supabase messages read like stack traces — map to friendly copy.
       setError(friendlyError(err) || 'Failed to authenticate. Please check your credentials.')
     } finally {
       setLoading(false)
@@ -69,14 +73,6 @@ export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
       setError(friendlyError(err) || 'Google sign-in is not configured yet.')
       setLoading(false)
     }
-  }
-
-  const handleGuestTrial = async () => {
-    // Device-scoped guest identity is automatic (X-Guest-Id header attached to
-    // every request), so no Supabase anonymous sign-in is needed here.
-    setError('')
-    closeAuthModal()
-    onContinueAsGuest?.()
   }
 
   return (
@@ -106,7 +102,9 @@ export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
             {tab === 'login' ? 'Welcome Back' : 'Create Your Account'}
           </h2>
           <p className="text-12 text-nt2 mt-1 font-sans">
-            {tab === 'login' ? 'Sign in to access your saved lectures & tutor threads' : 'Turn lecture videos into study notes & AI tutor'}
+            {tab === 'login'
+              ? 'Sign in to access your saved lectures & tutor threads'
+              : 'Sign up to get 45 minutes free lecture processing & Nora AI Tutor'}
           </p>
         </div>
 
@@ -211,7 +209,7 @@ export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
               <span>Authenticating...</span>
             ) : (
               <>
-                <span>{tab === 'login' ? 'Sign In' : 'Create Free Account'}</span>
+                <span>{tab === 'login' ? 'Sign In' : 'Create Free Account (45m Quota)'}</span>
                 <ArrowRight size={15} />
               </>
             )}
@@ -228,7 +226,7 @@ export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
           </span>
         </div>
 
-        {/* Social Auth & Guest */}
+        {/* Social Auth */}
         <div className="space-y-2">
           <button
             onClick={handleGoogleAuth}
@@ -254,14 +252,6 @@ export function AuthModal({ onContinueAsGuest }: AuthModalProps) {
               />
             </svg>
             <span>Continue with Google</span>
-          </button>
-
-          <button
-            onClick={handleGuestTrial}
-            disabled={loading}
-            className={`w-full py-2 px-4 text-10 font-medium font-mono text-nt3 hover:text-nt transition-colors text-center cursor-pointer uppercase tracking-wider disabled:opacity-50 disabled:pointer-events-none active:translate-y-[1px] ${FOCUS_RING}`}
-          >
-            Continue as Guest (1 Video Free Trial)
           </button>
         </div>
       </motion.div>

@@ -102,7 +102,7 @@ async def _effective_persona_instructions(
 async def _assert_shared_or_404(
     lecture_id: str,
     db: AsyncSession,
-    require_tutor: bool,
+    require_tutor: bool = False,
 ) -> None:
     """404 unless a valid (non-expired) share link grants access to lecture_id.
 
@@ -144,6 +144,12 @@ async def ensure_lecture_access(
     accessible without requiring authentication or share links.
     """
     if lecture_id in (None, "", "default") or lecture_id in DEMO_LECTURE_IDS:
+        if require_tutor and (user is None or _is_guest(user)):
+            if not (
+                os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
+                or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
+            ):
+                raise HTTPException(status_code=401, detail="Authentication required to use AI Tutor")
         return
     if (
         os.environ.get("NORAI_DEV_ACCESS", "0") == "1"

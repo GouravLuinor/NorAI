@@ -1,4 +1,5 @@
 import { authHeaders } from './authHeaders'
+import { useRateLimitStore } from '../stores/useRateLimitStore'
 import type { paths } from '../types/api'
 
 /**
@@ -45,21 +46,37 @@ export type ApiJson<P extends string, M extends ApiMethod> = P extends ApiPath
 
 interface JsonLike {
   detail?: unknown
+  error?: unknown
+  limit_type?: string
+  retry_after_seconds?: number
+  message?: string
 }
 
 async function parseError(res: Response): Promise<string> {
-  // P1: friendly copy for rate-limited requests (backend middleware 429s).
-  if (res.status === 429) {
-    return "You're doing that a bit too fast — take a short breath and try again."
-  }
+  let body: JsonLike | null = null
   try {
-    const body = (await res.json()) as JsonLike
+    body = (await res.json()) as JsonLike
+  } catch {
+    // not JSON
+  }
+
+  // Handle Gemini daily quota exhaustion (RPD)
+  if (res.status === 429) {
+    if (body?.limit_type === 'rpd' || body?.error === 'RATE_LIMIT_EXCEEDED') {
+      const retrySecs = body.retry_after_seconds || 3600
+      useRateLimitStore.getState().setDailyLimit(retrySecs, typeof body.detail === 'string' ? body.detail : undefined)
+      return typeof body.detail === 'string'
+        ? body.detail
+        : 'Google AI Studio daily quota reached (500 RPD). Service resets at Pacific Midnight.'
+    }
     const detail = body?.detail
     if (typeof detail === 'string') return detail
-    if (Array.isArray(detail)) return JSON.stringify(detail)
-  } catch {
-    // not JSON — fall through
+    return "You're doing that a bit too fast — take a short breath and try again."
   }
+
+  const detail = body?.detail
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) return JSON.stringify(detail)
   return `Request failed: ${res.status}`
 }
 

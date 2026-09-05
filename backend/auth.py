@@ -7,6 +7,7 @@ and ensures a corresponding User and Subscription record exist in the database.
 """
 
 import os
+import logging
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv
 import jwt as pyjwt
@@ -123,7 +124,7 @@ async def get_or_create_user_from_token(payload: Dict[str, Any], db: AsyncSessio
             user_id=user_id,
             status="trial",
             plan_tier="free",
-            monthly_minutes_quota=15,  # 15 mins free trial
+            monthly_minutes_quota=45,  # 45 mins free trial
             used_minutes_this_month=0,
         )
         db.add(subscription)
@@ -154,7 +155,7 @@ async def get_or_create_user_from_token(payload: Dict[str, Any], db: AsyncSessio
                 user_id=user.id,
                 status="trial",
                 plan_tier="free",
-                monthly_minutes_quota=15,
+                monthly_minutes_quota=45,
                 used_minutes_this_month=0,
             )
         )
@@ -176,137 +177,56 @@ def is_dev_access() -> bool:
 
 async def get_or_create_dev_user(db: AsyncSession) -> User:
     """Find or create the default local development user."""
-    result = await db.execute(select(User).where(User.id == DEV_USER_ID))
-    user = result.scalar_one_or_none()
-    if not user:
-        user = User(
-            id=DEV_USER_ID,
-            email="dev@norai.local",
-            full_name="Local Dev User",
-            is_anonymous=False,
-        )
-        db.add(user)
-        db.add(
-            Subscription(
-                user_id=DEV_USER_ID,
-                status="active",
-                plan_tier="pro",
-                monthly_minutes_quota=999999,
-                used_minutes_this_month=0,
+    try:
+        result = await db.execute(select(User).where(User.id == DEV_USER_ID))
+        user = result.scalar_one_or_none()
+        if not user:
+            user = User(
+                id=DEV_USER_ID,
+                email="dev@norai.local",
+                full_name="Local Dev User",
+                is_anonymous=False,
             )
-        )
-        try:
-            await db.flush()
-        except IntegrityError:
-            await db.rollback()
-            result = await db.execute(select(User).where(User.id == DEV_USER_ID))
-            user = result.scalar_one_or_none()
-    return user
-
-
-# Device-scoped guest identities (P8.x): a frontend-generated persistent
-# X-Guest-Id lets unauthenticated visitors process lectures under the free-trial
-# quota without any Supabase token. The id is client-minted, so it only gates
-# the 15-minute trial tier — real accounts (Bearer token) always win over it.
-_GUEST_HEADER = "X-Guest-Id"
-_GUEST_ID_MAX_LEN = 48  # keeps derived User.id within String(64)
-
-
-def guest_id_from_request(request: Optional[Request]) -> Optional[str]:
-    """Return a sanitized X-Guest-Id header value, or None."""
-    if request is None:
-        return None
-    guest_id = request.headers.get(_GUEST_HEADER, "").strip()
-    if not guest_id:
-        return None
-    if len(guest_id) > _GUEST_ID_MAX_LEN:
-        guest_id = guest_id[:_GUEST_ID_MAX_LEN]
-    return guest_id
-
-
-async def get_or_create_guest_user(db: AsyncSession, guest_id: str) -> User:
-    """Find or create an anonymous device-scoped User + free-trial Subscription."""
-    user_id = f"guest-{guest_id}"
-
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
-
-    if not user:
-        user = User(
-            id=user_id,
-            email=f"{guest_id}@guest.norai",
-            full_name="Guest",
-            is_anonymous=True,
-        )
-        db.add(user)
-        db.add(
-            Subscription(
-                user_id=user_id,
-                status="trial",
-                plan_tier="free",
-                monthly_minutes_quota=15,  # 15 mins free trial
-                used_minutes_this_month=0,
-            )
-        )
-        try:
-            await db.flush()
-        except IntegrityError:
-            await db.rollback()
-            result = await db.execute(select(User).where(User.id == user_id))
-            user = result.scalar_one_or_none()
-            if user is None:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Unable to resolve guest account",
+            db.add(user)
+            db.add(
+                Subscription(
+                    user_id=DEV_USER_ID,
+                    status="active",
+                    plan_tier="pro",
+                    monthly_minutes_quota=999999,
+                    used_minutes_this_month=0,
                 )
-
-    # Ensure the resolved guest always has a Subscription row
-    sub_result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
-    if not sub_result.scalar_one_or_none():
-        db.add(
-            Subscription(
-                user_id=user.id,
-                status="trial",
-                plan_tier="free",
-                monthly_minutes_quota=15,
-                used_minutes_this_month=0,
             )
-        )
-        await db.flush()
-
-    return user
+            try:
+                await db.flush()
+            except IntegrityError:
+                await db.rollback()
+                result = await db.execute(select(User).where(User.id == DEV_USER_ID))
+                user = result.scalar_one_or_none()
+        return user or User(id=DEV_USER_ID, email="dev@norai.local", is_anonymous=False)
+    except Exception as exc:
+        logging.getLogger("norai").warning("Could not persist dev user to DB, using in-memory user: %s", exc)
+        return User(id=DEV_USER_ID, email="dev@norai.local", is_anonymous=False)
 
 
 async def get_current_user_optional(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-    request: Request = None,
     db: AsyncSession = Depends(get_db),
 ) -> Optional[User]:
     """
     Optional dependency: returns User if a valid Bearer token is provided.
-
-    Otherwise, when NOT in local dev mode, falls back to a device-scoped guest
-    user derived from the `X-Guest-Id` header (so unauthenticated visitors can
-    process lectures under the free-trial quota). Returns None only when neither
-    a valid token nor a guest id is present.
+    In local dev mode (NORAI_DEV_ACCESS=1 or NORAI_DEV_INSECURE_AUTH=1),
+    falls back to the dev user. Otherwise returns None.
     """
     if credentials and credentials.credentials:
+        if is_dev_access() and credentials.credentials in ("dev", "dev-token", "dev_token"):
+            return await get_or_create_dev_user(db)
         payload = decode_supabase_jwt(credentials.credentials)
         if payload:
             try:
                 return await get_or_create_user_from_token(payload, db)
             except IntegrityError:
-                # P2.4: a genuine insert race — fall back to anonymous rather
-                # than failing the request. ANY other DB error must propagate
-                # as a 500 instead of silently degrading the caller to
-                # anonymous (which surfaced as misleading 401s downstream).
                 return None
-
-    # Local dev keeps its automatic dev-user escape hatch instead of guests.
-    if not is_dev_access():
-        guest_id = guest_id_from_request(request)
-        if guest_id:
-            return await get_or_create_guest_user(db, guest_id)
 
     return None
 
@@ -320,12 +240,12 @@ async def get_current_user(
     In local dev mode (NORAI_DEV_ACCESS=1 or NORAI_DEV_INSECURE_AUTH=1), falls back
     to an automatic local dev user so localhost works seamlessly without login.
     """
-    if not user:
+    if not user or (hasattr(user, "is_anonymous") and user.is_anonymous) or str(getattr(user, "id", "")).startswith("guest-"):
         if is_dev_access():
             return await get_or_create_dev_user(db)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required. Please provide a valid Bearer token.",
+            detail="Authentication required. Please sign in or provide a valid Bearer token.",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user

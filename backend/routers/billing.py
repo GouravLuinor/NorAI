@@ -6,6 +6,7 @@ so paths are unchanged.
 """
 
 import os
+import logging
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -18,6 +19,7 @@ from backend.db.database import get_db
 from backend.db.models import Subscription, UsageLog, User
 from backend.usage import rollover_if_needed
 from config import (
+    ENABLE_PAYMENTS,
     LEMONSQUEEZY_CHECKOUT_STARTER_URL,
     LEMONSQUEEZY_CHECKOUT_PRO_URL,
     LEMONSQUEEZY_CUSTOMER_PORTAL_URL,
@@ -28,31 +30,23 @@ router = APIRouter()
 
 @router.get("/quota")
 async def get_user_quota(
-    user: Optional[User] = Depends(get_current_user_optional),
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Return user's active plan tier and remaining monthly lecture minutes."""
-    if not user:
-        # Default anonymous trial quota
-        return {
-            "plan_tier": "free",
-            "subscription_status": "trial",
-            "monthly_minutes_quota": 15,
-            "used_minutes_this_month": 0,
-            "remaining_minutes": 15,
-            "is_anonymous": True,
-        }
+    sub = None
+    try:
+        result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+        sub = result.scalar_one_or_none()
 
-    # Fetch user subscription
-    result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
-    sub = result.scalar_one_or_none()
+        # P0 fix: roll the billing period forward BEFORE reporting usage, else an
+        # expired period shows a permanently exhausted quota in the UI.
+        if sub is not None and rollover_if_needed(sub):
+            await db.commit()
+    except Exception as exc:
+        logging.getLogger("norai").warning("DB lookup failed in get_user_quota: %s", exc)
 
-    # P0 fix: roll the billing period forward BEFORE reporting usage, else an
-    # expired period shows a permanently exhausted quota in the UI.
-    if sub is not None and rollover_if_needed(sub):
-        await db.commit()
-
-    quota = sub.monthly_minutes_quota if sub else 15
+    quota = sub.monthly_minutes_quota if sub else 45
     used = sub.used_minutes_this_month if sub else 0
     remaining = max(0, quota - used)
     plan_tier = sub.plan_tier if sub else "free"
@@ -78,24 +72,35 @@ async def get_billing(
     """Return the user's plan, usage, and Lemon Squeezy checkout/manage links.
 
     Checkout / portal URLs come from env (config.py) — they are null until the
-    Lemon Squeezy store exists. `manage_url` is only offered to users who have
-    an active Lemon Squeezy subscription id.
+    Lemon Squeezy store exists or when ENABLE_PAYMENTS is False. `manage_url` is
+    only offered to users who have an active Lemon Squeezy subscription id.
     """
-    result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
-    sub = result.scalar_one_or_none()
+    sub = None
+    try:
+        result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+        sub = result.scalar_one_or_none()
+    except Exception as exc:
+        logging.getLogger("norai").warning("DB lookup failed in get_billing: %s", exc)
 
     plan_tier = sub.plan_tier if sub else "free"
     sub_status = sub.status if sub else "trial"
-    quota = sub.monthly_minutes_quota if sub else 15
+    quota = sub.monthly_minutes_quota if sub else 45
     used = sub.used_minutes_this_month if sub else 0
     remaining = max(0, quota - used)
     ls_sub_id = (sub.lemon_squeezy_subscription_id if sub else None) or None
 
-    checkout_urls = {
-        "starter": LEMONSQUEEZY_CHECKOUT_STARTER_URL or None,
-        "pro": LEMONSQUEEZY_CHECKOUT_PRO_URL or None,
-    }
-    manage_url = LEMONSQUEEZY_CUSTOMER_PORTAL_URL or None
+    if ENABLE_PAYMENTS:
+        checkout_urls = {
+            "starter": LEMONSQUEEZY_CHECKOUT_STARTER_URL or None,
+            "pro": LEMONSQUEEZY_CHECKOUT_PRO_URL or None,
+        }
+        manage_url = LEMONSQUEEZY_CUSTOMER_PORTAL_URL or None
+    else:
+        checkout_urls = {
+            "starter": None,
+            "pro": None,
+        }
+        manage_url = None
 
     return {
         "user_id": user.id,
@@ -103,6 +108,7 @@ async def get_billing(
         "is_anonymous": user.is_anonymous,
         "plan_tier": plan_tier,
         "subscription_status": sub_status,
+        "payments_enabled": ENABLE_PAYMENTS,
         "monthly_minutes_quota": quota,
         "used_minutes_this_month": used,
         "remaining_minutes": remaining,

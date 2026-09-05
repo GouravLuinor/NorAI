@@ -3,8 +3,8 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { useThreadStore } from '../../stores/useThreadStore'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { useAuthStore } from '../../stores/useAuthStore'
-import { PanelLeftClose, Trash2, Play } from 'lucide-react'
 import { useToastStore } from '../../stores/useToastStore'
+import { PanelLeftClose, Trash2, Play, Sparkles, LogOut } from 'lucide-react'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { Button } from '../ui/Button'
 import { IconButton } from '../ui/IconButton'
@@ -14,6 +14,7 @@ import { formatTimestamp } from '../../lib/video'
 import { useNavigate } from 'react-router-dom'
 import { Select } from '../ui/Select'
 import type { QuotaInfo } from '../../stores/useAuthStore'
+import { ENABLE_PAYMENTS, DEFAULT_TRIAL_QUOTA_MINUTES, DEMO_LECTURES_CONFIG } from '../../config/features'
 
 
 const planLabel = (tier?: string) =>
@@ -67,6 +68,9 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
   const seekToChapter    = useVideoStore(s => s.seekToChapter)
 
   // Quota badge (P2.4): live data from GET /quota.
+  const user           = useAuthStore(s => s.user)
+  const logout         = useAuthStore(s => s.logout)
+  const openAuthModal  = useAuthStore(s => s.openAuthModal)
   const quota          = useAuthStore(s => s.quota)
   const refreshQuota   = useAuthStore(s => s.refreshQuota)
   const authToken      = useAuthStore(s => s.token)
@@ -130,10 +134,16 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
         {/* Header */}
         <div className="p-4 pb-3">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-6 h-6 rounded-sm bg-npf flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 tracking-tight fold-marks relative">
-              N
-            </div>
-            <span className="font-display text-13 font-medium text-nt tracking-tight">NorAI</span>
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 hover:opacity-85 transition-opacity cursor-pointer text-left"
+              title="Return to NorAI Home"
+            >
+              <div className="w-6 h-6 rounded-sm bg-npf flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 tracking-tight fold-marks relative">
+                N
+              </div>
+              <span className="font-display text-13 font-medium text-nt tracking-tight">NorAI</span>
+            </button>
             <IconButton
               label="Collapse sidebar"
               onClick={handleCollapse}
@@ -162,7 +172,11 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
                 setActiveLecture(newId)
                 navigate(`/workspace/${newId}`)
               }}
-              options={lectures.map((l) => ({ value: l.lecture_id, label: l.title }))}
+              options={
+                !user
+                  ? DEMO_LECTURES_CONFIG.map((d) => ({ value: d.id, label: d.title }))
+                  : lectures.map((l) => ({ value: l.lecture_id, label: l.title }))
+              }
             />
           </div>
           {/* ──────────────────────────────────────────────────── */}
@@ -263,56 +277,91 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
 
         <div className="h-px bg-bdr mx-3.5" />
 
-        {/* User Quota Badge */}
+        {/* User Quota Badge or Guest Demo Notice */}
         <div className="px-3.5 py-2">
-          <div className="p-2 rounded-lg bg-ns2 border border-bdr text-11 font-sans">
-            <div className="flex items-center justify-between mb-1">
-              <span className="font-semibold text-nt text-10 uppercase tracking-wider">
-                {planLabel(quota?.plan_tier)}
-              </span>
+          {!user ? (
+            <div className="p-2.5 rounded-lg bg-npb/40 border border-npbr text-11 font-sans">
+              <div className="flex items-center gap-1.5 mb-1 text-np font-semibold text-10 uppercase tracking-wider">
+                <Sparkles size={12} />
+                <span>Demo Workspace</span>
+              </div>
+              <p className="text-2xs text-nt3 mb-2.5 leading-relaxed font-sans">
+                You are previewing with read-only guest access.
+              </p>
               <button
-                onClick={() => navigate('/billing')}
-                className="text-10 text-np font-medium hover:underline cursor-pointer"
+                onClick={() => openAuthModal('signup')}
+                className="w-full py-1.5 px-2 rounded bg-np hover:bg-nph text-npfg font-display text-10 uppercase tracking-wider font-semibold shadow-bp transition-colors cursor-pointer text-center"
               >
-                {quota && quota.plan_tier !== 'free' ? 'Manage' : 'Upgrade'}
+                Sign Up to Unlock AI Tutor
               </button>
             </div>
-            <div
-              className="w-full bg-ns4 h-1.5 rounded-full overflow-hidden mb-1"
-              role="progressbar"
-              aria-valuenow={quotaUsed(quota)}
-              aria-valuemin={0}
-              aria-valuemax={Math.max(1, quota?.monthly_minutes_quota ?? 1)}
-              aria-label="Monthly lecture minutes used"
-            >
+          ) : (
+            <div className="p-2 rounded-lg bg-ns2 border border-bdr text-11 font-sans">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-semibold text-nt text-10 uppercase tracking-wider">
+                  {planLabel(quota?.plan_tier)}
+                </span>
+                {ENABLE_PAYMENTS && (
+                  <button
+                    onClick={() => navigate('/billing')}
+                    className="text-10 text-np font-medium hover:underline cursor-pointer"
+                  >
+                    {quota && quota.plan_tier !== 'free' ? 'Manage' : 'Upgrade'}
+                  </button>
+                )}
+              </div>
               <div
-                className="bg-np h-full rounded-full transition-all duration-200"
-                style={{ width: quotaPct(quota) }}
-              />
-            </div>
-            <div className="text-10 text-nt3 flex justify-between tabular-nums">
-              <span>
-                Used: {quota?.used_minutes_this_month ?? 0} / {quota?.monthly_minutes_quota ?? 15} mins
-              </span>
-              {quota && quota.plan_tier === 'free' && (
-                <span className="text-nt4">Free trial</span>
-              )}
-            </div>
-            <div className="mt-2 flex justify-between text-10">
-              <button
-                onClick={() => navigate('/courses')}
-                className="text-np font-medium hover:underline cursor-pointer"
+                className="w-full bg-ns4 h-1.5 rounded-full overflow-hidden mb-1"
+                role="progressbar"
+                aria-valuenow={quotaUsed(quota)}
+                aria-valuemin={0}
+                aria-valuemax={Math.max(1, quota?.monthly_minutes_quota ?? DEFAULT_TRIAL_QUOTA_MINUTES)}
+                aria-label="Monthly lecture minutes used"
               >
-                Courses
-              </button>
-              <button
-                onClick={() => navigate('/usage')}
-                className="text-np font-medium hover:underline cursor-pointer"
-              >
-                Usage &amp; cost
-              </button>
+                <div
+                  className="bg-np h-full rounded-full transition-all duration-200"
+                  style={{ width: quotaPct(quota) }}
+                />
+              </div>
+              <div className="text-10 text-nt3 flex justify-between tabular-nums">
+                <span>
+                  Used: {quota?.used_minutes_this_month ?? 0} / {quota?.monthly_minutes_quota ?? DEFAULT_TRIAL_QUOTA_MINUTES} mins
+                </span>
+                {quota && quota.plan_tier === 'free' && (
+                  <span className="text-nt4">Free trial</span>
+                )}
+              </div>
+              <div className="mt-2 flex justify-between text-10">
+                <button
+                  onClick={() => navigate('/courses')}
+                  className="text-np font-medium hover:underline cursor-pointer"
+                >
+                  Courses
+                </button>
+                <button
+                  onClick={() => navigate('/usage')}
+                  className="text-np font-medium hover:underline cursor-pointer"
+                >
+                  Usage &amp; cost
+                </button>
+              </div>
+
+              <div className="mt-2.5 pt-2 border-t border-bdr flex items-center justify-between text-10">
+                <span className="truncate max-w-[125px] font-mono text-nt3" title={user.email}>{user.email}</span>
+                <button
+                  onClick={async () => {
+                    await logout()
+                    navigate('/')
+                  }}
+                  className={`text-nt3 hover:text-nr flex items-center gap-1 font-medium transition-colors cursor-pointer ${FOCUS_RING}`}
+                  title="Sign out of NorAI"
+                >
+                  <LogOut size={11} />
+                  <span>Sign out</span>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Theme toggle */}
@@ -332,6 +381,22 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
         </div>
 
       </div>
+
+      {/* Collapsed rail bottom actions (P4.3 accessibility) */}
+      {sidebarCollapsed && user && (
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-auto">
+          <IconButton
+            label={`Sign out (${user.email})`}
+            onClick={async () => {
+              await logout()
+              navigate('/')
+            }}
+            className="w-8 h-8 rounded-sm text-nt3 hover:text-nr hover:bg-ns2"
+          >
+            <LogOut size={14} strokeWidth={1.5} />
+          </IconButton>
+        </div>
+      )}
     </div>
   )
 }
