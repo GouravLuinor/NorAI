@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, useNavigate, useParams, Navigate, useLoca
 import { ToastContainer } from './components/ui/ToastContainer'
 import { AppErrorBoundary } from './components/AppErrorBoundary'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
-import { RateLimitBanner } from './components/ui/RateLimitBanner'
 import { DEMO_LECTURE_IDS } from './config/features'
 import { useAuthStore } from './stores/useAuthStore'
 import { useRateLimitStore } from './stores/useRateLimitStore'
@@ -15,6 +14,8 @@ const MotionProvider = lazy(() =>
 const AuthModal = lazy(() =>
   import('./components/auth/AuthModal').then(m => ({ default: m.AuthModal })),
 )
+// Uses framer-motion; only fetched once a daily limit is actually hit (P3.4).
+const RateLimitBanner = lazy(() => import('./components/ui/RateLimitBanner').then(m => ({ default: m.RateLimitBanner })))
 const AuthPage = lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AuthPage })))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })))
 const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })))
@@ -81,6 +82,7 @@ function WorkspaceRouteWrapper() {
 export default function App() {
   const initAuth = useAuthStore(s => s.initAuth)
   const checkSystemStatus = useRateLimitStore(s => s.checkSystemStatus)
+  const isDailyLimited = useRateLimitStore(s => s.isDailyLimited)
 
   useEffect(() => {
     void initAuth()
@@ -98,7 +100,11 @@ export default function App() {
             >
               Skip to main content
             </a>
-            <RateLimitBanner />
+            {isDailyLimited && (
+              <Suspense fallback={null}>
+                <RateLimitBanner />
+              </Suspense>
+            )}
             <ToastContainer />
             <AuthModalBridge />
             <PasswordRecoveryRedirect />

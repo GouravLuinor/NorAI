@@ -1,589 +1,398 @@
-import { useState, type KeyboardEvent } from 'react'
-import { motion } from 'framer-motion'
-import { Sparkles, ArrowRight, Play, Check, BookOpen, Layers, FileText, Brain, Video, ShieldCheck, Zap, ChevronRight, GitFork, Menu, X, LogOut } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { ArrowRight, ArrowUpRight, LogOut, Menu, X } from 'lucide-react'
 import { useAuthStore } from '../stores/useAuthStore'
 import { FOCUS_RING, LINK_RING } from '../components/ui/shared'
-import { Dialog } from '../components/ui/Dialog'
-import { DEMO_LECTURES_CONFIG } from '../config/features'
+import { DEMO_LECTURES_CONFIG, PRIMARY_DEMO_LECTURE_ID } from '../config/features'
+import { PlanSheet } from '../components/billing/PlanSheet'
+import { FaqList } from '../components/marketing/FaqList'
+import { PRICING_FAQ, PRODUCT_FAQ } from '../content/faq'
+import { usePlans } from '../lib/plans'
+import { usePageMeta } from '../lib/usePageMeta'
 
 interface LandingPageProps {
   onStartWorkspace: () => void
 }
 
-const TABS = [
-  { id: 'notes', label: '01 Study Notes' },
-  { id: 'tutor', label: '02 AI Tutor (RAG)' },
-  { id: 'quiz', label: '03 Assessments' },
-  { id: 'mindmap', label: '04 Mind Map' },
+/** What one processed lecture contains — a ruled list, not a card grid. */
+const OUTPUTS = [
+  {
+    name: 'Study notes',
+    body: 'Chapter-wise notes in the order your professor taught, with formulas typeset properly and the slides that mattered pulled out of the video.',
+  },
+  {
+    name: 'Revision sheet',
+    body: 'The night-before version: key takeaways and definitions per chapter, short enough to read on the bus.',
+  },
+  {
+    name: 'Quiz',
+    body: 'MCQ and true/false questions at three difficulty levels, each linked back to the notes so you can see why an answer is right.',
+  },
+  {
+    name: 'Flashcards',
+    body: 'A deck for every lecture. Rate each card and spaced-repetition scheduling brings back the ones you keep missing.',
+  },
+  {
+    name: 'Tutor',
+    body: 'Ask doubts in plain words. Nora answers only from your lecture and tells you which part of the video it is quoting.',
+  },
+  {
+    name: 'Mind map',
+    body: 'Each chapter as a concept tree, for when you need to see how the topics connect before an exam.',
+  },
 ] as const
-type TabId = (typeof TABS)[number]['id']
+
+const STEPS = [
+  {
+    title: 'Paste a YouTube link or upload the recording',
+    body: 'MP4, MOV, MKV, AVI or WebM. NPTEL, a recorded class, a coaching video: anything with someone teaching.',
+  },
+  {
+    title: 'Check the estimate, then let it run',
+    body: 'You see how many minutes it will use before anything starts. Close the tab if you like; it keeps working.',
+  },
+  {
+    title: 'Study from it',
+    body: 'Notes, revision sheet, quiz, flashcards and the tutor open together in one workspace, and stay in your library.',
+  },
+] as const
+
+const HOME_FAQ = [...PRODUCT_FAQ, PRICING_FAQ[0], PRICING_FAQ[1]]
+
+/** The red margin rule of an Indian ruled notebook; content sits to its right on md+. */
+function Margin({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={`relative mx-auto w-full max-w-6xl px-4 sm:px-6 md:pl-28 ${className}`}>
+      <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-[4.5rem] hidden w-px bg-np/35 md:block" />
+      {children}
+    </div>
+  )
+}
 
 export function LandingPage({ onStartWorkspace }: LandingPageProps) {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
-  const openAuthModal = useAuthStore((s) => s.openAuthModal)
-  const [activeTab, setActiveTab] = useState<TabId>('notes')
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [demoModalOpen, setDemoModalOpen] = useState(false)
+  const { plans, payments_enabled } = usePlans()
+  const [menuOpen, setMenuOpen] = useState(false)
 
-  const handleLaunchLiveWorkspace = () => {
-    if (user) {
-      onStartWorkspace()
-    } else {
-      setDemoModalOpen(true)
-    }
+  usePageMeta({
+    title: 'NorAI — Turn lecture videos into notes, quizzes & an AI tutor',
+    description:
+      'Paste a YouTube lecture or upload a class recording. NorAI writes chapter-wise study notes, a revision sheet, quiz and flashcards, plus a tutor that answers from your lecture. Free to start; passes from ₹149.',
+    path: '/',
+  })
+
+  const start = () => (user ? onStartWorkspace() : navigate('/signup'))
+  const signOut = async () => {
+    setMenuOpen(false)
+    await logout()
+    navigate('/')
   }
 
-  const handleTabKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const ids = TABS.map((t) => t.id)
-    const idx = ids.indexOf(activeTab)
-    let next: TabId | null = null
-    if (e.key === 'ArrowRight') next = ids[(idx + 1) % ids.length]
-    else if (e.key === 'ArrowLeft') next = ids[(idx - 1 + ids.length) % ids.length]
-    else if (e.key === 'Home') next = ids[0]
-    else if (e.key === 'End') next = ids[ids.length - 1]
-    if (next) {
-      e.preventDefault()
-      setActiveTab(next)
-      document.getElementById(`wp-tab-${next}`)?.focus()
-    }
-  }
-
-  const handleCTA = () => {
-    if (!user) {
-      openAuthModal('signup')
-    } else {
-      onStartWorkspace()
-    }
-  }
+  const navLinks = (
+    <>
+      <a href="#how-it-works" className={`hover:text-nt transition-colors ${LINK_RING}`} onClick={() => setMenuOpen(false)}>How it works</a>
+      <a href="#demo" className={`hover:text-nt transition-colors ${LINK_RING}`} onClick={() => setMenuOpen(false)}>Demo</a>
+      <Link to="/pricing" className={`hover:text-nt transition-colors ${LINK_RING}`}>Pricing</Link>
+      <a href="#faq" className={`hover:text-nt transition-colors ${LINK_RING}`} onClick={() => setMenuOpen(false)}>FAQ</a>
+    </>
+  )
 
   return (
-    <div id="main" className="min-h-screen bg-nb text-nt font-sans selection:bg-npb selection:text-npt flex flex-col relative overflow-x-hidden">
-      {/* Blueprint grid background effect */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none opacity-40 z-0"
-        style={{
-          backgroundImage: `linear-gradient(to right, var(--color-grid) 1px, transparent 1px), linear-gradient(to bottom, var(--color-grid) 1px, transparent 1px)`,
-          backgroundSize: '32px 32px'
-        }}
-      />
+    <div id="main" className="min-h-screen bg-nb text-nt font-sans selection:bg-npb selection:text-npt overflow-x-hidden">
+      <header className="sticky top-0 z-40 border-b border-bdr bg-nb/92 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 py-3">
+          <Link to="/" className={`font-serif text-22 tracking-tight text-nt ${LINK_RING}`} aria-label="NorAI home">
+            Nor<span className="text-np">AI</span>
+          </Link>
 
-      {/* Header Bar */}
-      <header className="sticky top-0 z-40 bg-nb/90 backdrop-blur-md border-b border-bdr px-6 py-3.5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-np text-npfg font-serif font-bold text-18 flex items-center justify-center shadow-bp">
-              N
-            </div>
-            <div className="flex flex-col">
-              <span className="font-serif font-bold text-18 tracking-tight text-nt leading-none">NorAI</span>
-              <span className="text-3xs font-mono tracking-wider text-nt3 uppercase">Sketchbook Edition</span>
-            </div>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-6 font-display text-11 uppercase tracking-wider text-nt2 font-medium">
-            <a href="#features" className={`hover:text-nt transition-colors ${LINK_RING}`}>Features</a>
-            <a href="#how-it-works" className={`hover:text-nt transition-colors ${LINK_RING}`}>How It Works</a>
-            <Link to="/pricing" className={`hover:text-nt transition-colors ${LINK_RING}`}>Pricing</Link>
+          <nav aria-label="Main" className="hidden md:flex items-center gap-7 text-13 text-nt2">
+            {navLinks}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {user ? (
-              <div className="flex items-center gap-2">
-                <span className="text-11 text-nt3 font-mono hidden lg:inline max-w-[140px] truncate" title={user.email}>
-                  {user.email}
-                </span>
+              <>
                 <button
-                  onClick={async () => {
-                    await logout()
-                    navigate('/')
-                  }}
-                  className={`text-nt2 hover:text-nr font-display text-11 font-medium uppercase tracking-wider px-2.5 py-1.5 transition-colors cursor-pointer flex items-center gap-1.5 ${FOCUS_RING}`}
-                  title="Sign Out"
+                  onClick={() => void signOut()}
+                  className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-13 text-nt2 hover:text-nrt cursor-pointer ${FOCUS_RING} rounded-md`}
                 >
-                  <LogOut size={13} />
-                  <span>Sign Out</span>
+                  <LogOut size={14} aria-hidden="true" /> Sign out
                 </button>
                 <button
                   onClick={onStartWorkspace}
-                  className={`bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-[background-color,transform] active:translate-y-0.5 ${FOCUS_RING}`}
+                  className={`inline-flex items-center gap-1.5 rounded-md bg-npf px-4 py-2 text-13 font-medium text-npfg hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
                 >
-                  <span>Workspace</span>
-                  <ArrowRight size={13} />
-                </button>
-              </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => openAuthModal('login')}
-                  className={`text-nt2 hover:text-nt font-display text-11 font-medium uppercase tracking-wider px-3 py-1.5 transition-colors cursor-pointer ${FOCUS_RING}`}
-                >
-                  Log In
-                </button>
-                <button
-                  onClick={() => openAuthModal('signup')}
-                  className={`bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider px-4 py-2 rounded-md shadow-bp flex items-center gap-1.5 cursor-pointer transition-[background-color,transform] active:translate-y-0.5 ${FOCUS_RING}`}
-                >
-                  <span>Start Free Trial</span>
+                  Open workspace <ArrowRight size={14} aria-hidden="true" />
                 </button>
               </>
+            ) : (
+              <>
+                <Link to="/login" className={`hidden sm:inline-block px-2.5 py-1.5 text-13 text-nt2 hover:text-nt ${LINK_RING}`}>
+                  Log in
+                </Link>
+                <Link
+                  to="/signup"
+                  className={`inline-flex items-center rounded-md bg-npf px-4 py-2 text-13 font-medium text-npfg hover:bg-npfh active:translate-y-px transition-colors ${FOCUS_RING}`}
+                >
+                  Start free
+                </Link>
+              </>
             )}
-
             <button
-              onClick={() => setMobileOpen((o) => !o)}
-              className={`md:hidden p-2 -mr-1 rounded-md text-nt2 hover:text-nt hover:bg-ns2 transition-colors cursor-pointer ${FOCUS_RING}`}
-              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
-              aria-expanded={mobileOpen}
+              onClick={() => setMenuOpen((o) => !o)}
+              className={`md:hidden -mr-1 rounded-md p-2 text-nt2 hover:bg-ns2 hover:text-nt cursor-pointer ${FOCUS_RING}`}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-nav"
             >
-              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+              {menuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </div>
-
-        {mobileOpen && (
-          <div className="md:hidden bg-ns border-t border-bdr px-6 py-4 flex flex-col gap-3 font-display text-11 uppercase tracking-wider text-nt2 font-medium">
-            <a href="#features" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">Features</a>
-            <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">How It Works</a>
-            <Link to="/pricing" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">Pricing</Link>
-            {user && (
-              <button
-                onClick={async () => {
-                  setMobileOpen(false)
-                  await logout()
-                  navigate('/')
-                }}
-                className="flex items-center gap-2 text-left hover:text-nr text-nt2 transition-colors py-1 cursor-pointer"
-              >
-                <LogOut size={13} />
-                <span>Sign Out ({user.email})</span>
+        {menuOpen && (
+          <nav id="mobile-nav" aria-label="Main" className="md:hidden flex flex-col gap-4 border-t border-bdr bg-ns px-4 py-5 text-15 text-nt2">
+            {navLinks}
+            {user ? (
+              <button onClick={() => void signOut()} className="flex items-center gap-2 text-left text-nt2 hover:text-nrt cursor-pointer">
+                <LogOut size={14} aria-hidden="true" /> Sign out
               </button>
+            ) : (
+              <Link to="/login" className="hover:text-nt">Log in</Link>
             )}
-          </div>
+          </nav>
         )}
       </header>
 
-      {/* Hero Section */}
-      <section className="relative z-10 pt-16 pb-20 px-6 max-w-6xl mx-auto text-center">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-npb border border-npbr text-npt font-mono text-11 font-medium mb-6"
-        >
-          <Sparkles size={12} className="text-np" />
-          <span>LECTURE VIDEO → EXAM-READY STUDY SUITE</span>
-        </motion.div>
-
-        <h1 className="font-serif text-4xl sm:text-6xl text-nt font-normal tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto text-balance">
-          Turn Long Lectures Into <br />
-          <span className="italic text-np font-serif">High-Grade Study Notes</span> & AI Tutor
-        </h1>
-
-        <p className="font-sans text-nt2 text-15 sm:text-17 max-w-2xl mx-auto mb-9 font-normal leading-relaxed">
-          Drop in a YouTube URL or lecture video. NorAI builds chapter study notes, revision cheat-sheets, 3D flashcards, quizzes, and a lecture-grounded AI tutor.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
-          <button
-            onClick={handleCTA}
-            className="w-full sm:w-auto bg-np hover:bg-nph text-npfg font-display text-12 font-semibold uppercase tracking-wider px-7 py-3.5 rounded-md shadow-bp flex items-center justify-center gap-2 cursor-pointer transition-[background-color,transform,box-shadow] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none"
-          >
-            <span>Get 45 Mins Free Trial (No Card)</span>
-            <ArrowRight size={16} />
-          </button>
-
-          <button
-            onClick={handleLaunchLiveWorkspace}
-            className={`w-full sm:w-auto bg-ns hover:bg-ns2 border border-bdr text-nt font-display text-12 font-medium uppercase tracking-wider px-6 py-3.5 rounded-md shadow-ev1 flex items-center justify-center gap-2 cursor-pointer transition-[background-color,transform,box-shadow] active:translate-y-[1px] active:shadow-none ${FOCUS_RING}`}
-          >
-            <Play size={14} className="text-np fill-np" />
-            <span>Launch Live Workspace</span>
-          </button>
-        </div>
-
-        {/* Micro Trust Indicators */}
-        <div className="flex flex-wrap items-center justify-center gap-6 font-mono text-11 text-nt3 border-t border-bdr pt-6 max-w-3xl mx-auto">
-          <span className="flex items-center gap-1.5">
-            <Check size={14} className="text-ng" /> 100% Free 1-Video Trial
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Check size={14} className="text-ng" /> Gemini 3.1 Flash Grounded
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Check size={14} className="text-ng" /> KaTeX Math + Timestamped Citations
-          </span>
-        </div>
-      </section>
-
-      {/* Interactive Mockup Workspace Preview */}
-      <section className="relative z-10 px-6 mb-24 max-w-5xl mx-auto w-full">
-        <div className="bg-ns border border-bdr rounded-lg shadow-bp overflow-hidden">
-          {/* Mockup Header */}
-          <div className="bg-ns2 border-b border-bdr px-4 py-2.5 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="w-2.5 h-2.5 rounded-full bg-nr opacity-80 shrink-0" />
-              <span className="w-2.5 h-2.5 rounded-full bg-na opacity-80 shrink-0" />
-              <span className="w-2.5 h-2.5 rounded-full bg-ng opacity-80 shrink-0" />
-              <span className="font-mono text-11 text-nt3 ml-2 font-medium truncate">NorAI Workspace — MIT 8.01 Physics Lecture 04</span>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="px-2 py-0.5 rounded bg-ngb text-ngt font-mono text-3xs font-medium uppercase hidden sm:inline-block">Processing Complete</span>
-              <button
-                onClick={() => setDemoModalOpen(true)}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-np text-npfg font-display text-10 uppercase tracking-wider font-semibold hover:bg-nph transition-colors cursor-pointer"
-              >
-                <span>Choose Live Demo</span>
-                <ArrowRight size={11} />
-              </button>
-            </div>
-          </div>
-
-          {/* Workspace Tabs Bar */}
-          <div
-            role="tablist"
-            aria-label="Workspace preview"
-            onKeyDown={handleTabKeyDown}
-            className="bg-ns3 border-b border-bdr px-4 py-2 flex items-center gap-2 overflow-x-auto font-display text-11 uppercase font-medium text-nt2"
-          >
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                id={`wp-tab-${tab.id}`}
-                role="tab"
-                aria-selected={activeTab === tab.id}
-                aria-controls="wp-panel"
-                tabIndex={activeTab === tab.id ? 0 : -1}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-1 rounded whitespace-nowrap transition-colors ${activeTab === tab.id ? 'bg-ns text-np font-bold shadow-xs' : 'hover:text-nt'}`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Interactive Mockup Body */}
-          <div
-            id="wp-panel"
-            role="tabpanel"
-            aria-labelledby={`wp-tab-${activeTab}`}
-            className="p-6 min-h-[320px] font-sans text-13"
-          >
-            {activeTab === 'notes' && (
-              <div className="space-y-4">
-                <div className="border-b border-bdr pb-2">
-                  <span className="font-mono text-11 text-np uppercase tracking-wider font-semibold">Chapter 02 — Work-Energy Theorem</span>
-                  {/* P4.4: demo-mock headings are decorative — <p> keeps
-                      document heading order sane (h1 → sections' h2). */}
-                  <p className="font-serif text-22 text-nt font-normal mt-1">Kinetic Energy &amp; Mathematical Derivation</p>
-                </div>
-                <p className="text-nt2 leading-relaxed">
-                  The net work done on an object by external forces equals the change in its kinetic energy:
-                </p>
-                <div className="p-3 bg-ns2 border border-bdr rounded font-mono text-10 sm:text-12 text-nt text-center my-3 overflow-x-auto">
-                  W<sub>net</sub> = ΔK = ½mv<sub>f</sub>² − ½mv<sub>i</sub>²
-                </div>
-                <div className="flex items-center gap-3 p-2 bg-npb border border-npbr rounded text-11 text-npt">
-                  <span className="font-mono font-bold bg-np text-npfg px-1.5 py-0.5 rounded text-3xs">[08:45]</span>
-                  <span>Professor derives integral of force over displacement on the blackboard.</span>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'tutor' && (
-              <div className="space-y-3">
-                <div className="p-3 bg-ns2 border border-bdr rounded-lg text-nt2 text-12 max-w-lg ml-auto">
-                  How is conservative force defined in this lecture?
-                </div>
-                <div className="p-3.5 bg-ns border border-bdr rounded-lg text-nt text-12 max-w-xl space-y-2">
-                  <div className="flex items-center justify-between border-b border-bdr pb-1 text-10 font-mono text-nt3">
-                    <span className="font-bold text-np">Nora (Socratic Tutor)</span>
-                    <span className="px-1.5 py-0.5 bg-nblb text-nblt rounded">References (3)</span>
-                  </div>
-                  <p>
-                    A force is conservative if the work done in moving an object between two points is independent of the path taken.
-                  </p>
-                  <div className="text-11 text-nt3 italic bg-ns2 p-2 rounded border border-bdr">
-                    "Notice at 14:20 how gravity satisfies this property because the closed loop integral ∮ F · dr = 0."
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'quiz' && (
-              <div className="space-y-4 max-w-lg mx-auto">
-                <div className="font-mono text-11 text-nt3 flex justify-between">
-                  <span>Question 2 of 8</span>
-                  <span className="text-na font-semibold">Medium Difficulty</span>
-                </div>
-                <p className="font-serif text-16 text-nt font-normal">
-                  If the velocity of an object is doubled, by what factor does its kinetic energy increase?
-                </p>
-                <div className="space-y-2">
-                  {['Factor of 2', 'Factor of 4 (Correct)', 'Factor of 8', 'Remains unchanged'].map((opt, i) => (
-                    <div
-                      key={i}
-                      className={`p-2.5 rounded border text-12 font-medium ${
-                        i === 1 ? 'bg-ngb border-ngbr text-ngt font-bold' : 'bg-ns2 border-bdr text-nt2'
-                      }`}
-                    >
-                      {String.fromCharCode(65 + i)}. {opt}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'mindmap' && (
-              <div className="flex flex-col items-center justify-center p-6 border border-dashed border-bdr rounded bg-ns2">
-                <div className="font-mono text-11 text-np font-bold mb-2">3-Tier Hierarchical Concept Graph</div>
-                <div className="flex items-center gap-4 text-11 font-mono text-nt2">
-                  <span className="p-2 bg-ns border border-bdr rounded font-bold">Classical Mechanics</span>
-                  <ChevronRight size={14} />
-                  <span className="p-2 bg-npb border border-npbr text-npt rounded font-bold">Work & Energy</span>
-                  <ChevronRight size={14} />
-                  <span className="p-2 bg-ns border border-bdr rounded">Kinetic Theorem</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive Live Demo Workspaces */}
-      <section className="relative z-10 py-16 px-6 max-w-6xl mx-auto w-full">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-npb border border-npbr text-npt font-mono text-11 font-medium mb-3">
-            <Sparkles size={12} className="text-np" />
-            <span>100% PUBLIC ACCESS · NO SIGNUP NEEDED</span>
-          </div>
-          <h2 className="font-serif text-3xl sm:text-4xl text-nt font-normal tracking-tight text-balance">
-            Try 3 Live Demo Workspaces
-          </h2>
-          <p className="text-nt2 text-14 max-w-xl mx-auto mt-2 font-normal">
-            Click any workspace below to experience full study notes, interactive quizzes, flashcards, and concept maps instantly — no registration or credit card required.
+      {/* Hero — on faint notebook ruling */}
+      <section className="relative pt-12 sm:pt-20 pb-20 sm:pb-28 notebook-ruling">
+        <Margin>
+          <h1 className="max-w-4xl font-serif text-[clamp(2.5rem,6.2vw,4.75rem)] leading-[1.02] tracking-[-0.025em] text-balance">
+            Turn lecture videos into <em className="text-np">exam-ready</em> notes.
+          </h1>
+          <p className="mt-6 max-w-2xl text-17 leading-relaxed text-nt2">
+            Paste a YouTube link or upload your class recording. NorAI writes chapter-wise study notes, a revision
+            sheet, a quiz and flashcards, and gives you a tutor that answers only from that lecture.
           </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {DEMO_LECTURES_CONFIG.map((demo) => (
-            <Link
-              key={demo.id}
-              to={`/workspace/${demo.id}`}
-              className="group bg-ns hover:bg-ns2 border border-bdr hover:border-npbr rounded-lg p-6 shadow-bp transition-all duration-200 flex flex-col justify-between cursor-pointer hover:-translate-y-1"
+          <div className="mt-9 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+            <button
+              onClick={start}
+              className={`inline-flex items-center justify-center gap-2 rounded-md bg-npf px-6 py-3.5 text-15 font-medium text-npfg shadow-bp hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
             >
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="font-mono text-10 font-bold uppercase tracking-wider text-np bg-npb px-2 py-0.5 rounded border border-npbr">
-                    {demo.badge}
-                  </span>
-                  <span className="font-mono text-11 text-nt3">
-                    {demo.duration}
-                  </span>
-                </div>
-
-                <h3 className="font-serif text-18 text-nt font-normal group-hover:text-np transition-colors leading-snug mb-2">
-                  {demo.title}
-                </h3>
-
-                <p className="font-sans text-12 text-nt2 leading-relaxed mb-4">
-                  {demo.summary}
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-bdr flex items-center justify-between text-11 font-display uppercase tracking-wider text-nt2 font-semibold group-hover:text-np">
-                <span className="font-mono text-10 text-nt3 lowercase">{demo.chapterCount} chapters</span>
-                <span className="flex items-center gap-1">
-                  Try Demo <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
-                </span>
-              </div>
+              {user ? 'Open your workspace' : 'Start free: 45 minutes, no card'}
+              <ArrowRight size={16} aria-hidden="true" />
+            </button>
+            <Link
+              to={`/workspace/${PRIMARY_DEMO_LECTURE_ID}`}
+              className={`inline-flex items-center justify-center gap-1.5 px-1 py-2 text-15 text-nt underline decoration-np/50 decoration-2 underline-offset-[6px] hover:decoration-np ${LINK_RING}`}
+            >
+              See a finished lecture first
             </Link>
-          ))}
+          </div>
+          <p className="mt-5 text-13 text-nt3">
+            Paid passes from ₹149 for 30 days. Pay with UPI or card; nothing auto-renews.
+          </p>
+        </Margin>
+
+        {/* The real product, with one red-pencil annotation drawn on */}
+        <div className="relative mx-auto mt-14 sm:mt-20 max-w-6xl px-4 sm:px-6">
+          <figure className="relative">
+            <div className="overflow-hidden rounded-lg border border-bdr2 bg-ns shadow-[0_24px_60px_-28px_rgba(36,31,26,0.35)]">
+              {/* Phones get the tutor panel alone so its text stays readable. */}
+              <picture>
+                <source media="(max-width: 767px)" srcSet="/landing/tutor-mobile.webp" width={722} height={960} />
+                <img
+                  src="/landing/notes-and-tutor.webp"
+                  alt="NorAI workspace: chapter notes on neural networks beside the tutor answering why the input layer has 784 neurons, quoting the lecture slide."
+                  width={1600}
+                  height={936}
+                  fetchPriority="high"
+                  decoding="async"
+                  className="block h-auto w-full"
+                />
+              </picture>
+            </div>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 1600 936"
+              preserveAspectRatio="none"
+              className="pointer-events-none absolute inset-0 hidden h-full w-full md:block"
+            >
+              <path
+                className="pencil-draw"
+                pathLength={1}
+                d="M1116 454 C 1300 442, 1592 448, 1594 515 C 1596 582, 1380 588, 1182 585 C 1096 583, 1092 530, 1104 490 C 1110 470, 1132 459, 1170 455"
+                fill="none"
+                stroke="var(--color-np)"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+            </svg>
+            <figcaption className="mt-4 text-13 text-nt2 md:absolute md:-bottom-3 md:right-10 md:mt-0 md:max-w-xs md:translate-y-full md:text-right">
+              <span className="font-serif italic text-15 text-npt">
+                Answered from the lecture itself, down to the slide it came from.
+              </span>
+            </figcaption>
+          </figure>
         </div>
       </section>
 
-      {/* How It Works (Blueprint Stepper 01-04) */}
-      <section id="how-it-works" className="relative z-10 py-20 px-6 bg-ns border-y border-bdr">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="font-mono text-11 text-np uppercase tracking-wider font-semibold">Pipeline Architecture</span>
-            <h2 className="font-serif text-3xl sm:text-4xl text-nt font-normal mt-1 text-balance">Four Steps From Video to Mastery</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[
-              {
-                num: '01',
-                title: 'Media Ingest',
-                desc: 'Paste YouTube URLs, Google Drive files, or local MP4/MP3 recordings.',
-                icon: Video,
-              },
-              {
-                num: '02',
-                title: '18-Stage Pipeline',
-                desc: 'Whisper audio transcription, frame extraction, scene change detection.',
-                icon: Zap,
-              },
-              {
-                num: '03',
-                title: 'Artifact Synthesis',
-                desc: 'Gemini 3.1 Flash builds structured study notes, revision sheets, & 3D cards.',
-                icon: FileText,
-              },
-              {
-                num: '04',
-                title: 'Socratic Tutor',
-                desc: 'Ask questions with exact timestamp citations and chapter-aware guidance.',
-                icon: Brain,
-              },
-            ].map((item, idx) => (
-              <div key={idx} className="bg-nb border border-bdr p-6 rounded-md shadow-bp relative">
-                <div className="font-serif text-28 text-np font-bold mb-3">{item.num}</div>
-                <h3 className="font-serif text-18 text-nt font-normal mb-2">{item.title}</h3>
-                <p className="font-sans text-12 text-nt2 leading-relaxed">{item.desc}</p>
+      {/* What one lecture becomes */}
+      <section aria-labelledby="outputs-heading" className="border-t border-bdr py-20 sm:py-28">
+        <Margin>
+          <h2 id="outputs-heading" className="max-w-3xl font-serif text-36 sm:text-44 leading-tight tracking-tight text-balance">
+            One lecture in. Six ways to study it out.
+          </h2>
+          <dl className="mt-12 divide-y divide-bdr border-y border-bdr">
+            {OUTPUTS.map((o) => (
+              <div key={o.name} className="grid gap-1 py-5 sm:grid-cols-[13rem_1fr] sm:gap-8">
+                <dt className="font-serif text-22 text-nt">{o.name}</dt>
+                <dd className="max-w-prose text-15 leading-relaxed text-nt2">{o.body}</dd>
               </div>
             ))}
-          </div>
-        </div>
+          </dl>
+        </Margin>
       </section>
 
-      {/* Features Grid */}
-      <section id="features" className="relative z-10 py-20 px-6 max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-            <span className="font-mono text-11 text-np uppercase tracking-wider font-semibold">Architect's Feature Suite</span>
-            <h2 className="font-serif text-3xl sm:text-4xl text-nt font-normal mt-1 text-balance">Everything Needed for Academic Excellence</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-ns border border-bdr p-6 rounded-md shadow-ev1">
-            <BookOpen size={24} className="text-np mb-3" />
-            <h3 className="font-serif text-18 text-nt font-normal mb-2">Chapter Study Notes</h3>
-            <p className="font-sans text-12 text-nt2 leading-relaxed">
-              Hierarchical markdown notes formatted with KaTeX math expressions, key terms, and visual screenshot thumbnails.
+      {/* Quiz proof */}
+      <section aria-labelledby="quiz-heading" className="bg-ns border-y border-bdr py-20 sm:py-28">
+        <Margin className="grid items-center gap-12 lg:grid-cols-[1fr_1.15fr]">
+          <div>
+            <h2 id="quiz-heading" className="font-serif text-36 leading-tight tracking-tight text-balance">
+              Find the gaps before the exam does.
+            </h2>
+            <p className="mt-5 max-w-md text-15 leading-relaxed text-nt2">
+              Every lecture comes with its own question bank, written from what was actually taught. Get one wrong and
+              “Explain” shows you the exact part of the notes it came from. Your attempts are saved, so you can retake
+              only the ones you missed.
             </p>
           </div>
-
-          <div className="bg-ns border border-bdr p-6 rounded-md shadow-ev1">
-            <Layers size={24} className="text-np mb-3" />
-            <h3 className="font-serif text-18 text-nt font-normal mb-2">Revision Cheat-Sheets</h3>
-            <p className="font-sans text-12 text-nt2 leading-relaxed">
-              Condensed quick-scan revision cheat-sheets paired with print-ready PDF export functionality.
-            </p>
-          </div>
-
-          <div className="bg-ns border border-bdr p-6 rounded-md shadow-ev1">
-            <Brain size={24} className="text-np mb-3" />
-            <h3 className="font-serif text-18 text-nt font-normal mb-2">Grounded AI Tutor</h3>
-            <p className="font-sans text-12 text-nt2 leading-relaxed">
-              RAG tutor using LangGraph checkpoints, timestamp citations, Socratic mode, and custom persona prompts.
-            </p>
-          </div>
-
-          <div className="bg-ns border border-bdr p-6 rounded-md shadow-ev1">
-            <GitFork size={24} className="text-np mb-3" />
-            <h3 className="font-serif text-18 text-nt font-normal mb-2">Hierarchical Mind Maps</h3>
-            <p className="font-sans text-12 text-nt2 leading-relaxed">
-              Interactive 3-tier concept graphs generated zero-LLM with draggable nodes and floatable details cards.
-            </p>
-          </div>
-
-          <div className="bg-ns border border-bdr p-6 rounded-md shadow-ev1">
-            <Zap size={24} className="text-np mb-3" />
-            <h3 className="font-serif text-18 text-nt font-normal mb-2">Quiz & Flashcard History</h3>
-            <p className="font-sans text-12 text-nt2 leading-relaxed">
-              Persisted attempt histories, rating stats, SHA-256 deck keying, and "Retake Missed Only" filters.
-            </p>
-          </div>
-
-          <div className="bg-ns border border-bdr p-6 rounded-md shadow-ev1">
-            <ShieldCheck size={24} className="text-np mb-3" />
-            <h3 className="font-serif text-18 text-nt font-normal mb-2">Per-Lecture Isolation</h3>
-            <p className="font-sans text-12 text-nt2 leading-relaxed">
-              Dedicated Chroma vector databases, SQLite thread checkpoints, and outputs directories for every lecture.
-            </p>
-          </div>
-        </div>
+          <img
+            src="/landing/quiz.webp"
+            alt="A NorAI quiz question: for a 28 by 28 pixel image, how many neurons are needed in the input layer, with four options."
+            width={1000}
+            height={716}
+            loading="lazy"
+            decoding="async"
+            className="w-full rounded-lg border border-bdr2 shadow-[0_18px_40px_-24px_rgba(36,31,26,0.35)]"
+          />
+        </Margin>
       </section>
 
-      {/* Footer */}
-      <footer className="relative z-10 bg-ns border-t border-bdr py-8 px-6 text-11 font-sans text-nt3">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded bg-np text-npfg font-serif font-bold text-11 flex items-center justify-center">N</span>
-            <span className="font-serif font-bold text-nt text-13">NorAI</span>
-            <span>© 2026 NorAI Inc. All rights reserved.</span>
+      {/* Demo lectures — a table of contents, not cards */}
+      <section id="demo" aria-labelledby="demo-heading" className="py-20 sm:py-28">
+        <Margin>
+          <h2 id="demo-heading" className="max-w-2xl font-serif text-36 sm:text-44 leading-tight tracking-tight text-balance">
+            Open a lecture we already processed.
+          </h2>
+          <p className="mt-4 max-w-xl text-15 text-nt2">No account needed. Read the notes, take the quiz, flip the cards.</p>
+          <ol className="mt-10 border-t border-bdr2">
+            {DEMO_LECTURES_CONFIG.map((demo) => (
+              <li key={demo.id} className="border-b border-bdr2">
+                <Link
+                  to={`/workspace/${demo.id}`}
+                  className={`group grid gap-2 py-6 sm:grid-cols-[1fr_auto] sm:items-baseline sm:gap-8 ${LINK_RING}`}
+                >
+                  <span>
+                    <span className="block font-serif text-22 sm:text-24 text-nt group-hover:text-npt transition-colors">
+                      {demo.title}
+                    </span>
+                    <span className="mt-1 block max-w-2xl text-14 text-nt2">{demo.summary}</span>
+                  </span>
+                  <span className="flex items-center gap-3 text-13 text-nt3 tabular-nums sm:whitespace-nowrap">
+                    {demo.category} · {demo.duration} · {demo.chapterCount} chapters
+                    <ArrowUpRight size={16} aria-hidden="true" className="shrink-0 text-np transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </Margin>
+      </section>
+
+      {/* How it works */}
+      <section id="how-it-works" aria-labelledby="how-heading" className="bg-ns border-y border-bdr py-20 sm:py-28">
+        <Margin>
+          <h2 id="how-heading" className="font-serif text-36 sm:text-44 leading-tight tracking-tight">
+            How it works
+          </h2>
+          <ol className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
+            {STEPS.map((s, i) => (
+              <li key={s.title} className="border-t-2 border-nt pt-5">
+                <h3 className="font-serif text-20 leading-snug text-nt">
+                  <span className="mr-2 text-np">{i + 1}.</span>
+                  {s.title}
+                </h3>
+                <p className="mt-3 text-14 leading-relaxed text-nt2">{s.body}</p>
+              </li>
+            ))}
+          </ol>
+        </Margin>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" aria-labelledby="pricing-heading" className="py-20 sm:py-28">
+        <Margin>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <h2 id="pricing-heading" className="max-w-xl font-serif text-36 sm:text-44 leading-tight tracking-tight text-balance">
+              Priced for a student budget.
+            </h2>
+            <Link to="/pricing" className={`text-14 text-nt underline decoration-np/50 decoration-2 underline-offset-4 hover:decoration-np ${LINK_RING}`}>
+              Full pricing and payment FAQ
+            </Link>
           </div>
-          <div className="flex items-center gap-6 font-display uppercase tracking-wider">
-            <Link to="/pricing" className="hover:text-nt transition-colors">Pricing</Link>
+          <div className="mt-10">
+            <PlanSheet
+              plans={plans}
+              paymentsEnabled={payments_enabled}
+              onChoose={(p) => navigate(p.purchasable ? '/pricing' : user ? '/app' : '/signup')}
+            />
           </div>
+        </Margin>
+      </section>
+
+      {/* FAQ — answer-first, also mirrored in index.html JSON-LD */}
+      <section id="faq" aria-labelledby="faq-heading" className="border-t border-bdr py-20 sm:py-28">
+        <Margin>
+          <h2 id="faq-heading" className="font-serif text-36 sm:text-44 leading-tight tracking-tight">
+            Questions students ask
+          </h2>
+          <div className="mt-10 max-w-3xl">
+            <FaqList items={HOME_FAQ} />
+          </div>
+        </Margin>
+      </section>
+
+      {/* Closing */}
+      <section className="bg-nt text-nb py-20 sm:py-24">
+        <Margin className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+          <p className="max-w-2xl font-serif text-36 sm:text-44 leading-tight tracking-tight text-balance">
+            Your next lecture, already revised.
+          </p>
+          <button
+            onClick={start}
+            className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-npf px-6 py-3.5 text-15 font-medium text-npfg hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
+          >
+            {user ? 'Open your workspace' : 'Start free'} <ArrowRight size={16} aria-hidden="true" />
+          </button>
+        </Margin>
+      </section>
+
+      <footer className="border-t border-bdr bg-nb py-10 text-13 text-nt3">
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            <span className="font-serif text-17 text-nt">Nor<span className="text-np">AI</span></span>
+            <span className="ml-3">Study notes and a tutor from your lectures, built for students in India. © 2026</span>
+          </p>
+          <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2">
+            <Link to="/pricing" className={`hover:text-nt ${LINK_RING}`}>Pricing</Link>
+            <a href="#demo" className={`hover:text-nt ${LINK_RING}`}>Demo lectures</a>
+            <Link to="/signup" className={`hover:text-nt ${LINK_RING}`}>Sign up</Link>
+            <Link to="/login" className={`hover:text-nt ${LINK_RING}`}>Log in</Link>
+          </nav>
         </div>
       </footer>
-
-      {/* Choose a Demo Workspace Modal */}
-      {demoModalOpen && (
-        <Dialog
-          ariaLabel="Choose a Live Demo Workspace"
-          onClose={() => setDemoModalOpen(false)}
-          panelClassName="w-full max-w-2xl bg-nb border border-bdr rounded-xl shadow-2xl overflow-hidden p-6 relative"
-        >
-          <div className="flex items-start justify-between pb-4 border-b border-bdr">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-npb border border-npbr text-npt font-mono text-3xs font-medium uppercase tracking-wider mb-2">
-                <Sparkles size={11} className="text-np" />
-                <span>Instant Guest Preview · No Sign-Up</span>
-              </div>
-              <h2 className="font-serif text-20 sm:text-22 font-bold text-nt tracking-tight">
-                Choose a Demo Workspace
-              </h2>
-              <p className="text-nt2 text-12 mt-1">
-                Select any of the 3 pre-processed lecture workspaces to explore notes, quizzes, and mind maps.
-              </p>
-            </div>
-            <button
-              onClick={() => setDemoModalOpen(false)}
-              className={`p-1.5 rounded-md text-nt3 hover:text-nt hover:bg-ns2 transition-colors cursor-pointer ${FOCUS_RING}`}
-              aria-label="Close demo selection dialog"
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 mt-4">
-            {DEMO_LECTURES_CONFIG.map((demo) => (
-              <button
-                key={demo.id}
-                onClick={() => {
-                  setDemoModalOpen(false)
-                  navigate(`/workspace/${demo.id}`)
-                }}
-                className={`group text-left p-3.5 rounded-lg bg-ns border border-bdr hover:border-np/60 hover:bg-ns2 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${FOCUS_RING}`}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-3xs font-mono font-semibold uppercase tracking-wider text-np bg-npb px-2 py-0.5 rounded">
-                      {demo.badge}
-                    </span>
-                    <span className="text-3xs font-mono text-nt3">
-                      {demo.duration} · {demo.chapterCount} chapters
-                    </span>
-                  </div>
-                  <h3 className="font-serif text-14 font-semibold text-nt group-hover:text-np transition-colors truncate">
-                    {demo.title}
-                  </h3>
-                  <p className="font-sans text-11 text-nt3 mt-0.5 line-clamp-2 leading-relaxed">
-                    {demo.summary}
-                  </p>
-                </div>
-                <div className="shrink-0 flex items-center gap-1 text-11 font-display uppercase tracking-wider font-semibold text-np group-hover:translate-x-0.5 transition-transform">
-                  <span>Open Demo</span>
-                  <ArrowRight size={13} />
-                </div>
-              </button>
-            ))}
-          </div>
-        </Dialog>
-      )}
     </div>
   )
 }
