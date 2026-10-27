@@ -85,6 +85,6 @@ Decided 2026-08-14: heavy AI work is split between opencode and **Google Antigra
 
 **Why no Gemini in opencode:** the `opencode-gemini-auth` OAuth plugin (Gemini CLI flow) was blocked by Google on 2026-06-18 for AI Pro/Ultra accounts — Google stopped serving requests for those tiers. The AI Pro subscription also grants no Gemini API access, so there's no API key to configure either. If we ever want Gemini inside opencode, it must be a Google AI Studio API key (`google/gemini-3.7-flash`, free tier first, paid Tier 1 later).
 
-**Ownership split:** Antigravity → big refactors/architecture, greenfield codegen, 1M-context work, hard debugging; opencode → surgical edits, mechanical changes, tool-heavy loops (tests/lint/builds, dev-server work, Chrome DevTools MCP), quick QA. Git is the handoff point; `COMMUNICATOR.md` carries the short handoff log at each switch.
+**Ownership split:** Antigravity → big refactors/architecture, greenfield codegen, 1M-context work, hard debugging; opencode → surgical edits, mechanical changes, tool-heavy loops (tests/lint/builds, dev-server work, Chrome DevTools MCP), quick QA. Git is the handoff point; `docs/PROJECT_PROGRESS.md` carries current state.
 
 **Antigravity usage reality:** compute-based limits refresh every 5h, capped weekly; `high`-mode burns fast. Reserve 3.7 Flash/high for heavy tasks — trivial edits go to opencode. When the cap hits, Google silently shifts to a smaller model (or paid top-up credits).

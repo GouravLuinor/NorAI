@@ -340,7 +340,6 @@ NorAI/
 │   ├── DEPLOYMENT_PLAN.md        # agreed production deployment path (Hostinger VPS)
 │   ├── PROJECT_PROGRESS.md       # living technical changelog & architectural state
 │   ├── ROADMAP.md                # phased engineering-hardening roadmap
-│   ├── COMMUNICATOR.md           # agent synchronization bridge
 │   ├── TUTORIAL.md               # complete system architecture & design tutorial
 │   ├── NOTES.md                  # developer fix log & architectural decisions
 │   ├── token_reduction.md        # prompt compression & caching benchmarks
