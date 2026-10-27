@@ -65,12 +65,11 @@ from backend.timeutil import ensure_utc
 from backend.db.database import get_db
 from backend.db.models import User, Subscription, Lecture, UsageLog, Course, CourseLecture, ShareLink
 from backend.usage import record_pipeline_outcome, rollover_if_needed
+from backend.plans import get_plan
 from tutor.llm import make_chat_llm
 from config import (
     CHECKPOINT_DB_PATH,
     DEMO_LECTURE_IDS,
-    LEMONSQUEEZY_CHECKOUT_STARTER_URL, LEMONSQUEEZY_CHECKOUT_PRO_URL,
-    LEMONSQUEEZY_CUSTOMER_PORTAL_URL,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func
@@ -545,12 +544,12 @@ async def start_processing(
         if probed_sec:
             import math as _math
             needed = _math.ceil(probed_sec / 60.0)
-            free_limit_min = int(os.environ.get("MAX_FREE_DURATION_MIN", "45"))
-            if probed_sec > free_limit_min * 60:
+            plan = get_plan(sub.plan_tier if sub else "free")
+            if probed_sec > plan.max_lecture_min * 60:
                 raise HTTPException(
                     status_code=429,
-                    detail=f"Lecture duration ({probed_sec / 60:.1f} mins) exceeds the free-trial limit "
-                           f"of {free_limit_min} minutes.",
+                    detail=f"Lecture duration ({probed_sec / 60:.1f} mins) exceeds the {plan.name} plan "
+                           f"limit of {plan.max_lecture_min} minutes per lecture.",
                 )
             if used + needed > quota:
                 raise HTTPException(

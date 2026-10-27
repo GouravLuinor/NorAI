@@ -66,12 +66,18 @@ DEFAULT_TRIAL_QUOTA_MINUTES = 45
 # ── Feature Flags ────────────────────────────────────────────────────────────
 ENABLE_PAYMENTS = os.environ.get("ENABLE_PAYMENTS", "0") == "1"
 
-# ── Lemon Squeezy billing (P2.5) ──────────────────────────────────────────────
-# Env-driven checkout / customer-portal URLs surfaced by GET /billing.
-# Leave unset until the store exists — /billing returns null for them.
-LEMONSQUEEZY_CHECKOUT_STARTER_URL = os.environ.get("LEMONSQUEEZY_CHECKOUT_STARTER_URL", "")
-LEMONSQUEEZY_CHECKOUT_PRO_URL = os.environ.get("LEMONSQUEEZY_CHECKOUT_PRO_URL", "")
-LEMONSQUEEZY_CUSTOMER_PORTAL_URL = os.environ.get("LEMONSQUEEZY_CUSTOMER_PORTAL_URL", "")
+# ── Razorpay billing (INR: UPI, cards, netbanking, wallets) ──────────────────
+# Use rzp_test_… keys outside production. The key id is public (sent to the
+# checkout widget); the key secret and webhook secret must stay server-side.
+RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
+RAZORPAY_WEBHOOK_SECRET = os.environ.get("RAZORPAY_WEBHOOK_SECRET", "")
+# Checkout is live only when explicitly enabled AND both API keys exist.
+PAYMENTS_ENABLED = ENABLE_PAYMENTS and bool(RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET)
+
+# Plan prices in whole rupees (GST-inclusive list price shown to users).
+PLAN_STARTER_PRICE_INR = int(os.environ.get("PLAN_STARTER_PRICE_INR", "149"))
+PLAN_PRO_PRICE_INR = int(os.environ.get("PLAN_PRO_PRICE_INR", "449"))
 
 # ── Model pricing (P6.5) ──────────────────────────────────────────────────────
 # USD per 1M tokens used by the cost dashboard (`GET /usage`). Sources:

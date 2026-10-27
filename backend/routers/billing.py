@@ -1,31 +1,81 @@
 """
-backend/routers/billing.py — quota, billing, and usage/cost endpoints (P5.1).
+backend/routers/billing.py — plans, quota, Razorpay checkout, and usage/cost endpoints.
 
-Extracted verbatim from main.py; the app mounts this router with no prefix,
-so paths are unchanged.
+The app mounts this router with no prefix, so paths are unchanged.
+
+Checkout flow (Razorpay Standard Checkout, one-time orders):
+  1. POST /billing/razorpay/order   -> server creates the order (amount comes
+     from backend/plans.py, never from the client) and a `payments` row.
+  2. The browser opens Razorpay Checkout (UPI / cards / netbanking / wallets).
+  3. POST /billing/razorpay/verify  -> server checks the checkout signature,
+     confirms the payment with Razorpay, and grants the plan.
+  4. The `order.paid` webhook does the same grant server-to-server, so a closed
+     tab after paying still upgrades the account. backend/payments.py makes the
+     two paths idempotent.
 """
 
-import os
 import logging
+import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import config
+from backend import razorpay_client
 from backend.auth import get_current_user, get_current_user_optional
 from backend.db.database import get_db
-from backend.db.models import Subscription, UsageLog, User
+from backend.db.models import Payment, Subscription, UsageLog, User
+from backend.payments import mark_failed, mark_paid
+from backend.plans import PLANS, get_plan
 from backend.usage import rollover_if_needed
-from config import (
-    ENABLE_PAYMENTS,
-    LEMONSQUEEZY_CHECKOUT_STARTER_URL,
-    LEMONSQUEEZY_CHECKOUT_PRO_URL,
-    LEMONSQUEEZY_CUSTOMER_PORTAL_URL,
-)
 
 router = APIRouter()
+logger = logging.getLogger("norai")
+
+_RZP_ID = r"^[A-Za-z0-9_]{1,64}$"
+
+
+def _payments_enabled() -> bool:
+    # Read at call time so tests (and a hot-reloaded .env) see the current value.
+    return bool(config.ENABLE_PAYMENTS and config.RAZORPAY_KEY_ID and config.RAZORPAY_KEY_SECRET)
+
+
+async def _load_subscription(db: AsyncSession, user_id: str) -> Optional[Subscription]:
+    """The user's subscription with an expired pass already rolled back to Free."""
+    try:
+        sub = (
+            await db.execute(select(Subscription).where(Subscription.user_id == user_id))
+        ).scalar_one_or_none()
+        # Roll the period forward BEFORE reporting usage, else an expired
+        # period/pass shows a permanently exhausted quota in the UI.
+        if sub is not None and rollover_if_needed(sub):
+            await db.commit()
+        return sub
+    except Exception as exc:
+        logger.warning("DB lookup failed for subscription of %s: %s", user_id, exc)
+        return None
+
+
+def _iso(dt: Optional[datetime]) -> Optional[str]:
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.isoformat()
+
+
+@router.get("/billing/plans")
+async def list_plans():
+    """Public plan catalogue for the pricing page (no auth)."""
+    return {
+        "currency": "INR",
+        "payments_enabled": _payments_enabled(),
+        "plans": [p.public() for p in PLANS.values()],
+    }
 
 
 @router.get("/quota")
@@ -33,34 +83,73 @@ async def get_user_quota(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return user's active plan tier and remaining monthly lecture minutes."""
-    sub = None
-    try:
-        result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
-        sub = result.scalar_one_or_none()
-
-        # P0 fix: roll the billing period forward BEFORE reporting usage, else an
-        # expired period shows a permanently exhausted quota in the UI.
-        if sub is not None and rollover_if_needed(sub):
-            await db.commit()
-    except Exception as exc:
-        logging.getLogger("norai").warning("DB lookup failed in get_user_quota: %s", exc)
-
-    quota = sub.monthly_minutes_quota if sub else 45
+    """Return user's active plan tier and remaining lecture minutes."""
+    sub = await _load_subscription(db, user.id)
+    plan = get_plan(sub.plan_tier if sub else "free")
+    quota = sub.monthly_minutes_quota if sub else plan.minutes
     used = sub.used_minutes_this_month if sub else 0
-    remaining = max(0, quota - used)
-    plan_tier = sub.plan_tier if sub else "free"
-    sub_status = sub.status if sub else "trial"
 
     return {
         "user_id": user.id,
         "email": user.email,
-        "plan_tier": plan_tier,
-        "subscription_status": sub_status,
+        "plan_tier": plan.id,
+        "subscription_status": sub.status if sub else "trial",
         "monthly_minutes_quota": quota,
         "used_minutes_this_month": used,
-        "remaining_minutes": remaining,
+        "remaining_minutes": max(0, quota - used),
+        "max_lecture_minutes": plan.max_lecture_min,
+        "current_period_end": _iso(sub.current_period_end) if sub else None,
         "is_anonymous": user.is_anonymous,
+    }
+
+
+async def _billing_state(db: AsyncSession, user: User) -> dict:
+    sub = await _load_subscription(db, user.id)
+    plan = get_plan(sub.plan_tier if sub else "free")
+    quota = sub.monthly_minutes_quota if sub else plan.minutes
+    used = sub.used_minutes_this_month if sub else 0
+
+    payments = []
+    try:
+        rows = (
+            await db.execute(
+                select(Payment)
+                .where(Payment.user_id == user.id, Payment.status != "created")
+                .order_by(Payment.created_at.desc())
+                .limit(20)
+            )
+        ).scalars().all()
+        payments = [
+            {
+                "order_id": p.id,
+                "plan_id": p.plan_id,
+                "plan_name": get_plan(p.plan_id).name,
+                "amount_inr": p.amount_paise / 100,
+                "status": p.status,
+                "method": p.method,
+                "failure_reason": p.failure_reason,
+                "refunded_inr": (p.refunded_paise or 0) / 100,
+                "created_at": _iso(p.created_at),
+                "paid_at": _iso(p.paid_at),
+            }
+            for p in rows
+        ]
+    except Exception as exc:
+        logger.warning("DB lookup failed for payments of %s: %s", user.id, exc)
+
+    return {
+        "user_id": user.id,
+        "email": user.email,
+        "is_anonymous": user.is_anonymous,
+        "plan_tier": plan.id,
+        "plan": plan.public(),
+        "subscription_status": sub.status if sub else "trial",
+        "payments_enabled": _payments_enabled(),
+        "monthly_minutes_quota": quota,
+        "used_minutes_this_month": used,
+        "remaining_minutes": max(0, quota - used),
+        "current_period_end": _iso(sub.current_period_end) if sub else None,
+        "payments": payments,
     }
 
 
@@ -69,53 +158,100 @@ async def get_billing(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return the user's plan, usage, and Lemon Squeezy checkout/manage links.
+    """The user's plan, remaining minutes, pass expiry, and payment history."""
+    return await _billing_state(db, user)
 
-    Checkout / portal URLs come from env (config.py) — they are null until the
-    Lemon Squeezy store exists or when ENABLE_PAYMENTS is False. `manage_url` is
-    only offered to users who have an active Lemon Squeezy subscription id.
-    """
-    sub = None
+
+class OrderRequest(BaseModel):
+    plan_id: str = Field(..., min_length=1, max_length=32)
+
+
+@router.post("/billing/razorpay/order")
+async def create_razorpay_order(
+    body: OrderRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a Razorpay order for a plan. The amount is set server-side."""
+    if not _payments_enabled():
+        raise HTTPException(status_code=503, detail="Payments are not enabled yet.")
+    if user.is_anonymous:
+        raise HTTPException(status_code=403, detail="Create an account before buying a plan.")
+    plan = PLANS.get(body.plan_id)
+    if plan is None or not plan.purchasable:
+        raise HTTPException(status_code=400, detail="Unknown or free plan.")
+
+    receipt = f"norai_{uuid.uuid4().hex[:24]}"
     try:
-        result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))
-        sub = result.scalar_one_or_none()
-    except Exception as exc:
-        logging.getLogger("norai").warning("DB lookup failed in get_billing: %s", exc)
+        order = await razorpay_client.create_order(
+            plan.amount_paise, receipt, {"user_id": user.id, "plan_id": plan.id}
+        )
+    except razorpay_client.RazorpayError as exc:
+        logger.error("razorpay: order creation failed for %s: %s", user.id, exc)
+        raise HTTPException(status_code=502, detail="Could not start the payment. Please try again.")
 
-    plan_tier = sub.plan_tier if sub else "free"
-    sub_status = sub.status if sub else "trial"
-    quota = sub.monthly_minutes_quota if sub else 45
-    used = sub.used_minutes_this_month if sub else 0
-    remaining = max(0, quota - used)
-    ls_sub_id = (sub.lemon_squeezy_subscription_id if sub else None) or None
-
-    if ENABLE_PAYMENTS:
-        checkout_urls = {
-            "starter": LEMONSQUEEZY_CHECKOUT_STARTER_URL or None,
-            "pro": LEMONSQUEEZY_CHECKOUT_PRO_URL or None,
-        }
-        manage_url = LEMONSQUEEZY_CUSTOMER_PORTAL_URL or None
-    else:
-        checkout_urls = {
-            "starter": None,
-            "pro": None,
-        }
-        manage_url = None
+    db.add(Payment(id=order["id"], user_id=user.id, plan_id=plan.id,
+                   amount_paise=plan.amount_paise, currency="INR", status="created"))
+    await db.commit()
 
     return {
-        "user_id": user.id,
-        "email": user.email,
-        "is_anonymous": user.is_anonymous,
-        "plan_tier": plan_tier,
-        "subscription_status": sub_status,
-        "payments_enabled": ENABLE_PAYMENTS,
-        "monthly_minutes_quota": quota,
-        "used_minutes_this_month": used,
-        "remaining_minutes": remaining,
-        "lemon_squeezy_subscription_id": ls_sub_id,
-        "checkout_urls": checkout_urls,
-        "manage_url": manage_url,
+        "order_id": order["id"],
+        "amount": plan.amount_paise,
+        "currency": "INR",
+        "key_id": config.RAZORPAY_KEY_ID,
+        "plan": plan.public(),
+        "prefill": {"email": user.email or "", "name": user.full_name or ""},
     }
+
+
+class VerifyRequest(BaseModel):
+    razorpay_order_id: str = Field(..., pattern=_RZP_ID)
+    razorpay_payment_id: str = Field(..., pattern=_RZP_ID)
+    razorpay_signature: str = Field(..., min_length=1, max_length=256)
+
+
+@router.post("/billing/razorpay/verify")
+async def verify_razorpay_payment(
+    body: VerifyRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Confirm a completed Checkout and grant the plan (idempotent with the webhook)."""
+    payment = await db.get(Payment, body.razorpay_order_id)
+    if payment is None or payment.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Order not found.")
+    if not razorpay_client.verify_payment_signature(
+        body.razorpay_order_id, body.razorpay_payment_id, body.razorpay_signature
+    ):
+        logger.warning("razorpay: bad checkout signature for order %s (user %s)", payment.id, user.id)
+        raise HTTPException(status_code=400, detail="Payment verification failed.")
+
+    if payment.status in ("paid", "refunded"):
+        return {"granted": False, **await _billing_state(db, user)}
+
+    # The signature proves Razorpay authorised this payment for this order.
+    # Confirm amount/state with the API too; if Razorpay is unreachable the
+    # signature alone is enough, and the order.paid webhook reconciles later.
+    method = None
+    try:
+        rp = await razorpay_client.fetch_payment(body.razorpay_payment_id)
+        if rp.get("order_id") != payment.id or int(rp.get("amount", 0)) != payment.amount_paise:
+            logger.error("razorpay: payment %s does not match order %s", body.razorpay_payment_id, payment.id)
+            raise HTTPException(status_code=400, detail="Payment verification failed.")
+        method = rp.get("method")
+        status = rp.get("status")
+        if status == "failed":
+            await mark_failed(db, payment.id, body.razorpay_payment_id, rp.get("error_description"))
+            raise HTTPException(status_code=402, detail=rp.get("error_description") or "Payment failed.")
+        if status == "authorized":
+            # Auto-capture is off in the dashboard: capture it ourselves.
+            await razorpay_client.capture_payment(body.razorpay_payment_id, payment.amount_paise)
+    except razorpay_client.RazorpayError as exc:
+        logger.warning("razorpay: could not confirm payment %s (%s); trusting the signature",
+                       body.razorpay_payment_id, exc)
+
+    granted = await mark_paid(db, payment.id, body.razorpay_payment_id, method)
+    return {"granted": granted, **await _billing_state(db, user)}
 
 
 @router.get("/usage")

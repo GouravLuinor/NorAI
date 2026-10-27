@@ -60,7 +60,7 @@ def _column_names(db_path: str, table: str) -> set:
     return {r[1] for r in rows}
 
 
-_MIG_HEAD = "0004_courses_and_shares"
+_MIG_HEAD = "0005_payments"
 
 
 def _version(db_path: str):
@@ -124,6 +124,11 @@ check(
 check(
     "fresh: course_lectures PK columns",
     {"course_id", "lecture_id", "position"} <= _column_names(_FRESH_DB, "course_lectures"),
+)
+check(
+    "fresh: payments table (0005)",
+    {"id", "user_id", "plan_id", "amount_paise", "status", "razorpay_payment_id", "refunded_paise"}
+    <= _column_names(_FRESH_DB, "payments"),
 )
 
 # ── 2. Pre-Alembic DB (old create_all schema) ───────────────────────────────

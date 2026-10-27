@@ -297,11 +297,17 @@ def main() -> int:
                 "user_question": "hi",
                 "lecture_id": "lec-own",
             }
+            # Chat requires an account since 8b05462 (guest access removed).
             r = client.post("/chat", json=chat_body)
-            check("anon chat on tutor-disabled share 404", r.status_code == 404)
+            check("anon chat requires sign-in 401", r.status_code == 401)
+
+            _as_user(FAKE_USER_B)
+            r = client.post("/chat", json=chat_body)
+            check("non-owner chat on tutor-disabled share 404", r.status_code == 404)
 
             r = client.post("/chat/stream", json=chat_body)
-            check("anon chat/stream on tutor-disabled share 404", r.status_code == 404)
+            check("non-owner chat/stream on tutor-disabled share 404", r.status_code == 404)
+            _clear_auth()
 
             r = client.post("/quiz/attempts", json={"lecture_id": "lec-own"})
             check("anon quiz attempt on tutor-disabled share 404", r.status_code == 404)
@@ -331,8 +337,9 @@ def main() -> int:
                 "user_question": "hi",
                 "lecture_id": "lec-own",
             }
+            _as_user(FAKE_USER_B)
             r = client.post("/chat", json=chat_body)
-            check("anon chat on tutor-enabled share passes gate (stub 200)", r.status_code == 200)
+            check("non-owner chat on tutor-enabled share passes gate (stub 200)", r.status_code == 200)
         finally:
             _bdeps.ainvoke_tutor = _orig_ainvoke_tutor
             _clear_auth()

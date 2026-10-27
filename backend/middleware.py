@@ -46,6 +46,7 @@ _RATE_RULES = [
     (re.compile(r"^/quiz/"), "quiz", "NORAI_RATE_QUIZ", 30, 60),
     (re.compile(r"^/(process|estimate)\b"), "process", "NORAI_RATE_PROCESS", 10, 3600),
     (re.compile(r"^/threads\b"), "threads", "NORAI_RATE_THREADS", 60, 60),
+    (re.compile(r"^/billing/razorpay/"), "payments", "NORAI_RATE_PAYMENTS", 20, 600),
 ]
 
 _PRUNE_EVERY = 4096

@@ -32,6 +32,7 @@ from sqlalchemy import func, select, update
 
 from backend.db.database import DATABASE_URL, get_engine_kwargs
 from backend.db.models import Lecture, Subscription, UsageLog
+from backend.plans import downgrade_to_free, get_plan
 from backend.timeutil import ensure_utc
 
 logger = logging.getLogger(__name__)
@@ -48,6 +49,12 @@ def rollover_if_needed(sub: Subscription, now: Optional[datetime] = None) -> boo
     Returns True when a rollover occurred.
     """
     now = now or datetime.now(timezone.utc)
+    # A lapsed paid pass falls back to Free (prepaid 30-day passes; see plans.py).
+    if sub.plan_tier != "free" and sub.current_period_end is not None:
+        if now >= ensure_utc(sub.current_period_end):
+            downgrade_to_free(sub, now)
+            return True
+        return False
     if sub.used_minutes_this_month == 0:
         return False
     end = sub.current_period_end
@@ -63,6 +70,33 @@ def rollover_if_needed(sub: Subscription, now: Optional[datetime] = None) -> boo
         sub.current_period_start = now
         return True
     return False
+
+
+async def _max_lecture_minutes(user_id: str) -> int:
+    async with async_sessionmaker(
+        bind=create_async_engine(DATABASE_URL, poolclass=NullPool, **_ENGINE_KWARGS),
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )() as session:
+        sub = (
+            await session.execute(select(Subscription).where(Subscription.user_id == user_id))
+        ).scalar_one_or_none()
+        if sub is None:
+            return get_plan("free").max_lecture_min
+        rollover_if_needed(sub)
+        return get_plan(sub.plan_tier).max_lecture_min
+
+
+def max_lecture_minutes(user_id: Optional[str]) -> int:
+    """Longest lecture (minutes) the user's plan accepts. Sync, for the
+    pipeline worker thread; falls back to the Free limit on any error."""
+    if not user_id:
+        return get_plan("free").max_lecture_min
+    try:
+        return asyncio.run(_max_lecture_minutes(user_id))
+    except Exception:
+        logger.exception("usage: plan lookup failed for %s — using Free limit", user_id)
+        return get_plan("free").max_lecture_min
 
 
 def meter_minutes(duration_sec: Optional[float]) -> int:

@@ -29,10 +29,6 @@ from backend.db.database import Base, engine
 from backend.db.models import User, Subscription
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-# LEMONSQUEEZY URLs come from config, which reads env at import time.
-os.environ["LEMONSQUEEZY_CHECKOUT_STARTER_URL"] = "https://store.test/buy/starter"
-os.environ["LEMONSQUEEZY_CHECKOUT_PRO_URL"] = "https://store.test/buy/pro"
-os.environ["LEMONSQUEEZY_CUSTOMER_PORTAL_URL"] = "https://store.test/billing"
 os.environ["NORAI_DEV_ACCESS"] = "0"
 
 # Patch the auth dependency so we can simulate a signed-in user without
@@ -45,8 +41,7 @@ FAKE_USER_ID = "user_test_1"
 
 
 async def _seed(user_id: str = FAKE_USER_ID, used: int = 0, quota: int = 45,
-                tier: str = "free", status: str = "trial", ls_sub: str | None = None,
-                elapsed_period: bool = False):
+                tier: str = "free", status: str = "trial", elapsed_period: bool = False):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     from sqlalchemy import select
@@ -61,12 +56,11 @@ async def _seed(user_id: str = FAKE_USER_ID, used: int = 0, quota: int = 45,
             sub.monthly_minutes_quota = quota
             sub.plan_tier = tier
             sub.status = status
-            sub.lemon_squeezy_subscription_id = ls_sub
+            sub.current_period_end = None
         else:
             s.add(Subscription(
                 user_id=user_id, status=status, plan_tier=tier,
                 monthly_minutes_quota=quota, used_minutes_this_month=used,
-                lemon_squeezy_subscription_id=ls_sub,
             ))
         if elapsed_period:
             now = datetime.now(timezone.utc)
@@ -120,10 +114,16 @@ def test_quota_requires_auth_and_reports_usage():
         main_mod.app.dependency_overrides.clear()
 
 
-def test_billing_returns_plan_usage_and_links():
-    import backend.routers.billing as billing_mod
-    billing_mod.ENABLE_PAYMENTS = True
-    asyncio.run(_seed(used=3, quota=45, ls_sub="ls_123"))
+def _enable_payments(on: bool):
+    import config
+    config.ENABLE_PAYMENTS = on
+    config.RAZORPAY_KEY_ID = "rzp_test_key" if on else ""
+    config.RAZORPAY_KEY_SECRET = "rzp_test_secret" if on else ""
+
+
+def test_billing_returns_plan_and_usage():
+    _enable_payments(True)
+    asyncio.run(_seed(used=3, quota=45))
     client = TestClient(main_mod.app)
     main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
     try:
@@ -131,15 +131,129 @@ def test_billing_returns_plan_usage_and_links():
         data = r.json()
         check("billing 200", r.status_code == 200)
         check("plan tier", data["plan_tier"] == "free")
+        check("plan details", data["plan"]["id"] == "free" and data["plan"]["max_lecture_min"] > 0)
         check("used", data["used_minutes_this_month"] == 3)
         check("remaining", data["remaining_minutes"] == 42)
-        check("checkout starter url", data["checkout_urls"]["starter"] == "https://store.test/buy/starter")
-        check("checkout pro url", data["checkout_urls"]["pro"] == "https://store.test/buy/pro")
-        check("manage url", data["manage_url"] == "https://store.test/billing")
-        check("ls sub id", data["lemon_squeezy_subscription_id"] == "ls_123")
+        check("payments list", data["payments"] == [])
         check("payments enabled flag", data["payments_enabled"] is True)
+        check("no lemon squeezy fields", "checkout_urls" not in data and "manage_url" not in data)
     finally:
-        billing_mod.ENABLE_PAYMENTS = False
+        _enable_payments(False)
+        main_mod.app.dependency_overrides.clear()
+
+
+def test_public_plans():
+    client = TestClient(main_mod.app)
+    r = client.get("/billing/plans")
+    data = r.json()
+    ids = [p["id"] for p in data["plans"]]
+    check("plans public 200", r.status_code == 200)
+    check("plans catalogue", ids == ["free", "starter", "pro"])
+    check("plans in INR", data["currency"] == "INR" and data["plans"][1]["price_inr"] > 0)
+    check("payments off without keys", data["payments_enabled"] is False)
+
+
+def test_razorpay_order_and_verify():
+    import hashlib
+    import hmac
+    from backend import razorpay_client
+
+    asyncio.run(_seed(used=0, quota=45))
+    client = TestClient(main_mod.app)
+
+    r = client.post("/billing/razorpay/order", json={"plan_id": "starter"})
+    check("order 401 without auth", r.status_code == 401)
+
+    main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
+    created = []
+
+    async def fake_create_order(amount_paise, receipt, notes):
+        created.append((amount_paise, notes))
+        return {"id": f"order_test_{len(created)}", "amount": amount_paise, "currency": "INR"}
+
+    async def fake_fetch_payment(payment_id):
+        return {"id": payment_id, "order_id": "order_test_1", "amount": 14900,
+                "status": "captured", "method": "upi"}
+
+    orig = razorpay_client.create_order, razorpay_client.fetch_payment
+    razorpay_client.create_order, razorpay_client.fetch_payment = fake_create_order, fake_fetch_payment
+    try:
+        r = client.post("/billing/razorpay/order", json={"plan_id": "starter"})
+        check("order 503 while payments disabled", r.status_code == 503)
+
+        _enable_payments(True)
+        r = client.post("/billing/razorpay/order", json={"plan_id": "free"})
+        check("free plan not purchasable", r.status_code == 400)
+        r = client.post("/billing/razorpay/order", json={"plan_id": "enterprise"})
+        check("unknown plan rejected", r.status_code == 400)
+
+        r = client.post("/billing/razorpay/order", json={"plan_id": "starter", "amount": 1})
+        data = r.json()
+        check("order created", r.status_code == 200 and data["order_id"] == "order_test_1")
+        check("amount set server-side", created[-1][0] == 14900 and data["amount"] == 14900)
+        check("order notes carry user + plan", created[-1][1] == {"user_id": FAKE_USER_ID, "plan_id": "starter"})
+        check("key id returned for checkout", data["key_id"] == "rzp_test_key")
+
+        r = client.post("/billing/razorpay/verify", json={
+            "razorpay_order_id": "order_test_1", "razorpay_payment_id": "pay_test_1",
+            "razorpay_signature": "0" * 64})
+        check("forged signature rejected", r.status_code == 400)
+
+        sig = hmac.new(b"rzp_test_secret", b"order_test_1|pay_test_1", hashlib.sha256).hexdigest()
+        body = {"razorpay_order_id": "order_test_1", "razorpay_payment_id": "pay_test_1",
+                "razorpay_signature": sig}
+        r = client.post("/billing/razorpay/verify", json=body)
+        data = r.json()
+        check("verify 200", r.status_code == 200)
+        check("verify grants starter", data["granted"] is True and data["plan_tier"] == "starter")
+        check("starter quota 300", data["monthly_minutes_quota"] == 300)
+        check("pass expiry reported", data["current_period_end"] is not None)
+        check("payment in history", data["payments"][0]["status"] == "paid" and data["payments"][0]["method"] == "upi")
+
+        r = client.post("/billing/razorpay/verify", json=body)
+        check("re-verify is idempotent", r.status_code == 200 and r.json()["granted"] is False
+              and r.json()["monthly_minutes_quota"] == 300)
+
+        # Another user's order is invisible.
+        async def other_user():
+            return _User(id="someone_else", email="else@example.com", is_anonymous=False)
+        asyncio.run(_seed(user_id="someone_else"))
+        main_mod.app.dependency_overrides[main_mod.get_current_user] = other_user
+        r = client.post("/billing/razorpay/verify", json=body)
+        check("cannot verify another user's order", r.status_code == 404)
+
+        async def anon_user():
+            return _User(id="anon_1", email="anon@example.com", is_anonymous=True)
+        main_mod.app.dependency_overrides[main_mod.get_current_user] = anon_user
+        r = client.post("/billing/razorpay/order", json={"plan_id": "starter"})
+        check("anonymous user cannot buy", r.status_code == 403)
+    finally:
+        razorpay_client.create_order, razorpay_client.fetch_payment = orig
+        _enable_payments(False)
+        main_mod.app.dependency_overrides.clear()
+
+
+def test_paid_plan_raises_duration_cap():
+    # A Starter pass lifts the 45-min free cap to 90 min.
+    asyncio.run(_seed(used=0, quota=300, tier="starter", status="active"))
+    async def _set_end():
+        from sqlalchemy import select
+        sf = async_sessionmaker(bind=engine, expire_on_commit=False)
+        async with sf() as s:
+            sub = (await s.execute(select(Subscription).where(Subscription.user_id == FAKE_USER_ID))).scalar_one()
+            sub.current_period_end = datetime.now(timezone.utc) + timedelta(days=10)
+            await s.commit()
+    asyncio.run(_set_end())
+    client = TestClient(main_mod.app)
+    main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
+    try:
+        fake_mp4 = b"\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00" + b"fakedata"
+        r = client.post("/process", data={"source_type": "upload", "duration": "100"},
+                        files={"file": ("v.mp4", fake_mp4, "video/mp4")})
+        check("starter rejects 100-min lecture", r.status_code == 429)
+        r = client.get("/quota")
+        check("quota reports starter max length", r.json()["max_lecture_minutes"] == 90)
+    finally:
         main_mod.app.dependency_overrides.clear()
 
 
@@ -276,7 +390,10 @@ def test_process_allows_within_quota_upload():
 
 if __name__ == "__main__":
     test_quota_requires_auth_and_reports_usage()
-    test_billing_returns_plan_usage_and_links()
+    test_billing_returns_plan_and_usage()
+    test_public_plans()
+    test_razorpay_order_and_verify()
+    test_paid_plan_raises_duration_cap()
     test_billing_requires_auth()
     test_process_requires_auth()
     test_process_rejects_guest_with_header()

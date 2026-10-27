@@ -7,6 +7,7 @@ SQLAlchemy 2.0 ORM models for NorAI SaaS foundation:
 - Lecture
 - UsageLog
 - WebhookEvent
+- Payment
 """
 
 import uuid
@@ -42,6 +43,7 @@ class User(Base):
     usage_logs: Mapped[List["UsageLog"]] = relationship("UsageLog", back_populates="user", cascade="all, delete-orphan")
     courses: Mapped[List["Course"]] = relationship("Course", back_populates="user", cascade="all, delete-orphan")
     share_links: Mapped[List["ShareLink"]] = relationship("ShareLink", back_populates="user", cascade="all, delete-orphan")
+    payments: Mapped[List["Payment"]] = relationship("Payment", back_populates="user", cascade="all, delete-orphan")
 
 
 class Subscription(Base):
@@ -50,13 +52,14 @@ class Subscription(Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=generate_uuid)
     user_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
     
-    status: Mapped[str] = mapped_column(String(32), default="trial")  # 'trial', 'active', 'cancelled', 'past_due'
-    plan_tier: Mapped[str] = mapped_column(String(32), default="free")  # 'free', 'starter', 'pro'
-    
+    status: Mapped[str] = mapped_column(String(32), default="trial")  # 'trial', 'active', 'expired', 'refunded'
+    plan_tier: Mapped[str] = mapped_column(String(32), default="free")  # 'free', 'starter', 'pro' (backend/plans.py)
+
+    # Legacy (unused since the Razorpay switch; kept to avoid a destructive migration).
     lemon_squeezy_customer_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     lemon_squeezy_subscription_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     
-    monthly_minutes_quota: Mapped[int] = mapped_column(Integer, default=45)  # 45 mins for free trial, 300 for starter, 1500 for pro
+    monthly_minutes_quota: Mapped[int] = mapped_column(Integer, default=45)  # minutes for the current period (plans.py)
     used_minutes_this_month: Mapped[int] = mapped_column(Integer, default=0)
     
     current_period_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
@@ -185,8 +188,34 @@ class UsageLog(Base):
 class WebhookEvent(Base):
     __tablename__ = "webhook_events"
 
-    id: Mapped[str] = mapped_column(String(128), primary_key=True)  # Idempotency key from Lemon Squeezy
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)  # "rzp:<x-razorpay-event-id>" idempotency key
     event_name: Mapped[str] = mapped_column(String(128), nullable=False)
     payload: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     processed: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+
+class Payment(Base):
+    """One Razorpay order for a plan pass. Keyed by the Razorpay order id.
+
+    status: 'created' -> 'paid' | 'failed'; 'paid' -> 'refunded' (full refund).
+    The created->paid transition is a conditional UPDATE so the checkout
+    verify call and the webhook can race without granting the plan twice.
+    """
+    __tablename__ = "payments"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)  # Razorpay order_id
+    user_id: Mapped[str] = mapped_column(String(64), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    plan_id: Mapped[str] = mapped_column(String(32), nullable=False)
+    amount_paise: Mapped[int] = mapped_column(Integer, nullable=False)
+    currency: Mapped[str] = mapped_column(String(8), default="INR")
+    status: Mapped[str] = mapped_column(String(32), default="created", index=True)
+    razorpay_payment_id: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, index=True)
+    method: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)  # upi / card / netbanking / wallet
+    failure_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    refunded_paise: Mapped[int] = mapped_column(Integer, default=0)
+    paid_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    user: Mapped["User"] = relationship("User", back_populates="payments")

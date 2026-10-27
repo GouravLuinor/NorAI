@@ -179,18 +179,22 @@ def run_pipeline(
                 duration_sec = float(meta_data.get("duration", 0))
             _metrics["duration_sec"] = duration_sec
 
-            max_duration_sec = int(os.environ.get("MAX_FREE_DURATION_MIN", "45")) * 60
+            # Plan-aware cap (Free 45 / Starter 90 / Pro 180 min — backend/plans.py).
+            # Previously the free-trial limit applied to every user, paid or not.
+            from backend.usage import max_lecture_minutes
+            max_duration_sec = max_lecture_minutes(user_id) * 60
             if (
                 duration_sec > max_duration_sec
                 and os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true"
                 and os.environ.get("NORAI_DEV_ACCESS", "0") != "1"
             ):
                 raise TerminalPipelineError(
-                    f"Lecture duration ({duration_sec / 60:.1f} mins) exceeds the Free Trial limit "
+                    f"Lecture duration ({duration_sec / 60:.1f} mins) exceeds the plan limit "
                     f"of {max_duration_sec / 60:.0f} minutes.",
                     friendly=(
-                        f"This lecture is {duration_sec / 60:.1f} minutes long — over the "
-                        f"{max_duration_sec / 60:.0f}-minute free-trial limit."
+                        f"This lecture is {duration_sec / 60:.1f} minutes long — over your plan's "
+                        f"{max_duration_sec / 60:.0f}-minute limit per lecture. Upgrade your plan "
+                        f"or trim the video."
                     ),
                 )
         except json_lib.JSONDecodeError as e:
