@@ -42,6 +42,7 @@ from __future__ import annotations
 
 import logging
 import random
+import re
 import threading
 import time
 from typing import Any, Callable, TypeVar
@@ -109,6 +110,21 @@ def _backoff_seconds(attempt: int) -> float:
     return RETRY_BACKOFF_BASE * (attempt + 1) + random.uniform(
         RETRY_JITTER_MIN, RETRY_JITTER_MAX
     )
+
+
+_RETRY_HINT_RE = re.compile(r"retry in ([0-9.]+)s|'retryDelay': '([0-9.]+)s'")
+_MAX_HINTED_WAIT = 90.0
+
+
+def _server_retry_hint(err: BaseException | None) -> float:
+    """Seconds the API asked us to wait (429 RetryInfo), else 0. Retrying
+    sooner than this just burns an attempt on another 429."""
+    if err is None:
+        return 0.0
+    m = _RETRY_HINT_RE.search(str(err))
+    if not m:
+        return 0.0
+    return min(float(m.group(1) or m.group(2)), _MAX_HINTED_WAIT)
 
 
 def invoke_with_policy(
@@ -179,7 +195,7 @@ def invoke_with_policy(
             last_err = e
 
         if attempt < attempts - 1:
-            wait_time = _backoff_seconds(attempt)
+            wait_time = max(_backoff_seconds(attempt), _server_retry_hint(last_err) + 1.0)
             logger.warning(
                 "[%s] attempt %d/%d failed (%s); retrying in %.1fs...",
                 node,
