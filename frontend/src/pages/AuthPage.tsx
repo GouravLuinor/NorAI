@@ -7,16 +7,20 @@ import { supabase } from '../lib/supabaseClient'
 import { friendlyError } from '../lib/errorCopy'
 import { FOCUS_RING } from '../components/ui/shared'
 
+type AuthMode = 'login' | 'signup' | 'forgot'
+
 interface AuthPageProps {
-  defaultMode?: 'login' | 'signup'
+  defaultMode?: AuthMode
 }
+
+export const MIN_PASSWORD_LENGTH = 8
 
 export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, token } = useAuthStore()
 
-  const [mode, setMode] = useState<'login' | 'signup'>(defaultMode)
+  const [mode, setMode] = useState<AuthMode>(defaultMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -44,15 +48,30 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
     setLoading(true)
 
     try {
-      if (mode === 'signup') {
+      if (mode === 'forgot') {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        })
+        if (resetError) throw resetError
+        // Same message whether or not the account exists (no email enumeration).
+        setInfo('If an account exists for that email, a password reset link is on its way. Check your inbox and spam folder.')
+      } else if (mode === 'signup') {
+        if (password.length < MIN_PASSWORD_LENGTH) {
+          throw new Error(`Use at least ${MIN_PASSWORD_LENGTH} characters for your password.`)
+        }
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: fullName || email.split('@')[0] } },
+          options: {
+            data: { full_name: fullName || email.split('@')[0] },
+            emailRedirectTo: `${window.location.origin}/app`,
+          },
         })
         if (signUpError) throw signUpError
         if (!data.session) {
-          setInfo('Check your inbox — we sent a confirmation link to activate your account.')
+          // Supabase returns no session both for "confirm your email" and for an
+          // already-registered address (deliberately indistinguishable).
+          setInfo('Check your inbox for a confirmation link to activate your account. Already signed up with this email? Sign in or reset your password instead.')
         } else {
           navigate(from, { replace: true })
         }
@@ -107,12 +126,14 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
             <span>Autonomous Lecture Intelligence</span>
           </div>
           <h1 className="text-24 font-bold font-serif text-nt">
-            {mode === 'login' ? 'Sign in to your account' : 'Create your free account'}
+            {mode === 'login' ? 'Sign in to your account' : mode === 'signup' ? 'Create your free account' : 'Reset your password'}
           </h1>
           <p className="text-13 text-nt2 mt-1">
             {mode === 'login'
               ? 'Access your processed lectures, study notes, and Nora AI Tutor'
-              : 'Includes 45 minutes free lecture processing quota and interactive AI tutoring'}
+              : mode === 'signup'
+                ? 'Includes 45 minutes free lecture processing quota and interactive AI tutoring'
+                : "Enter your account email and we'll send you a link to choose a new password"}
           </p>
         </div>
 
@@ -145,9 +166,11 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
           className="bg-nb border border-bdr rounded-lg p-6 sm:p-8 shadow-bp"
         >
           {/* Segmented Control */}
+          {mode !== 'forgot' && (
           <div className="grid grid-cols-2 p-1 bg-ns2 rounded mb-6 border border-bdr font-display text-11 uppercase font-semibold">
             <button
-              onClick={() => setMode('login')}
+              type="button"
+              onClick={() => { setMode('login'); setError(''); setInfo('') }}
               className={`py-2 rounded transition-all cursor-pointer ${FOCUS_RING} ${
                 mode === 'login'
                   ? 'bg-ns text-np shadow-xs'
@@ -157,7 +180,8 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
               Sign In
             </button>
             <button
-              onClick={() => setMode('signup')}
+              type="button"
+              onClick={() => { setMode('signup'); setError(''); setInfo('') }}
               className={`py-2 rounded transition-all cursor-pointer ${FOCUS_RING} ${
                 mode === 'signup'
                   ? 'bg-ns text-np shadow-xs'
@@ -167,6 +191,7 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
               Create Account
             </button>
           </div>
+          )}
 
           {/* Messages */}
           {error && (
@@ -221,24 +246,44 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
               </div>
             </div>
 
+            {mode !== 'forgot' && (
             <div>
-              <label htmlFor="auth-password-input" className="block text-10 font-medium font-mono uppercase text-nt3 mb-1">
-                Password
-              </label>
+              <div className="flex items-baseline justify-between mb-1">
+                <label htmlFor="auth-password-input" className="block text-10 font-medium font-mono uppercase text-nt3">
+                  Password
+                </label>
+                {mode === 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => { setMode('forgot'); setError(''); setInfo('') }}
+                    className={`text-11 text-np hover:underline cursor-pointer rounded ${FOCUS_RING}`}
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
               <div className="relative">
                 <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-nt3" />
                 <input
                   id="auth-password-input"
                   type="password"
                   required
+                  minLength={mode === 'signup' ? MIN_PASSWORD_LENGTH : undefined}
                   autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  aria-describedby={mode === 'signup' ? 'auth-password-hint' : undefined}
                   className={`w-full pl-9 pr-3 py-2.5 text-13 bg-ns border border-bdr rounded focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
                 />
               </div>
+              {mode === 'signup' && (
+                <p id="auth-password-hint" className="mt-1 text-11 text-nt3">
+                  At least {MIN_PASSWORD_LENGTH} characters.
+                </p>
+              )}
             </div>
+            )}
 
             <button
               type="submit"
@@ -246,16 +291,28 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
               className="w-full py-3 px-4 bg-np hover:bg-nph text-npfg font-display text-12 font-semibold uppercase tracking-wider rounded shadow-bp flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer active:translate-y-[1px]"
             >
               {loading ? (
-                <span>Authenticating...</span>
+                <span>{mode === 'forgot' ? 'Sending…' : 'Authenticating...'}</span>
               ) : (
                 <>
-                  <span>{mode === 'login' ? 'Sign In to Workspace' : 'Start Free (45m Quota)'}</span>
+                  <span>{mode === 'login' ? 'Sign In to Workspace' : mode === 'signup' ? 'Start Free (45m Quota)' : 'Send Reset Link'}</span>
                   <ArrowRight size={15} />
                 </>
               )}
             </button>
           </form>
 
+          {mode === 'forgot' ? (
+            <div className="mt-5 text-center">
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setError(''); setInfo('') }}
+                className={`text-12 text-np hover:underline cursor-pointer rounded ${FOCUS_RING}`}
+              >
+                ← Back to sign in
+              </button>
+            </div>
+          ) : (
+          <>
           {/* Divider */}
           <div className="relative my-6 text-center">
             <div className="absolute inset-0 flex items-center">
@@ -292,6 +349,8 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
             </svg>
             <span>Continue with Google</span>
           </button>
+          </>
+          )}
         </motion.div>
 
         {/* Back Link */}

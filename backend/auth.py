@@ -76,7 +76,14 @@ def decode_supabase_jwt(token: str) -> Optional[Dict[str, Any]]:
             return payload
         else:
             return None
-        payload = pyjwt.decode(token, key, algorithms=[alg], audience=list(ALLOWED_AUDIENCES))
+        payload = pyjwt.decode(
+            token,
+            key,
+            algorithms=[alg],
+            audience=list(ALLOWED_AUDIENCES),
+            # A token without `exp` would never expire — refuse it outright.
+            options={"require": ["exp", "sub"]},
+        )
     except pyjwt.PyJWTError:
         return None
 
@@ -132,20 +139,42 @@ async def get_or_create_user_from_token(payload: Dict[str, Any], db: AsyncSessio
         try:
             await db.flush()
         except IntegrityError:
-            # Two tokens with different `sub` but the same email raced on
-            # User.email unique. Roll back our insert and re-fetch the winner
-            # so auth doesn't silently degrade to anonymous.
+            # Either a concurrent request for the SAME `sub` won the insert
+            # (re-fetch it), or a stale row holds this email under a DIFFERENT
+            # `sub` (account deleted and re-created in Supabase). Never resolve
+            # by email: that would hand the new identity the old account's
+            # lectures and paid plan. Supabase signed this token, so the email
+            # belongs to `sub` now — release it from the stale row instead.
             await db.rollback()
             result = await db.execute(select(User).where(User.id == user_id))
             user = result.scalar_one_or_none()
             if user is None:
                 result = await db.execute(select(User).where(User.email == email))
-                user = result.scalar_one_or_none()
-            if user is None:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Unable to resolve user account",
+                stale = result.scalar_one_or_none()
+                if stale is not None and stale.id != user_id:
+                    logging.getLogger("norai").warning(
+                        "auth: email already held by user %s; releasing it for new sub %s",
+                        stale.id, user_id,
+                    )
+                    stale.email = f"{stale.id}@released.norai"
+                    db.add(stale)
+                    await db.flush()
+                user = User(
+                    id=user_id,
+                    email=email,
+                    full_name=full_name,
+                    avatar_url=avatar_url,
+                    is_anonymous=is_anonymous,
                 )
+                db.add(user)
+                try:
+                    await db.flush()
+                except IntegrityError:
+                    await db.rollback()
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Unable to resolve user account",
+                    )
 
     # Ensure the resolved user always has a Subscription row
     sub_result = await db.execute(select(Subscription).where(Subscription.user_id == user.id))

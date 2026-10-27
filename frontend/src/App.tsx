@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useNavigate, useParams, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, useParams, Navigate, useLocation } from 'react-router-dom'
 import { ToastContainer } from './components/ui/ToastContainer'
 import { AppErrorBoundary } from './components/AppErrorBoundary'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
@@ -16,6 +16,7 @@ const AuthModal = lazy(() =>
   import('./components/auth/AuthModal').then(m => ({ default: m.AuthModal })),
 )
 const AuthPage = lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AuthPage })))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })))
 const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })))
 const PricingPage = lazy(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })))
 const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })))
@@ -51,6 +52,18 @@ function PricingRouteWrapper() {
 function AuthModalBridge() {
   const navigate = useNavigate()
   return <AuthModal onSuccess={() => navigate('/app')} />
+}
+
+// If Supabase falls back to the Site URL for a reset link (redirect URL not
+// allow-listed), the PASSWORD_RECOVERY session lands on some other route —
+// send the user to the page that actually lets them set the new password.
+function PasswordRecoveryRedirect() {
+  const isPasswordRecovery = useAuthStore(s => s.isPasswordRecovery)
+  const location = useLocation()
+  if (isPasswordRecovery && location.pathname !== '/reset-password') {
+    return <Navigate to="/reset-password" replace />
+  }
+  return null
 }
 
 function WorkspaceRouteWrapper() {
@@ -93,11 +106,14 @@ export default function App() {
             <RateLimitBanner />
             <ToastContainer />
             <AuthModalBridge />
+            <PasswordRecoveryRedirect />
             <Suspense fallback={<RouteFallback />}>
               <Routes>
                 <Route path="/" element={<LandingRouteWrapper />} />
                 <Route path="/login" element={<AuthPage defaultMode="login" />} />
                 <Route path="/signup" element={<AuthPage defaultMode="signup" />} />
+                <Route path="/forgot-password" element={<AuthPage defaultMode="forgot" />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                 {/* Soft-disable billing & pricing when payments are off */}
                 <Route

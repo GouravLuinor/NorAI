@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { X, Mail, Lock, User as UserIcon, ArrowRight, Sparkles } from 'lucide-react'
 import { useAuthStore } from '../../stores/useAuthStore'
@@ -6,6 +7,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { friendlyError } from '../../lib/errorCopy'
 import { Dialog } from '../ui/Dialog'
 import { FOCUS_RING } from '../ui/shared'
+import { MIN_PASSWORD_LENGTH } from '../../pages/AuthPage'
 
 interface AuthModalProps {
   onSuccess?: () => void
@@ -13,6 +15,7 @@ interface AuthModalProps {
 
 export function AuthModal({ onSuccess }: AuthModalProps) {
   const { isAuthModalOpen, authModalTab, closeAuthModal } = useAuthStore()
+  const navigate = useNavigate()
   const [tab, setTab] = useState<'login' | 'signup'>(authModalTab)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -35,14 +38,20 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
 
     try {
       if (tab === 'signup') {
+        if (password.length < MIN_PASSWORD_LENGTH) {
+          throw new Error(`Use at least ${MIN_PASSWORD_LENGTH} characters for your password.`)
+        }
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: fullName || email.split('@')[0] } },
+          options: {
+            data: { full_name: fullName || email.split('@')[0] },
+            emailRedirectTo: `${window.location.origin}/app`,
+          },
         })
         if (signUpError) throw signUpError
         if (!data.session) {
-          setInfo('Check your inbox — we sent a confirmation link to confirm your account.')
+          setInfo('Check your inbox for a confirmation link to activate your account. Already signed up with this email? Sign in or reset your password instead.')
         } else {
           closeAuthModal()
           onSuccess?.()
@@ -184,13 +193,25 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
           </div>
 
           <div>
-            <label htmlFor="auth-password" className="block text-10 font-medium font-mono uppercase text-nt3 mb-1">Password</label>
+            <div className="flex items-baseline justify-between mb-1">
+              <label htmlFor="auth-password" className="block text-10 font-medium font-mono uppercase text-nt3">Password</label>
+              {tab === 'login' && (
+                <button
+                  type="button"
+                  onClick={() => { closeAuthModal(); navigate('/forgot-password') }}
+                  className={`text-11 text-np hover:underline cursor-pointer rounded ${FOCUS_RING}`}
+                >
+                  Forgot password?
+                </button>
+              )}
+            </div>
             <div className="relative">
               <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-nt3" />
               <input
                 id="auth-password"
                 type="password"
                 required
+                minLength={tab === 'signup' ? MIN_PASSWORD_LENGTH : undefined}
                 autoComplete={tab === 'signup' ? 'new-password' : 'current-password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

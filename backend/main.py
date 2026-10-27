@@ -296,7 +296,10 @@ if SPA_DIST_DIR.exists() and (SPA_DIST_DIR / "assets").is_dir():
     app.mount("/assets", StaticFiles(directory=str(SPA_DIST_DIR / "assets")), name="spa_assets_mount")
 
 # SPA client-side routes (everything Vite's history-mode router owns).
-SPA_HTML_ROUTES = {"/", "/pricing", "/billing", "/usage", "/courses"}
+SPA_HTML_ROUTES = {
+    "/", "/pricing", "/billing", "/usage", "/courses",
+    "/login", "/signup", "/forgot-password", "/reset-password",
+}
 SPA_HTML_PREFIXES = ("/app", "/workspace", "/process/", "/print", "/share/")
 
 

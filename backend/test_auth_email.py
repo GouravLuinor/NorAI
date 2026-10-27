@@ -88,6 +88,59 @@ def test_duplicate_email_race():
     check("resolved to existing user after race", user.id == "u2")
 
 
+class EmailHeldSession(FakeSession):
+    """The email is held by a stale row under a DIFFERENT sub."""
+
+    def __init__(self):
+        super().__init__(fail_first_flush=False)
+        self.stale = User(id="old-sub", email="reused@example.com", is_anonymous=False)
+        self._failed = False
+
+    async def execute(self, stmt):
+        text = str(stmt)
+        if "subscriptions" in text.lower():
+            return FakeResult([a for a in self.added if isinstance(a, Subscription)])
+        if "WHERE users.email" in text:
+            return FakeResult([self.stale])
+        return FakeResult([])  # lookup by id: new sub has no row
+
+    async def flush(self):
+        self.flush_calls += 1
+        if not self._failed:
+            self._failed = True
+            raise IntegrityError("INSERT", {}, Exception("UNIQUE constraint failed: users.email"))
+
+
+def test_email_collision_never_aliases_old_account():
+    s = EmailHeldSession()
+    user = __import__("asyncio").run(get_or_create_user_from_token(
+        {"sub": "new-sub", "email": "reused@example.com", "is_anonymous": False}, s))
+    check("new sub gets its own row (not the stale account)", user.id == "new-sub")
+    check("stale row's email released", s.stale.email == "old-sub@released.norai")
+
+
+def test_decode_requires_exp():
+    import os
+    import time
+    import jwt as pyjwt
+    import backend.auth as auth_mod
+
+    secret = "test-secret-for-exp-check-0123456789abcdef"
+    prev = auth_mod.SUPABASE_JWT_SECRET
+    auth_mod.SUPABASE_JWT_SECRET = secret
+    try:
+        no_exp = pyjwt.encode({"sub": "x", "aud": "authenticated"}, secret, algorithm="HS256")
+        check("token without exp rejected", decode_supabase_jwt(no_exp) is None)
+        good = pyjwt.encode(
+            {"sub": "x", "aud": "authenticated", "exp": int(time.time()) + 60}, secret, algorithm="HS256")
+        check("token with exp accepted", (decode_supabase_jwt(good) or {}).get("sub") == "x")
+        expired = pyjwt.encode(
+            {"sub": "x", "aud": "authenticated", "exp": int(time.time()) - 60}, secret, algorithm="HS256")
+        check("expired token rejected", decode_supabase_jwt(expired) is None)
+    finally:
+        auth_mod.SUPABASE_JWT_SECRET = prev
+
+
 def test_missing_subscription_backfilled():
     existing = User(id="u3", email="c@example.com", is_anonymous=False)
     s = FakeSession(existing_user=existing)
@@ -119,6 +172,8 @@ def test_decode_rejects_unsigned():
 if __name__ == "__main__":
     test_new_user_creation()
     test_duplicate_email_race()
+    test_email_collision_never_aliases_old_account()
+    test_decode_requires_exp()
     test_missing_subscription_backfilled()
     test_anon_claim_from_payload()
     test_decode_rejects_unsigned()
