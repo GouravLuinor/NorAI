@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useThreadStore } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { scrollToHeading } from '../../lib/cite'
+import { useVideoStore } from '../../stores/useVideoStore'
 import { useAskNora } from '../../hooks/useAskNora'
 import type { Reference } from '../../types'
 import { useTutorSettingsStore } from '../../stores/useTutorSettingsStore'
@@ -48,6 +49,11 @@ export function ChatArea() {
 
   // ── Reference handlers ────────────────────────────────────────────────────
   const handleReferenceClick = useCallback((ref: Reference) => {
+    // Transcript citations point at a moment in the lecture, not a note heading.
+    if (ref.startSec != null) {
+      useVideoStore.getState().requestSeek(ref.startSec)
+      return
+    }
     scrollToHeading(ref.title || ref.sectionId, ref.chapterId, ref.sectionId)
   }, [])
 

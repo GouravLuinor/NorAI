@@ -51,7 +51,7 @@ export const ReferencesPanel = memo(function ReferencesPanel({ references, onRef
         {references.map((ref, index) => {
           const isScreenshot = ref.type === 'screenshot'
           const seekSec = videoEmbeddable && !isScreenshot
-            ? (chunkStart(ref.chunkId, ref.chapterId) ?? chapterStart(ref.chapterId))
+            ? (ref.startSec ?? chunkStart(ref.chunkId, ref.chapterId) ?? chapterStart(ref.chapterId))
             : null
           return (
             <div key={`${ref.type}-${ref.id}-${index}`} className="group flex items-center gap-1">

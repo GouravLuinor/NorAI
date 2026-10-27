@@ -13,25 +13,11 @@ function chunk(over: Partial<RetrievedChunk> = {}): RetrievedChunk {
 }
 
 describe('buildReferences', () => {
-  it('drops weak chunks above the confidence threshold', () => {
-    expect(buildReferences([chunk({ distance: 0.9 })], [], '')).toHaveLength(0)
+  it('shows no note references when nothing was cited', () => {
+    expect(buildReferences([chunk({ distance: 0.1, relevant: true })], [], '')).toHaveLength(0)
   })
 
-  it('keeps chunks within the confidence threshold', () => {
-    const refs = buildReferences([chunk({ distance: 0.2 })], [], '')
-    expect(refs).toHaveLength(1)
-    expect(refs[0]).toMatchObject({ title: 'Top > Leaf', sectionId: 'sec-leaf', chapterId: 1, type: 'note' })
-  })
-
-  it('respects an explicit relevant=false override', () => {
-    expect(buildReferences([chunk({ distance: 0.1, relevant: false })], [], '')).toHaveLength(0)
-  })
-
-  it('treats relevant=true as confident regardless of distance', () => {
-    expect(buildReferences([chunk({ distance: 0.9, relevant: true })], [], '')).toHaveLength(1)
-  })
-
-  it('prefers verified citations over the chunk fallback', () => {
+  it('turns verified citations into references', () => {
     const cites: VerifiedCitation[] = [
       { section: 'Right Answer', heading_path: 'Ch1 > Right Answer', chunk_id: 'ch1__x', verified: true },
     ]
@@ -40,38 +26,36 @@ describe('buildReferences', () => {
     expect(refs[0]).toMatchObject({ title: 'Right Answer', section: 'Ch 1' })
   })
 
-  it('drops unverified citations and falls back to chunks', () => {
+  it('drops unverified citations without falling back to chunks', () => {
     const cites: VerifiedCitation[] = [
       { section: 'Fabricated', heading_path: 'Nope', chunk_id: 'ch1__y', verified: false },
     ]
-    const refs = buildReferences([chunk({ distance: 0.1 })], [], '', cites)
-    expect(refs).toHaveLength(1)
-    expect(refs[0].title).toBe('Top > Leaf')
+    expect(buildReferences([chunk({ distance: 0.1 })], [], '', cites)).toHaveLength(0)
   })
 
-  it('does not resurrect rawText Sources when weak chunks existed', () => {
+  it('never resurrects the model\'s own Sources text', () => {
     const refs = buildReferences(
-      [chunk({ distance: 0.9 })],
+      [],
       [],
       'Text. Sources:\n• outputs/x/frame_1.jpg\n• Chapter 1 > Notes',
     )
     expect(refs).toHaveLength(0)
   })
 
-  it('falls back to rawText Sources only when nothing was retrieved', () => {
-    const refs = buildReferences(
-      [],
-      [],
-      'Text. Sources:\n• outputs/x/frame_1.jpg\n• Chapter 1 > Notes',
-    )
-    expect(refs.length).toBeGreaterThanOrEqual(2)
-    expect(refs.some((r) => r.type === 'screenshot')).toBe(true)
-    expect(refs.some((r) => r.type === 'note')).toBe(true)
+  it('carries the lecture time of a verified transcript citation', () => {
+    const cites: VerifiedCitation[] = [
+      { section: '3:42 — rings unrolled', heading_path: 'Transcript 3:42–4:10', chunk_id: 'tx_222_a', chapter_id: 2, verified: true, start: 222, end: 250 },
+    ]
+    const refs = buildReferences([], [], '', cites)
+    expect(refs[0]).toMatchObject({ startSec: 222, endSec: 250, chapterId: 2, title: '3:42 — rings unrolled' })
   })
 
   it('appends retrieved screenshots alongside note refs', () => {
+    const cites: VerifiedCitation[] = [
+      { section: 'Leaf', heading_path: 'Top > Leaf', chunk_id: 'ch1__abc', verified: true },
+    ]
     const images: RetrievedImage[] = [{ path: 'outputs/foo/bar.jpg', section: 'Fig 1' }]
-    const refs = buildReferences([chunk({ distance: 0.1 })], images, '')
+    const refs = buildReferences([chunk()], images, '', cites)
     expect(refs).toHaveLength(2)
     expect(refs[1]).toMatchObject({ type: 'screenshot', id: 'outputs/foo/bar.jpg' })
   })

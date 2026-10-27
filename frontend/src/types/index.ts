@@ -15,10 +15,14 @@ export interface RetrievedChunk {
   heading_path: string
   chapter_id: number
   heading?: string
-  distance?: number
+  distance?: number | null
   relevant?: boolean
   context?: string
   chunk_id?: string
+  /** 'transcript' windows carry the lecture time they cover (seconds). */
+  kind?: 'transcript' | 'notes'
+  start?: number | null
+  end?: number | null
 }
 
 export interface RetrievedImage {
@@ -34,6 +38,9 @@ export interface VerifiedCitation {
   heading_path?: string | null
   heading?: string | null
   chapter_id?: number | null
+  /** Set when the citation is a verified transcript timestamp (seconds). */
+  start?: number | null
+  end?: number | null
 }
 
 export interface ChatResponse {
