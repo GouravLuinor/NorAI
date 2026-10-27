@@ -343,7 +343,7 @@ NorAI/
 │   ├── TUTORIAL.md               # complete system architecture & design tutorial
 │   ├── NOTES.md                  # developer fix log & architectural decisions
 │   ├── token_reduction.md        # prompt compression & caching benchmarks
-│   └── archive/                  # completed audits/reports + logo explorations (historical)
+│   └── archive/                  # completed audits/reports, old handoff log, logo explorations
 ├── AGENTS.md                     # developer and agent operational guide
 └── requirements.txt
 ```

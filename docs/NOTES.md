@@ -69,6 +69,11 @@ Forward-looking work — details live in the referenced docs:
 - **P0.4a — frontend auth on reads (deferred).** Ownership scoping (`ensure_lecture_access`) only 404s foreign lectures when a token is presented; the frontend sends no token on artifact reads (`default` access). Deliberately not wired yet — see `ROADMAP.md` Phase P0.
 - **Job-queue multi-worker claim-lock.** The DB-backed job queue currently assumes a single worker; running `--workers > 1` needs a claim-lock so two workers can't process the same lecture. See `backend/jobs.py`.
 - **P6 retention (engineering backlog).** P6.1 token-level streaming, P6.2 SM-2 + Anki `.apkg` export, P6.3 click-to-video grounding (chapter-level best-effort seek), P6.4 multi-lecture courses + link sharing (shipped offline-verified 2026-08-14: migration `0004_courses_and_shares`, `backend/test_courses_shares.py` 37 checks), and P6.5 usage/cost dashboard are shipped (P6.5 live DoD closed 2026-08-13: pipeline on `mY3bR9qjZr4` = $0.0269 / 18 calls across 5 stage rows; tutor turns ~$0.0006/turn); remaining: P6.4c per-course tutor contexts (course-scoped retrieval/graph) and exact-moment chunk-level video seeks — see `ROADMAP.md`.
+- **Deferred UI polish (Phase 4 audit, 2026-08-22).** Unified Tabs primitive (SegmentedControl keyboard parity shipped instead); Button size/density props; keyboard paths for CitationBox (hover-only popover) and HighlightAsk (mouseup-only selection); Sidebar delete-confirm symmetry; an axe pass + keyboard walkthrough was never run.
+- **Deferred P7 cost ideas.** Base-model swap, tightening the `lecture_notes` word target (probe-verified only), longer-term prompt compression. Quality-sensitive: measure before/after.
+- **Likely dead notes path (verify before removing).** `generate_study_notes` + `NOTES_PROMPT` (`notes/notes_generator.py`, `notes/notes_prompt.py`) are imported by `orchestrator.py` but the live pipeline uses the inline merged prompt in `generate_consolidated_chapter_artifacts`.
+- **Estimator follow-ups.** Show the estimate on ProcessingPage; per-lecture call history UI.
+- **Google sign-in.** The button is wired, but the Google provider must be enabled in the Supabase dashboard (plus the callback URL) before it works.
 - **Deployment path (agreed 2026-08-14).** Production hosting decisions (Hostinger KVM 1 VPS, single-container Docker, Caddy TLS, Cloudflare DNS, Supabase Postgres/Auth free tier, local `outputs/` storage) are recorded in `DEPLOYMENT_PLAN.md` §0. This is separate from the launch-track §2 decisions — it's the *hosting/infra* track.
 
 ---
@@ -88,3 +93,20 @@ Decided 2026-08-14: heavy AI work is split between opencode and **Google Antigra
 **Ownership split:** Antigravity → big refactors/architecture, greenfield codegen, 1M-context work, hard debugging; opencode → surgical edits, mechanical changes, tool-heavy loops (tests/lint/builds, dev-server work, Chrome DevTools MCP), quick QA. Git is the handoff point; `docs/PROJECT_PROGRESS.md` carries current state.
 
 **Antigravity usage reality:** compute-based limits refresh every 5h, capped weekly; `high`-mode burns fast. Reserve 3.7 Flash/high for heavy tasks — trivial edits go to opencode. When the cap hits, Google silently shifts to a smaller model (or paid top-up credits).
+
+---
+
+## 6. Lessons & Gotchas (carried over from the retired handoff log)
+
+Full log: `docs/archive/COMMUNICATOR_handoff_log.md`.
+
+- **Cost baseline (P6.5, 2026-08-13)** for Phase 2 comparisons: a 12.08-min lecture (`mY3bR9qjZr4`) = 18 Gemini calls / 27,276 input / 13,382 output tokens / **$0.0269**, split extract 10 · notes 3 · visual 3 · outline 1 · embed 1. A tutor turn ≈ 2 calls ≈ $0.0006. The 2026-10-27 run of a 17-min lecture was estimated at ~35 calls.
+- **Throughput ceiling.** The shared Gemini limiter is 12 RPM (`DEFAULT_RPM_LIMIT`, env `NORAI_RPM_LIMIT`); raise it only on a paid tier.
+- **Estimator self-calibrates** from `outputs/pipeline_metrics.jsonl` on every real run; `venv/bin/python -m backend.estimator --recalibrate` prints fitted constants and prediction error. Early "14-min" estimates were uncalibrated defaults, not real slowness.
+- **Pipeline caches key off input hashes**, so improving an extractor/visual stage does NOT backfill existing lectures. The merger fallback can repair stale merged objects offline with zero LLM calls.
+- **Visual attribution failure mode.** Chunk-level visual analysis was once blanket-assigned to every candidate frame in the chunk, so speaker-webcam frames got slide descriptions and were indexed as diagrams. Attribute per frame.
+- **Tutor memory failure mode.** `context_messages` was once never populated, making the tutor silently stateless; the prompt window is now rebuilt each turn from `messages` (last 6 + latest summary). Test multi-turn memory explicitly.
+- **Usage metering gotchas.** Never call `asyncio.run()` inside a request handler (use the `_async` recorder); streamed responses report usage per chunk (collapse to one row from max tokens); the embed API returns no usage metadata (cost is estimated from characters sent).
+- **YouTube bot checks.** Downloads go Web+PO-token → TV/embedded → Android; nothing server-side is 100%. Direct upload is the escape hatch, so keep it prominent.
+- **Supabase connectivity.** The direct `db.<ref>.supabase.co` host is IPv6-only and unreachable from some networks/VPSes; use the Session pooler URL in `DATABASE_URL`.
+- **Dev servers.** Never `pkill -f "uvicorn backend.main:app"` from an agent shell (it can kill the shell itself); use `scripts/start-dev.sh stop|start` and probe `curl http://127.0.0.1:8000/docs`. With `--reload`, saving any `.py` file mid-pipeline orphans the running job until stale-heartbeat recovery (15 min).
