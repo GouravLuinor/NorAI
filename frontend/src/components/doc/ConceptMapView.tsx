@@ -5,11 +5,9 @@ import { useLectureStore } from '../../stores/useLectureStore'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
 import { useToastStore } from '../../stores/useToastStore'
-import { useThreadStore } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
 import { apiGet } from '../../lib/http'
-import { genId } from '../../lib/id'
-import { useAskNora, chatTimestamp } from '../../hooks/useAskNora'
+import { useAskNora } from '../../hooks/useAskNora'
 import { ConceptSkeleton } from '../ui/SkeletonCard'
 import { FOCUS_RING } from '../ui/shared'
 import {
@@ -54,12 +52,7 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
 
   const handleAskNora = useCallback(async (conceptLabel: string) => {
     const text = `Explain the concept "${conceptLabel}" from Chapter ${chapterId} in detail with examples.`
-    useThreadStore.getState().addMessage({
-      id: genId(),
-      role: 'user',
-      content: text,
-      timestamp: chatTimestamp(),
-    })
+    // send() adds the user message itself — adding it here too duplicated it.
     useQuizStore.getState().setMode('tutor')
     await send(text)
     addToast(`Asked Nora about "${conceptLabel}"`, 'success')

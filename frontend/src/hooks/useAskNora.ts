@@ -1,14 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useThreadStore, type Message } from '../stores/useThreadStore'
-import { useLectureStore } from '../stores/useLectureStore'
-import { sendChatMessageStream } from '../lib/chatApi'
-import { buildReferences, stripSources } from '../lib/references'
-import { genId } from '../lib/id'
-import { getLectureId } from '../lib/threadStorage'
+import { useCallback, useEffect, useRef } from 'react'
+import { useThreadStore, chatTimestamp } from '../stores/useThreadStore'
 import type { Reference } from '../types'
 
-export const chatTimestamp = () =>
-  new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+export { chatTimestamp }
 
 export interface AskNoraSendOptions {
   studyMode?: string
@@ -22,30 +16,13 @@ export interface UseAskNoraOptions {
   referenceAnswer?: (cleanAnswer: string) => string
 }
 
-const STREAM_FLUSH_MS = 100
-
-export const appendAssistantMessageAtomically = (targetThreadId: string, assistantMsg: Message) => {
-  useThreadStore.setState((s) => {
-    const currentMessages = s.threadId === targetThreadId
-      ? s.messages
-      : (s._messagesCache[targetThreadId] ?? [])
-
-    if (currentMessages.some(m => m.role === 'assistant' && m.content === assistantMsg.content)) {
-      return {}
-    }
-
-    const updated = [...currentMessages, assistantMsg]
-    return {
-      _messagesCache: { ...s._messagesCache, [targetThreadId]: updated },
-      ...(s.threadId === targetThreadId ? { messages: updated } : {}),
-    }
-  })
-}
-
+/**
+ * Thin component-facing wrapper around useThreadStore.sendMessage. The store
+ * owns the in-flight guard, so every caller (chat input, concept map,
+ * highlight-to-ask) shares one queue and can never start overlapping turns.
+ */
 export function useAskNora(options: UseAskNoraOptions = {}) {
-  const [isInFlight, setIsInFlight] = useState(false)
-  const inflightRef = useRef(false)
-  const abortControllerRef = useRef<AbortController | null>(null)
+  const isInFlight = useThreadStore((s) => s.sendingThreadId !== null)
 
   const optionsRef = useRef(options)
   useEffect(() => {
@@ -53,113 +30,23 @@ export function useAskNora(options: UseAskNoraOptions = {}) {
   })
 
   const send = useCallback(async (text: string, sendOpts?: AskNoraSendOptions): Promise<void> => {
-    if (inflightRef.current) return
-    inflightRef.current = true
-    setIsInFlight(true)
-
-    const store = useThreadStore.getState()
-    const targetThreadId = store.threadId || 'default'
-
-    const userMsg: Message = {
-      id: genId(),
-      role: 'user',
-      content: text,
-      timestamp: chatTimestamp(),
-    }
-    store.addMessage(userMsg)
-    store.setLoading(true)
-
-    const controller = new AbortController()
-    abortControllerRef.current = controller
-
-    let acc = ''
-    let pendingFlush: number | null = null
-    const flushNow = () => {
-      if (pendingFlush !== null) {
-        window.clearTimeout(pendingFlush)
-        pendingFlush = null
-      }
-      store.setStreamingText(stripSources(acc))
-    }
-    const scheduleFlush = () => {
-      if (pendingFlush !== null) return
-      pendingFlush = window.setTimeout(() => {
-        pendingFlush = null
-        store.setStreamingText(stripSources(acc))
-      }, STREAM_FLUSH_MS)
-    }
-
+    const targetThreadId = useThreadStore.getState().threadId
     try {
-      // BUG-13 fix: populate lecture_title from the lecture store.
-      // useLectureStore.lectures contains { lecture_id, title } entries loaded
-      // from /lectures on app mount. Matching on the current lectureId gives the
-      // tutor the lecture name so it never asks "which chapter?" unnecessarily.
-      const currentLectureId = getLectureId()
-      const lectureTitle =
-        useLectureStore.getState().lectures.find((l) => l.lecture_id === currentLectureId)?.title ?? ''
-
-      for await (const chunk of sendChatMessageStream(
-        targetThreadId,
-        text,
-        lectureTitle,
-        controller.signal,
-        { messageId: userMsg.id, studyMode: sendOpts?.studyMode, persona: sendOpts?.persona },
-      )) {
-        if (controller.signal.aborted) return
-
-        if (typeof chunk === 'string') {
-          acc += chunk
-          scheduleFlush()
-          continue
-        }
-
-        const data = chunk.data
-        flushNow()
-        store.setStreamingText('')
-
-        const cleanAnswer = stripSources(acc) || optionsRef.current.emptyAnswerFallback || ''
-
-        appendAssistantMessageAtomically(targetThreadId, {
-          id: data.assistant_message_id || genId(),
-          role: 'assistant',
-          content: cleanAnswer,
-          timestamp: chatTimestamp(),
-        })
-
-        const refs = buildReferences(
-          data.retrieved_chunks ?? [],
-          data.retrieved_images ?? [],
-          optionsRef.current.referenceAnswer ? optionsRef.current.referenceAnswer(cleanAnswer) : cleanAnswer,
-          data.verified_citations ?? [],
-        )
-        if (optionsRef.current.onReferences) {
-          optionsRef.current.onReferences(refs, targetThreadId)
-        } else {
-          useThreadStore.getState().setLiveReferences(refs)
-        }
-      }
+      const result = await useThreadStore.getState().sendMessage(text, {
+        studyMode: sendOpts?.studyMode,
+        persona: sendOpts?.persona,
+        emptyAnswerFallback: optionsRef.current.emptyAnswerFallback,
+        referenceAnswer: optionsRef.current.referenceAnswer,
+      })
+      if (result) optionsRef.current.onReferences?.(result.references, result.threadId)
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') return
-      if (optionsRef.current.onStreamError) {
-        optionsRef.current.onStreamError(err, targetThreadId)
-      } else {
-        console.error('[useAskNora] stream failed:', err)
-      }
-    } finally {
-      if (pendingFlush !== null) {
-        window.clearTimeout(pendingFlush)
-        pendingFlush = null
-      }
-      useThreadStore.getState().setStreamingText('')
-      useThreadStore.getState().setLoading(false)
-      inflightRef.current = false
-      setIsInFlight(false)
+      // The store already rendered an inline error + retry for this turn.
+      if (optionsRef.current.onStreamError) optionsRef.current.onStreamError(err, targetThreadId)
+      else console.error('[useAskNora] turn failed:', err)
     }
   }, [])
 
-  const abort = useCallback(() => {
-    abortControllerRef.current?.abort()
-  }, [])
+  const abort = useCallback(() => useThreadStore.getState().abortSend(), [])
 
-  return { send, isInFlight, inflightRef, abortControllerRef, abort }
+  return { send, isInFlight, abort }
 }

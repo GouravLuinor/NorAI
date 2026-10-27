@@ -1,23 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useThreadStore } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
-import { useLectureStore } from '../../stores/useLectureStore'   // ← added
-import { buildReferences, stripSources } from '../../lib/references'
-import { sendChatMessage } from '../../lib/chatApi'
-import { genId } from '../../lib/id'
+import { useAskNora } from '../../hooks/useAskNora'
 import { Sparkles } from 'lucide-react'
 import { Button } from '../ui/Button'
 
 export function HighlightAsk() {
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null)
-  const [loading, setLoading] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  const addMessage = useThreadStore((s) => s.addMessage)
   const setMode = useQuizStore((s) => s.setMode)
-
-  // ── Lecture‑aware ───────────────────────────────────────────────────────
-  const lectureId = useLectureStore(s => s.activeLectureId) || 'default'
+  // Shared send pipeline: streams into the thread the question was asked
+  // from (the old direct /chat call wrote the reply into whichever thread was
+  // active when it returned) and shares the global one-turn-at-a-time guard.
+  const { send, isInFlight: loading } = useAskNora()
 
   const clearSelection = useCallback(() => {
     setSelection(null)
@@ -79,65 +74,9 @@ export function HighlightAsk() {
     const question = `Explain this: ${selection.text}`
     clearSelection()
 
-    // Add user message
-    const userMsgId = genId()
-    addMessage({
-      id: userMsgId,
-      role: 'user',
-      content: question,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    })
-
-    // Switch to tutor mode
     setMode('tutor')
-
-    setLoading(true)
-    try {
-      // Lecture‑scoped request
-      const data = await sendChatMessage(
-        useThreadStore.getState().threadId,
-        question,
-        '',
-        { lectureId, messageId: userMsgId }
-      )
-
-      // ── Build references from the response ──────────────────────────────
-      useThreadStore.getState().setLiveReferences(
-        buildReferences(data.retrieved_chunks ?? [], data.retrieved_images ?? [], '', data.verified_citations ?? [])
-      )
-
-      const cleanAnswer = stripSources(data.answer)
-
-      // RC-FIX2: Atomic dedup — same guard as ChatArea.
-      // If loadThreadMessages already injected this response from the backend
-      // checkpoint, skip the append to avoid duplicates.
-      useThreadStore.setState((s) => {
-        if (s.messages.some(m => m.role === 'assistant' && m.content === cleanAnswer)) {
-          return {}
-        }
-        const assistantMsg = {
-          id: data.assistant_message_id || genId(),
-          role: 'assistant' as const,
-          content: cleanAnswer,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        }
-        const messages = [...s.messages, assistantMsg]
-        return {
-          messages,
-          _messagesCache: { ...s._messagesCache, [s.threadId]: messages },
-        }
-      })
-    } catch {
-      addMessage({
-        id: genId(),
-        role: 'assistant',
-        content: 'Sorry, something went wrong.',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [selection, loading, clearSelection, addMessage, setMode, lectureId])
+    await send(question)
+  }, [selection, loading, clearSelection, setMode, send])
 
   if (!selection) return null
 

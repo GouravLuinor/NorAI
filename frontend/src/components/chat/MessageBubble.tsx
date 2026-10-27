@@ -1,10 +1,18 @@
 import { memo } from 'react'
+import { RotateCcw } from 'lucide-react'
 import type { Message } from '../../stores/useThreadStore'
 import { Markdown } from '../ui/Markdown'
 import { stripSources } from '../../lib/references'
 
-export const MessageBubble = memo(function MessageBubble({ message }: { message: Message }) {
+interface MessageBubbleProps {
+  message: Message
+  /** Shown on a failed assistant turn: re-sends the original question. */
+  onRetry?: () => void
+}
+
+export const MessageBubble = memo(function MessageBubble({ message, onRetry }: MessageBubbleProps) {
   const isUser = message.role === 'user'
+  const isError = message.status === 'error'
   const displayContent = isUser ? message.content : stripSources(message.content)
 
   return (
@@ -23,20 +31,35 @@ export const MessageBubble = memo(function MessageBubble({ message }: { message:
         <div
           className={`text-xs leading-relaxed text-nt2 ${
             isUser
-              ? 'bg-ns3 border border-bdr2 rounded-xl px-2.5 py-2 text-nt max-w-[85%]'
-              : 'py-0.5 max-w-full'
+              ? `bg-ns3 border border-bdr2 rounded-xl px-2.5 py-2 text-nt max-w-[85%] ${message.status === 'pending' ? 'opacity-70' : ''}`
+              : isError
+                ? 'bg-nrb border border-nrbr text-nrt rounded-lg px-2.5 py-2 max-w-full'
+                : 'py-0.5 max-w-full'
           }`}
         >
           {isUser ? (
             <p className="whitespace-pre-wrap">{message.content}</p>
+          ) : isError ? (
+            <div className="flex flex-col gap-2">
+              <p>{message.content}</p>
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="self-start inline-flex items-center gap-1 text-3xs font-semibold uppercase tracking-wide text-nrt hover:underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+                >
+                  <RotateCcw size={11} /> Retry
+                </button>
+              )}
+            </div>
           ) : (
             <div className="prose-chat">
               <Markdown variant="chat">{displayContent}</Markdown>
             </div>
           )}
         </div>
-        <div className={`text-3xs text-nt4 mt-1 ${isUser ? 'text-right' : ''}`}>
-          {message.timestamp}
+        <div className={`text-3xs mt-1 ${isUser ? 'text-right' : ''} ${isUser && isError ? 'text-nrt' : 'text-nt4'}`}>
+          {isUser && isError ? 'Not answered' : message.timestamp}
         </div>
       </div>
     </div>
