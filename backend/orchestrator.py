@@ -14,7 +14,6 @@ which now reads the DB.
 
 import os
 import json as json_lib
-import hashlib
 import shutil
 import time
 from pathlib import Path
@@ -365,129 +364,15 @@ def run_pipeline(
 
         # REMOVED: PDFs are now generated on-demand when user clicks download
 
-        # ── Stage 17: Tutor Index ──────────────────────────────────────────
+        # ── Stages 17–18: Tutor Index (notes + transcript + screenshots) ────
         _report("tutor_index", "Indexing for tutor…", 96)
         _check_cancel()
         try:
-            from tutor.chunker import chunk_glob
-            from tutor.embedding import GeminiEmbeddingFunction
-            from tutor.build_index import get_persistent_client, upsert_batched
+            from tutor.indexing import build_lecture_index
 
-            lecture_dir = Path(out)
-            notes_glob = str(lecture_dir / "notes" / "chapter_*.md")
-            chroma_dir = lecture_dir / "tutor" / "chroma"
-            chroma_dir.mkdir(parents=True, exist_ok=True)
-
-            chunks = chunk_glob(notes_glob)
-            logger.info(f"  Tutor index: found {len(chunks)} chunks")
-
-            if chunks:
-                client = get_persistent_client(chroma_dir)
-                ef = GeminiEmbeddingFunction(role="document")
-                collection = client.get_or_create_collection(
-                    name="norai_notes",
-                    embedding_function=ef,
-                    metadata={"hnsw:space": "cosine"},
-                )
-                # Content-hashed ids: re-indexing identical notes is a no-op;
-                # changed notes are diff-synced (no orphaned docs, no quadratic
-                # re-embeds). See ROADMAP P1.2.
-                ids = [
-                    f"chunk_{hashlib.sha256(c['text'].encode('utf-8')).hexdigest()[:16]}"
-                    for c in chunks
-                ]
-                documents = [c["text"] for c in chunks]
-                metadatas = [{
-                    "heading": c["heading"],
-                    "heading_path": c["heading_path"],
-                    "chapter_id": c.get("chapter_id", -1),
-                    "source": c["source"],
-                } for c in chunks]
-                existing = set(collection.get(include=[])["ids"])
-                expected = set(ids)
-                to_add = expected - existing
-                to_remove = existing - expected
-                if to_add:
-                    idx = [i for i, _id in enumerate(ids) if _id in to_add]
-                    upsert_batched(
-                        collection,
-                        [ids[i] for i in idx],
-                        [documents[i] for i in idx],
-                        [metadatas[i] for i in idx],
-                    )
-                if to_remove:
-                    collection.delete(ids=list(to_remove))
-                logger.info(
-                    f"  Tutor index: {collection.count()} docs "
-                    f"(added {len(to_add)}, removed {len(to_remove)})"
-                )
+            build_lecture_index(out)
         except Exception as e:
             logger.error(f"Tutor index failed (continuing): {e}")
-
-        # ── Stage 18: Screenshot Index ─────────────────────────────────────
-        _report("screenshot_index", "Indexing screenshots…", 99)
-        _check_cancel()
-        try:
-            import json as _json, glob as _glob
-            from tutor.embedding import GeminiEmbeddingFunction
-            from tutor.build_index import get_persistent_client, upsert_batched
-
-            lecture_dir = Path(out)
-            screenshot_glob = str(lecture_dir / "screenshots" / "selected" / "chapter_*_screenshots.json")
-            chroma_dir = lecture_dir / "tutor" / "chroma"
-
-            json_files = sorted(_glob.glob(screenshot_glob))
-            logger.info(f"  Screenshot index: found {len(json_files)} files")
-
-            if json_files:
-                client = get_persistent_client(chroma_dir)
-                ef = GeminiEmbeddingFunction(role="document")
-                collection = client.get_or_create_collection(
-                    name="screenshot_captions",
-                    embedding_function=ef,
-                    metadata={"hnsw:space": "cosine"},
-                )
-                ids = []
-                documents = []
-                metadatas = []
-                for json_path in json_files:
-                    with open(json_path) as f:
-                        data = _json.load(f)
-                    chapter_id = data.get("chapter_id")
-                    screenshots = data.get("screenshots", [])
-                    for shot in screenshots:
-                        shot_id = f"ch{chapter_id}_{Path(shot['path']).stem}"
-                        reason = shot.get("reason", "")
-                        # Reason content-hash makes changed captions re-index
-                        # instead of being wrongly skipped.
-                        ids.append(f"{shot_id}__{hashlib.sha256(reason.encode('utf-8')).hexdigest()[:8]}")
-                        documents.append(reason)
-                        metadatas.append({
-                            "path": shot["path"],
-                            "section": shot.get("section", ""),
-                            "importance": shot.get("importance", 0),
-                            "chapter_id": chapter_id,
-                        })
-                existing = set(collection.get(include=[])["ids"])
-                expected = set(ids)
-                to_add = expected - existing
-                to_remove = existing - expected
-                if to_add:
-                    idx = [i for i, _id in enumerate(ids) if _id in to_add]
-                    upsert_batched(
-                        collection,
-                        [ids[i] for i in idx],
-                        [documents[i] for i in idx],
-                        [metadatas[i] for i in idx],
-                    )
-                if to_remove:
-                    collection.delete(ids=list(to_remove))
-                logger.info(
-                    f"  Screenshot index: {collection.count()} screenshots indexed "
-                    f"(added {len(to_add)}, removed {len(to_remove)})"
-                )
-        except Exception as e:
-            logger.error(f"Screenshot index failed (continuing): {e}")
 
         # ── Done ───────────────────────────────────────────────────────────
         _write_metrics(completed=True)

@@ -68,6 +68,7 @@ from backend.db.models import User, Subscription, Lecture, UsageLog, Course, Cou
 from backend.usage import record_pipeline_outcome, rollover_if_needed
 from backend.plans import get_plan
 from tutor.llm import make_chat_llm
+from tutor.vector_store import has_tutor_index
 from config import (
     CHECKPOINT_DB_PATH,
     DEMO_LECTURE_IDS,
@@ -125,13 +126,13 @@ DEMO_LECTURES = [
 DEMO_LECTURE_IDS = DEMO_LECTURE_IDS  # canonical set lives in config.py
 
 def _demo_seed_complete(dst: Path) -> bool:
-    """A demo workspace is fully seeded when its Chroma index is present.
+    """A demo workspace is fully seeded when its tutor index is present.
 
     `backend/jobs.check_disk_completed` treats the same artifact as the
     completion signal, so a dir that exists without it (partial copy, GC
     damage, interrupted hydration) must be treated as NOT seeded.
     """
-    return (dst / "tutor" / "chroma" / "chroma.sqlite3").is_file()
+    return has_tutor_index(dst)
 
 
 def sync_demo_seed_data():

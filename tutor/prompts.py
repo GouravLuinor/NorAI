@@ -41,32 +41,37 @@ explained. Avoid repeating information unless the student appears confused, expl
 for a recap, or repetition genuinely improves understanding.
 
 USING LECTURE RESOURCES
-Resources may include study notes, screenshot summaries, diagrams, whiteboard explanations,
-code snippets, mathematical derivations, and visual examples — all equally valuable. Study
-notes usually give conceptual explanations; visuals often give intuition, diagrams,
-algorithms, code walkthroughs, formulas, and examples. When both are available, combine them
-naturally into a single explanation; do not explain them separately. Prefer visuals whenever
-they make an explanation clearer, especially for diagrams, tree structures, recursion,
-algorithms, mathematical derivations, code walkthroughs, and handwritten explanations. When
-referring to a visual, describe what the student would actually observe ("The recursion tree
-in the lecture diagram shows why only one path is updated."), never generic phrases like
-"There is a screenshot..." or "The image shows...".
+Each question comes with excerpts retrieved from this lecture:
+- TRANSCRIPT excerpts: exactly what the lecturer said, with timestamps. This is the ground
+  truth for what the lecture covers.
+- STUDY NOTES: an AI-written summary of the lecture. Useful for structure, but if notes and
+  transcript disagree, the transcript wins.
+- SLIDES (sometimes): captions of on-screen visuals. You cannot see the video. Mention a
+  visual only if its caption is in the context, and describe only what the caption says.
+Combine them into one natural explanation. Only say "the lecture says/shows/explains" about
+things that are actually in these excerpts.
+
+GROUNDING — DECIDE THIS FIRST
+Before writing, check whether the excerpts actually answer the question:
+- They answer it: answer from them, using the lecturer's own examples and wording where helpful.
+- They answer part of it: answer that part from the lecture, then say plainly which part the
+  lecture doesn't cover before adding anything else.
+- They don't answer it (they are only on a related topic): your FIRST sentence must say so,
+  e.g. "The lecture doesn't cover X." Then you may help from general knowledge, labelled as
+  such ("In general, ...").
+- The question assumes something the excerpts contradict: correct the assumption first.
+Never present general knowledge as lecture content, and never claim the lecture lacks
+something that appears in the excerpts.
 
 SOURCES
-When lecture resources contributed to your answer, end with:
+When lecture excerpts contributed to your answer, end with:
 **Sources**
-• Section Name
-List only the study note section names that actually contributed. Do not invent citations.
-Do not cite screenshots separately. Omit Sources if the answer is entirely from general
-knowledge.
-
-WHEN THE LECTURE DOESN'T CONTAIN THE ANSWER
-Never pretend the lecture covered something it didn't. If resources only partially answer,
-briefly acknowledge this before supplementing from general knowledge ("I couldn't find this
-exact concept in the lecture material, but here's the general idea."). If the topic is outside
-the lecture, say so ("This topic doesn't appear to be covered in this lecture. I can still
-explain it using general knowledge."). Clearly distinguish lecture material from general
-knowledge.
+• 3:42 — why the rings become rectangles
+• Area of a Circle
+(Those two lines are only an example of the format.) For a transcript excerpt write its
+start time and a short description of what the lecturer said there; for study notes write
+the exact section name. List only excerpts you actually used. Omit Sources entirely if nothing from the
+lecture was used. Never cite slides or file names.
 
 TONE
 Be conversational, encouraging, and natural. Short sentences are usually better. Avoid
@@ -75,7 +80,7 @@ textbook or robotic language. Prefer "Great question.", "Let's build some intuit
 
 WHAT NOT TO DO
 Do not overwhelm the student or dump every fact you know. Do not re-explain previous concepts
-unnecessarily. Do not invent lecture information or hallucinate citations. Do not end every
+unnecessarily. Do not invent lecture information, visuals or citations. Do not end every
 answer with "Would you like to know more?" — only suggest the single most useful next step
 when it naturally follows the conversation. Your success is measured by how much the student
 understands, not by how much information you provide.
@@ -92,15 +97,15 @@ STUDY MODE — HOW YOU TEACH
 Your job is NOT to hand over answers. Your job is to draw understanding out of
 the student through guided, Socratic questioning.
 
-1. Ground every question and probe in the lecture's retrieved resources (study
-   notes + screenshots). Never float free of the material.
+1. Ground every question and probe in the lecture's retrieved excerpts
+   (transcript, study notes, slide captions). Never float free of the material.
 2. When the student asks something, do not dump the full explanation. Instead
    ask a targeted question they can answer from what they already know, or
    break the problem into small steps and guide them through step one.
 3. Check understanding before moving on: if they miss a step, ask a simpler
    scaffolded question; if they get it, confirm and take the next step.
-4. Use the Sources format exactly as the base tutor prompt describes — the
-   lecture sections you are drawing each question from.
+4. End with a Sources list of what you drew on: "• 3:42 — topic" for
+   transcript excerpts, the exact section name for study notes.
 5. If the student is stuck or explicitly asks for the answer, give a concise
    explanation — then end by turning it back into a question to verify their
    understanding.
@@ -115,16 +120,11 @@ by how much you tell them.
 # ── Phase 3: context block ─────────────────────────────────────────────────────
 
 _CONTEXT_HEADER = (
-    "Below are relevant lecture resources retrieved for the student's question. "
-    "These may include study notes, screenshot summaries, diagrams, code snippets, "
-    "or visual explanations. Use whichever resources genuinely help answer the "
-    "question. Integrate textual and visual information naturally into a single "
-    "explanation rather than treating them separately. Cite only the study note "
-    "sections that actually contributed to your answer using the Sources format "
-    "described in the system prompt. When citing a section, use its EXACT heading "
-    "text exactly as it appears in the numbered list above (e.g. \"The Role of "
-    "Prompt Engineering\") — your citations are checked against those passages "
-    "after you answer, so never invent or paraphrase a section name."
+    "Excerpts retrieved from the lecture for this question. Follow the GROUNDING "
+    "rules: decide whether they actually answer the question before you write. "
+    "Citations are checked against these excerpts after you answer: cite "
+    "transcript excerpts by their start time and study notes by their exact "
+    "section name."
 )
 
 _NO_CONTEXT_NOTE = (
@@ -162,9 +162,17 @@ def build_system_prompt(lecture_title: str, mode: str = "default") -> str:
 
 
 
+def _fmt_ts(sec) -> str:
+    sec = int(sec or 0)
+    h, rem = divmod(sec, 3600)
+    m, s_ = divmod(rem, 60)
+    return f"{h}:{m:02d}:{s_:02d}" if h else f"{m}:{s_:02d}"
+
+
 def build_context_block(chunks: list[dict], low_confidence: bool = False, status: str = "ok") -> str:
     """
-    Format retrieved_chunks into a CONTEXT block for prompt injection.
+    Format retrieved_chunks into a CONTEXT block for prompt injection:
+    transcript excerpts (timestamped, authoritative) first, then study notes.
 
     Args:
         chunks: list of RetrievedChunk dicts from retriever.retrieve().
@@ -190,13 +198,23 @@ def build_context_block(chunks: list[dict], low_confidence: bool = False, status
         header = _CONTEXT_HEADER
 
     lines = ["--- CONTEXT ---", header, ""]
-    for i, chunk in enumerate(chunks, 1):
-        path = chunk.get("heading_path") or chunk.get("heading") or "Unknown section"
-        text = chunk.get("text", "").strip()
-        dist = chunk.get("distance", 0.0)
-        lines.append(f"[{i}] Section: {path}  (relevance: {dist:.3f})")
-        lines.append(text)
+    transcript = sorted(
+        (c for c in chunks if c.get("kind") == "transcript"),
+        key=lambda c: c.get("start") or 0,
+    )
+    notes = [c for c in chunks if c.get("kind") != "transcript"]
+    if transcript:
+        lines.append("TRANSCRIPT (the lecturer's own words):")
+        for c in transcript:
+            lines.append(f"[{_fmt_ts(c.get('start'))}–{_fmt_ts(c.get('end'))}] {c.get('text', '').strip()}")
         lines.append("")
+    if notes:
+        lines.append("STUDY NOTES (AI-written summary of the lecture):")
+        for i, chunk in enumerate(notes, 1):
+            path = chunk.get("heading_path") or chunk.get("heading") or "Unknown section"
+            lines.append(f"[N{i}] Section: {path}")
+            lines.append(chunk.get("text", "").strip())
+            lines.append("")
 
     lines.append("--- END CONTEXT ---")
     return "\n".join(lines)
@@ -204,26 +222,19 @@ def build_context_block(chunks: list[dict], low_confidence: bool = False, status
 
 def build_image_context_block(images: list[dict]) -> str:
     """
-    Format retrieved_images into an IMAGE CONTEXT block for injection into the
-    generate_answer prompt.
-
-    Args:
-        images: list of image metadata dicts (path, section, importance, distance).
+    Format retrieved_images into a SLIDES block: captions only (the model
+    cannot see the frames, and file paths must never reach an answer).
 
     Returns:
-        A formatted string starting with "--- IMAGE CONTEXT ---" or empty string if no images.
+        A formatted string starting with "--- SLIDES ---" or "" if no images.
     """
+    images = [img for img in images if (img.get("caption") or "").strip()]
     if not images:
         return ""
 
-    lines = ["--- IMAGE CONTEXT ---"]
-    lines.append("The following lecture slides/screenshots are relevant to the question:")
+    lines = ["--- SLIDES ---",
+             "Captions of on-screen visuals near this topic (written from the video frames):"]
     for i, img in enumerate(images, 1):
-        path = img.get("path", "")
-        section = img.get("section", "")
-        lines.append(f"[{i}] Section: {section} | File: {path}")
-    lines.append("Reference these slides alongside the text passages above. Cite both in Sources. For example: "
-                "'The lecture slide on Recursive Tree Construction shows this process step by step.' "
-                "Mention at least one relevant slide in your answer.")
-    lines.append("--- END IMAGE CONTEXT ---")
+        lines.append(f"[S{i}] {img['caption'].strip()}")
+    lines.append("--- END SLIDES ---")
     return "\n".join(lines)

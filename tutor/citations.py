@@ -108,19 +108,61 @@ def _best_chunk_for(citation_norm: str, chunks: list[dict]) -> dict | None:
     return best[0] if best else None
 
 
+# A transcript citation starts with its timestamp: "3:42 — what was said".
+_TS_RE = re.compile(r"^(?:transcript\s*)?\[?(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\b")
+_TS_TOLERANCE_SEC = 3.0
+
+
+def _cited_seconds(citation: str) -> float | None:
+    m = _TS_RE.match(re.sub(r"[*_`]", "", citation).strip().lower())
+    if not m:
+        return None
+    h, mnt, sec = m.groups()
+    return int(h or 0) * 3600 + int(mnt) * 60 + int(sec)
+
+
+def _transcript_chunk_at(t: float, chunks: list[dict]) -> dict | None:
+    """The retrieved transcript window containing second `t` (closest start
+    wins when windows overlap). Times outside every window are unverified:
+    the model may only cite moments it was actually shown."""
+    hits = [
+        c for c in chunks
+        if c.get("kind") == "transcript" and c.get("start") is not None
+        and c["start"] - _TS_TOLERANCE_SEC <= t <= (c.get("end") or c["start"]) + _TS_TOLERANCE_SEC
+    ]
+    return min(hits, key=lambda c: abs(c["start"] - t)) if hits else None
+
+
 def verify_citations(answer: str, chunks: list[dict]) -> list[dict]:
     """
-    Verify every cited section against `chunks`. Returns:
+    Verify every cited section or transcript timestamp against `chunks`. Returns:
         [
           {"section": str, "verified": bool,
-           "chunk_id": str|None, "heading_path": str|None, "heading": str|None},
+           "chunk_id": str|None, "heading_path": str|None, "heading": str|None,
+           "chapter_id": int|None, "start": float|None, "end": float|None},
           ...
         ]
     """
     result: list[dict] = []
     for citation in parse_citations(answer):
+        t = _cited_seconds(citation)
+        if t is not None:
+            match = _transcript_chunk_at(t, chunks)
+            result.append(
+                {
+                    "section": citation,
+                    "verified": match is not None,
+                    "chunk_id": (match or {}).get("chunk_id"),
+                    "heading_path": (match or {}).get("heading_path"),
+                    "heading": (match or {}).get("heading"),
+                    "chapter_id": (match or {}).get("chapter_id"),
+                    "start": t if match else None,
+                    "end": (match or {}).get("end"),
+                }
+            )
+            continue
         norm = _normalize(citation)
-        match = _best_chunk_for(norm, chunks)
+        match = _best_chunk_for(norm, [c for c in chunks if c.get("kind") != "transcript"])
         result.append(
             {
                 "section": citation,
@@ -129,6 +171,8 @@ def verify_citations(answer: str, chunks: list[dict]) -> list[dict]:
                 "heading_path": (match or {}).get("heading_path"),
                 "heading": (match or {}).get("heading"),
                 "chapter_id": (match or {}).get("chapter_id"),
+                "start": None,
+                "end": None,
             }
         )
     return result

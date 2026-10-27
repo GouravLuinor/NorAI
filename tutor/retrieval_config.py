@@ -1,11 +1,10 @@
 """
 Retrieval configuration for Phase 3.
 Kept separate from config.py so tutor core (LLM, checkpointer) and retrieval
-(Chroma, embeddings) can evolve independently without touching each other.
+(vector index, embeddings) can evolve independently without touching each other.
 """
 
 import os
-from pathlib import Path
 
 # ── Embedding model ───────────────────────────────────────────────────────────
 # gemini-embedding-2: stable GA model (April 2026).
@@ -17,27 +16,19 @@ EMBEDDING_DIMS = 768  # 768 / 1536 / 3072 all recommended; 768 saves storage.
 
 # ── Phase 4: screenshot retrieval ─────────────────────────────────────────────
 
-SCREENSHOT_COLLECTION_NAME = "screenshot_captions"
-
 TOP_K_IMAGES = 2  # Number of images to retrieve per query
-
-SCREENSHOTS_DIR = "outputs/screenshots/keyframes"  # base path for image files
-
-# Screenshot JSON pattern: outputs/screenshots/chapter_*_screenshots.json
-SCREENSHOT_JSON_GLOB = "outputs/screenshots/selected/chapter_*_screenshots.json"
-
-# ── Chroma persistent store ───────────────────────────────────────────────────
-CHROMA_DIR = Path(os.environ.get("NORAI_CHROMA_DIR", "outputs/tutor/chroma"))
-NOTES_COLLECTION = "norai_notes"
-
-# ── Source notes glob ─────────────────────────────────────────────────────────
-NOTES_GLOB = "outputs/notes/chapter_*.md"
+# Screenshots further than this (cosine distance, caption+OCR vs question) are
+# not shown to the model. Calibrated on the answer eval (tutor/evals).
+IMAGE_MAX_DISTANCE = float(os.environ.get("NORAI_IMAGE_MAX_DISTANCE", "0.30"))
 
 # ── Retrieval ─────────────────────────────────────────────────────────────────
-TOP_K = 5  # chunks returned per query
+TOP_K = 5  # chunks returned per query (single-kind lookups)
+# Mixed lookups: transcript windows (what was said) + note sections (summary).
+TOP_K_TRANSCRIPT = int(os.environ.get("NORAI_TOP_K_TRANSCRIPT", "4"))
+TOP_K_NOTES = int(os.environ.get("NORAI_TOP_K_NOTES", "2"))
 
 # ── Phase 3 (P3.2): hybrid search & adaptive top-k ────────────────────────────
-# Cosine (Chroma) and BM25 each return this many candidates; the two ranked
+# Cosine and BM25 each return this many candidates; the two ranked
 # lists are merged with Reciprocal Rank Fusion (RRF_K = fusion constant).
 ADAPTIVE_TOP_K_CANDIDATES = 20
 RRF_K = 60
@@ -56,11 +47,6 @@ MIN_RESULTS = 2
 # section + sibling text (read from the source .md at query time — zero re-embed
 # cost). Cap the expanded context to keep prompts token-friendly.
 MAX_CONTEXT_CHARS = 1400
-
-# ── Rate limiting ─────────────────────────────────────────────────────────────
-# gemini-embedding-2 free tier: varies; add a small sleep between batch calls
-# during indexing to stay safely under limits.
-EMBED_BATCH_SLEEP_SEC = 0.5  # seconds between batches during build_index
 
 # ── Phase 5: confidence signaling ─────────────────────────────────────────────
 # Maximum cosine distance for a chunk to be considered a "strong" match.

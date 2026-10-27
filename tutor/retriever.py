@@ -1,135 +1,145 @@
 """
-retriever.py — Query interface over the persisted Chroma indexes.
+retriever.py — Query interface over a lecture's tutor index (vector_store.py).
 
 Design:
-  • Two public functions: retrieve(query, ...) and retrieve_images(query, ...)
+  • Public functions: retrieve(query, ...) and retrieve_images(query, ...).
   • Returns lists of dicts — same shape whether called from a LangGraph node or a test.
   • Does NOT call the LLM. Just retrieval.
-  • Chroma client is created once per process (module-level singletons) with
-    role="query" embedding function. This avoids re-constructing the google-genai
-    client on every invocation.
-  • If an index doesn't exist yet (build scripts haven't been run), raises
-    a clear IndexNotBuiltError rather than a cryptic Chroma exception.
+  • One query embedding per question: the text and image lookups run in
+    parallel graph branches and share it through _embed_query's cache.
+  • If a lecture has no index yet but has its artifacts (lectures processed
+    before the index existed), it is built once on first use.
 
-RetrievedChunk schema (study notes, P3.2 hybrid):
+RetrievedChunk schema (P3.2 hybrid, per kind):
     {
+        "kind":         "transcript" | "notes",
         "text":         str,
-        "heading":      str,
-        "heading_path": str,
+        "heading":      str,      # "Transcript 3:42" for transcript windows
+        "heading_path": str,      # "Transcript 3:42–4:11" / note breadcrumb
         "chapter_id":   int | None,
-        "source":       str,
-        "distance":     float,    # cosine distance (lower = more similar); None
-                                  # if the chunk only matched via BM25
-        "chunk_id":     str,      # stable Chroma id (used for verified citations, P3.3)
-        "relevant":     bool,     # distance <= CONFIDENCE_THRESHOLD (P3.8 gating)
+        "source":       str,      # notes .md path ("" for transcript)
+        "start", "end": float | None  # seconds (transcript windows only)
+        "distance":     float | None, # cosine distance; None if BM25-only
+        "chunk_id":     str,
+        "relevant":     bool,     # distance <= CONFIDENCE_THRESHOLD (P3.8)
     }
 
-RetrievedImage schema (screenshots):
-    {
-        "path":         str,
-        "section":      str,
-        "importance":   int,
-        "chapter_id":   int | None,
-        "distance":     float,
-    }
+RetrievedImage schema:
+    {"path", "section", "caption", "importance", "chapter_id", "distance"}
 """
 
 from __future__ import annotations
+
+import threading
 from pathlib import Path
-from functools import lru_cache
 from typing import Optional
 
-from tutor.embedding import GeminiEmbeddingFunction
-from tutor.build_index import get_persistent_client
+from tutor.bm25 import BM25Okapi, reciprocal_rank_fusion_scored, tokenize
 from tutor.retrieval_config import (
-    CHROMA_DIR,
-    NOTES_COLLECTION,
-    TOP_K,
-    SCREENSHOT_COLLECTION_NAME,
-    TOP_K_IMAGES,
-    ADAPTIVE_TOP_K_CANDIDATES,
     ADAPTIVE_SCORE_DROPOFF_RATIO,
+    ADAPTIVE_TOP_K_CANDIDATES,
+    CONFIDENCE_THRESHOLD,
+    IMAGE_MAX_DISTANCE,
     MIN_RESULTS,
     RRF_K,
-    CONFIDENCE_THRESHOLD,
+    TOP_K,
+    TOP_K_IMAGES,
+    TOP_K_NOTES,
+    TOP_K_TRANSCRIPT,
 )
-from tutor.bm25 import BM25Okapi, tokenize, reciprocal_rank_fusion, reciprocal_rank_fusion_scored
+from tutor.vector_store import VectorStore, index_dir, load_cached
+
+DEFAULT_INDEX_ROOT = Path("outputs")
 
 
 class IndexNotBuiltError(RuntimeError):
-    """Raised when the Chroma index hasn't been built yet."""
+    """Raised when a lecture has no tutor index and nothing to build one from."""
 
 
-# ── Singleton Chroma client (shared per chroma_dir) ───────────────────────────
+# ── index access ──────────────────────────────────────────────────────────────
 
-@lru_cache(maxsize=10)
-def _get_client(chroma_dir: Optional[str] = None):
-    """Cached PersistentClient per chroma_dir path — avoids Chroma 1.x multi-client Rust bug."""
-    path = Path(chroma_dir) if chroma_dir else CHROMA_DIR
-    if not path.exists():
+_build_locks: dict[str, threading.Lock] = {}
+_build_locks_guard = threading.Lock()
+
+
+def _lecture_root(output_dir: Optional[str]) -> Path:
+    return Path(output_dir) if output_dir else DEFAULT_INDEX_ROOT
+
+
+def _get_store(output_dir: Optional[str] = None) -> VectorStore:
+    root = _lecture_root(output_dir)
+    idx = index_dir(root)
+    if VectorStore.exists(idx):
+        return load_cached(idx)
+    if not any((root / "notes").glob("chapter_*.md")) and not any((root / "transcripts").glob("*.json")):
         raise IndexNotBuiltError(
-            f"Chroma index directory not found at {path}. "
-            "Run indexing scripts first (e.g. python -m tutor.build_index)."
+            f"No tutor index at {idx} and no notes/transcript to build one from."
         )
-    return get_persistent_client(path)
+    with _build_locks_guard:
+        lock = _build_locks.setdefault(str(root.resolve()), threading.Lock())
+    with lock:
+        if not VectorStore.exists(idx):
+            from tutor.indexing import build_lecture_index
+            build_lecture_index(root)
+    return load_cached(idx)
 
 
-@lru_cache(maxsize=20)
-def _get_collection_by_name(collection_name: str, role: str = "query", chroma_dir: Optional[str] = None):
-    """
-    Module-level singleton cache: reuses the shared PersistentClient per chroma_dir.
-    lru_cache ensures each unique (name, role, chroma_dir) pair is built once per process.
-    """
-    client = _get_client(chroma_dir)
-    target_path = Path(chroma_dir) if chroma_dir else CHROMA_DIR
+# ── shared query embedding ────────────────────────────────────────────────────
 
-    try:
-        collection = client.get_collection(
-            name=collection_name,
-            embedding_function=GeminiEmbeddingFunction(role=role),
-        )
-    except Exception as exc:
-        raise IndexNotBuiltError(
-            f"Collection '{collection_name}' not found in {target_path}. "
-            "Run the appropriate indexing script."
-        ) from exc
-
-    return collection
+_qcache: dict[str, list[float]] = {}
+_qlocks: dict[str, threading.Lock] = {}
+_qguard = threading.Lock()
+_QCACHE_MAX = 512
 
 
-def _get_notes_collection(chroma_dir: Optional[str] = None):
-    """Get or create the study notes collection (query role)."""
-    return _get_collection_by_name(NOTES_COLLECTION, role="query", chroma_dir=chroma_dir)
+def _embed_query(query: str) -> list[float]:
+    """Embed a query once even when two graph branches ask concurrently."""
+    with _qguard:
+        if query in _qcache:
+            return _qcache[query]
+        lock = _qlocks.setdefault(query, threading.Lock())
+    with lock:
+        with _qguard:
+            if query in _qcache:
+                return _qcache[query]
+        from tutor.embedding import GeminiEmbeddingFunction
+        vec = list(GeminiEmbeddingFunction(role="query")([query])[0])
+        with _qguard:
+            _qcache[query] = vec
+            _qlocks.pop(query, None)
+            while len(_qcache) > _QCACHE_MAX:
+                _qcache.pop(next(iter(_qcache)))
+        return vec
 
 
-def _get_screenshot_collection(chroma_dir: Optional[str] = None):
-    """Get or create the screenshot captions collection (query role)."""
-    return _get_collection_by_name(SCREENSHOT_COLLECTION_NAME, role="query", chroma_dir=chroma_dir)
+# ── BM25 (per store version, per kind) ────────────────────────────────────────
+
+_bm25_cache: dict[tuple[int, str], dict] = {}
+_bm25_guard = threading.Lock()
 
 
-# ── Hybrid lexical index (BM25) ───────────────────────────────────────────────
+def _get_bm25(store: VectorStore, kind: str) -> dict:
+    key = (id(store), kind)
+    with _bm25_guard:
+        hit = _bm25_cache.get(key)
+    if hit is not None:
+        return hit
+    rows = store.rows(kind)
+    docs = [tokenize(store.docs[r]) for r in rows]
+    entry = {"rows": rows, "bm25": BM25Okapi(docs) if docs else None}
+    with _bm25_guard:
+        if len(_bm25_cache) > 64:
+            _bm25_cache.clear()
+        _bm25_cache[key] = entry
+    return entry
 
-@lru_cache(maxsize=10)
-def _get_bm25_corpus(chroma_dir: Optional[str] = None):
-    """
-    Lazy BM25 corpus over every document in the notes collection, cached per
-    chroma_dir. Built once per process — cheap relative to the embed cost.
-    Returns {"ids", "docs", "texts", "metadatas"} aligned index-wise.
-    """
-    collection = _get_notes_collection(chroma_dir=chroma_dir)
-    got = collection.get(include=["documents", "metadatas"])
-    ids = list(got.get("ids", []))
-    documents = got.get("documents", []) or []
-    metadatas = got.get("metadatas", []) or []
-    docs = [tokenize(d) for d in documents]
-    bm25 = BM25Okapi(docs) if docs else None
-    return {"ids": ids, "docs": docs, "texts": documents, "metadatas": metadatas, "bm25": bm25}
 
+# ── result shaping ────────────────────────────────────────────────────────────
 
 def _unmap_chapter_id(value) -> Optional[int]:
-    """P2.5: chroma metadata stores the sentinel -1 for 'no chapter' (Chroma
-    rejects None values). Map it — and any other negative/garbage value — back
-    to None so chunks/citations/frontend never see -1."""
+    """P2.5: index metadata stores the sentinel -1 for 'no chapter'. Map it —
+    and any other negative/garbage value — back to None so chunks/citations/
+    frontend never see -1."""
     if value is None or value == "":
         return None
     try:
@@ -142,11 +152,14 @@ def _unmap_chapter_id(value) -> Optional[int]:
 def _chunk_from_doc(doc_id: str, text: str, meta: dict, distance: Optional[float]) -> dict:
     """Build a RetrievedChunk dict, computing the P3.8 `relevant` flag."""
     return {
+        "kind": meta.get("kind", "notes"),
         "text": text,
         "heading": meta.get("heading", ""),
         "heading_path": meta.get("heading_path", ""),
         "chapter_id": _unmap_chapter_id(meta.get("chapter_id")),
         "source": meta.get("source", ""),
+        "start": meta.get("start"),
+        "end": meta.get("end"),
         "distance": distance,
         "chunk_id": doc_id,
         "relevant": distance is not None and distance <= CONFIDENCE_THRESHOLD,
@@ -155,11 +168,13 @@ def _chunk_from_doc(doc_id: str, text: str, meta: dict, distance: Optional[float
 
 
 def _attach_context(chunks: list[dict]) -> list[dict]:
-    """P3.4: attach parent/sibling section context from the source .md file.
+    """P3.4: attach parent/sibling section context for note chunks.
     Best-effort: unreadable/missing files leave context empty."""
     from tutor.context_expand import expand_context
 
     for c in chunks:
+        if c.get("kind") != "notes":
+            continue
         try:
             c["context"] = expand_context(c)
         except Exception:
@@ -208,7 +223,43 @@ def _rrf_merge(
     return [c for c, _ in chunks_with_score[:min_results]]
 
 
-# ── Public API ─────────────────────────────────────────────────────────────────
+def _hybrid(store: VectorStore, qvec, query: str, kind: str,
+            chapter_id: Optional[int], k: int, candidates: int) -> list[dict]:
+    """Cosine + BM25 candidates for one doc kind, fused with RRF.
+
+    No distance-threshold trimming here: measured on real lectures, questions
+    the lecture never covers still land at cosine 0.22–0.31, inside any useful
+    threshold, so "is this covered?" is decided by the answer model reading
+    the passages, not by a distance cutoff.
+    """
+    by_id: dict = {}
+    cosine_ids: list[str] = []
+    for row, dist in store.query(qvec, kind=kind, chapter_id=chapter_id, n=candidates):
+        _id = store.ids[row]
+        cosine_ids.append(_id)
+        by_id[_id] = _chunk_from_doc(_id, store.docs[row], store.metas[row], dist)
+
+    bm = _get_bm25(store, kind)
+    bm25_ids: list[str] = []
+    if bm["bm25"] is not None:
+        scores = bm["bm25"].get_scores(tokenize(query))
+        for i in sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:candidates]:
+            if scores[i] <= 0:
+                break
+            row = bm["rows"][i]
+            meta = store.metas[row]
+            if chapter_id is not None and meta.get("chapter_id") != chapter_id:
+                continue
+            _id = store.ids[row]
+            bm25_ids.append(_id)
+            if _id not in by_id:
+                by_id[_id] = _chunk_from_doc(_id, store.docs[row], meta, None)
+
+    fused = reciprocal_rank_fusion_scored([cosine_ids, bm25_ids], k=RRF_K)
+    return [by_id[_id] for _id, _ in fused if _id in by_id][:k]
+
+
+# ── public API ────────────────────────────────────────────────────────────────
 
 def retrieve(
     query: str,
@@ -217,81 +268,36 @@ def retrieve(
     output_dir: Optional[str] = None,
     hybrid: bool = True,
     candidates: int = ADAPTIVE_TOP_K_CANDIDATES,
+    kinds: tuple[str, ...] = ("transcript", "notes"),
 ) -> list[dict]:
     """
-    Query the study-notes index and return the top-k most relevant chunks.
+    Retrieve lecture passages for a question: transcript windows first (what
+    the lecturer said), then study-note sections (the summary).
 
-    P3.2 hybrid: cosine (Chroma) candidates and BM25 candidates are fused with
-    Reciprocal Rank Fusion; results are then confidence-trimmed (P3.8).
-
-    Args:
-        query:      The user's question (or rewritten query).
-        chapter_id: If set, restrict results to this chapter.
-        k:          Number of results to return (upper bound).
-        output_dir: If set, use this directory's Chroma index instead of default.
-        hybrid:     Enable BM25 + RRF fusion (default True).
-        candidates: Candidate pool size per system for fusion.
-
-    Returns:
-        List of RetrievedChunk dicts (with chunk_id + relevant), ordered by
-        descending fused relevance. Length is between MIN_RESULTS and k.
-
-    Raises:
-        IndexNotBuiltError: if the notes index hasn't been built yet.
+    `k` caps the total; the split defaults to TOP_K_TRANSCRIPT transcript
+    windows + TOP_K_NOTES note sections. Pass kinds=("notes",) for the legacy
+    notes-only behaviour (quiz source lookup).
     """
-    chroma_dir = str(Path(output_dir) / "tutor" / "chroma") if output_dir else None
-    collection = _get_notes_collection(chroma_dir=chroma_dir)
+    store = _get_store(output_dir)
+    qvec = _embed_query(query)
+    quota = {"transcript": TOP_K_TRANSCRIPT, "notes": TOP_K_NOTES}
+    if len(kinds) == 1:
+        quota[kinds[0]] = k
 
-    where: dict | None = None
-    if chapter_id is not None:
-        where = {"chapter_id": {"$eq": chapter_id}}
-
-    n_results = candidates if hybrid else max(k, candidates)
-    results = collection.query(
-        query_texts=[query],
-        n_results=n_results,
-        where=where,
-        include=["documents", "metadatas", "distances"],
-    )
-
-    cosine_ids = list(results["ids"][0])
-    by_id: dict = {}
-    for doc_id, doc, meta, dist in zip(
-        cosine_ids,
-        results["documents"][0],
-        results["metadatas"][0],
-        results["distances"][0],
-    ):
-        by_id[doc_id] = _chunk_from_doc(doc_id, doc, meta, dist)
-
-    if not hybrid:
-        return _attach_context([by_id[did] for did in cosine_ids if did in by_id][:k])
-
-    # BM25 candidates (optionally chapter-filtered to mirror the cosine where)
-    bm25_corpus = _get_bm25_corpus(chroma_dir=chroma_dir)
-    bm25_ids: list[str] = []
-    if bm25_corpus["bm25"] is not None:
-        q_tokens = tokenize(query)
-        scores = bm25_corpus["bm25"].get_scores(q_tokens)
-        ranked = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
-        for i in ranked:
-            if scores[i] <= 0:
-                continue
-            meta = bm25_corpus["metadatas"][i] or {}
-            if chapter_id is not None and (meta.get("chapter_id") or None) != chapter_id:
-                continue
-            doc_id = bm25_corpus["ids"][i]
-            bm25_ids.append(doc_id)
-            if doc_id not in by_id:
-                by_id[doc_id] = _chunk_from_doc(
-                    doc_id,
-                    bm25_corpus["texts"][i],
-                    meta,
-                    None,
-                )
-
-    merged = _rrf_merge(cosine_ids, bm25_ids, by_id, k=RRF_K)
-    return _attach_context(merged[:k])
+    out: list[dict] = []
+    for kind in kinds:
+        if not store.count(kind):
+            continue
+        n = quota.get(kind, k)
+        if hybrid:
+            hits = _hybrid(store, qvec, query, kind, chapter_id, n, candidates)
+        else:
+            hits = [
+                _chunk_from_doc(store.ids[r], store.docs[r], store.metas[r], d)
+                for r, d in store.query(qvec, kind=kind, chapter_id=chapter_id, n=n)
+            ]
+        out.extend(hits)
+    return _attach_context(out[:max(k, 1)] if len(kinds) == 1 else out)
 
 
 def retrieve_images(
@@ -299,49 +305,29 @@ def retrieve_images(
     chapter_id: Optional[int] = None,
     k: int = TOP_K_IMAGES,
     output_dir: Optional[str] = None,
+    max_distance: float = IMAGE_MAX_DISTANCE,
 ) -> list[dict]:
     """
-    Query the screenshot captions index and return the top-k most relevant images.
-
-    Args:
-        query:      The user's question (or rewritten query).
-        chapter_id: If set, restrict results to screenshots from this chapter.
-        k:          Number of images to return.
-        output_dir: If set, use this directory's Chroma index instead of default.
-
-    Returns:
-        List of RetrievedImage dicts, sorted by (distance ascending, importance descending).
-
-    Raises:
-        IndexNotBuiltError: if the screenshot index hasn't been built yet.
+    Screenshots whose caption/OCR is close to the question. Only matches within
+    `max_distance` are returned: an unrelated slide in the prompt invites the
+    model to describe it as if it answered the question.
     """
-    chroma_dir = str(Path(output_dir) / "tutor" / "chroma") if output_dir else None
-    collection = _get_screenshot_collection(chroma_dir=chroma_dir)
-
-    where: dict | None = None
-    if chapter_id is not None:
-        where = {"chapter_id": {"$eq": chapter_id}}
-
-    results = collection.query(
-        query_texts=[query],
-        n_results=k,
-        where=where,
-        include=["metadatas", "distances"],
-    )
-
+    store = _get_store(output_dir)
+    if not store.count("screenshot"):
+        return []
+    qvec = _embed_query(query)
     images: list[dict] = []
-    if results["ids"] and results["ids"][0]:
-        for idx, shot_id in enumerate(results["ids"][0]):
-            meta = results["metadatas"][0][idx]
-            dist = results["distances"][0][idx]
-            images.append({
-                "path": meta["path"],
-                "section": meta.get("section", ""),
-                "importance": meta.get("importance", 0),
-                "chapter_id": meta.get("chapter_id"),
-                "distance": dist,
-            })
-
-    # Sort by distance (ascending), then importance (descending) as tiebreaker
+    for row, dist in store.query(qvec, kind="screenshot", chapter_id=chapter_id, n=k):
+        if dist > max_distance:
+            continue
+        meta = store.metas[row]
+        images.append({
+            "path": meta["path"],
+            "section": meta.get("section", ""),
+            "caption": store.docs[row],
+            "importance": meta.get("importance", 0),
+            "chapter_id": _unmap_chapter_id(meta.get("chapter_id")),
+            "distance": dist,
+        })
     images.sort(key=lambda x: (x["distance"], -x["importance"]))
     return images[:k]

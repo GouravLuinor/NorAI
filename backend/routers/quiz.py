@@ -244,6 +244,7 @@ async def quiz_explain(
             chapter_id=req.chapter_id,
             k=1,
             output_dir=output_dir,
+            kinds=("notes",),
         )
     except IndexNotBuiltError:
         return {"source": None, "message": "No lecture index available for citation."}

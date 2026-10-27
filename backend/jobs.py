@@ -55,6 +55,7 @@ from backend.db.database import DATABASE_URL, get_engine_kwargs
 from backend.db.models import Lecture
 from backend.orchestrator import PipelineCancelled, TerminalPipelineError, run_pipeline
 from backend.timeutil import ensure_utc as _normalize
+from tutor.vector_store import has_tutor_index
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +152,7 @@ def _get_live_progress(lecture_id: str) -> dict | None:
 
 
 _disk_completed_lock = threading.Lock()
-# P3.1: artifact completion is terminal — once notes + chroma exist on disk
+# P3.1: artifact completion is terminal — once notes + tutor index exist on disk
 # they stay (there is no lecture-output deletion endpoint), so the 1.5s status
 # poll can skip the three Path.exists stats after the first hit.
 _disk_completed: set[str] = set()
@@ -171,8 +172,7 @@ def check_disk_completed(lecture_id: str) -> bool:
         return False
     notes_md = lec_dir / "notes" / "notes.md"
     outline_json = lec_dir / "notes" / "lecture_outline.json"
-    chroma_db = lec_dir / "tutor" / "chroma" / "chroma.sqlite3"
-    if (notes_md.exists() or outline_json.exists()) and chroma_db.exists():
+    if (notes_md.exists() or outline_json.exists()) and has_tutor_index(lec_dir):
         with _disk_completed_lock:
             _disk_completed.add(lecture_id)
         return True

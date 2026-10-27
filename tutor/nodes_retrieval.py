@@ -314,8 +314,10 @@ def retrieve_node(state: dict, config: RunnableConfig, output_dir=None) -> dict:
         chunks = retrieve(query=question, chapter_id=chapter_id, k=TOP_K, output_dir=output_dir)
         logger.debug(f"retrieve_node: {len(chunks)} chunks for query {question!r}")
         for c in chunks:
+            # BM25-only hits carry distance=None (no cosine score).
+            dist = c.get("distance")
             c["confidence_tag"] = (
-                "strong" if c.get("distance", 1.0) <= CONFIDENCE_THRESHOLD else "weak"
+                "strong" if dist is not None and dist <= CONFIDENCE_THRESHOLD else "weak"
             )
         return {"retrieved_chunks": chunks, "retrieval_status": "ok" if chunks else "empty"}
     except IndexNotBuiltError as exc:

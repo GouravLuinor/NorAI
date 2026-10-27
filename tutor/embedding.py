@@ -1,16 +1,10 @@
 """
-embedding.py — Custom Chroma EmbeddingFunction for gemini-embedding-2.
+embedding.py — embedding function for gemini-embedding-2 (tutor index).
 
-Why not use chromadb.utils.embedding_functions.GoogleGeminiEmbeddingFunction?
-  The built-in wrapper only documents gemini-embedding-001 and uses the
-  task_type= parameter (e.g. task_type="RETRIEVAL_DOCUMENT").
-  gemini-embedding-2 dropped the task_type parameter entirely — task
-  instructions go directly in the prompt text instead:
+gemini-embedding-2 has no task_type= parameter — task instructions go
+directly in the prompt text instead:
     Documents:  "title: {title} | text: {content}"
     Queries:    "task: question answering | query: {q}"
-  Using the built-in wrapper with gemini-embedding-2 would silently ignore the
-  task_type flag and skip the prompt formatting, hurting retrieval quality.
-
   This wrapper handles both roles cleanly via the `role` argument.
 
 API shape (google-genai SDK):
@@ -44,7 +38,7 @@ from __future__ import annotations
 
 from typing import List
 
-from chromadb import EmbeddingFunction, Embeddings
+Embeddings = list[list[float]]
 
 from tutor.retrieval_config import EMBEDDING_DIMS, EMBEDDING_MODEL
 from backend.usage_ledger import record_embed_usage
@@ -67,11 +61,11 @@ def snapshot_embed_batches() -> int:
 
 # Retry attempts for one embed batch (pre-existing local cap, now routed
 # through the shared policy in backend.gemini_client).
-_EMBED_MAX_RETRIES = 3
+_EMBED_MAX_RETRIES = 5
 
-class GeminiEmbeddingFunction(EmbeddingFunction):
+class GeminiEmbeddingFunction:
     """
-    Chroma-compatible embedding function for gemini-embedding-2.
+    Callable embedding function for gemini-embedding-2: list[str] -> vectors.
 
     Args:
         role: "document" (indexing) or "query" (retrieval).
@@ -134,7 +128,7 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
 
     def __call__(self, input: List[str]) -> Embeddings:  # noqa: A002
         """
-        Called by Chroma for both .add() (role=document) and .query() (role=query).
+        Embed a batch: role=document for indexing, role=query for retrieval.
 
         Each string is wrapped in its own Content object so gemini-embedding-2
         returns separate embeddings (not one aggregated embedding for the batch).

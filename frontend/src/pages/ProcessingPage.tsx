@@ -29,7 +29,6 @@ const STAGES: StageInfo[] = [
   { label: 'Selecting screenshots', key: 'screenshot_selection' },
   { label: 'Writing notes, revision & assessment', key: 'chapter_artifacts' },
   { label: 'Indexing for tutor', key: 'tutor_index' },
-  { label: 'Indexing screenshots', key: 'screenshot_index' },
   { label: 'Cleaning up', key: 'cleanup' },
 ]
 
