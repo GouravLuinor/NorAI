@@ -1,0 +1,1818 @@
+{
+  "summary": {
+    "n": 20,
+    "graded": 20,
+    "accuracy_core": 0.75,
+    "accuracy_detail": 0.562,
+    "false_not_covered": 0.071,
+    "oos_abstain": 0.25,
+    "premise_corrected": 0.5,
+    "unsupported_claim": 0.2,
+    "invented_visual": 1.0,
+    "answers_citing": 1.0,
+    "citations_verified": 0.662,
+    "latency_p50_s": 6.7,
+    "calls_per_turn": 3,
+    "input_tokens_per_turn": 2005,
+    "output_tokens_per_turn": 28,
+    "cost_per_turn_usd": 0.000541
+  },
+  "rows": [
+    {
+      "category": "core",
+      "question": "What is the primary goal of the series regarding how students should perceive calculus?",
+      "gold_answer": "The goal is for students to understand the core ideas of calculus so deeply that they feel as though they could have invented the subject themselves.",
+      "quote": "And my goal is for you to come away feeling like you could have invented calculus yourself.",
+      "quote_ts": 52.95,
+      "answer": "The primary goal of this series is to shift your perception of calculus from the rote memorization of formulas toward building deep conceptual understanding through geometric intuition. Instead of treating calculus as a set of arbitrary rules, the material encourages you to act as an \"active discoverer\" who reconstructs mathematical truths from first principles.\n\nAs shown in the lecture slide on the introduction to geometric derivatives, this approach focuses on visualizing how functions behave, such as observing how the area under a curve grows as the boundary $x$ increases. By grounding concepts like derivatives and integrals in their geometric counterparts—slope and accumulation—you gain long-term ownership of the material rather than just preparing for a short-term exam.\n\nShould we walk through how this geometric perspective helps explain the inverse relationship between derivatives and integrals?\n\n**Sources**\n• Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS\n• Pedagogy and Community in Mathematical Education > 3. Comparison: Traditional vs. Intuitive Pedagogy\n• Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus\n• Introduction to geometric derivatives | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_64.jpg",
+      "latency_s": 11.4,
+      "calls": 3,
+      "input_tokens": 2130,
+      "output_tokens": 29,
+      "cost_usd": 0.000573,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "chapter_id": 1,
+          "distance": 0.23659440400707987,
+          "start": null
+        },
+        {
+          "heading_path": "Pedagogy and Community in Mathematical Education > 3. Comparison: Traditional vs. Intuitive Pedagogy",
+          "chapter_id": 4,
+          "distance": 0.3365865136850159,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3,
+          "distance": 0.29224895173669063,
+          "start": null
+        },
+        {
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4,
+          "distance": 0.2534135883801837,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 3. COMPARISON: DIFFERENTIATION VS. INTEGRATION",
+          "chapter_id": 3,
+          "distance": 0.3461590074988381,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Geometric Integration",
+          "distance": 0.3458721570011075
+        },
+        {
+          "section": "Introduction to geometric derivatives",
+          "distance": 0.3552362620747329
+        }
+      ],
+      "citations": [
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "verified": true,
+          "chunk_id": "chunk_396e88e26fd9c6af",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "heading": "1. THE ESSENCE OF CALCULUS",
+          "chapter_id": 1
+        },
+        {
+          "section": "Pedagogy and Community in Mathematical Education > 3. Comparison: Traditional vs. Intuitive Pedagogy",
+          "verified": true,
+          "chunk_id": "chunk_ea69879ef74c183c",
+          "heading_path": "Pedagogy and Community in Mathematical Education > 3. Comparison: Traditional vs. Intuitive Pedagogy",
+          "heading": "3. Comparison: Traditional vs. Intuitive Pedagogy",
+          "chapter_id": 4
+        },
+        {
+          "section": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "verified": true,
+          "chunk_id": "chunk_10f1216abde4a09b",
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "heading": "2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4
+        },
+        {
+          "section": "Introduction to geometric derivatives | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_64.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 0,
+        "verdict": "partial",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor captures the general pedagogical spirit but misses the lecture's explicit emphasis on feeling like you could have invented calculus yourself."
+      }
+    },
+    {
+      "category": "core",
+      "question": "How does the lecture propose one can find the area of a circle using calculus-like thinking?",
+      "gold_answer": "You can approximate the area by slicing the circle into many thin concentric rings, treating each as a rectangle, and summing their areas as the thickness of the rings approaches zero.",
+      "quote": "Let's take one of those rings, which has some inner radius R that's between zero and three. If we can find a nice expression for the area of each ring like this one, and if we have a nice way to add them all up, it might lead us to an understanding of the full circle's area.",
+      "quote_ts": 150.35,
+      "answer": "The lecture proposes decomposing the circle into an infinite series of thin, concentric rings. By \"unrolling\" one of these rings at radius $R$ with an infinitesimal thickness $dR$, you create a rectangle with a length equal to the circumference ($2\\pi R$) and a height of $dR$, giving an area element of $dA = 2\\pi R \\, dR$.\n\nAs shown in the lecture slide on the geometric derivation of circle area (frame 120), you then sum these infinitesimal areas from $R=0$ to $R=r$ using the integral $\\int_{0}^{r} 2\\pi R \\, dR$. This process effectively reduces a 2D area problem into a 1D integral by leveraging the circle's symmetry, where $2\\pi R$ represents the rate at which the area grows as the radius increases.\n\nWould you like to see how this same logic of \"rate times thickness\" applies to finding the volume of a sphere?\n\n**Sources**\n• Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE\n• Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION\n• Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE\n• Geometric derivation of circle area (frame 120)",
+      "latency_s": 5.29,
+      "calls": 3,
+      "input_tokens": 2255,
+      "output_tokens": 29,
+      "cost_usd": 0.000603,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2,
+          "distance": 0.20700411955513964,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2,
+          "distance": 0.21896809614884538,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1,
+          "distance": 0.2016698415675644,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "chapter_id": 1,
+          "distance": 0.2526770965358538,
+          "start": null
+        },
+        {
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4,
+          "distance": 0.3098499637941893,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Geometric Integration",
+          "distance": 0.17240224093651868
+        },
+        {
+          "section": "Geometric derivation of circle area",
+          "distance": 0.232150319926946
+        }
+      ],
+      "citations": [
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "verified": true,
+          "chunk_id": "chunk_a9a9047385ec02c6",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "heading": "2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1
+        },
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "verified": true,
+          "chunk_id": "chunk_494c4adcc418d937",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "heading": "4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "chapter_id": 1
+        },
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "verified": true,
+          "chunk_id": "chunk_fa2747a8ef5c5dce",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "heading": "2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2
+        },
+        {
+          "section": "Geometric derivation of circle area (frame 120)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 1,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor correctly explains slicing the circle into concentric rings and unrolling them into rectangles to sum their areas."
+      }
+    },
+    {
+      "category": "core",
+      "question": "When approximating the area of a circle with rings, what does the sum of the areas of the rectangles represent?",
+      "gold_answer": "As the thickness of the rings becomes smaller, the sum of the areas of the rectangles approaches the area under the graph of the function 2 pi R.",
+      "quote": "Adding all of those numbers could be seen in a different, pretty clever way as adding the areas of many thin rectangles sitting underneath a graph. The graph of the function 2 pi R, in this case.",
+      "quote_ts": 438.15,
+      "answer": "The sum of the areas of those rectangles represents an approximation of the total area of the circle. As shown in the lecture slide (frame 344), by \"unrolling\" each concentric ring into a rectangle with length $2\\pi R$ and height $dR$, we are essentially transforming the circle into a series of thin strips that are easier to measure.\n\nWhen you sum these rectangles, you are performing a Riemann sum. As the thickness $dR$ approaches zero, the approximation error vanishes, and the sum converges to the exact area of the circle, $\\pi r^2$.\n\nShould we walk through how that summation turns into the integral $\\int_{0}^{r} 2\\pi R \\, dR$?\n\n**Sources**\n• Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE\n• Riemann Sums and the Area Under a Curve > 1. THE GEOMETRIC INTUITION OF INTEGRATION\n• Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE\n• Geometric Integration (frame 344)",
+      "latency_s": 5.2,
+      "calls": 3,
+      "input_tokens": 2143,
+      "output_tokens": 29,
+      "cost_usd": 0.000575,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1,
+          "distance": 0.1687399510524782,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2,
+          "distance": 0.18865882897861896,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2,
+          "distance": 0.2146051753165189,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 1. THE GEOMETRIC INTUITION OF INTEGRATION",
+          "chapter_id": 2,
+          "distance": 0.2706134269830992,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "chapter_id": 1,
+          "distance": 0.2089428796881686,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Approximation theory and integration",
+          "distance": 0.17536599999219915
+        },
+        {
+          "section": "Geometric Integration",
+          "distance": 0.23011859459505035
+        }
+      ],
+      "citations": [
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "verified": true,
+          "chunk_id": "chunk_a9a9047385ec02c6",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "heading": "2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1
+        },
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 1. THE GEOMETRIC INTUITION OF INTEGRATION",
+          "verified": true,
+          "chunk_id": "chunk_839c69dcab8c5352",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 1. THE GEOMETRIC INTUITION OF INTEGRATION",
+          "heading": "1. THE GEOMETRIC INTUITION OF INTEGRATION",
+          "chapter_id": 2
+        },
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "verified": true,
+          "chunk_id": "chunk_fa2747a8ef5c5dce",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "heading": "2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2
+        },
+        {
+          "section": "Geometric Integration (frame 344)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 2,
+        "verdict": "partial",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor notes that it approximates the circle's area, but misses the central point that the sum represents the area under the graph of 2 pi R."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the relationship between the area under a graph and the derivative of that area function?",
+      "gold_answer": "The derivative of the function that represents the area under a graph is equal to the height of the graph at that point.",
+      "quote": "Any function defined as the area under some graph has this property, that DA divided by DX, a slight nudge to the output of A divided by a slight nudge to the input that caused it. Is about equal to the height of the graph at that point.",
+      "quote_ts": 766.15,
+      "answer": "The derivative of the area function $A(x)$ is simply the height of the curve $f(x)$ at that point. Geometrically, if you increase the boundary $x$ by a tiny amount $dx$, the area grows by a thin sliver that is essentially a rectangle with height $f(x)$ and width $dx$, leading to the relationship $\\frac{dA}{dx} = f(x)$.\n\nAs shown in the lecture slide on the area function [2], this means that the rate at which the area accumulates is exactly equal to the value of the function at the current boundary. This confirms that differentiation and integration are inverse operations, as the derivative of the area \"undoes\" the accumulation process to return the original function.\n\nWould you like to walk through how this works with a specific example, like $f(t) = t^2$?\n\n**Sources**\n• The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE\n• Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus\n• The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS\n• The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED\n• Area function (File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_680.jpg)",
+      "latency_s": 10.33,
+      "calls": 3,
+      "input_tokens": 2215,
+      "output_tokens": 29,
+      "cost_usd": 0.000595,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "chapter_id": 3,
+          "distance": 0.15596178021344054,
+          "start": null
+        },
+        {
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4,
+          "distance": 0.23634502012500824,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3,
+          "distance": 0.2065528040252439,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED",
+          "chapter_id": 3,
+          "distance": 0.18090546002342722,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2,
+          "distance": 0.33583177835984,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Fundamental Theorem of Calculus",
+          "distance": 0.19866645975518937
+        },
+        {
+          "section": "Area function",
+          "distance": 0.21214134147642993
+        }
+      ],
+      "citations": [
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "verified": true,
+          "chunk_id": "chunk_f340ee896d557ed1",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "heading": "2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "chapter_id": 3
+        },
+        {
+          "section": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "verified": true,
+          "chunk_id": "chunk_10f1216abde4a09b",
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "heading": "2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4
+        },
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "verified": true,
+          "chunk_id": "chunk_680aa5ce0888a679",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "heading": "4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3
+        },
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED",
+          "verified": true,
+          "chunk_id": "chunk_6fc4e557173710ee",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED",
+          "heading": "1. THE AREA FUNCTION DEFINED",
+          "chapter_id": 3
+        },
+        {
+          "section": "Area function (File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_680.jpg)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 3,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor accurately states that the derivative of the area function equals the height of the graph at that point."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the Fundamental Theorem of Calculus?",
+      "gold_answer": "It is the principle that integrals and derivatives are inverses of each other, specifically that the derivative of an area function returns the original function defining the graph.",
+      "quote": "And this back and forth between integrals and derivatives, where the derivative of a function for the area under a graph. Gives you back the function defining the graph itself, is called the fundamental theorem of calculus.",
+      "quote_ts": 850.15,
+      "answer": "The Fundamental Theorem of Calculus establishes that differentiation and integration are inverse processes. Geometrically, it shows that the rate at which the area under a curve accumulates (the derivative of the area function) is exactly equal to the height of the curve at that point.\n\nAs shown in the lecture slide on the area function [2], we can visualize this by looking at a tiny sliver of area, $dA$, added when we nudge the boundary $x$ by a small amount $dx$. Because this sliver is essentially a rectangle with height $f(x)$ and width $dx$, we get the relationship $\\frac{dA}{dx} = f(x)$, meaning the derivative of the accumulated area returns the original function.\n\nWould you like to walk through how this applies to a specific function, like $f(t) = t^2$?\n\n**Sources**\n• Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS\n• The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED\n• The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE\n• The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS\n• Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus\n• Fundamental Theorem of Calculus | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_936.jpg\n• Area function | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_680.jpg",
+      "latency_s": 6.7,
+      "calls": 3,
+      "input_tokens": 2172,
+      "output_tokens": 29,
+      "cost_usd": 0.000585,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "chapter_id": 1,
+          "distance": 0.2846599030835806,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "chapter_id": 3,
+          "distance": 0.29544560340887516,
+          "start": null
+        },
+        {
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4,
+          "distance": 0.3101227201807869,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED",
+          "chapter_id": 3,
+          "distance": 0.2992365052160202,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3,
+          "distance": 0.3058154215525617,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Fundamental Theorem of Calculus",
+          "distance": 0.258259748895598
+        },
+        {
+          "section": "Area function",
+          "distance": 0.3274042870941394
+        }
+      ],
+      "citations": [
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "verified": true,
+          "chunk_id": "chunk_396e88e26fd9c6af",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "heading": "1. THE ESSENCE OF CALCULUS",
+          "chapter_id": 1
+        },
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED",
+          "verified": true,
+          "chunk_id": "chunk_6fc4e557173710ee",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED",
+          "heading": "1. THE AREA FUNCTION DEFINED",
+          "chapter_id": 3
+        },
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "verified": true,
+          "chunk_id": "chunk_f340ee896d557ed1",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "heading": "2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "chapter_id": 3
+        },
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "verified": true,
+          "chunk_id": "chunk_680aa5ce0888a679",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "heading": "4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "verified": true,
+          "chunk_id": "chunk_10f1216abde4a09b",
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "heading": "2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4
+        },
+        {
+          "section": "Fundamental Theorem of Calculus | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_936.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        },
+        {
+          "section": "Area function | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_680.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 4,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor correctly explains that the theorem links differentiation and integration as inverse processes."
+      }
+    },
+    {
+      "category": "core",
+      "question": "How does the lecturer define a derivative in the context of this introductory lesson?",
+      "gold_answer": "A derivative is loosely defined as a measure of how sensitive a function's output is to small changes in its input.",
+      "quote": "But loosely speaking, it's a measure of how sensitive a function is to small changes in its input.",
+      "quote_ts": 806.15,
+      "answer": "In this lesson, the lecturer defines a derivative as the rate of change of a function, specifically focusing on how it relates to the accumulation of area. As shown in the slide on the Fundamental Theorem of Calculus (frame 808), the derivative measures how sensitive the area function $A(x)$ is to a tiny change in its boundary, $x$. \n\nGeometrically, if you increase $x$ by an infinitesimal amount $dx$, the area grows by a sliver $dA$. The derivative $\\frac{dA}{dx}$ is defined as the height of the curve $f(x)$ at that point, illustrating that the rate at which area accumulates is exactly equal to the function's value.\n\nShould we walk through how this geometric \"sliver\" becomes an exact derivative as $dx$ approaches zero?\n\n**Sources**\n• The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE\n• The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS\n• Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS\n• Introduction to geometric derivatives | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_64.jpg\n• Fundamental Theorem of Calculus | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_808.jpg",
+      "latency_s": 8.34,
+      "calls": 3,
+      "input_tokens": 2048,
+      "output_tokens": 26,
+      "cost_usd": 0.000548,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "chapter_id": 3,
+          "distance": 0.3295865347998863,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3,
+          "distance": 0.34318128293352235,
+          "start": null
+        },
+        {
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4,
+          "distance": 0.333204486960076,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "chapter_id": 1,
+          "distance": 0.306016647120282,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Introduction to geometric derivatives",
+          "distance": 0.27923573348421005
+        },
+        {
+          "section": "Fundamental Theorem of Calculus",
+          "distance": 0.28985643589673016
+        }
+      ],
+      "citations": [
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "verified": true,
+          "chunk_id": "chunk_f340ee896d557ed1",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "heading": "2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "chapter_id": 3
+        },
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "verified": true,
+          "chunk_id": "chunk_680aa5ce0888a679",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "heading": "4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "verified": true,
+          "chunk_id": "chunk_396e88e26fd9c6af",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "heading": "1. THE ESSENCE OF CALCULUS",
+          "chapter_id": 1
+        },
+        {
+          "section": "Introduction to geometric derivatives | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_64.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        },
+        {
+          "section": "Fundamental Theorem of Calculus | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_808.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 5,
+        "verdict": "partial",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor mentions sensitivity to input changes but narrows it specifically to the area function rather than giving the lecturer's general loose definition."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What specific radius does the lecturer use as an example to explain the area of a circle?",
+      "gold_answer": "The lecturer uses a circle with a radius of three to demonstrate the concept.",
+      "quote": "Just you and a circle. Let's say with radius three.",
+      "quote_ts": 122.15,
+      "answer": "The lecturer uses a general radius $r$ to derive the formula for the area of a circle. By integrating the circumference function $2\\pi R$ from $0$ to $r$, the process demonstrates how the area grows as a function of the radius, resulting in the standard $\\pi r^2$ formula.\n\nAs shown in the lecture slide on the geometric derivation of circle area (frame 120), this approach treats the circle as a collection of concentric rings, where the variable $R$ represents the radius of any individual ring being \"unrolled\" into a rectangle.\n\n**Sources**\n• Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE\n• Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION\n• Geometric derivation of circle area (frame 120)",
+      "latency_s": 9.14,
+      "calls": 3,
+      "input_tokens": 2252,
+      "output_tokens": 28,
+      "cost_usd": 0.000602,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2,
+          "distance": 0.23604928391384117,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1,
+          "distance": 0.24095152758859661,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2,
+          "distance": 0.2699959353560435,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "chapter_id": 1,
+          "distance": 0.2772619866031527,
+          "start": null
+        },
+        {
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4,
+          "distance": 0.3375572800316482,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Geometric Integration",
+          "distance": 0.1968466841904577
+        },
+        {
+          "section": "Geometric derivation of circle area",
+          "distance": 0.22536212462222938
+        }
+      ],
+      "citations": [
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "verified": true,
+          "chunk_id": "chunk_a9a9047385ec02c6",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "heading": "2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1
+        },
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "verified": true,
+          "chunk_id": "chunk_494c4adcc418d937",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "heading": "4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "chapter_id": 1
+        },
+        {
+          "section": "Geometric derivation of circle area (frame 120)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 6,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": true,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor incorrectly claims the lecturer used a general radius r, whereas the lecturer explicitly chose a radius of 3."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What notation does the lecturer introduce for the tiny thickness of the rings?",
+      "gold_answer": "The lecturer uses the notation DR to represent a tiny difference in the radius.",
+      "quote": "In the spirit of using what will come to be standard calculus notation, let's call that thickness DR for a tiny difference in the radius from one ring to the next.",
+      "quote_ts": 196.25,
+      "answer": "The lecturer introduces the notation $dR$ to represent the infinitesimal thickness of the concentric rings. As shown in the lecture slide on the geometric derivation of circle area (frame 120), this $dR$ is treated as the width of the rectangular slice when the ring is \"unrolled.\"\n\nWould you like to walk through how this $dR$ allows us to transition from a simple approximation to an exact integral?\n\n**Sources**\n• Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE\n• Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING\n• Geometric derivation of circle area (frame 120)",
+      "latency_s": 9.07,
+      "calls": 3,
+      "input_tokens": 2136,
+      "output_tokens": 29,
+      "cost_usd": 0.000575,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2,
+          "distance": 0.3426521047876696,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1,
+          "distance": 0.30232776401113115,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "chapter_id": 1,
+          "distance": 0.3070665381263804,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2,
+          "distance": 0.2929623876032954,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2,
+          "distance": 0.34275267740235416,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Geometric Integration",
+          "distance": 0.2695416491226472
+        },
+        {
+          "section": "Geometric derivation of circle area",
+          "distance": 0.31257120523352366
+        }
+      ],
+      "citations": [
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "verified": true,
+          "chunk_id": "chunk_a9a9047385ec02c6",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "heading": "2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1
+        },
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "verified": true,
+          "chunk_id": "chunk_cda649158afe3fe2",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "heading": "3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "chapter_id": 1
+        },
+        {
+          "section": "Geometric derivation of circle area (frame 120)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 7,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor correctly identifies the notation as dR."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What value does the lecturer suggest as a concrete example for the thickness DR?",
+      "gold_answer": "The lecturer suggests using 0.1 as a concrete example for the thickness DR.",
+      "quote": "Maybe you think of it as something like 0.1.",
+      "quote_ts": 207.55,
+      "answer": "The lecturer doesn't actually assign a specific numerical value to $dR$ because it represents an \"infinitesimal\" change—a conceptual width that is shrinking toward zero. As shown in the lecture slide on infinitesimal change (frame 744), $dR$ is treated as a variable that allows us to transition from a rough approximation to an exact value through the limit.\n\nThink of it as a placeholder for \"an incredibly thin slice\" rather than a fixed number like 0.1 or 0.01. If we picked a concrete number, we would always have a small error, but by letting $dR \\to 0$, that error vanishes entirely.\n\nShould we walk through how that \"vanishing error\" works when calculating the area of a circle?\n\n**Sources**\n• Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING\n• Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT\n• Geometric Integration (frame 344)\n• Infinitesimal change (frame 744)",
+      "latency_s": 5.17,
+      "calls": 3,
+      "input_tokens": 1546,
+      "output_tokens": 29,
+      "cost_usd": 0.000428,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2,
+          "distance": 0.38037313218280455,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "chapter_id": 1,
+          "distance": 0.38643330948350807,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Geometric Integration",
+          "distance": 0.32377035167196344
+        },
+        {
+          "section": "Infinitesimal change",
+          "distance": 0.36355276670481196
+        }
+      ],
+      "citations": [
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "verified": true,
+          "chunk_id": "chunk_cda649158afe3fe2",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "heading": "3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "chapter_id": 1
+        },
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "verified": true,
+          "chunk_id": "chunk_0ab1ebc6f8966f64",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "heading": "4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2
+        },
+        {
+          "section": "Geometric Integration (frame 344)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        },
+        {
+          "section": "Infinitesimal change (frame 744)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 8,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": true,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor falsely claims the lecturer gave no specific numerical value, whereas the transcript explicitly suggests 0.1."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the slope of the line representing the circumference function 2 pi R?",
+      "gold_answer": "The slope of the line is 2 pi.",
+      "quote": "A nice way to think about this setup is to draw the graph of 2 pi R, which is a straight line that has a slope 2 pi.",
+      "quote_ts": 313.15,
+      "answer": "The circumference function $f(R) = 2\\pi R$ is a linear function of the radius $R$, where the slope is the constant $2\\pi$. In this context, the slope represents the rate at which the circumference grows as the radius increases.\n\nAs shown in the lecture slide on geometric integration (frame 344), this linear relationship allows us to treat the area under the curve as a simple triangle, which is a key step in decomposing the circle into infinitesimal rings.\n\n**Sources**\n• Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING\n• Geometric Integration | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_344.jpg\n• Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+      "latency_s": 8.34,
+      "calls": 3,
+      "input_tokens": 2156,
+      "output_tokens": 28,
+      "cost_usd": 0.000579,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2,
+          "distance": 0.2731179468345687,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "chapter_id": 1,
+          "distance": 0.30666032527769316,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2,
+          "distance": 0.3176028338780541,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "chapter_id": 1,
+          "distance": 0.3192576076888488,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1,
+          "distance": 0.3272945704287251,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Approximation theory and integration",
+          "distance": 0.2993876274614573
+        },
+        {
+          "section": "Geometric Integration",
+          "distance": 0.30971194673959535
+        }
+      ],
+      "citations": [
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "verified": true,
+          "chunk_id": "chunk_cda649158afe3fe2",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "heading": "3. GEOMETRIC TO ALGEBRAIC MAPPING",
+          "chapter_id": 1
+        },
+        {
+          "section": "Geometric Integration | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_344.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        },
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "verified": true,
+          "chunk_id": "chunk_76d253917ae509bc",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "heading": "5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2
+        }
+      ],
+      "grade": {
+        "id": 9,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor correctly identifies the slope as 2 pi."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What example does the lecturer mention regarding calculating distance traveled?",
+      "gold_answer": "The lecturer mentions calculating the distance a car has traveled based on its velocity at each point in time.",
+      "quote": "Things like figuring out how far a car has traveled based on its velocity at each point in time.",
+      "quote_ts": 478.15,
+      "answer": "The lecturer uses the example of calculating total distance traveled from velocity to illustrate the concept of accumulation. This demonstrates how complex physical quantities can be determined by summing up many infinitesimal segments of movement over time, which is the foundational logic behind the integral. As shown in the lecture slide on the Fundamental Theorem of Calculus, this process of accumulating small values is what allows us to bridge the gap between a rate of change and a total quantity.\n\nWould you like to walk through how that accumulation works visually?\n\n**Sources**\n• The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS\n• Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT\n• Fundamental Theorem of Calculus (File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_808.jpg)",
+      "latency_s": 5.82,
+      "calls": 3,
+      "input_tokens": 1761,
+      "output_tokens": 26,
+      "cost_usd": 0.000477,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2,
+          "distance": 0.343811613656153,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3,
+          "distance": 0.34405778650976804,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2,
+          "distance": 0.3454475483684819,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Geometric Integration",
+          "distance": 0.3201604120250017
+        },
+        {
+          "section": "Fundamental Theorem of Calculus",
+          "distance": 0.3524037134509823
+        }
+      ],
+      "citations": [
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "verified": true,
+          "chunk_id": "chunk_680aa5ce0888a679",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "heading": "4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "verified": true,
+          "chunk_id": "chunk_0ab1ebc6f8966f64",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "heading": "4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2
+        },
+        {
+          "section": "Fundamental Theorem of Calculus (File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_808.jpg)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 10,
+        "verdict": "partial",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor correctly notes calculating distance from velocity, but omits the specific car example mentioned in the lecture."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What specific curve does the lecturer use as an example of a more complex area problem?",
+      "gold_answer": "The lecturer uses the parabola defined by the function X squared.",
+      "quote": "But imagine instead something like a parabola, the graph of X squared.",
+      "quote_ts": 548.15,
+      "answer": "The lecturer uses the curve $f(t) = t^2$ as the primary example to demonstrate a more complex area problem. Unlike simple shapes where you can use standard geometric formulas, this non-linear curve requires the area function $A(x) = \\int_{0}^{x} t^2 dt$ to account for the continuous change in height across the interval.\n\nThe lecture slide on Area function (frame 680) visualizes this by showing how the area under this specific parabola grows as the endpoint $x$ moves, helping to illustrate that the rate of change of that area is exactly $x^2$.\n\nShould we walk through how that \"sliver\" of area relates to the derivative of the function?\n\n**Sources**\n• The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED\n• Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus\n• Area function (frame 680)",
+      "latency_s": 6.36,
+      "calls": 3,
+      "input_tokens": 2185,
+      "output_tokens": 28,
+      "cost_usd": 0.000585,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4,
+          "distance": 0.3204629731486023,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 1. THE GEOMETRIC INTUITION OF INTEGRATION",
+          "chapter_id": 2,
+          "distance": 0.3404209940316224,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED",
+          "chapter_id": 3,
+          "distance": 0.2704517646191624,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2,
+          "distance": 0.3113375162569829,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "chapter_id": 3,
+          "distance": 0.31996685386030876,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Area function",
+          "distance": 0.25413859318405796
+        },
+        {
+          "section": "Geometric Integration",
+          "distance": 0.2759999127695918
+        }
+      ],
+      "citations": [
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED",
+          "verified": true,
+          "chunk_id": "chunk_6fc4e557173710ee",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED",
+          "heading": "1. THE AREA FUNCTION DEFINED",
+          "chapter_id": 3
+        },
+        {
+          "section": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "verified": true,
+          "chunk_id": "chunk_10f1216abde4a09b",
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "heading": "2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4
+        },
+        {
+          "section": "Area function (frame 680)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 11,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor accurately identifies the parabola x squared."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "How long will the series of videos be, according to the introduction?",
+      "gold_answer": "The series consists of videos published once per day for 10 days.",
+      "quote": "This is the first video in a series on the essence of calculus, and I'll be publishing the following videos once per day for the next 10 days.",
+      "quote_ts": 16.58,
+      "answer": "This topic doesn't appear to be covered in the lecture material provided. The resources focus on the geometric foundations of calculus, such as accumulation, Riemann sums, and the relationship between integration and differentiation, rather than the logistics of the video series itself.\n\nWould you like to explore one of the geometric concepts we *do* have notes on, such as how we use Riemann sums to break down complex areas?\n\n**Sources**\n• The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS\n• Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS\n• Geometric Integration | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_344.jpg\n• Area function | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_680.jpg",
+      "latency_s": 5.04,
+      "calls": 3,
+      "input_tokens": 1550,
+      "output_tokens": 28,
+      "cost_usd": 0.000427,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3,
+          "distance": 0.4156030010142514,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2,
+          "distance": 0.3945906842189818,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Geometric Integration",
+          "distance": 0.38606074390420897
+        },
+        {
+          "section": "Area function",
+          "distance": 0.3996658814159255
+        }
+      ],
+      "citations": [
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "verified": true,
+          "chunk_id": "chunk_680aa5ce0888a679",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "heading": "4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "verified": true,
+          "chunk_id": "chunk_76d253917ae509bc",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "heading": "5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2
+        },
+        {
+          "section": "Geometric Integration | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_344.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        },
+        {
+          "section": "Area function | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_680.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 12,
+        "verdict": "incorrect",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor incorrectly claims this is not covered, but the lecturer explicitly states the series runs daily for 10 days."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What does the lecturer call the tiny difference in area when nudging X by DX?",
+      "gold_answer": "The lecturer calls this tiny difference in area DA.",
+      "quote": "Represented with this sliver that I'm going to call DA for a tiny difference in area.",
+      "quote_ts": 656.15,
+      "answer": "The lecturer refers to this tiny difference in area as $dA$. As shown in the lecture slide on infinitesimal change (frame 744), when you nudge the input $x$ by a tiny amount $dx$, the resulting sliver of area is modeled as a thin rectangle with height $f(x)$ and width $dx$, giving us the approximation $dA \\approx f(x) \\cdot dx$.\n\nWould you like to see how this relationship leads to the derivative of the area function?\n\n**Sources**\n• The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE\n• Infinitesimal change (File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_744.jpg)",
+      "latency_s": 6.64,
+      "calls": 3,
+      "input_tokens": 2204,
+      "output_tokens": 28,
+      "cost_usd": 0.000591,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "chapter_id": 3,
+          "distance": 0.2358238010212802,
+          "start": null
+        },
+        {
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4,
+          "distance": 0.3177254238042413,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3,
+          "distance": 0.2819082220043535,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2,
+          "distance": 0.310515698521041,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 1. THE AREA FUNCTION DEFINED",
+          "chapter_id": 3,
+          "distance": 0.3237023463124886,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Infinitesimal change",
+          "distance": 0.17801093351121688
+        },
+        {
+          "section": "Fundamental Theorem of Calculus",
+          "distance": 0.22458507079021828
+        }
+      ],
+      "citations": [
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "verified": true,
+          "chunk_id": "chunk_f340ee896d557ed1",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "heading": "2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "chapter_id": 3
+        },
+        {
+          "section": "Infinitesimal change (File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_744.jpg)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 13,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor correctly identifies the notation as dA."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How do you calculate the volume of a sphere using calculus?",
+      "gold_answer": "The lecture does not provide information on calculating the volume of a sphere.",
+      "quote": "",
+      "answer": "To calculate the volume of a sphere, you can use the same logic of accumulation we used for the circle: instead of concentric rings, you imagine the sphere as a stack of infinitesimal \"shells\" or thin spherical layers. Each shell has a surface area of $4\\pi r^2$ and an infinitesimal thickness $dr$, giving it a volume of $dV = 4\\pi r^2 \\, dr$. By summing these shells from the center ($r=0$) to the outer radius ($R$), you perform the definite integral: $V = \\int_{0}^{R} 4\\pi r^2 \\, dr$.\n\nAs shown in the lecture slide on the geometric derivation of circle area (which visualizes how we decompose shapes into smaller, manageable parts), this process relies on the fact that the surface area of a sphere is the rate at which its volume grows. Evaluating the integral $\\int_{0}^{R} 4\\pi r^2 \\, dr$ gives you $\\frac{4}{3}\\pi R^3$.\n\nShould we walk through how the \"rate of change\" logic connects the surface area formula to this volume integral?\n\n**Sources**\n• Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE\n• Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS\n• Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION\n• Geometric derivation of circle area (File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_120.jpg)",
+      "latency_s": 15.29,
+      "calls": 3,
+      "input_tokens": 2102,
+      "output_tokens": 29,
+      "cost_usd": 0.000568,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2,
+          "distance": 0.28458654835495123,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2,
+          "distance": 0.32901103076207927,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2,
+          "distance": 0.3438643590125855,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "chapter_id": 1,
+          "distance": 0.34066807474479854,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "chapter_id": 1,
+          "distance": 0.33243057502157447,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Geometric Integration",
+          "distance": 0.3461446133633391
+        },
+        {
+          "section": "Geometric derivation of circle area",
+          "distance": 0.3650563262585311
+        }
+      ],
+      "citations": [
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "verified": true,
+          "chunk_id": "chunk_fa2747a8ef5c5dce",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "heading": "2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2
+        },
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "verified": true,
+          "chunk_id": "chunk_76d253917ae509bc",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "heading": "5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2
+        },
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "verified": true,
+          "chunk_id": "chunk_494c4adcc418d937",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "heading": "4. KEY INSIGHT: SYMMETRY AND APPROXIMATION",
+          "chapter_id": 1
+        },
+        {
+          "section": "Geometric derivation of circle area (File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_120.jpg)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 14,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": true,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The question is out of scope, but the tutor fails to state that the lecture does not cover it."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What is the history of the notation used for integrals?",
+      "gold_answer": "The lecture does not discuss the historical origins of mathematical notation.",
+      "quote": "",
+      "answer": "The integral symbol ($\\int$) was introduced by Gottfried Wilhelm Leibniz in the late 17th century. He derived it from the long \"s\" (ſ), representing the Latin word *summa* (sum), because he viewed integration as the process of summing up an infinite number of infinitesimal strips.\n\nThis notation perfectly captures the intuition shown in the lecture: while a Riemann sum uses the Greek sigma ($\\sum$) for a finite number of rectangles, the integral symbol represents the limit as those rectangles become infinitely thin. As seen in the lecture slide on the Area function, this transition from discrete summation to continuous integration is what allows us to move from an approximation to an exact value.\n\n**Sources**\n• Riemann Sums and the Area Under a Curve > 3. COMPARISON: DISCRETE VS. CONTINUOUS SUMMATION\n• Area function | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_680.jpg",
+      "latency_s": 6.39,
+      "calls": 3,
+      "input_tokens": 1607,
+      "output_tokens": 27,
+      "cost_usd": 0.000439,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3,
+          "distance": 0.3399574920742373,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 3. COMPARISON: DISCRETE VS. CONTINUOUS SUMMATION",
+          "chapter_id": 2,
+          "distance": 0.36986538903678134,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Area function",
+          "distance": 0.3723357498030627
+        },
+        {
+          "section": "Geometric derivation of circle area",
+          "distance": 0.3828522705225095
+        }
+      ],
+      "citations": [
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 3. COMPARISON: DISCRETE VS. CONTINUOUS SUMMATION",
+          "verified": true,
+          "chunk_id": "chunk_72d4cdd7d68cbfce",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 3. COMPARISON: DISCRETE VS. CONTINUOUS SUMMATION",
+          "heading": "3. COMPARISON: DISCRETE VS. CONTINUOUS SUMMATION",
+          "chapter_id": 2
+        },
+        {
+          "section": "Area function | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_680.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 15,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The question is out of scope, but the tutor fails to mention that the lecture does not address the history of calculus notation."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How does the chain rule work for complex trigonometric functions?",
+      "gold_answer": "The lecture mentions the chain rule as a topic to be covered but does not explain how to apply it to trigonometric functions.",
+      "quote": "",
+      "answer": "This topic doesn't appear to be covered in the lecture material, as the lecture focuses on the geometric intuition of accumulation and areas under curves rather than algebraic differentiation techniques. I can still explain it using general knowledge.\n\nThe chain rule is essentially a way to handle \"nested\" functions. If you have a complex trigonometric function like $f(g(x))$, the derivative is the derivative of the outer function evaluated at the inner function, multiplied by the derivative of the inner function: $f'(g(x)) \\cdot g'(x)$. Think of it as accounting for how the \"inside\" changes relative to $x$, which then scales how the \"outside\" changes.\n\nFor example, if you have $\\sin(x^2)$, the outer function is $\\sin(u)$ (where $u = x^2$) and the inner function is $x^2$. The derivative would be $\\cos(x^2) \\cdot 2x$.\n\nWhile the lecture doesn't cover this algebraic rule, it does emphasize in the \"Fundamental Theorem of Calculus\" slide (frame 936) that differentiation and integration are inverse processes, and that the derivative measures the sensitivity of a function to changes in its input. The chain rule is simply the formal tool we use to track that sensitivity when one function is nested inside another.\n\n**Sources**\n• The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS\n• File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_936.jpg",
+      "latency_s": 6.7,
+      "calls": 3,
+      "input_tokens": 1548,
+      "output_tokens": 28,
+      "cost_usd": 0.000427,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2,
+          "distance": 0.39490193521157146,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3,
+          "distance": 0.3992934077425445,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Introduction to geometric derivatives",
+          "distance": 0.4095418129819143
+        },
+        {
+          "section": "Fundamental Theorem of Calculus",
+          "distance": 0.41874268171239437
+        }
+      ],
+      "citations": [
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "verified": true,
+          "chunk_id": "chunk_680aa5ce0888a679",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "heading": "4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3
+        },
+        {
+          "section": "File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_936.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 16,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor correctly identifies that the topic is not covered in the lecture before providing general assistance."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What are the career prospects for someone who studies calculus?",
+      "gold_answer": "The lecture does not provide information regarding career paths for students of calculus.",
+      "quote": "",
+      "answer": "While the lecture focuses on the geometric intuition behind calculus—like how derivatives measure rates of change and integrals track accumulation—these concepts are the bedrock for many technical careers. Because calculus allows us to model how systems change and accumulate over time, it is essential in fields like engineering, data science, physics, and quantitative finance, where you need to predict future outcomes based on current trends.\n\nThe slide on Geometric Integration [2] illustrates how we break complex problems into infinitesimal segments to find total area; this same logic is used in software development and simulation to optimize processes or analyze large datasets.\n\nShould we look at how these specific concepts—like rates of change—apply to a field you're interested in?\n\n**Sources**\n• Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS\n• The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS\n• Geometric Integration | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_344.jpg",
+      "latency_s": 6.5,
+      "calls": 3,
+      "input_tokens": 1611,
+      "output_tokens": 28,
+      "cost_usd": 0.000443,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "chapter_id": 1,
+          "distance": 0.2969117424874139,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3,
+          "distance": 0.33508123968524917,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Fundamental Theorem of Calculus",
+          "distance": 0.40781635497843827
+        },
+        {
+          "section": "Geometric Integration",
+          "distance": 0.41238136613310994
+        }
+      ],
+      "citations": [
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "verified": true,
+          "chunk_id": "chunk_396e88e26fd9c6af",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 1. THE ESSENCE OF CALCULUS",
+          "heading": "1. THE ESSENCE OF CALCULUS",
+          "chapter_id": 1
+        },
+        {
+          "section": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "verified": true,
+          "chunk_id": "chunk_680aa5ce0888a679",
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "heading": "4. KEY TAKEAWAYS FOR CALCULUS APPLICATIONS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Geometric Integration | File: outputs/01c0e1ce-9c2f-4809-afd8-611424f49390/screenshots/keyframes/frame_344.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 17,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The question is out of scope, but the tutor fails to explicitly state that career prospects are not covered in the lecture."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Why does the lecturer claim that the area of a circle is impossible to determine without calculus?",
+      "gold_answer": "The lecturer does not claim it is impossible; rather, they use the known formula for the area of a circle to show how calculus can explain why that formula is true.",
+      "quote": "Maybe you know that this is pi times its radius squared. But why? Is there a nice way to think about where this formula comes from?",
+      "quote_ts": 97.75,
+      "answer": "The lecturer isn't suggesting we can't *know* the formula $\\pi r^2$, but rather that we cannot *derive* it from first principles without calculus. While basic geometry provides the formula as a given, calculus allows us to decompose the circle into infinite, infinitesimal parts—like the concentric rings shown in the lecture slide on the geometric derivation of circle area—and sum them to prove why that formula must be true.\n\nEssentially, calculus transforms the circle from a static shape into a dynamic accumulation of \"unrolled\" rectangular strips, where the area is the sum of $2\\pi R \\cdot dR$ as the thickness $dR$ approaches zero.\n\nWould you like to walk through how those rings \"unroll\" into rectangles to make the integration possible?\n\n**Sources**\n• Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE\n• Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE\n• Geometric derivation of circle area (frame_120.jpg)",
+      "latency_s": 7.62,
+      "calls": 3,
+      "input_tokens": 2224,
+      "output_tokens": 27,
+      "cost_usd": 0.000594,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2,
+          "distance": 0.2525397395520511,
+          "start": null
+        },
+        {
+          "heading_path": "Pedagogy and Community in Mathematical Education > 2. Visualizing the Fundamental Theorem of Calculus",
+          "chapter_id": 4,
+          "distance": 0.30945592139858913,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2,
+          "distance": 0.25562860967562373,
+          "start": null
+        },
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1,
+          "distance": 0.26592416899492544,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 1. THE GEOMETRIC INTUITION OF INTEGRATION",
+          "chapter_id": 2,
+          "distance": 0.32422686582190885,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Geometric Integration",
+          "distance": 0.2254753081297628
+        },
+        {
+          "section": "Geometric derivation of circle area",
+          "distance": 0.2986705244296962
+        }
+      ],
+      "citations": [
+        {
+          "section": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "verified": true,
+          "chunk_id": "chunk_a9a9047385ec02c6",
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "heading": "2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1
+        },
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "verified": true,
+          "chunk_id": "chunk_fa2747a8ef5c5dce",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "heading": "2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2
+        },
+        {
+          "section": "Geometric derivation of circle area (frame_120.jpg)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 18,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": true,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor reinforces the false premise by claiming the lecturer said we cannot derive the circle's area without calculus."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Since the lecture proves that the area of a circle is exactly equal to the sum of the rectangles with a thickness of 0.1, why do we need smaller values?",
+      "gold_answer": "The lecture explains that the sum using a thickness of 0.1 is only an approximation, and that smaller values are needed to improve accuracy.",
+      "quote": "And even though that's not perfect, for smaller and smaller choices of DR, this is actually going to be a better and better approximation for that area.",
+      "quote_ts": 218.35,
+      "answer": "When you use a thickness of 0.1, you are essentially approximating the circle with a series of \"steps\" rather than a smooth curve. As shown in the lecture slide on approximation theory (frame 288), using a finite thickness like 0.1 leaves small gaps or overlaps at the edges of each ring, which creates an approximation error.\n\nWe need smaller values because that error is proportional to the thickness $dR$. By letting $dR \\to 0$, we ensure that the approximation error vanishes entirely, turning an estimate into an exact mathematical identity. Without this limit, your result remains a \"close enough\" estimate rather than the true area of the circle.\n\nShould we walk through how that error term actually disappears as we shrink the thickness?\n\n**Sources**\n• Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT\n• Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE\n• Approximation theory and integration (frame 288)",
+      "latency_s": 9.16,
+      "calls": 3,
+      "input_tokens": 2254,
+      "output_tokens": 29,
+      "cost_usd": 0.000602,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Foundations of Calculus: Geometric Intuition > 2. GEOMETRIC DECOMPOSITION: THE CIRCLE",
+          "chapter_id": 1,
+          "distance": 0.23442269798695814,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2,
+          "distance": 0.20067821217403126,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2,
+          "distance": 0.26992018332760004,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus: Geometric Foundations > 2. GEOMETRIC INTUITION OF INFINITESIMAL CHANGE",
+          "chapter_id": 3,
+          "distance": 0.3139926095462495,
+          "start": null
+        },
+        {
+          "heading_path": "Riemann Sums and the Area Under a Curve > 5. APPLICATIONS AND TAKEAWAYS",
+          "chapter_id": 2,
+          "distance": 0.2478044375900499,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Geometric Integration",
+          "distance": 0.23181282474643794
+        },
+        {
+          "section": "Approximation theory and integration",
+          "distance": 0.28190363920982475
+        }
+      ],
+      "citations": [
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "verified": true,
+          "chunk_id": "chunk_0ab1ebc6f8966f64",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "heading": "4. KEY INSIGHT: THE ROLE OF THE LIMIT",
+          "chapter_id": 2
+        },
+        {
+          "section": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "verified": true,
+          "chunk_id": "chunk_fa2747a8ef5c5dce",
+          "heading_path": "Riemann Sums and the Area Under a Curve > 2. DERIVING THE AREA OF A CIRCLE",
+          "heading": "2. DERIVING THE AREA OF A CIRCLE",
+          "chapter_id": 2
+        },
+        {
+          "section": "Approximation theory and integration (frame 288)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 19,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": true,
+        "note": "The tutor properly corrects the premise by explaining that 0.1 is merely an approximation with error."
+      }
+    }
+  ]
+}

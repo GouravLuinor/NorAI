@@ -1,0 +1,1851 @@
+{
+  "summary": {
+    "n": 23,
+    "graded": 23,
+    "accuracy_core": 0.938,
+    "accuracy_detail": 1.0,
+    "false_not_covered": 0.0,
+    "oos_abstain": 1.0,
+    "premise_corrected": 1.0,
+    "unsupported_claim": 0.043,
+    "invented_visual": 0.0,
+    "answers_citing": 1.0,
+    "citations_verified": 0.581,
+    "latency_p50_s": 7.1,
+    "calls_per_turn": 3,
+    "input_tokens_per_turn": 1939,
+    "output_tokens_per_turn": 28,
+    "cost_per_turn_usd": 0.000524
+  },
+  "rows": [
+    {
+      "category": "core",
+      "question": "What is the primary purpose of the decision stack framework?",
+      "gold_answer": "The decision stack provides a six-layer framework that helps engineers read a cloud brief, identify the bottleneck, choose appropriate services, and explain architectural trade-offs.",
+      "quote": "It shows you how to read a cloud brief, find the real bottleneck and the problem, choose the right AWS services and explain the trade-offs like an actual cloud engineer.",
+      "quote_ts": 99.8,
+      "answer": "The primary purpose of the Six-Layer Decision Stack is to provide a structured, systematic methodology for engineers to break down complex cloud scenarios. By organizing architectural concerns into these six distinct layers, it allows you to isolate constraints, select the most appropriate AWS services, and clearly articulate your design decisions.\n\nAs shown in the lecture slide on the Decision Stack (frame 1328), this framework transforms a broad architectural problem into manageable components, ensuring that nothing—from traffic routing to observability—is overlooked during the design process.\n\n**Sources**\n• AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK\n• Decision Stack | File: outputs/aws-71m-v2/screenshots/keyframes/frame_1328.jpg\n\nWould you like to walk through how one of these layers, such as \"Compute,\" influences the choices made in another layer?",
+      "latency_s": 11.83,
+      "calls": 3,
+      "input_tokens": 1759,
+      "output_tokens": 29,
+      "cost_usd": 0.000481,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "chapter_id": 1,
+          "distance": 0.23340946782544247,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES",
+          "chapter_id": 1,
+          "distance": 0.28831205108292435,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Decision Stack and Problem Definition",
+          "distance": 0.22561894487976364
+        },
+        {
+          "section": "Decision Stack",
+          "distance": 0.25300753090603145
+        }
+      ],
+      "citations": [
+        {
+          "section": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "verified": true,
+          "chunk_id": "chunk_c64e6a95ab4313fa",
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "heading": "2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "chapter_id": 1
+        },
+        {
+          "section": "Decision Stack | File: outputs/aws-71m-v2/screenshots/keyframes/frame_1328.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 0,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The answer accurately conveys the framework's purpose of breaking down architecture problems, identifying bottlenecks, and selecting services."
+      }
+    },
+    {
+      "category": "core",
+      "question": "Why does the lecturer advise against using a single EC2 instance for a viral startup?",
+      "gold_answer": "A single instance cannot scale to handle large traffic spikes, and it is inefficient because it incurs costs even when idle.",
+      "quote": "Their servers run 24 hours a day, seven days a week and they're paying for it, whether it's handling 10,000 user signups or sitting completely idle with no users at 3 a.m.",
+      "quote_ts": 658.7,
+      "answer": "The lecturer advises against a single EC2 instance because it creates a \"single point of failure\" and lacks the ability to handle rapid, large-scale traffic growth. When one server is responsible for everything—DNS, application code, and database queries—a traffic spike (like a 100x surge) will quickly overwhelm its fixed processing capacity, leading to system crashes.\n\nAdditionally, a single instance cannot scale horizontally; it is stuck with the resources it has, whereas modern architectures use Auto Scaling Groups to dynamically add capacity during surges and remove it during idle periods to save costs. As shown in the system architecture diagram (frame 2472), relying on a single node prevents the use of multi-Availability Zone deployments, which are essential for keeping a service running if one data center goes offline.\n\nShould I explain how moving static assets to S3 helps offload that pressure from your main server?\n\n**Sources**\n• AWS Cloud Architecture Foundations and Decision Frameworks > 4. SCENARIO ANALYSIS: SCALING A STARTUP UNDER TIGHT CONSTRAINTS\n• Serverless Data Persistence, Capacity Planning, and IAM Security > 4. E-Commerce Scaling and High Availability Strategy\n• System Architecture Overview (frame 2472)",
+      "latency_s": 7.4,
+      "calls": 3,
+      "input_tokens": 2348,
+      "output_tokens": 29,
+      "cost_usd": 0.000628,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 4. SCENARIO ANALYSIS: SCALING A STARTUP UNDER TIGHT CONSTRAINTS",
+          "chapter_id": 1,
+          "distance": 0.27580328773943574,
+          "start": null
+        },
+        {
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 4. E-Commerce Scaling and High Availability Strategy",
+          "chapter_id": 3,
+          "distance": 0.3000185525030249,
+          "start": null
+        },
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 1. ARCHITECTING FOR SCALE: TRAFFIC SURGES AND HIGH AVAILABILITY",
+          "chapter_id": 6,
+          "distance": 0.33550840967820594,
+          "start": null
+        },
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 1. ARCHITECTURAL TRANSITION AND COMPUTE LAYER OPTIMIZATION",
+          "chapter_id": 2,
+          "distance": 0.34236425445026464,
+          "start": null
+        },
+        {
+          "heading_path": "E-Commerce High Availability and Virtual Private Cloud Architecture > 4. High Availability and Auto Scaling Mechanisms",
+          "chapter_id": 4,
+          "distance": 0.304510298677922,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Database and Storage Optimization",
+          "distance": 0.38313727864237346
+        },
+        {
+          "section": "System Architecture Overview",
+          "distance": 0.3889857293539164
+        }
+      ],
+      "citations": [
+        {
+          "section": "AWS Cloud Architecture Foundations and Decision Frameworks > 4. SCENARIO ANALYSIS: SCALING A STARTUP UNDER TIGHT CONSTRAINTS",
+          "verified": true,
+          "chunk_id": "chunk_4005e8a0f4cb8466",
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 4. SCENARIO ANALYSIS: SCALING A STARTUP UNDER TIGHT CONSTRAINTS",
+          "heading": "4. SCENARIO ANALYSIS: SCALING A STARTUP UNDER TIGHT CONSTRAINTS",
+          "chapter_id": 1
+        },
+        {
+          "section": "Serverless Data Persistence, Capacity Planning, and IAM Security > 4. E-Commerce Scaling and High Availability Strategy",
+          "verified": true,
+          "chunk_id": "chunk_63ccc82107c847b2",
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 4. E-Commerce Scaling and High Availability Strategy",
+          "heading": "4. E-Commerce Scaling and High Availability Strategy",
+          "chapter_id": 3
+        },
+        {
+          "section": "System Architecture Overview (frame 2472)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 1,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": true,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The response conveys the scaling and idle-cost drawbacks, though it inaccurately attributes DNS resolution to the EC2 server."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the main advantage of using Lambda for the viral startup scenario?",
+      "gold_answer": "Lambda scales automatically based on demand and incurs no costs when the application is not being used.",
+      "quote": "When nobody's using the application, Lambda isn't running and you're paying absolutely nothing. And when a hundred thousand users show up at once, Lambda doesn't struggle or slow down.",
+      "quote_ts": 697.54,
+      "answer": "The primary advantage of using AWS Lambda for a startup expecting a massive, unpredictable traffic surge is its ability to scale horizontally and automatically without any manual intervention or pre-provisioned capacity. Because Lambda follows an event-driven model, it spawns concurrent execution environments to handle each request as it arrives, ensuring your application doesn't crash during a 100x traffic spike.\n\nFurthermore, this aligns perfectly with your \"zero-budget\" constraint during quiet periods; since you only pay when your code actually executes, you incur zero costs when the application is inactive. As shown in the lecture slide on Serverless Architecture (frame 1272), this pay-per-use model eliminates the idle resource costs associated with traditional servers, which would otherwise require you to pay for fixed hourly rates regardless of traffic.\n\nWould you like to discuss the potential trade-off of \"cold starts\" when using this approach for your traffic spikes?\n\n**Sources**\n• Global Edge Networking, Content Delivery, and Serverless Compute > 2. SERVERLESS COMPUTING AND AWS LAMBDA MECHANICS\n• Serverless Data Persistence, Capacity Planning, and IAM Security > 2. Server-Based vs. Serverless Cost Mechanics\n• Serverless Architecture (frame 1272)",
+      "latency_s": 7.1,
+      "calls": 3,
+      "input_tokens": 2333,
+      "output_tokens": 29,
+      "cost_usd": 0.000623,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 2. SERVERLESS COMPUTING AND AWS LAMBDA MECHANICS",
+          "chapter_id": 2,
+          "distance": 0.2371496102558096,
+          "start": null
+        },
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 3. UNDERSTANDING COLD STARTS AND LATENCY TRADEOFFS",
+          "chapter_id": 2,
+          "distance": 0.2778547849291664,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 4. SCENARIO ANALYSIS: SCALING A STARTUP UNDER TIGHT CONSTRAINTS",
+          "chapter_id": 1,
+          "distance": 0.2857154804107934,
+          "start": null
+        },
+        {
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 2. Server-Based vs. Serverless Cost Mechanics",
+          "chapter_id": 3,
+          "distance": 0.27075130712991924,
+          "start": null
+        },
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "chapter_id": 6,
+          "distance": 0.3308761714070989,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.36235679023611844
+        },
+        {
+          "section": "High Availability and Load Balancing Architecture",
+          "distance": 0.3702476470400202
+        }
+      ],
+      "citations": [
+        {
+          "section": "Global Edge Networking, Content Delivery, and Serverless Compute > 2. SERVERLESS COMPUTING AND AWS LAMBDA MECHANICS",
+          "verified": true,
+          "chunk_id": "chunk_40ce9e6ddf23ebc7",
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 2. SERVERLESS COMPUTING AND AWS LAMBDA MECHANICS",
+          "heading": "2. SERVERLESS COMPUTING AND AWS LAMBDA MECHANICS",
+          "chapter_id": 2
+        },
+        {
+          "section": "Serverless Data Persistence, Capacity Planning, and IAM Security > 2. Server-Based vs. Serverless Cost Mechanics",
+          "verified": true,
+          "chunk_id": "chunk_cb3119ffb6404328",
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 2. Server-Based vs. Serverless Cost Mechanics",
+          "heading": "2. Server-Based vs. Serverless Cost Mechanics",
+          "chapter_id": 3
+        },
+        {
+          "section": "Serverless Architecture (frame 1272)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 2,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly highlights automatic horizontal scaling and zero cost during idle periods as the primary advantages."
+      }
+    },
+    {
+      "category": "core",
+      "question": "Why is an auto-scaling group necessary for the e-commerce company?",
+      "gold_answer": "An auto-scaling group automatically adds or removes EC2 instances based on traffic demand, preventing site crashes during spikes.",
+      "quote": "The auto-scaling group is what adds more Easter instances when the demand increases. Together, the ALB distributes traffic and the auto-scaling group changes the amount of capacity behind it.",
+      "quote_ts": 1816.6,
+      "answer": "An Auto Scaling Group (ASG) is necessary because it provides the \"dynamic elasticity\" required to handle unpredictable traffic spikes—like a Black Friday surge—without needing to pay for peak capacity year-round. While a load balancer can distribute traffic, it cannot create new servers; the ASG fills this gap by automatically provisioning new instances when demand rises and terminating them when traffic subsides to save costs.\n\nAs shown in the system architecture diagram in the lecture slides [2], the ASG acts as the engine that keeps your compute layer healthy and responsive, preventing the \"single point of failure\" issues associated with static server fleets. By monitoring performance thresholds, it ensures you have just enough capacity to handle the load without over-provisioning.\n\nShould we walk through how the ASG communicates with the Application Load Balancer to ensure only healthy instances receive traffic?\n\n**Sources**\n• E-Commerce Scaling and High Availability Strategy\n• High Availability and Auto Scaling Mechanisms\n• Microservice Scaling, Containerization, and Database Optimization\n• System Architecture Overview (frame_2472.jpg)",
+      "latency_s": 8.25,
+      "calls": 3,
+      "input_tokens": 2195,
+      "output_tokens": 28,
+      "cost_usd": 0.000588,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 1. ARCHITECTING FOR SCALE: TRAFFIC SURGES AND HIGH AVAILABILITY",
+          "chapter_id": 6,
+          "distance": 0.2357516431962311,
+          "start": null
+        },
+        {
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 4. E-Commerce Scaling and High Availability Strategy",
+          "chapter_id": 3,
+          "distance": 0.22619130366602302,
+          "start": null
+        },
+        {
+          "heading_path": "Microservice Scaling, Containerization, and Database Optimization > 4. CLOUD COST OPTIMIZATION, AUTO SCALING, AND HYBRID PRICING",
+          "chapter_id": 5,
+          "distance": 0.2739253275630489,
+          "start": null
+        },
+        {
+          "heading_path": "Microservice Scaling, Containerization, and Database Optimization > 5. OBSERVABILITY, CLOUDWATCH, AND CLOUDTRAIL AUDITING",
+          "chapter_id": 5,
+          "distance": 0.3381234429073213,
+          "start": null
+        },
+        {
+          "heading_path": "E-Commerce High Availability and Virtual Private Cloud Architecture > 4. High Availability and Auto Scaling Mechanisms",
+          "chapter_id": 4,
+          "distance": 0.25616724942658886,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "High Availability and Load Balancing Architecture",
+          "distance": 0.2924892033058284
+        },
+        {
+          "section": "System Architecture Overview",
+          "distance": 0.29909948866614144
+        }
+      ],
+      "citations": [
+        {
+          "section": "E-Commerce Scaling and High Availability Strategy",
+          "verified": true,
+          "chunk_id": "chunk_63ccc82107c847b2",
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 4. E-Commerce Scaling and High Availability Strategy",
+          "heading": "4. E-Commerce Scaling and High Availability Strategy",
+          "chapter_id": 3
+        },
+        {
+          "section": "High Availability and Auto Scaling Mechanisms",
+          "verified": true,
+          "chunk_id": "chunk_5d58186da633b15d",
+          "heading_path": "E-Commerce High Availability and Virtual Private Cloud Architecture > 4. High Availability and Auto Scaling Mechanisms",
+          "heading": "4. High Availability and Auto Scaling Mechanisms",
+          "chapter_id": 4
+        },
+        {
+          "section": "Microservice Scaling, Containerization, and Database Optimization",
+          "verified": true,
+          "chunk_id": "chunk_51c8c2df6768bc99",
+          "heading_path": "Microservice Scaling, Containerization, and Database Optimization > 4. CLOUD COST OPTIMIZATION, AUTO SCALING, AND HYBRID PRICING",
+          "heading": "4. CLOUD COST OPTIMIZATION, AUTO SCALING, AND HYBRID PRICING",
+          "chapter_id": 5
+        },
+        {
+          "section": "System Architecture Overview (frame_2472.jpg)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 3,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The answer clearly explains that the auto-scaling group dynamically adds capacity during spikes and removes it to save money."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the purpose of RAG in the AI-powered enterprise scenario?",
+      "gold_answer": "RAG provides the AI model with company-specific context, such as internal frameworks and policies, allowing it to produce more accurate and useful outputs.",
+      "quote": "So the AI isn't just looking at a contract with general knowledge, it's looking at that contract plus the company specific framework, plus their routing rules, plus their review deadlines.",
+      "quote_ts": 3654.26,
+      "answer": "Retrieval-Augmented Generation (RAG) acts as a bridge between a general-purpose Large Language Model and your private, proprietary data. Since LLMs are trained on public information, they lack the specific business logic, internal policies, or compliance frameworks unique to your organization; RAG solves this by querying your internal databases for relevant context and injecting it into the prompt before the model generates a response.\n\nAs shown in the lecture slide on Document Intake and Queueing, this process ensures that the AI's output is grounded in your specific, verified documentation rather than relying solely on its pre-trained knowledge.\n\nShould I explain how this architecture maintains security while accessing that private data?\n\n**Sources**\n• Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 3. SECURE AI DOCUMENT PROCESSING & RAG ARCHITECTURES\n• Document Intake and Queueing",
+      "latency_s": 7.53,
+      "calls": 3,
+      "input_tokens": 1664,
+      "output_tokens": 29,
+      "cost_usd": 0.000457,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 3. SECURE AI DOCUMENT PROCESSING & RAG ARCHITECTURES",
+          "chapter_id": 7,
+          "distance": 0.2710237278417924,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 4. PRINCIPLE OF LEAST PRIVILEGE & SECURITY ISOLATION",
+          "chapter_id": 7,
+          "distance": 0.3504161278670027,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Document Intake and Queueing",
+          "distance": 0.39966341555804674
+        },
+        {
+          "section": "Database and Storage Optimization",
+          "distance": 0.414832155267581
+        }
+      ],
+      "citations": [
+        {
+          "section": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 3. SECURE AI DOCUMENT PROCESSING & RAG ARCHITECTURES",
+          "verified": true,
+          "chunk_id": "chunk_c96ba2766f869082",
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 3. SECURE AI DOCUMENT PROCESSING & RAG ARCHITECTURES",
+          "heading": "3. SECURE AI DOCUMENT PROCESSING & RAG ARCHITECTURES",
+          "chapter_id": 7
+        },
+        {
+          "section": "Document Intake and Queueing",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 4,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly explains that RAG injects proprietary company frameworks and policies into prompts to guide the AI model."
+      }
+    },
+    {
+      "category": "core",
+      "question": "Why is it important to use Infrastructure as Code instead of the AWS console?",
+      "gold_answer": "Infrastructure as Code ensures that environments are identical, repeatable, and version-controlled, avoiding the errors associated with manual configuration.",
+      "quote": "Every environment comes out identical because they've all built from the same source. And because it's a file, you can track every single change, it's version control, right?",
+      "quote_ts": 4190.26,
+      "answer": "Using the AWS console—or \"ClickOps\"—is fine for learning, but it creates significant operational risks in production. Manual configurations often lead to \"configuration drift,\" where environments become inconsistent and difficult to reproduce, making it nearly impossible to guarantee that your testing environment matches your production setup.\n\nBy contrast, Infrastructure as Code (IaC) treats your infrastructure like software. It provides a version-controlled history of every change, ensures that environments are identical every time they are deployed, and allows for rapid, automated scaling that manual clicking simply cannot match. As shown in the lecture slide on the **Decision Stack**, choosing the right deployment strategy is a foundational architectural decision that impacts your long-term operational stability.\n\nShould I explain how tools like Terraform or CloudFormation actually handle these configuration files?\n\n**Sources**\n• Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS\n• Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 2. COMPARISON: CLICKOPS VS. INFRASTRUCTURE AS CODE\n• Decision Stack | File: outputs/aws-71m-v2/screenshots/keyframes/frame_1328.jpg",
+      "latency_s": 8.34,
+      "calls": 3,
+      "input_tokens": 2103,
+      "output_tokens": 28,
+      "cost_usd": 0.000566,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS",
+          "chapter_id": 7,
+          "distance": 0.17543794571954785,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 2. COMPARISON: CLICKOPS VS. INFRASTRUCTURE AS CODE",
+          "chapter_id": 7,
+          "distance": 0.20465154589636592,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "chapter_id": 1,
+          "distance": 0.32870302555403597,
+          "start": null
+        },
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 1. ARCHITECTING FOR SCALE: TRAFFIC SURGES AND HIGH AVAILABILITY",
+          "chapter_id": 6,
+          "distance": 0.34635271151323477,
+          "start": null
+        },
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 5. CORE CLOUD ENGINEERING PRINCIPLES",
+          "chapter_id": 2,
+          "distance": 0.3242259964295048,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Cost Optimization",
+          "distance": 0.39830093017672763
+        },
+        {
+          "section": "Decision Stack",
+          "distance": 0.40277048482217026
+        }
+      ],
+      "citations": [
+        {
+          "section": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS",
+          "verified": true,
+          "chunk_id": "chunk_8fc57b98ab5becd1",
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS",
+          "heading": "1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS",
+          "chapter_id": 7
+        },
+        {
+          "section": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 2. COMPARISON: CLICKOPS VS. INFRASTRUCTURE AS CODE",
+          "verified": true,
+          "chunk_id": "chunk_813a639c2a1fd77d",
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 2. COMPARISON: CLICKOPS VS. INFRASTRUCTURE AS CODE",
+          "heading": "2. COMPARISON: CLICKOPS VS. INFRASTRUCTURE AS CODE",
+          "chapter_id": 7
+        },
+        {
+          "section": "Decision Stack | File: outputs/aws-71m-v2/screenshots/keyframes/frame_1328.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 5,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The answer accurately contrasts IaC's consistency, repeatability, and version control with the configuration drift of ClickOps."
+      }
+    },
+    {
+      "category": "core",
+      "question": "How does the lecturer define the 'traffic' layer in the decision stack?",
+      "gold_answer": "The traffic layer covers the entire journey of data from the user opening the application to how different services communicate behind the scenes.",
+      "quote": "This covers every journey that data takes from a user opening the application and content appearing on a screen to how your services talk to each other behind the scenes.",
+      "quote_ts": 132.08,
+      "answer": "The lecturer defines the 'Traffic' layer as the entry point for your architecture, specifically focusing on how users reach your application. It encompasses managing edge routing, handling DNS resolution, and implementing threat mitigation to ensure requests are directed and filtered correctly before they hit your compute resources.\n\nAs shown in the lecture slides on the Decision Stack [1, 2], this layer acts as the first gatekeeper in the six-layer framework.\n\nWould you like to explore how this layer interacts with the Security layer?\n\n**Sources**\n• AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK\n• AWS Cloud Architecture Foundations and Decision Frameworks > 3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES\n• Decision Stack and Problem Definition (frame_104.jpg)\n• Decision Stack (frame_1328.jpg)",
+      "latency_s": 5.88,
+      "calls": 3,
+      "input_tokens": 1767,
+      "output_tokens": 29,
+      "cost_usd": 0.000482,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "chapter_id": 1,
+          "distance": 0.28225333442322353,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES",
+          "chapter_id": 1,
+          "distance": 0.31633424996182735,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Decision Stack and Problem Definition",
+          "distance": 0.2829619701416879
+        },
+        {
+          "section": "Decision Stack",
+          "distance": 0.32994072168088884
+        }
+      ],
+      "citations": [
+        {
+          "section": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "verified": true,
+          "chunk_id": "chunk_c64e6a95ab4313fa",
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "heading": "2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "chapter_id": 1
+        },
+        {
+          "section": "AWS Cloud Architecture Foundations and Decision Frameworks > 3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES",
+          "verified": true,
+          "chunk_id": "chunk_06ac0e64cc759690",
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES",
+          "heading": "3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES",
+          "chapter_id": 1
+        },
+        {
+          "section": "Decision Stack and Problem Definition (frame_104.jpg)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        },
+        {
+          "section": "Decision Stack (frame_1328.jpg)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 6,
+        "verdict": "partial",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The answer covers user entry and routing but omits how internal services communicate behind the scenes."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the significance of the 'least privilege' principle in security?",
+      "gold_answer": "It ensures that every service only has the specific permissions required for its job, which limits the potential damage if a service is compromised.",
+      "quote": "Every single permission has to be scoped exactly what the service needs for a specific job, nothing more and nothing less. This is the same least privileged principle that we apply in the first scenario.",
+      "quote_ts": 2701.94,
+      "answer": "The principle of least privilege is a security strategy where every entity—whether a user or a service—is granted only the minimum permissions necessary to perform its specific function. By operating on an \"explicit allow\" model, you ensure that no component has broad, unnecessary access, which effectively contains the \"blast radius\" if a single service is compromised.\n\nAs shown in the lecture slide on Data Persistence and Security, this approach prevents lateral movement; if a specific container or function is breached, the attacker cannot easily pivot to other sensitive resources like databases because those permissions were never granted in the first place.\n\nShould we walk through how this is applied to a specific service, like a Lambda function or a container?\n\n**Sources**\n• Serverless Data Persistence, Capacity Planning, and IAM Security > 1. IAM Security and Least-Privilege Architecture\n• Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 4. PRINCIPLE OF LEAST PRIVILEGE & SECURITY ISOLATION\n• Data Persistence and Security | File: outputs/aws-71m-v2/screenshots/keyframes/frame_1320.jpg",
+      "latency_s": 12.56,
+      "calls": 3,
+      "input_tokens": 1930,
+      "output_tokens": 28,
+      "cost_usd": 0.000521,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 1. IAM Security and Least-Privilege Architecture",
+          "chapter_id": 3,
+          "distance": 0.2601466505422735,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 4. PRINCIPLE OF LEAST PRIVILEGE & SECURITY ISOLATION",
+          "chapter_id": 7,
+          "distance": 0.3199560938323085,
+          "start": null
+        },
+        {
+          "heading_path": "Microservice Scaling, Containerization, and Database Optimization > 3. MULTI-TIER NETWORK SECURITY & ACCESS CONTROL LAYERS",
+          "chapter_id": 5,
+          "distance": 0.32820810065554773,
+          "start": null
+        },
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 5. CORE CLOUD ENGINEERING PRINCIPLES",
+          "chapter_id": 2,
+          "distance": 0.33563440169524794,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Decision Stack",
+          "distance": 0.3668177135223246
+        },
+        {
+          "section": "Data Persistence and Security",
+          "distance": 0.3875924024630367
+        }
+      ],
+      "citations": [
+        {
+          "section": "Serverless Data Persistence, Capacity Planning, and IAM Security > 1. IAM Security and Least-Privilege Architecture",
+          "verified": true,
+          "chunk_id": "chunk_7102a1fa940c7c8a",
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 1. IAM Security and Least-Privilege Architecture",
+          "heading": "1. IAM Security and Least-Privilege Architecture",
+          "chapter_id": 3
+        },
+        {
+          "section": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 4. PRINCIPLE OF LEAST PRIVILEGE & SECURITY ISOLATION",
+          "verified": true,
+          "chunk_id": "chunk_d4a45748d3a363af",
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 4. PRINCIPLE OF LEAST PRIVILEGE & SECURITY ISOLATION",
+          "heading": "4. PRINCIPLE OF LEAST PRIVILEGE & SECURITY ISOLATION",
+          "chapter_id": 7
+        },
+        {
+          "section": "Data Persistence and Security | File: outputs/aws-71m-v2/screenshots/keyframes/frame_1320.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 7,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor accurately explains that restricting permissions contains the blast radius if a component is compromised."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the maximum execution time for an AWS Lambda function?",
+      "gold_answer": "Lambda functions have a hard limit of 15 minutes per execution.",
+      "quote": "Lambda has a hard limit on how long each function can run. 15 minutes maximum.",
+      "quote_ts": 1971.9,
+      "answer": "The maximum execution time for an AWS Lambda function is 15 minutes. If a process exceeds this limit, the service will terminate the function, which is why it’s often unsuitable for long-running tasks like heavy AI document extractions.\n\nShould we look at why containerized services like AWS Fargate are often preferred for those longer tasks?\n\n**Sources**\n• Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE\n• Serverless Architecture (frame_1272.jpg)",
+      "latency_s": 7.15,
+      "calls": 3,
+      "input_tokens": 1798,
+      "output_tokens": 29,
+      "cost_usd": 0.000491,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 2. SERVERLESS COMPUTING AND AWS LAMBDA MECHANICS",
+          "chapter_id": 2,
+          "distance": 0.2940594701768168,
+          "start": null
+        },
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 3. UNDERSTANDING COLD STARTS AND LATENCY TRADEOFFS",
+          "chapter_id": 2,
+          "distance": 0.2943418149343602,
+          "start": null
+        },
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "chapter_id": 6,
+          "distance": 0.31452911835790076,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.3791135203226218
+        },
+        {
+          "section": "Data Persistence and Security",
+          "distance": 0.4266108681993992
+        }
+      ],
+      "citations": [
+        {
+          "section": "Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "verified": true,
+          "chunk_id": "chunk_c1914ecb11a5e164",
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "heading": "5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "chapter_id": 6
+        },
+        {
+          "section": "Serverless Architecture (frame_1272.jpg)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 8,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly states the 15-minute maximum execution limit."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the specific name of the AWS service used for the document processing queue?",
+      "gold_answer": "The service used is the Simple Queue Service, or SQS.",
+      "quote": "The aid of a service is called SQS, simple queue service.",
+      "quote_ts": 3363.98,
+      "answer": "The specific AWS service used to buffer document processing tasks and decouple ingestion from compute is **Amazon Simple Queue Service (SQS)**.\n\nAs shown in the \"Document Intake and Queueing\" slide (frame 3744), this service acts as a buffer that holds object pointers sent from Amazon S3, allowing downstream workers to pull and process files at a steady, controlled rate rather than being overwhelmed by arrival spikes.\n\n**Sources**\n• Enterprise AI Workflows and Secure Document Processing Architectures > 4. DECOUPLING INGESTION AND PROCESSING WITH AMAZON S3 AND SQS\n• Document Intake and Queueing (frame 3744)",
+      "latency_s": 11.36,
+      "calls": 3,
+      "input_tokens": 2287,
+      "output_tokens": 28,
+      "cost_usd": 0.000611,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 4. DECOUPLING INGESTION AND PROCESSING WITH AMAZON S3 AND SQS",
+          "chapter_id": 6,
+          "distance": 0.22881063932426182,
+          "start": null
+        },
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "chapter_id": 6,
+          "distance": 0.2886532120243055,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 3. SECURE AI DOCUMENT PROCESSING & RAG ARCHITECTURES",
+          "chapter_id": 7,
+          "distance": 0.317864446772287,
+          "start": null
+        },
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 3. DOCUMENT PROCESSING EVOLUTION: MANUAL VS. AI-POWERED ARCHITECTURE",
+          "chapter_id": 6,
+          "distance": 0.29855459665354456,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 4. PRINCIPLE OF LEAST PRIVILEGE & SECURITY ISOLATION",
+          "chapter_id": 7,
+          "distance": 0.3164193302938496,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Document Intake and Queueing",
+          "distance": 0.2323906949302792
+        },
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.3301558505010147
+        }
+      ],
+      "citations": [
+        {
+          "section": "Enterprise AI Workflows and Secure Document Processing Architectures > 4. DECOUPLING INGESTION AND PROCESSING WITH AMAZON S3 AND SQS",
+          "verified": true,
+          "chunk_id": "chunk_884e4775f1622d75",
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 4. DECOUPLING INGESTION AND PROCESSING WITH AMAZON S3 AND SQS",
+          "heading": "4. DECOUPLING INGESTION AND PROCESSING WITH AMAZON S3 AND SQS",
+          "chapter_id": 6
+        },
+        {
+          "section": "Document Intake and Queueing (frame 3744)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 9,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor accurately identifies Amazon Simple Queue Service (SQS)."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What does the lecturer call the manual process of clicking through the AWS console?",
+      "gold_answer": "The lecturer refers to this as 'ClickOps'.",
+      "quote": "When you're starting out, you can use the AWS console, I call it ClickOps.",
+      "quote_ts": 4115.26,
+      "answer": "The lecturer refers to the manual process of deploying services through the AWS Management Console as **ClickOps**. \n\nWhile this is acceptable when you are first learning the core primitives of cloud services, it is generally avoided in production environments because it leads to issues like configuration drift and human error. As shown in the \"Decision Stack and Problem Definition\" slide (frame 104), moving toward structured frameworks is a key part of transitioning from basic service knowledge to professional architectural problem-solving.\n\nWould you like to know why ClickOps is considered a liability in professional production environments?\n\n**Sources**\n• Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS\n• AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING\n• Decision Stack and Problem Definition (frame 104)",
+      "latency_s": 5.07,
+      "calls": 3,
+      "input_tokens": 2179,
+      "output_tokens": 29,
+      "cost_usd": 0.000586,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS",
+          "chapter_id": 7,
+          "distance": 0.19165144421558222,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 2. COMPARISON: CLICKOPS VS. INFRASTRUCTURE AS CODE",
+          "chapter_id": 7,
+          "distance": 0.238276075440783,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "chapter_id": 1,
+          "distance": 0.326883359750921,
+          "start": null
+        },
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 5. CORE CLOUD ENGINEERING PRINCIPLES",
+          "chapter_id": 2,
+          "distance": 0.3377847037025953,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "chapter_id": 1,
+          "distance": 0.3399020569463368,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Decision Stack and Problem Definition",
+          "distance": 0.3494876516993759
+        },
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.39363862329940147
+        }
+      ],
+      "citations": [
+        {
+          "section": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS",
+          "verified": true,
+          "chunk_id": "chunk_8fc57b98ab5becd1",
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS",
+          "heading": "1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS",
+          "chapter_id": 7
+        },
+        {
+          "section": "AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "verified": true,
+          "chunk_id": "chunk_125d08a03d6b95e2",
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "heading": "1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "chapter_id": 1
+        },
+        {
+          "section": "Decision Stack and Problem Definition (frame 104)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 10,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly identifies the term ClickOps."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the name of the AWS service used to run containers on Fargate?",
+      "gold_answer": "The service is the Elastic Container Service, or ECS.",
+      "quote": "We hand that container to ECS, Elastic Container Service, and tell it to run it on Fargate.",
+      "quote_ts": 3508.46,
+      "answer": "The AWS service used to orchestrate and run containers on Fargate is **Amazon ECS** (Elastic Container Service). While Fargate provides the underlying compute resources, ECS acts as the orchestrator that manages your container tasks, resource requirements, and scaling rules.\n\nAs shown in the lecture slide on Serverless Architecture (frame 1272), ECS allows you to run these containerized workloads without needing to manually manage underlying EC2 instances.\n\n**Sources**\n• E-Commerce High Availability and Virtual Private Cloud Architecture > 5. Container Orchestration with Amazon ECS and Fargate\n• Serverless Architecture (frame 1272)",
+      "latency_s": 8.34,
+      "calls": 3,
+      "input_tokens": 1980,
+      "output_tokens": 28,
+      "cost_usd": 0.000534,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "E-Commerce High Availability and Virtual Private Cloud Architecture > 5. Container Orchestration with Amazon ECS and Fargate",
+          "chapter_id": 4,
+          "distance": 0.22175355171756028,
+          "start": null
+        },
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "chapter_id": 6,
+          "distance": 0.3097115136241222,
+          "start": null
+        },
+        {
+          "heading_path": "E-Commerce High Availability and Virtual Private Cloud Architecture > 3. Architecture Comparison: Monolithic vs. Microservices",
+          "chapter_id": 4,
+          "distance": 0.34618962581371027,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES",
+          "chapter_id": 1,
+          "distance": 0.3439141938989049,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Processing and Storage Architecture",
+          "distance": 0.27658145126776046
+        },
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.3839458860105308
+        }
+      ],
+      "citations": [
+        {
+          "section": "E-Commerce High Availability and Virtual Private Cloud Architecture > 5. Container Orchestration with Amazon ECS and Fargate",
+          "verified": true,
+          "chunk_id": "chunk_0166721fa90638ce",
+          "heading_path": "E-Commerce High Availability and Virtual Private Cloud Architecture > 5. Container Orchestration with Amazon ECS and Fargate",
+          "heading": "5. Container Orchestration with Amazon ECS and Fargate",
+          "chapter_id": 4
+        },
+        {
+          "section": "Serverless Architecture (frame 1272)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 11,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly identifies Amazon Elastic Container Service (ECS)."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the purpose of a NAT gateway?",
+      "gold_answer": "A NAT gateway allows resources in a private subnet to make outbound calls to the internet while preventing inbound connections.",
+      "quote": "Now, worth noting, services in a private subnet can still make outbound calls to the internet if you set something up called a NAT gateway.",
+      "quote_ts": 1873.2,
+      "answer": "A NAT Gateway acts as a bridge that allows resources inside a private subnet to initiate outbound connections to the internet—such as downloading software updates—while preventing the internet from initiating any direct inbound connections to those resources. It keeps your backend components secure by ensuring they remain unreachable from the outside world.\n\nAs shown in the System Architecture Overview slide (frame 2472), the NAT Gateway sits between your private subnets and the internet, acting as a controlled exit point.\n\nShould I explain how this differs from the role of an Internet Gateway?\n\n**Sources**\n• E-Commerce High Availability and Virtual Private Cloud Architecture > 1. AWS Virtual Private Cloud (VPC) and Network Isolation\n• System Architecture Overview (frame 2472)",
+      "latency_s": 4.96,
+      "calls": 3,
+      "input_tokens": 1616,
+      "output_tokens": 28,
+      "cost_usd": 0.000445,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "E-Commerce High Availability and Virtual Private Cloud Architecture > 1. AWS Virtual Private Cloud (VPC) and Network Isolation",
+          "chapter_id": 4,
+          "distance": 0.24422224279604543,
+          "start": null
+        },
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 2. SERVERLESS COMPUTING AND AWS LAMBDA MECHANICS",
+          "chapter_id": 2,
+          "distance": 0.34208115294777264,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "System Architecture Overview",
+          "distance": 0.4022302201639517
+        },
+        {
+          "section": "High Availability and Load Balancing Architecture",
+          "distance": 0.411307709899558
+        }
+      ],
+      "citations": [
+        {
+          "section": "E-Commerce High Availability and Virtual Private Cloud Architecture > 1. AWS Virtual Private Cloud (VPC) and Network Isolation",
+          "verified": true,
+          "chunk_id": "chunk_d06bf7b5e418f886",
+          "heading_path": "E-Commerce High Availability and Virtual Private Cloud Architecture > 1. AWS Virtual Private Cloud (VPC) and Network Isolation",
+          "heading": "1. AWS Virtual Private Cloud (VPC) and Network Isolation",
+          "chapter_id": 4
+        },
+        {
+          "section": "System Architecture Overview (frame 2472)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 12,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The answer accurately describes the NAT gateway as allowing outbound requests while preventing unsolicited inbound traffic."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the specific name of the AWS service used for AI models like Claude?",
+      "gold_answer": "The service is Amazon Bedrock.",
+      "quote": "The container sends a document to Amazon Bedrock, AWS's service for using AI models like Claude and OpenAI models directly from your own code.",
+      "quote_ts": 3574.66,
+      "answer": "The AWS service used to access managed AI models like Claude is **Amazon Bedrock**. It provides a way to integrate foundation models into your applications via an API without needing to manage the underlying infrastructure yourself.\n\nAs shown in the lecture slide on Serverless Architecture (frame 1272), this service is often used in conjunction with private VPC endpoints to ensure that data remains secure when interacting with these models.\n\n**Sources**\n• Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 3. SECURE AI DOCUMENT PROCESSING & RAG ARCHITECTURES\n• Serverless Architecture | File: outputs/aws-71m-v2/screenshots/keyframes/frame_1272.jpg",
+      "latency_s": 5.64,
+      "calls": 3,
+      "input_tokens": 2180,
+      "output_tokens": 26,
+      "cost_usd": 0.000582,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 3. SECURE AI DOCUMENT PROCESSING & RAG ARCHITECTURES",
+          "chapter_id": 7,
+          "distance": 0.30296183915638963,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "chapter_id": 1,
+          "distance": 0.32751708883334985,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS",
+          "chapter_id": 7,
+          "distance": 0.3191761418015985,
+          "start": null
+        },
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "chapter_id": 6,
+          "distance": 0.32944131573464197,
+          "start": null
+        },
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 1. ARCHITECTING FOR SCALE: TRAFFIC SURGES AND HIGH AVAILABILITY",
+          "chapter_id": 6,
+          "distance": 0.33363265770056716,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.3362192750571499
+        },
+        {
+          "section": "Cost Optimization",
+          "distance": 0.3477957661642277
+        }
+      ],
+      "citations": [
+        {
+          "section": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 3. SECURE AI DOCUMENT PROCESSING & RAG ARCHITECTURES",
+          "verified": true,
+          "chunk_id": "chunk_c96ba2766f869082",
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 3. SECURE AI DOCUMENT PROCESSING & RAG ARCHITECTURES",
+          "heading": "3. SECURE AI DOCUMENT PROCESSING & RAG ARCHITECTURES",
+          "chapter_id": 7
+        },
+        {
+          "section": "Serverless Architecture | File: outputs/aws-71m-v2/screenshots/keyframes/frame_1272.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 13,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly identifies Amazon Bedrock."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the name of the AWS service that tracks infrastructure-level API activity?",
+      "gold_answer": "The service is CloudTrail.",
+      "quote": "CloudTrail records AWS API activity across the accounts. Things like someone changing a security group role, modifying an auto scaling policy, creating a new database or updating IAM permissions.",
+      "quote_ts": 2904.22,
+      "answer": "The AWS service that records infrastructure-level API activity—such as security group changes, auto-scaling modifications, or IAM updates—is **AWS CloudTrail**. It provides an essential audit history of who did what in your environment, distinct from the performance metrics tracked by CloudWatch.\n\nAs shown in the lecture slide on Governance and Auditing (frame 2912), CloudTrail is a core component for maintaining visibility into infrastructure changes.\n\n**Sources**\n• Microservice Scaling, Containerization, and Database Optimization > 5. OBSERVABILITY, CLOUDWATCH, AND CLOUDTRAIL AUDITING\n• Enterprise AI Workflows and Secure Document Processing Architectures > 1. ARCHITECTING FOR SCALE: TRAFFIC SURGES AND HIGH AVAILABILITY\n• Governance and Auditing (frame 2912)",
+      "latency_s": 4.8,
+      "calls": 3,
+      "input_tokens": 2224,
+      "output_tokens": 29,
+      "cost_usd": 0.000597,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Microservice Scaling, Containerization, and Database Optimization > 5. OBSERVABILITY, CLOUDWATCH, AND CLOUDTRAIL AUDITING",
+          "chapter_id": 5,
+          "distance": 0.24617129123847636,
+          "start": null
+        },
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 1. ARCHITECTING FOR SCALE: TRAFFIC SURGES AND HIGH AVAILABILITY",
+          "chapter_id": 6,
+          "distance": 0.2762542319927739,
+          "start": null
+        },
+        {
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 3. User Request Routing and Observability",
+          "chapter_id": 3,
+          "distance": 0.3146038834753796,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "chapter_id": 1,
+          "distance": 0.33426607459382984,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 5. PRODUCTION OBSERVABILITY AND COST MANAGEMENT",
+          "chapter_id": 7,
+          "distance": 0.3249503473086808,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Governance and Auditing",
+          "distance": 0.2982221378448131
+        },
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.3218509737334475
+        }
+      ],
+      "citations": [
+        {
+          "section": "Microservice Scaling, Containerization, and Database Optimization > 5. OBSERVABILITY, CLOUDWATCH, AND CLOUDTRAIL AUDITING",
+          "verified": true,
+          "chunk_id": "chunk_0fefab8b8f99ef5c",
+          "heading_path": "Microservice Scaling, Containerization, and Database Optimization > 5. OBSERVABILITY, CLOUDWATCH, AND CLOUDTRAIL AUDITING",
+          "heading": "5. OBSERVABILITY, CLOUDWATCH, AND CLOUDTRAIL AUDITING",
+          "chapter_id": 5
+        },
+        {
+          "section": "Enterprise AI Workflows and Secure Document Processing Architectures > 1. ARCHITECTING FOR SCALE: TRAFFIC SURGES AND HIGH AVAILABILITY",
+          "verified": true,
+          "chunk_id": "chunk_0687cdcb9a38ef9a",
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 1. ARCHITECTING FOR SCALE: TRAFFIC SURGES AND HIGH AVAILABILITY",
+          "heading": "1. ARCHITECTING FOR SCALE: TRAFFIC SURGES AND HIGH AVAILABILITY",
+          "chapter_id": 6
+        },
+        {
+          "section": "Governance and Auditing (frame 2912)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 14,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly names AWS CloudTrail."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the term for the delay experienced when a Lambda function is triggered after being idle?",
+      "gold_answer": "This delay is known as a 'cold start'.",
+      "quote": "This adds some initialization time, often a few hundred milliseconds because of the cold start. And that is what we call the cold start.",
+      "quote_ts": 876.28,
+      "answer": "That delay is called a **cold start**. It happens because when a function is idle, AWS deallocates its execution environment; a new request then forces AWS to provision a new container, load your code, and initialize the runtime, which typically adds 200ms to 300ms of latency.\n\nAs shown in the lecture slide on Serverless Architecture (frame 1272), this is a key trade-off to consider when choosing between serverless and continuously running services.\n\nShould I explain how you might mitigate these cold starts for latency-sensitive applications?\n\n**Sources**\n• Global Edge Networking, Content Delivery, and Serverless Compute > 3. UNDERSTANDING COLD STARTS AND LATENCY TRADEOFFS\n• Serverless Architecture | File: outputs/aws-71m-v2/screenshots/keyframes/frame_1272.jpg",
+      "latency_s": 8.85,
+      "calls": 3,
+      "input_tokens": 1857,
+      "output_tokens": 27,
+      "cost_usd": 0.000501,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 3. UNDERSTANDING COLD STARTS AND LATENCY TRADEOFFS",
+          "chapter_id": 2,
+          "distance": 0.17167649822005193,
+          "start": null
+        },
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 2. SERVERLESS COMPUTING AND AWS LAMBDA MECHANICS",
+          "chapter_id": 2,
+          "distance": 0.26537777114949523,
+          "start": null
+        },
+        {
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 2. Server-Based vs. Serverless Cost Mechanics",
+          "chapter_id": 3,
+          "distance": 0.33729908202851056,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.37914018692282714
+        },
+        {
+          "section": "High Availability and Load Balancing Architecture",
+          "distance": 0.4272361297209373
+        }
+      ],
+      "citations": [
+        {
+          "section": "Global Edge Networking, Content Delivery, and Serverless Compute > 3. UNDERSTANDING COLD STARTS AND LATENCY TRADEOFFS",
+          "verified": true,
+          "chunk_id": "chunk_810c1f19ead8b0e4",
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 3. UNDERSTANDING COLD STARTS AND LATENCY TRADEOFFS",
+          "heading": "3. UNDERSTANDING COLD STARTS AND LATENCY TRADEOFFS",
+          "chapter_id": 2
+        },
+        {
+          "section": "Serverless Architecture | File: outputs/aws-71m-v2/screenshots/keyframes/frame_1272.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 15,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly identifies the term cold start."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How do I configure a VPN connection between my on-premises data center and AWS?",
+      "gold_answer": "The lecture does not cover hybrid cloud networking or VPN configurations.",
+      "quote": "",
+      "answer": "This topic isn't explicitly covered in the lecture materials, which focus more on architectural frameworks like the Six-Layer Decision Stack rather than specific networking configuration steps.\n\nGenerally, you would use an **AWS Site-to-Site VPN** to create an encrypted tunnel between your on-premises network and your VPC. This involves creating a Virtual Private Gateway (VGW) or Transit Gateway on the AWS side, a Customer Gateway (representing your physical hardware), and then establishing the VPN connection between them.\n\nThe lecture slide on *System Architecture Overview* (frame 2472) highlights the importance of connectivity, while the *Six-Layer Decision Stack* (Layer 1: Traffic) emphasizes the need to manage how users and traffic reach your application.\n\nWould you like to explore how this connectivity fits into the \"Traffic\" layer of the decision framework?\n\n**Sources**\n• AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK\n• System Architecture Overview | File: outputs/aws-71m-v2/screenshots/keyframes/frame_2472.jpg",
+      "latency_s": 5.21,
+      "calls": 3,
+      "input_tokens": 1619,
+      "output_tokens": 27,
+      "cost_usd": 0.000443,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "chapter_id": 1,
+          "distance": 0.41369734720363827,
+          "start": null
+        },
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 5. CORE CLOUD ENGINEERING PRINCIPLES",
+          "chapter_id": 2,
+          "distance": 0.41821395305004516,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "System Architecture Overview",
+          "distance": 0.3772894846675594
+        },
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.4111730800207173
+        }
+      ],
+      "citations": [
+        {
+          "section": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "verified": true,
+          "chunk_id": "chunk_c64e6a95ab4313fa",
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "heading": "2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "chapter_id": 1
+        },
+        {
+          "section": "System Architecture Overview | File: outputs/aws-71m-v2/screenshots/keyframes/frame_2472.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 16,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor explicitly notes that the lecture does not cover VPN configuration before providing general knowledge."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What is the best way to migrate a legacy SQL Server database to AWS RDS?",
+      "gold_answer": "The lecture discusses choosing database types but does not provide specific migration strategies for legacy SQL Server databases.",
+      "quote": "",
+      "answer": "The lecture material doesn't provide a specific step-by-step guide for migrating a legacy SQL Server to RDS, as it focuses more on architectural patterns like database workload separation and scaling strategies. However, in general practice, the \"best\" way depends on your downtime tolerance: for minimal downtime, you would typically use the **AWS Database Migration Service (DMS)** to perform an initial bulk load followed by ongoing data replication.\n\nThe lecture slide on \"Document Intake and Queueing\" (frame 3744) highlights the importance of decoupling processes, which is a key principle when moving from a monolithic legacy setup to a managed service like RDS. By separating your database layer, you avoid the resource contention mentioned in the \"Database Workload Separation\" notes, where complex analytical queries compete with simple lookups.\n\nShould I explain how to use DMS to handle that transition while your legacy server is still running?\n\n**Sources**\n• Microservice Scaling, Containerization, and Database Optimization > 2. DATABASE WORKLOAD SEPARATION: RELATIONAL RDS VS. KEY-VALUE DIODEB\n• Document Intake and Queueing (frame 3744)",
+      "latency_s": 6.75,
+      "calls": 3,
+      "input_tokens": 1755,
+      "output_tokens": 29,
+      "cost_usd": 0.000479,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 4. SCENARIO ANALYSIS: SCALING A STARTUP UNDER TIGHT CONSTRAINTS",
+          "chapter_id": 1,
+          "distance": 0.36961639087091014,
+          "start": null
+        },
+        {
+          "heading_path": "Microservice Scaling, Containerization, and Database Optimization > 2. DATABASE WORKLOAD SEPARATION: RELATIONAL RDS VS. KEY-VALUE DIODEB",
+          "chapter_id": 5,
+          "distance": 0.36772803933175857,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Processing and Storage Architecture",
+          "distance": 0.38916823142207735
+        },
+        {
+          "section": "Document Intake and Queueing",
+          "distance": 0.40874812978333297
+        }
+      ],
+      "citations": [
+        {
+          "section": "Microservice Scaling, Containerization, and Database Optimization > 2. DATABASE WORKLOAD SEPARATION: RELATIONAL RDS VS. KEY-VALUE DIODEB",
+          "verified": true,
+          "chunk_id": "chunk_a1a6c8ab2a8b44d4",
+          "heading_path": "Microservice Scaling, Containerization, and Database Optimization > 2. DATABASE WORKLOAD SEPARATION: RELATIONAL RDS VS. KEY-VALUE DIODEB",
+          "heading": "2. DATABASE WORKLOAD SEPARATION: RELATIONAL RDS VS. KEY-VALUE DIODEB",
+          "chapter_id": 5
+        },
+        {
+          "section": "Document Intake and Queueing (frame 3744)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 17,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor clearly states that the lecture does not provide a guide for SQL Server migration to RDS."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "Can you explain how to set up an AWS Direct Connect connection?",
+      "gold_answer": "The lecture focuses on application architecture and does not cover physical network connectivity options like Direct Connect.",
+      "quote": "",
+      "answer": "I couldn't find a detailed walkthrough for setting up AWS Direct Connect in the provided lecture materials, as the resources focus more on VPC isolation and serverless architectures. \n\nIn general terms, Direct Connect is a physical network service that creates a dedicated, private connection from your on-premises data center or office to AWS, bypassing the public internet. You typically work with an AWS Direct Connect Partner to establish a physical cross-connect at a colocation facility, then configure a Virtual Interface (VIF) in the AWS Management Console to connect that physical link to your VPC.\n\nWhile the lecture doesn't cover the physical setup, it does emphasize the importance of network isolation; for example, the slide on **High Availability and Load Balancing Architecture** (frame 1832) highlights how traffic is routed and managed, which is a key consideration when deciding how to integrate your private network with AWS.\n\nWould you like to explore how this private connection interacts with the VPC subnets mentioned in the lecture?\n\n**Sources**\n• AWS Virtual Private Cloud (VPC) and Network Isolation\n• High Availability and Load Balancing Architecture (frame 1832)",
+      "latency_s": 5.04,
+      "calls": 3,
+      "input_tokens": 1559,
+      "output_tokens": 29,
+      "cost_usd": 0.000431,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "E-Commerce High Availability and Virtual Private Cloud Architecture > 1. AWS Virtual Private Cloud (VPC) and Network Isolation",
+          "chapter_id": 4,
+          "distance": 0.37017350035159335,
+          "start": null
+        },
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 2. SERVERLESS COMPUTING AND AWS LAMBDA MECHANICS",
+          "chapter_id": 2,
+          "distance": 0.4101139758618745,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.3952280567299332
+        },
+        {
+          "section": "High Availability and Load Balancing Architecture",
+          "distance": 0.4100236148220916
+        }
+      ],
+      "citations": [
+        {
+          "section": "AWS Virtual Private Cloud (VPC) and Network Isolation",
+          "verified": true,
+          "chunk_id": "chunk_d06bf7b5e418f886",
+          "heading_path": "E-Commerce High Availability and Virtual Private Cloud Architecture > 1. AWS Virtual Private Cloud (VPC) and Network Isolation",
+          "heading": "1. AWS Virtual Private Cloud (VPC) and Network Isolation",
+          "chapter_id": 4
+        },
+        {
+          "section": "High Availability and Load Balancing Architecture (frame 1832)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 18,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly acknowledges that Direct Connect setup is not covered in the lecture materials."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What are the steps to implement multi-factor authentication for AWS IAM users?",
+      "gold_answer": "The lecture discusses IAM roles and permissions but does not cover user-level authentication settings like MFA.",
+      "quote": "",
+      "answer": "This topic isn't explicitly detailed in the lecture notes, but I can explain the standard process for implementing Multi-Factor Authentication (MFA) for IAM users. Generally, you navigate to the IAM console, select a specific user, and under the \"Security credentials\" tab, you assign an MFA device (such as a virtual authenticator app or a hardware security key) to enforce an extra layer of protection beyond just a password.\n\nThe lecture material emphasizes that AWS operates on an \"explicit allow\" model and requires granular permission management via IAM, which is why MFA is a critical component of that security enforcement. As shown in the lecture slide on Governance and Auditing (frame 2912), maintaining strict control over user access is a core pillar of cloud security architecture.\n\nWould you like to discuss how to enforce MFA for all users using an IAM policy?\n\n**Sources**\n• Serverless Data Persistence, Capacity Planning, and IAM Security > 1. IAM Security and Least-Privilege Architecture\n• Global Edge Networking, Content Delivery, and Serverless Compute > 5. CORE CLOUD ENGINEERING PRINCIPLES\n• Data Persistence and Security (frame 1320)\n• Governance and Auditing (frame 2912)",
+      "latency_s": 5.6,
+      "calls": 3,
+      "input_tokens": 1505,
+      "output_tokens": 27,
+      "cost_usd": 0.000415,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 1. IAM Security and Least-Privilege Architecture",
+          "chapter_id": 3,
+          "distance": 0.3769372219168231,
+          "start": null
+        },
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 5. CORE CLOUD ENGINEERING PRINCIPLES",
+          "chapter_id": 2,
+          "distance": 0.399799220778587,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Data Persistence and Security",
+          "distance": 0.42638365765706443
+        },
+        {
+          "section": "Governance and Auditing",
+          "distance": 0.42658490473009636
+        }
+      ],
+      "citations": [
+        {
+          "section": "Serverless Data Persistence, Capacity Planning, and IAM Security > 1. IAM Security and Least-Privilege Architecture",
+          "verified": true,
+          "chunk_id": "chunk_7102a1fa940c7c8a",
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 1. IAM Security and Least-Privilege Architecture",
+          "heading": "1. IAM Security and Least-Privilege Architecture",
+          "chapter_id": 3
+        },
+        {
+          "section": "Global Edge Networking, Content Delivery, and Serverless Compute > 5. CORE CLOUD ENGINEERING PRINCIPLES",
+          "verified": true,
+          "chunk_id": "chunk_8a1fd4d92fb2c4a0",
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 5. CORE CLOUD ENGINEERING PRINCIPLES",
+          "heading": "5. CORE CLOUD ENGINEERING PRINCIPLES",
+          "chapter_id": 2
+        },
+        {
+          "section": "Data Persistence and Security (frame 1320)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        },
+        {
+          "section": "Governance and Auditing (frame 2912)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 19,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor properly identifies that MFA implementation steps are not covered in the lecture."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Since the lecturer states that AWS services should be memorized to pass exams, what is the best way to study them?",
+      "gold_answer": "The lecturer actually states that memorizing services is an outdated approach and that understanding when and why to use them is the critical skill.",
+      "quote": "That worked five years ago. It doesn't work anymore. And I know that because I have sat on the other side of the hiring table. I've watched person after person rattle off exactly what every AWS service does and then they freeze the second I asked them to actually go and design something",
+      "quote_ts": 12.8,
+      "answer": "Actually, the lecture takes the opposite stance: it explicitly warns that rote memorization of service catalogues is insufficient for modern cloud engineering. Instead of memorizing service definitions, the lecture encourages transitioning to \"architectural problem-solving,\" where you focus on *when* and *why* to use a service based on trade-offs and constraints.\n\nTo study effectively, you should use the **Six-Layer Decision Stack** to categorize services by their function (like Traffic, Compute, or Data) rather than just listing them. For example, instead of memorizing what EC2 or Lambda are in isolation, think about which one fits a specific workload's compute requirements. The lecture slide on Serverless Architecture (frame 1272) illustrates how these services fit into a broader architectural flow, and the Cost Optimization slide (frame 2760) highlights how these decisions impact budget and efficiency.\n\nWould you like to walk through a scenario using the Decision Stack to see how it helps you choose between services?\n\n**Sources**\n• AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING\n• AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK\n• Serverless Architecture (frame 1272)\n• Cost Optimization (frame 2760)",
+      "latency_s": 5.17,
+      "calls": 3,
+      "input_tokens": 2083,
+      "output_tokens": 29,
+      "cost_usd": 0.00056,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "chapter_id": 1,
+          "distance": 0.26079558388670987,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 1. INFRASTRUCTURE AS CODE (IAC) VS. CLICKOPS",
+          "chapter_id": 7,
+          "distance": 0.34168947963104224,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "chapter_id": 1,
+          "distance": 0.320032300052854,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES",
+          "chapter_id": 1,
+          "distance": 0.32030856851641376,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Cost Optimization",
+          "distance": 0.36087173388324434
+        },
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.3631927510502686
+        }
+      ],
+      "citations": [
+        {
+          "section": "AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "verified": true,
+          "chunk_id": "chunk_125d08a03d6b95e2",
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "heading": "1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "chapter_id": 1
+        },
+        {
+          "section": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "verified": true,
+          "chunk_id": "chunk_c64e6a95ab4313fa",
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "heading": "2. THE SIX-LAYER DECISION STACK FRAMEWORK",
+          "chapter_id": 1
+        },
+        {
+          "section": "Serverless Architecture (frame 1272)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        },
+        {
+          "section": "Cost Optimization (frame 2760)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 20,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "The tutor rejects the premise, explaining that rote memorization is outdated and architectural problem-solving is required."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Why does the lecturer recommend using a single availability zone for all production applications to save money?",
+      "gold_answer": "The lecturer explicitly advises against using a single availability zone for production designs, recommending at least two for resilience.",
+      "quote": "But for a revenue generating e-commerce application platform losing $50,000 per hour of downtime, keeping everything in one AZ is still not a good production design.",
+      "quote_ts": 2113.14,
+      "answer": "Actually, the lecturer does not recommend using a single Availability Zone (AZ) for production applications. In fact, relying on a single AZ is generally discouraged for production because it creates a single point of failure; if that specific data center goes offline, your entire application becomes unavailable.\n\nInstead, the lecture emphasizes that cost optimization should come from strategies like **right-sizing** your instances to match normal operations and using **committed pricing** (Savings Plans) for your baseline traffic, rather than sacrificing high availability. The lecture slide on **System Architecture Overview** [2] illustrates that robust production systems are designed for resilience across multiple zones, while the **Cost Optimization** slide [1] focuses on managing resources efficiently without compromising that core architecture.\n\nWould you like to explore how to maintain high availability across zones while still keeping costs under control?\n\n**Sources**\n• Microservice Scaling, Containerization, and Database Optimization > 4. CLOUD COST OPTIMIZATION, AUTO SCALING, AND HYBRID PRICING\n• System Architecture Overview\n• Cost Optimization",
+      "latency_s": 7.11,
+      "calls": 3,
+      "input_tokens": 1631,
+      "output_tokens": 25,
+      "cost_usd": 0.000441,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 7: Infrastructure as Code, Production Best Practices, and Career Paths > 5. PRODUCTION OBSERVABILITY AND COST MANAGEMENT",
+          "chapter_id": 7,
+          "distance": 0.34921371404345436,
+          "start": null
+        },
+        {
+          "heading_path": "Microservice Scaling, Containerization, and Database Optimization > 4. CLOUD COST OPTIMIZATION, AUTO SCALING, AND HYBRID PRICING",
+          "chapter_id": 5,
+          "distance": 0.34495007393252675,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Cost Optimization",
+          "distance": 0.37520827869611495
+        },
+        {
+          "section": "System Architecture Overview",
+          "distance": 0.3849691547750841
+        }
+      ],
+      "citations": [
+        {
+          "section": "Microservice Scaling, Containerization, and Database Optimization > 4. CLOUD COST OPTIMIZATION, AUTO SCALING, AND HYBRID PRICING",
+          "verified": true,
+          "chunk_id": "chunk_51c8c2df6768bc99",
+          "heading_path": "Microservice Scaling, Containerization, and Database Optimization > 4. CLOUD COST OPTIMIZATION, AUTO SCALING, AND HYBRID PRICING",
+          "heading": "4. CLOUD COST OPTIMIZATION, AUTO SCALING, AND HYBRID PRICING",
+          "chapter_id": 5
+        },
+        {
+          "section": "System Architecture Overview",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        },
+        {
+          "section": "Cost Optimization",
+          "verified": true,
+          "chunk_id": "chunk_51c8c2df6768bc99",
+          "heading_path": "Microservice Scaling, Containerization, and Database Optimization > 4. CLOUD COST OPTIMIZATION, AUTO SCALING, AND HYBRID PRICING",
+          "heading": "4. CLOUD COST OPTIMIZATION, AUTO SCALING, AND HYBRID PRICING",
+          "chapter_id": 5
+        }
+      ],
+      "grade": {
+        "id": 21,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "The tutor rejects the premise, clarifying that the lecture discourages single Availability Zone designs for production."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Since Lambda is the best solution for all compute needs, why would anyone use EC2?",
+      "gold_answer": "The lecturer explains that Lambda is not suitable for all workloads, such as those requiring long-running processes or full server control, where EC2 is necessary.",
+      "quote": "This company's application is way more complex. It has specific software running on the servers, processes that needs longer to 15 minutes to complete and dependencies that require a full server environment. Lambda wouldn't work it.",
+      "quote_ts": 1981.86,
+      "answer": "Actually, that is a common misconception! While Lambda is excellent for event-driven tasks, it isn't a \"one-size-fits-all\" solution. It has specific constraints—like a 15-minute execution timeout and the overhead of repeatedly initializing libraries—that make it unsuitable for long-running processes or applications requiring persistent network connections.\n\nIn contrast, EC2 (or containerized options like ECS on Fargate) provides a continuous execution environment. As shown in the lecture slide on Serverless Architecture (frame 1272), while Lambda excels at scaling to zero to eliminate idle costs, EC2 is often preferred when you need full control over the underlying operating system, need to bypass execution time limits, or require a stable, always-on connection to a database or queue.\n\nWould you like to walk through a specific scenario where the 15-minute Lambda limit would cause a system to fail?\n\n**Sources**\n• Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE\n• AWS Cloud Architecture Foundations and Decision Frameworks > 3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES\n• Serverless Architecture (frame 1272)",
+      "latency_s": 5.47,
+      "calls": 3,
+      "input_tokens": 2223,
+      "output_tokens": 28,
+      "cost_usd": 0.000595,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Global Edge Networking, Content Delivery, and Serverless Compute > 2. SERVERLESS COMPUTING AND AWS LAMBDA MECHANICS",
+          "chapter_id": 2,
+          "distance": 0.300056659912177,
+          "start": null
+        },
+        {
+          "heading_path": "Serverless Data Persistence, Capacity Planning, and IAM Security > 2. Server-Based vs. Serverless Cost Mechanics",
+          "chapter_id": 3,
+          "distance": 0.32145332946325433,
+          "start": null
+        },
+        {
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "chapter_id": 6,
+          "distance": 0.28928216136626006,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 1. THE SHIFT FROM SERVICE RECITATION TO ARCHITECTURAL PROBLEM-SOLVING",
+          "chapter_id": 1,
+          "distance": 0.33055141627375373,
+          "start": null
+        },
+        {
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES",
+          "chapter_id": 1,
+          "distance": 0.3264975603388478,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Database and Storage Optimization",
+          "distance": 0.3543694866045515
+        },
+        {
+          "section": "Serverless Architecture",
+          "distance": 0.3726492571101502
+        }
+      ],
+      "citations": [
+        {
+          "section": "Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "verified": true,
+          "chunk_id": "chunk_c1914ecb11a5e164",
+          "heading_path": "Enterprise AI Workflows and Secure Document Processing Architectures > 5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "heading": "5. COMPUTE LAYER SELECTION: AWS LAMBDA VS. AMAZON ECS ON AWS FARGATE",
+          "chapter_id": 6
+        },
+        {
+          "section": "AWS Cloud Architecture Foundations and Decision Frameworks > 3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES",
+          "verified": true,
+          "chunk_id": "chunk_06ac0e64cc759690",
+          "heading_path": "AWS Cloud Architecture Foundations and Decision Frameworks > 3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES",
+          "heading": "3. COMPARATIVE ARCHITECTURAL LAYERS & AWS SERVICES",
+          "chapter_id": 1
+        },
+        {
+          "section": "Serverless Architecture (frame 1272)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 22,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "The tutor corrects the assumption by highlighting Lambda's execution limits and explaining when EC2 is necessary."
+      }
+    }
+  ]
+}

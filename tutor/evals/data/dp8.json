@@ -1,0 +1,163 @@
+{
+  "lecture_dir": "outputs/dp-8m-v2",
+  "questions": [
+    {
+      "category": "core",
+      "question": "Why does the lecturer argue that dynamic programming is not technically an algorithm?",
+      "gold_answer": "The lecturer explains that dynamic programming is more accurately described as a problem-solving technique rather than a specific algorithm.",
+      "quote": "Technically speaking, DP is not an algorithm. It's actually a problem solving technique.",
+      "quote_ts": 18.14
+    },
+    {
+      "category": "core",
+      "question": "What is the primary reason the lecturer recommends using assumptions instead of breaking problems into sub-problems?",
+      "gold_answer": "Breaking problems into sub-problems can become overly mathematical and difficult to understand, whereas making assumptions leverages our natural human tendency to make judgments.",
+      "quote": "Most people learn to solve DP problems by breaking them into sub-problems. And when you try to do that, the approach becomes quite mathematical and hard to understand. That's why, instead of thinking in terms of sub-problems, I recommend making an assumption.",
+      "quote_ts": 40.02
+    },
+    {
+      "category": "core",
+      "question": "What is the fundamental requirement for the original problem and the assumed problem in dynamic programming?",
+      "gold_answer": "The original problem and the assumed problem must be somewhat different from each other for the dynamic programming approach to be effective.",
+      "quote": "The main point I am trying to make here is that the original problem and the assumed problem have to be somewhat different for dynamic programming to work.",
+      "quote_ts": 189.54
+    },
+    {
+      "category": "core",
+      "question": "What is the purpose of the recursive rule in the context of the longest-increasing subsequence problem?",
+      "gold_answer": "The recursive rule formalizes the logic of checking all previous indices to see if a current number can extend an existing subsequence to create a longer one.",
+      "quote": "Recursive rule is just a fancy way of formalizing what we have already discussed. To find the length of the longest-increasing subsequence ending at the current last index, we go through all the indices to the left of it.",
+      "quote_ts": 352.26
+    },
+    {
+      "category": "core",
+      "question": "How does the lecturer define the base case for the longest-increasing subsequence problem?",
+      "gold_answer": "The base case is defined by initializing the length of the longest-increasing subsequence ending at any index to 1, because each individual number is a subsequence of length 1.",
+      "quote": "Each number by itself can be seen as a subsequence of length 1, ending at its own index. And this subsequence is an increasing subsequence because it has only one number. So the initial length for the longest-increasing subsequence ending at any index would be 1.",
+      "quote_ts": 414.62
+    },
+    {
+      "category": "core",
+      "question": "What is the final step in determining the answer to the longest-increasing subsequence problem once the array of lengths is populated?",
+      "gold_answer": "To get the final answer, you take the maximum value found in the array that stores the lengths of the longest-increasing subsequences ending at every index.",
+      "quote": "Now for the answer of the original question, we don't care about which index the subsequence ends at. So we take the maximum of longest subsequence ending at every index and that would be our final answer.",
+      "quote_ts": 336.7
+    },
+    {
+      "category": "core",
+      "question": "How does the implementation handle the process of considering an increasing number of elements from the input array?",
+      "gold_answer": "An outer for loop is used to incrementally consider more numbers from the array, starting from the first two and ending at the last index.",
+      "quote": "Now we have a for loop that decides how many numbers of the array are we considering at the current time. In the beginning, we are considering only the first two numbers. So we start the loop at the index 1. In the end, we want to consider all the numbers.",
+      "quote_ts": 463.06
+    },
+    {
+      "category": "core",
+      "question": "Why is it important to know the ending number of a subsequence when solving the longest-increasing subsequence problem?",
+      "gold_answer": "Knowing the ending number is necessary to determine if a new number can be added to the end of the existing subsequence to extend it.",
+      "quote": "If you remember, we compared 3 to the highest number in the longest subsequence so far to decide whether the subsequence can be expanded by adding 3 to it. So knowing where a subsequence ends is very important to solve this problem",
+      "quote_ts": 208.06
+    },
+    {
+      "category": "detail",
+      "question": "How many coding problems has the lecturer solved on LeetCode?",
+      "gold_answer": "The lecturer has solved 554 problems on LeetCode.",
+      "quote": "In my journey to solve 554 lead code problems, DP is what took me the longest time to master.",
+      "quote_ts": 22.66
+    },
+    {
+      "category": "detail",
+      "question": "What specific example numbers does the lecturer use to illustrate the longest-increasing subsequence?",
+      "gold_answer": "The lecturer uses the sequence 0, 1, 2, and 3 to demonstrate an increasing subsequence.",
+      "quote": "If you look at this example, 0, 1, 2 and 3 appear in an increasing order, which is our longest subsequence.",
+      "quote_ts": 101.02
+    },
+    {
+      "category": "detail",
+      "question": "What is the lecturer's name?",
+      "gold_answer": "The lecturer's name is Sahil.",
+      "quote": "My name is Sahil and I'll see you in the next one.",
+      "quote_ts": 517.7
+    },
+    {
+      "category": "detail",
+      "question": "How many interviews has the lecturer conducted?",
+      "gold_answer": "The lecturer has given more than 100 interviews.",
+      "quote": "The answer from my experience of giving more than 100 interviews is Dynamic programming.",
+      "quote_ts": 9.34
+    },
+    {
+      "category": "detail",
+      "question": "What other type of coding problem does the lecturer mention as being difficult for many people?",
+      "gold_answer": "The lecturer mentions that many people also find binary tree problems to be very difficult.",
+      "quote": "Other than DP, many people also find solving binary tree problems very difficult.",
+      "quote_ts": 506.94
+    },
+    {
+      "category": "detail",
+      "question": "What company's interview problem does the lecturer mention solving in one line in another video?",
+      "gold_answer": "The lecturer mentions solving a binary tree problem from an Amazon interview in one line.",
+      "quote": "If you are one of them, watch this video where I solve a binary tree problem asked in an Amazon interview in just one line.",
+      "quote_ts": 511.62
+    },
+    {
+      "category": "detail",
+      "question": "What did the lecturer's friend tell him when he could not solve the longest-increasing subsequence problem?",
+      "gold_answer": "The friend told him that he would never be able to crack coding interviews at big tech companies if he could not solve such easy problems.",
+      "quote": "When I could not solve this problem, he told me that I would never be able to crack coding interviews at big tech companies if I could not solve such easy problems.",
+      "quote_ts": 79.1
+    },
+    {
+      "category": "detail",
+      "question": "What is the specific phrase the lecturer repeats to explain how to make the assumption real?",
+      "gold_answer": "The lecturer repeatedly uses the phrase \"except the last one\" to explain the iterative process.",
+      "quote": "You must have noticed me saying the same phrase except the last one again and again. The answer lies in this very simple phrase.",
+      "quote_ts": 290.54
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What is the time complexity of the dynamic programming solution for the longest-increasing subsequence problem?",
+      "gold_answer": "The lecture does not provide information regarding the time complexity of the solution.",
+      "quote": ""
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How can I implement this solution using Python instead of pseudocode?",
+      "gold_answer": "The lecture does not provide specific code implementation in any programming language.",
+      "quote": ""
+    },
+    {
+      "category": "out_of_scope",
+      "question": "Are there any alternative algorithms that solve the longest-increasing subsequence problem faster than dynamic programming?",
+      "gold_answer": "The lecture does not discuss alternative algorithms or performance comparisons for this problem.",
+      "quote": ""
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What are the memory requirements for the LIS array used in this approach?",
+      "gold_answer": "The lecture does not mention the space complexity or memory requirements for the LIS array.",
+      "quote": ""
+    },
+    {
+      "category": "false_premise",
+      "question": "Why does the lecturer suggest that Prim's algorithm is the hardest algorithm in coding interviews?",
+      "gold_answer": "The lecturer actually identifies dynamic programming, not Prim's algorithm, as the hardest and most frequently asked topic in coding interviews.",
+      "quote": "Which of these is the hardest algorithm asked in coding interviews? Is it A. Tykstra's algorithm or B. Prim's algorithm or C. Dynamic programming? The answer from my experience of giving more than 100 interviews is Dynamic programming.",
+      "quote_ts": 0.02
+    },
+    {
+      "category": "false_premise",
+      "question": "Why does the lecturer claim that the longest-increasing subsequence problem is too hard for beginners?",
+      "gold_answer": "The lecturer explicitly states that the problem is neither too hard nor too easy, which is why he chose it for the demonstration.",
+      "quote": "There are two reasons why I picked this problem. 1. This problem is neither too hard, nor too easy.",
+      "quote_ts": 66.06
+    },
+    {
+      "category": "false_premise",
+      "question": "Why does the lecturer recommend assuming you know the entire sequence to solve the problem?",
+      "gold_answer": "The lecturer states that assuming you know the sequence does not work; instead, you should assume you know the length of the longest-increasing subsequence ending at each index.",
+      "quote": "What if we knew the length of the longest-increasing subsequence ending at each index of the array? Would that help us?",
+      "quote_ts": 236.66
+    }
+  ],
+  "dropped_unverified": []
+}

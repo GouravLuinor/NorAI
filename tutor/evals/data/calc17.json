@@ -1,0 +1,161 @@
+{
+  "lecture_dir": "outputs/01c0e1ce-9c2f-4809-afd8-611424f49390",
+  "questions": [
+    {
+      "category": "core",
+      "question": "What is the primary goal of the series regarding how students should perceive calculus?",
+      "gold_answer": "The goal is for students to understand the core ideas of calculus so deeply that they feel as though they could have invented the subject themselves.",
+      "quote": "And my goal is for you to come away feeling like you could have invented calculus yourself.",
+      "quote_ts": 52.95
+    },
+    {
+      "category": "core",
+      "question": "How does the lecture propose one can find the area of a circle using calculus-like thinking?",
+      "gold_answer": "You can approximate the area by slicing the circle into many thin concentric rings, treating each as a rectangle, and summing their areas as the thickness of the rings approaches zero.",
+      "quote": "Let's take one of those rings, which has some inner radius R that's between zero and three. If we can find a nice expression for the area of each ring like this one, and if we have a nice way to add them all up, it might lead us to an understanding of the full circle's area.",
+      "quote_ts": 150.35
+    },
+    {
+      "category": "core",
+      "question": "When approximating the area of a circle with rings, what does the sum of the areas of the rectangles represent?",
+      "gold_answer": "As the thickness of the rings becomes smaller, the sum of the areas of the rectangles approaches the area under the graph of the function 2 pi R.",
+      "quote": "Adding all of those numbers could be seen in a different, pretty clever way as adding the areas of many thin rectangles sitting underneath a graph. The graph of the function 2 pi R, in this case.",
+      "quote_ts": 438.15
+    },
+    {
+      "category": "core",
+      "question": "What is the relationship between the area under a graph and the derivative of that area function?",
+      "gold_answer": "The derivative of the function that represents the area under a graph is equal to the height of the graph at that point.",
+      "quote": "Any function defined as the area under some graph has this property, that DA divided by DX, a slight nudge to the output of A divided by a slight nudge to the input that caused it. Is about equal to the height of the graph at that point.",
+      "quote_ts": 766.15
+    },
+    {
+      "category": "core",
+      "question": "What is the Fundamental Theorem of Calculus?",
+      "gold_answer": "It is the principle that integrals and derivatives are inverses of each other, specifically that the derivative of an area function returns the original function defining the graph.",
+      "quote": "And this back and forth between integrals and derivatives, where the derivative of a function for the area under a graph. Gives you back the function defining the graph itself, is called the fundamental theorem of calculus.",
+      "quote_ts": 850.15
+    },
+    {
+      "category": "core",
+      "question": "How does the lecturer define a derivative in the context of this introductory lesson?",
+      "gold_answer": "A derivative is loosely defined as a measure of how sensitive a function's output is to small changes in its input.",
+      "quote": "But loosely speaking, it's a measure of how sensitive a function is to small changes in its input.",
+      "quote_ts": 806.15
+    },
+    {
+      "category": "detail",
+      "question": "What specific radius does the lecturer use as an example to explain the area of a circle?",
+      "gold_answer": "The lecturer uses a circle with a radius of three to demonstrate the concept.",
+      "quote": "Just you and a circle. Let's say with radius three.",
+      "quote_ts": 122.15
+    },
+    {
+      "category": "detail",
+      "question": "What notation does the lecturer introduce for the tiny thickness of the rings?",
+      "gold_answer": "The lecturer uses the notation DR to represent a tiny difference in the radius.",
+      "quote": "In the spirit of using what will come to be standard calculus notation, let's call that thickness DR for a tiny difference in the radius from one ring to the next.",
+      "quote_ts": 196.25
+    },
+    {
+      "category": "detail",
+      "question": "What value does the lecturer suggest as a concrete example for the thickness DR?",
+      "gold_answer": "The lecturer suggests using 0.1 as a concrete example for the thickness DR.",
+      "quote": "Maybe you think of it as something like 0.1.",
+      "quote_ts": 207.55
+    },
+    {
+      "category": "detail",
+      "question": "What is the slope of the line representing the circumference function 2 pi R?",
+      "gold_answer": "The slope of the line is 2 pi.",
+      "quote": "A nice way to think about this setup is to draw the graph of 2 pi R, which is a straight line that has a slope 2 pi.",
+      "quote_ts": 313.15
+    },
+    {
+      "category": "detail",
+      "question": "What example does the lecturer mention regarding calculating distance traveled?",
+      "gold_answer": "The lecturer mentions calculating the distance a car has traveled based on its velocity at each point in time.",
+      "quote": "Things like figuring out how far a car has traveled based on its velocity at each point in time.",
+      "quote_ts": 478.15
+    },
+    {
+      "category": "detail",
+      "question": "What specific curve does the lecturer use as an example of a more complex area problem?",
+      "gold_answer": "The lecturer uses the parabola defined by the function X squared.",
+      "quote": "But imagine instead something like a parabola, the graph of X squared.",
+      "quote_ts": 548.15
+    },
+    {
+      "category": "detail",
+      "question": "How long will the series of videos be, according to the introduction?",
+      "gold_answer": "The series consists of videos published once per day for 10 days.",
+      "quote": "This is the first video in a series on the essence of calculus, and I'll be publishing the following videos once per day for the next 10 days.",
+      "quote_ts": 16.58
+    },
+    {
+      "category": "detail",
+      "question": "What does the lecturer call the tiny difference in area when nudging X by DX?",
+      "gold_answer": "The lecturer calls this tiny difference in area DA.",
+      "quote": "Represented with this sliver that I'm going to call DA for a tiny difference in area.",
+      "quote_ts": 656.15
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How do you calculate the volume of a sphere using calculus?",
+      "gold_answer": "The lecture does not provide information on calculating the volume of a sphere.",
+      "quote": ""
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What is the history of the notation used for integrals?",
+      "gold_answer": "The lecture does not discuss the historical origins of mathematical notation.",
+      "quote": ""
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How does the chain rule work for complex trigonometric functions?",
+      "gold_answer": "The lecture mentions the chain rule as a topic to be covered but does not explain how to apply it to trigonometric functions.",
+      "quote": ""
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What are the career prospects for someone who studies calculus?",
+      "gold_answer": "The lecture does not provide information regarding career paths for students of calculus.",
+      "quote": ""
+    },
+    {
+      "category": "false_premise",
+      "question": "Why does the lecturer claim that the area of a circle is impossible to determine without calculus?",
+      "gold_answer": "The lecturer does not claim it is impossible; rather, they use the known formula for the area of a circle to show how calculus can explain why that formula is true.",
+      "quote": "Maybe you know that this is pi times its radius squared. But why? Is there a nice way to think about where this formula comes from?",
+      "quote_ts": 97.75
+    },
+    {
+      "category": "false_premise",
+      "question": "Since the lecture proves that the area of a circle is exactly equal to the sum of the rectangles with a thickness of 0.1, why do we need smaller values?",
+      "gold_answer": "The lecture explains that the sum using a thickness of 0.1 is only an approximation, and that smaller values are needed to improve accuracy.",
+      "quote": "And even though that's not perfect, for smaller and smaller choices of DR, this is actually going to be a better and better approximation for that area.",
+      "quote_ts": 218.35
+    }
+  ],
+  "dropped_unverified": [
+    {
+      "category": "core",
+      "question": "Why does the lecturer suggest that calculus is useful for solving practical problems?",
+      "gold_answer": "Calculus is useful because many complex problems can be approximated by summing a large number of small quantities, which can then be reframed as finding the area under a graph.",
+      "quote": "A lot of other hard problems in math and science can be broken down and approximated as the sum of many small quantities. ... many of these types of problems turn out to be equivalent to finding the area under some graph."
+    },
+    {
+      "category": "core",
+      "question": "What approach does the lecturer recommend when encountering a genuinely difficult math problem?",
+      "gold_answer": "Instead of trying to solve it directly, one should play around with the idea to build familiarity with the interplay between the functions involved.",
+      "quote": "And whenever you come across a genuinely hard question in math, a good policy is to not try too hard to get at the answer directly. ... Instead, play around with the idea with no particular goal in mind."
+    },
+    {
+      "category": "false_premise",
+      "question": "Since the lecture explains that calculus is primarily about memorizing derivative formulas, which formula should I memorize first?",
+      "gold_answer": "The lecture explicitly states that calculus is not just about memorizing formulas, but about understanding where they come from.",
+      "quote": "Calculus has a lot of rules and formulas which are often presented as things to be memorized. ... And my goal is for you to come away feeling like you could have invented calculus yourself."
+    }
+  ]
+}
