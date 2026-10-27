@@ -18,8 +18,10 @@ connections / compiled graphs.
 """
 
 import asyncio
+import logging
 import re
 import sqlite3
+import uuid
 from collections import OrderedDict
 from pathlib import Path
 
@@ -28,6 +30,9 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from config import CHECKPOINT_DB_PATH, TUTOR_MAX_CACHED_GRAPHS
 from tutor.graph import build_graph
+from backend import transcript
+
+logger = logging.getLogger("norai")
 
 
 # ---------------------------------------------------------------------------
@@ -304,6 +309,86 @@ def _register_thread_if_needed(db_path: Path, thread_id: str) -> None:
         pass
 
 
+def turn_db_path(lecture_id: str | None) -> Path:
+    """Checkpoint DB that holds a lecture's turns (and its chat transcript)."""
+    lecture_id = lecture_id if lecture_id and lecture_id != "default" else None
+    return get_lecture_db_path(lecture_id) if lecture_id else CHECKPOINT_DB_PATH
+
+
+def _history_tuples(snapshot) -> list[tuple[str, str, str]]:
+    """Pre-turn Human/AI messages as (id, role, content) for transcript backfill."""
+    from langchain_core.messages import HumanMessage, AIMessage
+
+    if not (snapshot and snapshot.values):
+        return []
+    out = []
+    for m in snapshot.values.get("messages", []):
+        if isinstance(m, HumanMessage):
+            role = "user"
+        elif isinstance(m, AIMessage):
+            role = "assistant"
+        else:
+            continue
+        out.append((str(m.id or uuid.uuid4()), role, _content_text(m.content)))
+    return out
+
+
+def _message_ids(snapshot) -> set:
+    if not (snapshot and snapshot.values):
+        return set()
+    return {getattr(m, "id", None) for m in snapshot.values.get("messages", [])}
+
+
+def _turn_answer(before_ids: set, messages: list) -> str:
+    """Text of the AIMessage THIS turn added.
+
+    The state's `answer` key is only written by generate_answer; on quiz and
+    command turns it still holds the PREVIOUS turn's answer, which used to be
+    streamed back as if it were the new reply.
+    """
+    from langchain_core.messages import AIMessage
+
+    for m in reversed(messages):
+        if isinstance(m, AIMessage) and m.id not in before_ids:
+            return _content_text(m.content)
+    return ""
+
+
+async def _record_turn(db_path: Path, thread_id: str, message_id: str, question: str,
+                       answer: str, snapshot) -> None:
+    """Persist the completed turn to the display transcript (never fails the turn)."""
+    if not answer:
+        return
+    try:
+        await asyncio.to_thread(
+            transcript.append_turn, db_path, thread_id, message_id, question, answer,
+            _history_tuples(snapshot),
+        )
+    except Exception:
+        logger.exception("transcript write failed for thread %s", thread_id)
+
+
+async def _replayed_turn(db_path: Path, thread_id: str, message_id: str, snapshot) -> dict | None:
+    """Idempotency: the turn for this message id already completed — replay it."""
+    try:
+        answer = await asyncio.to_thread(transcript.find_answer, db_path, thread_id, message_id)
+    except Exception:
+        logger.exception("transcript lookup failed for thread %s", thread_id)
+        return None
+    if answer is None:
+        return None
+    values = snapshot.values if (snapshot and snapshot.values) else {}
+    return {
+        "answer": answer,
+        "assistant_message_id": transcript.assistant_id_for(message_id),
+        "retrieved_chunks": values.get("retrieved_chunks", []),
+        "retrieved_images": values.get("retrieved_images", []),
+        "verified_citations": values.get("verified_citations", []),
+        "chapter_id": values.get("chapter_id"),
+        "thread_id": thread_id,
+    }
+
+
 async def ainvoke_tutor(
     thread_id: str,
     user_question: str,
@@ -344,6 +429,22 @@ async def ainvoke_tutor(
             snapshot = None
             is_new = True
 
+        db_path = turn_db_path(lecture_id)
+
+        # Idempotency is keyed on the client's message id: a retried or
+        # double-submitted turn replays the stored reply instead of running
+        # (and billing) the graph again. Legacy callers without an id keep
+        # the old content-based dedupe.
+        if message_id:
+            replay = await _replayed_turn(db_path, thread_id, message_id, snapshot)
+            if replay:
+                return replay
+        else:
+            cached = _cached_turn(snapshot, user_question, thread_id)
+            if cached:
+                return cached
+            message_id = f"srv-{uuid.uuid4().hex}"
+
         input_state: dict = {
             "thread_id": thread_id,
             "user_question": user_question,
@@ -354,35 +455,20 @@ async def ainvoke_tutor(
         if is_new and lecture_title:
             input_state["lecture_title"] = lecture_title
 
-        # Deduplication check: if the last few human messages contain one
-        # identical to the current question, and an AI response follows it,
-        # skip the graph and return the cached answer. Scanning the tail (not
-        # just the final message) catches Ask-Nora double-fires and re-asks
-        # that land after a summary/system message.
-        cached = _cached_turn(snapshot, user_question, thread_id)
-        if cached:
-            return cached
-
         # P3: Prevent Zombie Thread Resurrections — verify the thread hasn't
         # been deleted while we were waiting in the queue.
-        db_path = get_lecture_db_path(lecture_id) if lecture_id else CHECKPOINT_DB_PATH
         if not await asyncio.to_thread(_thread_exists, db_path, thread_id):
             raise ThreadDeletedError(thread_id)
         await asyncio.to_thread(_register_thread_if_needed, db_path, thread_id)
 
         result = await graph.ainvoke(input_state, config)
 
-        messages = result.get("messages", [])
-        assistant_message_id = None
-        if messages:
-            from langchain_core.messages import AIMessage
-            last_ai = next((m for m in reversed(messages) if isinstance(m, AIMessage)), None)
-            if last_ai:
-                assistant_message_id = last_ai.id
+        answer = _turn_answer(_message_ids(snapshot), result.get("messages", []))
+        await _record_turn(db_path, thread_id, message_id, user_question, answer, snapshot)
 
         return {
-            "answer":            result.get("answer", ""),
-            "assistant_message_id": assistant_message_id,
+            "answer":            answer,
+            "assistant_message_id": transcript.assistant_id_for(message_id),
             "retrieved_chunks":  result.get("retrieved_chunks", []),
             "retrieved_images":  result.get("retrieved_images", []),
             "verified_citations": result.get("verified_citations", []),
@@ -435,6 +521,21 @@ async def astream_tutor_tokens(
             snapshot = None
             is_new = True
 
+        db_path = turn_db_path(lecture_id)
+
+        # Idempotent replay keyed on message id (see ainvoke_tutor); legacy
+        # id-less callers keep the content-based dedupe.
+        cached = None
+        if message_id:
+            cached = await _replayed_turn(db_path, thread_id, message_id, snapshot)
+        else:
+            cached = _cached_turn(snapshot, user_question, thread_id)
+            message_id = f"srv-{uuid.uuid4().hex}"
+        if cached:
+            yield {"t": cached["answer"]}
+            yield {"final": cached}
+            return
+
         input_state: dict = {
             "thread_id": thread_id,
             "user_question": user_question,
@@ -445,15 +546,7 @@ async def astream_tutor_tokens(
         if is_new and lecture_title:
             input_state["lecture_title"] = lecture_title
 
-        # Dedupe: if already answered, stream the cached answer once then stop.
-        cached = _cached_turn(snapshot, user_question, thread_id)
-        if cached:
-            yield {"t": cached["answer"]}
-            yield {"final": cached}
-            return
-
         # Prevent zombie-thread resurrections (same guard as ainvoke_tutor).
-        db_path = get_lecture_db_path(lecture_id) if lecture_id else CHECKPOINT_DB_PATH
         if not await asyncio.to_thread(_thread_exists, db_path, thread_id):
             raise ThreadDeletedError(thread_id)
         await asyncio.to_thread(_register_thread_if_needed, db_path, thread_id)
@@ -486,23 +579,17 @@ async def astream_tutor_tokens(
         except Exception:
             final_state = {}
 
-        answer = _content_text(final_state.get("answer", ""))
+        answer = _turn_answer(_message_ids(snapshot), final_state.get("messages", []))
 
         # Quiz / command paths answer without an LLM stream — emit the whole
         # answer as a single frame so the frontend still has text to render.
         if not streamed_any and answer:
             yield {"t": answer}
 
-        messages = final_state.get("messages", [])
-        assistant_message_id = None
-        if messages:
-            from langchain_core.messages import AIMessage
-            last_ai = next((m for m in reversed(messages) if isinstance(m, AIMessage)), None)
-            if last_ai:
-                assistant_message_id = last_ai.id
+        await _record_turn(db_path, thread_id, message_id, user_question, answer, snapshot)
 
         yield {"final": {
-            "assistant_message_id": assistant_message_id,
+            "assistant_message_id": transcript.assistant_id_for(message_id),
             "retrieved_chunks":  final_state.get("retrieved_chunks", []),
             "retrieved_images":  final_state.get("retrieved_images", []),
             "verified_citations": final_state.get("verified_citations", []),

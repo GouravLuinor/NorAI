@@ -9,6 +9,7 @@ tutor_deps.astream_tutor_tokens (backend.dependencies is the canonical
 patch point for offline tests), NOT module-level `from ... import` copies.
 """
 
+import asyncio
 import json as json_lib
 import logging
 import re
@@ -18,11 +19,12 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 
 from backend import dependencies as tutor_deps
+from backend import transcript
 from backend.access import (
     _DEMO_TURNS_DAILY,
     _effective_persona_instructions,
@@ -65,15 +67,32 @@ def _get_scoped_thread_id(lecture_id: Optional[str], thread_id: str, user: Optio
     return thread_id
 
 
+# Thread/message ids are client-generated ("thread-<ms>", "msg-<ms>-<rand>").
+# Constrain them: they become SQLite keys and part of the scoped thread id.
+_ID_PATTERN = r"^[A-Za-z0-9_.-]{1,100}$"
+
+# Must match the client's stripSources() (frontend/src/lib/references.ts):
+# only a Sources *header* starts the appendix. The previous pattern also cut at
+# any mid-sentence "sources" ("renewable sources of energy…"), so an answer
+# shown in full while streaming came back truncated after a reload.
+_SOURCES_RE = re.compile(r"(\*\*Sources\*\*|\n[ \t]*Sources\s*[:•]|\n[ \t]*Sources\s*\n)", re.IGNORECASE)
+
+
+def _strip_sources(text: str) -> str:
+    text = str(text)
+    match = _SOURCES_RE.search(text)
+    return (text[: match.start()] if match else text).strip()
+
+
 class CreateThreadRequest(BaseModel):
     thread_id: str | None = None
 
 class ChatRequest(BaseModel):
-    thread_id: str
-    user_question: str
+    thread_id: str = Field(pattern=_ID_PATTERN)
+    user_question: str = Field(min_length=1, max_length=8000)
     lecture_title: str = ""
     lecture_id: str | None = None   # ← new field
-    message_id: str | None = None
+    message_id: str | None = Field(default=None, pattern=_ID_PATTERN)
     study_mode: str = "default"
     persona_instructions: str = ""
 
@@ -348,6 +367,27 @@ async def get_thread(
         graph, _ = await _aget_or_create_lecture_graph(lecture_id)
         config = {"configurable": {"thread_id": scoped_thread_id}}
         snapshot = await graph.aget_state(config)
+
+        # The append-only transcript is the display history. The checkpoint's
+        # `messages` is tutor memory (summarised turns are deleted from it),
+        # so it is only a fallback for threads that predate the transcript.
+        rows = await asyncio.to_thread(
+            transcript.load, tutor_deps.turn_db_path(lecture_id), scoped_thread_id
+        )
+        if rows:
+            values = snapshot.values if (snapshot and snapshot.values) else {}
+            return {
+                "thread_id": thread_id,
+                "messages": [
+                    {**r, "content": _strip_sources(r["content"]) if r["role"] == "assistant" else r["content"]}
+                    for r in rows
+                ],
+                "last_retrieved_chunks": values.get("retrieved_chunks", []),
+                "last_retrieved_images": values.get("retrieved_images", []),
+                "verified_citations": values.get("verified_citations", []),
+                "answer": values.get("answer", ""),
+            }
+
         if not snapshot or not snapshot.values:
             return {"thread_id": thread_id, "messages": []}
 
@@ -373,7 +413,7 @@ async def get_thread(
                     b.get("text", "") for b in content if isinstance(b, dict) and "text" in b
                 )
             if role == "assistant":
-                content = re.sub(r'(\*\*Sources\*\*|\n\nSources\b|Sources\s*[\:\•]|Sources\b[\s\S]*$)[\s\S]*$', '', str(content), flags=re.IGNORECASE).strip()
+                content = _strip_sources(content)
 
             result.append({
                 "id": str(msg_id),
@@ -435,6 +475,7 @@ async def delete_thread(
                         conn.execute(f"DELETE FROM {table} WHERE thread_id = ?", (scoped_thread_id,))
                     except sqlite3.OperationalError:
                         pass
+                transcript.delete_thread(conn, scoped_thread_id)
                 if is_demo:
                     conn.execute("DELETE FROM user_threads WHERE thread_id = ? AND user_id = ?", (thread_id, user_scope))
                 else:

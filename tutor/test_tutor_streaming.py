@@ -289,6 +289,121 @@ def test_dedup_returns_cached_stream_without_llm():
     asyncio.run(run())
 
 
+# ── 4b. Transcript + message-id idempotency (duplicate/glitch root cause) ────
+
+async def _stream_turn_id(deps, thread_id, question, message_id, lecture_id="test"):
+    out = []
+    async for frame in deps.astream_tutor_tokens(
+        thread_id=thread_id,
+        user_question=question,
+        lecture_title="Test Lecture",
+        lecture_id=lecture_id,
+        message_id=message_id,
+    ):
+        out.append(frame)
+    return out
+
+
+def test_message_id_retry_replays_without_llm():
+    async def run():
+        from backend import transcript
+        fake = _PlainFakeLLM()
+        orig_llm = _patch_llm(fake)
+        with tempfile.TemporaryDirectory() as tmp:
+            async with _make_graph(tmp) as graph:
+                import backend.dependencies as deps
+                orig_get, orig_path = await _patch_graph_into_deps(graph, tmp)
+                try:
+                    first = await _stream_turn_id(deps, "th-idem", "What is a stack?", "msg-1")
+                    calls_after_first = _PlainFakeLLM.calls
+                    retry = await _stream_turn_id(deps, "th-idem", "What is a stack?", "msg-1")
+                    calls_after_retry = _PlainFakeLLM.calls
+                    rows = transcript.load(Path(tmp) / "cp.sqlite", "th-idem")
+                finally:
+                    _restore_graph_patch(deps, orig_get, orig_path)
+                    _restore_llm(orig_llm)
+
+        assert calls_after_retry == calls_after_first, "retry of the same message id re-ran the LLM"
+        _, f1 = _frames(first)
+        t2, f2 = _frames(retry)
+        assert f1[0]["assistant_message_id"] == "ai-msg-1"
+        assert f2[0]["assistant_message_id"] == "ai-msg-1"
+        assert t2 == [_GEN_ANSWER]
+        assert [(r["id"], r["role"]) for r in rows] == [("msg-1", "user"), ("ai-msg-1", "assistant")], rows
+
+    asyncio.run(run())
+
+
+def test_repeated_question_with_new_id_is_a_new_turn():
+    """Asking the same thing twice is two turns — content must not collapse them."""
+    async def run():
+        from backend import transcript
+        fake = _PlainFakeLLM()
+        orig_llm = _patch_llm(fake)
+        with tempfile.TemporaryDirectory() as tmp:
+            async with _make_graph(tmp) as graph:
+                import backend.dependencies as deps
+                orig_get, orig_path = await _patch_graph_into_deps(graph, tmp)
+                try:
+                    await _stream_turn_id(deps, "th-rep", "Explain again", "msg-a")
+                    calls_a = _PlainFakeLLM.calls
+                    await _stream_turn_id(deps, "th-rep", "Explain again", "msg-b")
+                    calls_b = _PlainFakeLLM.calls
+                    rows = transcript.load(Path(tmp) / "cp.sqlite", "th-rep")
+                finally:
+                    _restore_graph_patch(deps, orig_get, orig_path)
+                    _restore_llm(orig_llm)
+
+        assert calls_b > calls_a, "second ask with a new id should run a new turn"
+        assert [r["id"] for r in rows] == ["msg-a", "ai-msg-a", "msg-b", "ai-msg-b"], rows
+
+    asyncio.run(run())
+
+
+def test_transcript_survives_memory_pruning():
+    """save_memory_node deletes summarised turns from the checkpoint; the
+    display transcript must keep them."""
+    async def run():
+        from langchain_core.messages import RemoveMessage
+        from backend import transcript
+        fake = _PlainFakeLLM()
+        orig_llm = _patch_llm(fake)
+        with tempfile.TemporaryDirectory() as tmp:
+            async with _make_graph(tmp) as graph:
+                import backend.dependencies as deps
+                orig_get, orig_path = await _patch_graph_into_deps(graph, tmp)
+                try:
+                    await _stream_turn_id(deps, "th-prune", "First question", "msg-p1")
+                    await _stream_turn_id(deps, "th-prune", "Second question", "msg-p2")
+                    config = {"configurable": {"thread_id": "th-prune"}}
+                    await graph.aupdate_state(
+                        config, {"messages": [RemoveMessage(id="msg-p1"), RemoveMessage(id="ai-msg-p1")]}
+                    )
+                    snap = await graph.aget_state(config)
+                    remaining = [m.id for m in snap.values["messages"]]
+                    rows = transcript.load(Path(tmp) / "cp.sqlite", "th-prune")
+                finally:
+                    _restore_graph_patch(deps, orig_get, orig_path)
+                    _restore_llm(orig_llm)
+
+        assert "msg-p1" not in remaining
+        assert [r["id"] for r in rows] == ["msg-p1", "ai-msg-p1", "msg-p2", "ai-msg-p2"], rows
+
+    asyncio.run(run())
+
+
+def test_turn_answer_ignores_previous_turns_answer():
+    from langchain_core.messages import AIMessage, HumanMessage
+    from backend.dependencies import _turn_answer
+
+    old = AIMessage(content="old answer", id="ai-old")
+    before = {"ai-old", "h-old"}
+    # Quiz/command turn that added nothing new: must NOT replay "old answer".
+    assert _turn_answer(before, [HumanMessage(content="q", id="h-old"), old]) == ""
+    new = AIMessage(content="Question 1: ...", id="quiz-1")
+    assert _turn_answer(before, [old, new]) == "Question 1: ..."
+
+
 # ── 5. Zombie-thread guard ───────────────────────────────────────────────────
 
 def test_deleted_thread_raises():
