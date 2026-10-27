@@ -56,7 +56,7 @@ Decisions from the Micro-SaaS foundation work; the launch-track roadmap doc they
 - **Q5 — DB cutover:** clean-slate Postgres schema — no migration needed for gitignored `outputs/` dev data.
 - **Q6 — Tutor threads schema:** per-lecture checkpoints on disk via LangGraph `AsyncSqliteSaver` (`outputs/<id>/tutor/checkpoints.sqlite`, WAL + busy_timeout) instead of centralized Postgres `user_threads`/`tutor_messages` tables — durable, isolated, trivially tied to lecture identity; threaded through the async graph cache.
 
-**Stack choices:** Supabase Auth (JWT, ES256 via JWKS) · Lemon Squeezy as merchant of record (handles global VAT/GST; HMAC-SHA256 webhooks, fail-closed) · ChromaDB embeddings via `gemini-embedding-2` (768 dims).
+**Stack choices:** Supabase Auth (JWT, ES256 via JWKS) · Razorpay one-time 30-day passes in INR (UPI + cards; checkout + webhook HMAC-SHA256 signatures, fail-closed; replaced Lemon Squeezy in 2026-10) · ChromaDB embeddings via `gemini-embedding-2` (768 dims).
 
 ---
 

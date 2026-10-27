@@ -338,15 +338,13 @@ NorAI/
 ├── outputs/                      # ALL generated artifacts (gitignored)
 ├── docs/                         # Project architecture, plans, and tracking docs
 │   ├── DEPLOYMENT_PLAN.md        # agreed production deployment path (Hostinger VPS)
-│   ├── RENDER_STAGING_PREP.md    # staging deployment checklist & verification
 │   ├── PROJECT_PROGRESS.md       # living technical changelog & architectural state
 │   ├── ROADMAP.md                # phased engineering-hardening roadmap
 │   ├── COMMUNICATOR.md           # agent synchronization bridge
 │   ├── TUTORIAL.md               # complete system architecture & design tutorial
 │   ├── NOTES.md                  # developer fix log & architectural decisions
-│   ├── fix.md                    # scaling & concurrency audit log
-│   ├── UI_UX_AUDIT_REPORT.md     # frontend audit & design fixes
-│   └── token_reduction.md        # prompt compression & caching benchmarks
+│   ├── token_reduction.md        # prompt compression & caching benchmarks
+│   └── archive/                  # completed audits/reports + logo explorations (historical)
 ├── AGENTS.md                     # developer and agent operational guide
 └── requirements.txt
 ```
@@ -385,7 +383,7 @@ cp .env.example .env   # then fill in:
 # GEMINI_API_KEY=...
 # SUPABASE_URL=...  VITE_SUPABASE_URL=...  VITE_SUPABASE_ANON_KEY=...
 # DATABASE_URL=postgresql://...   (Supabase session pooler)
-# LEMONSQUEEZY_WEBHOOK_SECRET=...
+# ENABLE_PAYMENTS=1  RAZORPAY_KEY_ID=...  RAZORPAY_KEY_SECRET=...  RAZORPAY_WEBHOOK_SECRET=...
 ```
 > Never commit secrets or API keys — `.env` is gitignored.
 
@@ -436,7 +434,7 @@ sprint are complete; a production deployment path is agreed in
 - [x] Persistent tutor threads + Highlight & Ask + document search
 - [x] On-demand PDF generation (notes, revision, assessment, guide, mind-map)
 - [x] Supabase auth (JWKS verification) + Postgres persistence
-- [x] Lemon Squeezy webhooks, usage metering, quota enforcement, billing page
+- [x] Razorpay one-time passes (UPI + cards), webhooks, usage metering, quota enforcement, billing page
 - [x] DB-backed job queue with restart recovery (P4)
 - [x] P0–P5 hardening: security, pipeline economics, retrieval evals, CI, Docker, tests
 - [x] **P6 retention** — real token streaming (P6.1), SM-2 spaced repetition +
@@ -445,7 +443,7 @@ sprint are complete; a production deployment path is agreed in
 - [x] **P7 token reduction** — prompt compression, context caching (dormant on
       free tier), output-token cuts (`docs/token_reduction.md`)
 - [x] **UI/UX audit execution** — 3 responsive tiers, skeletons, custom Select,
-      dark-theme fixes, course/share pages (`docs/UI_UX_AUDIT_REPORT.md`)
+      dark-theme fixes, course/share pages (`docs/archive/UI_UX_AUDIT_REPORT.md`)
 
 ## 🧩 Engineering Challenges
 
