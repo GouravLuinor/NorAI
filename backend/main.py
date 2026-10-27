@@ -28,6 +28,7 @@ from contextlib import contextmanager, asynccontextmanager
 from pathlib import Path
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, UploadFile
 from typing import Any, List, Optional
+import math
 import sqlite3
 import time
 from datetime import datetime, timezone
@@ -437,12 +438,41 @@ MAX_UPLOAD_BYTES = int(os.environ.get("NORAI_MAX_UPLOAD_BYTES", str(2 * 1024**3)
 UPLOAD_CHUNK_BYTES = 1024 * 1024  # 1 MB
 
 
+async def _with_plan_fit(est: dict, duration_min: float, user: Optional[User], db: AsyncSession) -> dict:
+    """Add the caller's plan limits so the UI can warn before /process rejects."""
+    sub = None
+    if user is not None:
+        try:
+            sub = (
+                await db.execute(select(Subscription).where(Subscription.user_id == user.id))
+            ).scalar_one_or_none()
+            if sub is not None and rollover_if_needed(sub):
+                await db.commit()
+        except Exception as exc:
+            logging.getLogger("norai").warning("estimate: subscription lookup failed: %s", exc)
+    plan = get_plan(sub.plan_tier if sub else "free")
+    quota = sub.monthly_minutes_quota if sub else plan.minutes
+    remaining = max(0, quota - (sub.used_minutes_this_month if sub else 0))
+    needed = math.ceil(duration_min)
+    est.update({
+        "plan_id": plan.id,
+        "plan_name": plan.name,
+        "plan_max_min": plan.max_lecture_min,
+        "minutes_needed": needed,
+        "remaining_minutes": remaining,
+        "fits_plan": duration_min <= plan.max_lecture_min and needed <= remaining,
+    })
+    return est
+
+
 @app.post("/estimate")
 async def estimate_cost(
     source_type: str = Form(...),
     url: str | None = Form(None),
     duration: float | None = Form(None),
     file: UploadFile | None = None,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
 ):
     """Pre-flight estimate of Gemini calls + wall-clock time (P1.8).
 
@@ -463,7 +493,7 @@ async def estimate_cost(
         duration_min = probed["duration_sec"] / 60.0
         est = estimate_pipeline(duration_min, source_type="youtube")
         est.update({"available": True, "title": probed.get("title")})
-        return est
+        return await _with_plan_fit(est, duration_min, user, db)
     if source_type == "gdrive":
         if not url or not is_gdrive_url(url):
             raise HTTPException(status_code=400, detail="Invalid Google Drive URL")
@@ -476,7 +506,7 @@ async def estimate_cost(
             return {"available": False, "reason": "Could not read video duration"}
         est = estimate_pipeline(duration, source_type="upload")
         est.update({"available": True})
-        return est
+        return await _with_plan_fit(est, duration, user, db)
     raise HTTPException(status_code=400, detail="Unsupported source_type")
 
 

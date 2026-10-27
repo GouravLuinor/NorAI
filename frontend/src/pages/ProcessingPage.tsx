@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Check, ArrowRight, RotateCcw, AlertTriangle, Clock } from 'lucide-react'
+import { Check, ArrowRight, RotateCcw, AlertTriangle, Clock, Info } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { useAuthStore } from '../stores/useAuthStore'
@@ -68,7 +68,17 @@ export function ProcessingPage() {
     let lastSignature = ''
     let stopped = false
 
-    const processEventData = (data: ProcessEvent & { error?: string; limit_type?: string; retry_after_seconds?: number }) => {
+    // The status endpoint sends limitType/retryAfterSeconds (camelCase); the
+    // snake_case names are kept for older payloads.
+    const processEventData = (
+      data: ProcessEvent & {
+        error?: string
+        limitType?: string
+        retryAfterSeconds?: number
+        limit_type?: string
+        retry_after_seconds?: number
+      },
+    ) => {
       const stage = data.stage
       if (stage === 'complete' || (data.progress != null && data.progress >= 100)) {
         setCompletedStages(prev => {
@@ -89,11 +99,12 @@ export function ProcessingPage() {
       }
       if (stage === 'error') {
         setErrored(true)
-        if (data.limit_type === 'rpd' || data.error === 'DAILY_QUOTA_EXHAUSTED') {
+        const limitType = data.limitType ?? data.limit_type
+        if (limitType === 'rpd' || data.error === 'DAILY_QUOTA_EXHAUSTED') {
           setIsRpdLimited(true)
-          const retrySecs = data.retry_after_seconds || 3600
+          const retrySecs = data.retryAfterSeconds || data.retry_after_seconds || 3600
           useRateLimitStore.getState().setDailyLimit(retrySecs)
-          setMessage('Daily quota reached (500 RPD). Paused until Pacific Midnight.')
+          setMessage('Paused: the AI service hit its daily limit.')
         } else {
           setMessage(friendlyError(data.message || 'Something went wrong.'))
         }
@@ -279,6 +290,16 @@ export function ProcessingPage() {
           </div>
         </div>
 
+        {!finished && !errored && (
+          <p className="mt-6 flex items-start gap-2 text-11 text-nt3 leading-relaxed">
+            <Info size={12} strokeWidth={1.5} className="mt-0.5 shrink-0" aria-hidden="true" />
+            <span>
+              This usually takes a few minutes. You can close this tab: processing continues on our side and the
+              lecture appears under Your lectures when it's ready.
+            </span>
+          </p>
+        )}
+
         {/* Go to workspace button */}
         {finished && (
           <Button
@@ -291,50 +312,44 @@ export function ProcessingPage() {
           </Button>
         )}
 
-        {/* Errored runs: graceful RPD countdown or retry action */}
+        {/* Errored runs: daily-limit countdown, or a way back to start again */}
         {errored && isRpdLimited && (
-          <div className="flex flex-col gap-3 mt-8 p-4 rounded-lg bg-amber-950/50 border border-amber-500/40 text-amber-200">
-            <div className="flex items-center gap-2 text-amber-300 font-semibold text-13">
-              <AlertTriangle size={16} className="text-amber-400" />
-              <span>Google AI Studio Daily Quota Reached</span>
+          <div className="flex flex-col gap-3 mt-8 p-4 rounded-lg bg-nab border border-nabr text-nat" role="status">
+            <div className="flex items-center gap-2 font-semibold text-13">
+              <AlertTriangle size={16} aria-hidden="true" />
+              <span>Paused for today</span>
             </div>
-            <p className="text-11 text-amber-200/90 leading-relaxed">
-              Processing paused because the Gemini free-tier daily rate limit (500 requests per day) was reached.
-              Your uploaded lecture stages are preserved.
+            <p className="text-12 text-nt2 leading-relaxed">
+              Our AI provider's daily limit was reached, so this lecture stopped before it finished. It didn't use
+              any of your lecture-minutes. Start it again once processing reopens.
             </p>
-            <div className="flex items-center gap-2 bg-amber-900/60 border border-amber-600/40 px-3 py-1.5 rounded-md font-mono text-11 text-amber-300">
-              <Clock size={13} className="text-amber-400 animate-pulse" />
-              <span>Resets at Pacific Midnight in:</span>
-              <span className="font-bold text-amber-100">{formatCountdown(remainingSeconds)}</span>
+            <div className="flex items-center gap-2 bg-ns border border-nabr px-3 py-1.5 rounded-md font-mono text-11">
+              <Clock size={13} aria-hidden="true" />
+              <span>Reopens in</span>
+              <span className="font-bold tabular-nums">{formatCountdown(remainingSeconds)}</span>
             </div>
-            <div className="flex flex-col gap-2 mt-2">
-              <Button
-                variant="primary"
-                onClick={() => navigate('/app')}
-                className="w-full py-2.5 rounded-md text-12"
-              >
-                Return to Dashboard
-              </Button>
-            </div>
+            <Button
+              variant="primary"
+              onClick={() => navigate('/app')}
+              className="w-full py-2.5 mt-1 rounded-md text-12"
+            >
+              Back to my lectures
+            </Button>
           </div>
         )}
 
         {errored && !isRpdLimited && (
           <div className="flex flex-col gap-2 mt-8">
+            <p className="text-12 text-nt2 text-center leading-relaxed mb-1">
+              Failed runs don't use any of your lecture-minutes.
+            </p>
             <Button
               variant="primary"
-              onClick={() => window.location.reload()}
+              onClick={() => navigate('/app')}
               className="w-full gap-2 py-3 rounded-md text-13 fold-marks relative"
             >
               <RotateCcw size={14} strokeWidth={1.5} />
-              Retry Processing
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/app')}
-              className="w-full py-2 rounded-md text-xs"
-            >
-              Start a new upload instead
+              Try again
             </Button>
           </div>
         )}

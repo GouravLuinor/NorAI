@@ -35,4 +35,8 @@ export const formatInr = (rupees: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(rupees)
 
 export const formatMinutes = (min: number) =>
-  min >= 60 ? `${+(min / 60).toFixed(1)} h` : `${min} min`
+  min >= 600
+    ? `${Math.round(min / 60).toLocaleString('en-IN')} h`
+    : min >= 60
+      ? `${+(min / 60).toFixed(1)} h`
+      : `${min} min`

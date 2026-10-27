@@ -170,6 +170,22 @@ def test_estimate_upload_with_duration():
     check("upload calls > 0", body.get("est_calls", 0) > 0)
 
 
+def test_estimate_plan_fit_anonymous_is_free():
+    from backend.plans import get_plan
+
+    free = get_plan("free")
+    r = client.post("/estimate", data={"source_type": "upload", "duration": "10.0"})
+    body = r.json()
+    check("plan fit: anonymous → free plan", body.get("plan_id") == "free")
+    check("plan fit: max lecture surfaced", body.get("plan_max_min") == free.max_lecture_min)
+    check("plan fit: minutes needed rounds up", body.get("minutes_needed") == 10)
+    check("plan fit: 10 min fits free", body.get("fits_plan") is True)
+
+    too_long = free.max_lecture_min + 5
+    r = client.post("/estimate", data={"source_type": "upload", "duration": str(too_long)})
+    check("plan fit: over max lecture → fits_plan false", r.json().get("fits_plan") is False)
+
+
 def test_estimate_upload_missing_duration():
     r = client.post("/estimate", data={"source_type": "upload"})
     body = r.json()
@@ -195,6 +211,7 @@ if __name__ == "__main__":
     test_estimate_invalid_youtube_url_400()
     test_estimate_gdrive_soft_fail()
     test_estimate_upload_with_duration()
+    test_estimate_plan_fit_anonymous_is_free()
     test_estimate_upload_missing_duration()
     test_estimate_bad_source_type_400()
     print(f"\n{PASSED} passed, {FAILED} failed")

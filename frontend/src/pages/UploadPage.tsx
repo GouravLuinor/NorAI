@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, Info, Activity, AlertTriangle, LogOut } from 'lucide-react'
+import { useCallback, useState, useEffect, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, Info, Activity, AlertTriangle, LogOut, RefreshCw } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { Select } from '../components/ui/Select'
@@ -10,6 +10,7 @@ import { useAuthStore } from '../stores/useAuthStore'
 import { useCourseStore } from '../stores/useCourseStore'
 import { useRateLimitStore } from '../stores/useRateLimitStore'
 import { DEFAULT_TRIAL_QUOTA_MINUTES } from '../config/features'
+import { formatMinutes } from '../lib/plans'
 
 type InputType = 'youtube' | 'upload' | 'drive'
 
@@ -35,6 +36,27 @@ interface EstimateResult {
   calibrated?: boolean
   n_calibration_runs?: number
   title?: string
+  // Plan fit for the signed-in caller (backend/main.py:_with_plan_fit)
+  plan_name?: string
+  plan_max_min?: number
+  minutes_needed?: number
+  remaining_minutes?: number
+  fits_plan?: boolean
+}
+
+// The tab says "Drive"; the API's source_type is "gdrive".
+const apiSourceType = (t: InputType) => (t === 'drive' ? 'gdrive' : t)
+
+const PLAN_LABEL: Record<string, string> = { free: 'Free', starter: 'Starter', pro: 'Pro' }
+
+/** Pull a readable message out of a FastAPI error body (string or {message}). */
+function errorDetail(body: unknown): string | null {
+  const detail = (body as { detail?: unknown } | null)?.detail
+  if (typeof detail === 'string') return detail
+  if (detail && typeof detail === 'object' && typeof (detail as { message?: unknown }).message === 'string') {
+    return (detail as { message: string }).message
+  }
+  return null
 }
 
 // Relative time via Intl.RelativeTimeFormat (locale-aware, no custom math).
@@ -88,16 +110,24 @@ export function UploadPage() {
   const [estimate, setEstimate] = useState<EstimateResult | null>(null)
   const [estLoading, setEstLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submitErrorIsQuota, setSubmitErrorIsQuota] = useState(false)
+  const [submitting, setSubmitting] = useState<null | 'uploading' | 'starting'>(null)
+  const [lecturesError, setLecturesError] = useState(false)
   const [courseId, setCourseId] = useState('')
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { user } = useAuthStore()
+  const quota = useAuthStore((s) => s.quota)
+  const refreshQuota = useAuthStore((s) => s.refreshQuota)
   const { courses, loadCourses } = useCourseStore()
-  const { isDailyLimited } = useRateLimitStore()
+  const { isDailyLimited, expiresAt } = useRateLimitStore()
 
   useEffect(() => {
-    if (user) loadCourses()
-  }, [user, loadCourses])
+    if (user) {
+      loadCourses()
+      void refreshQuota()
+    }
+  }, [user, loadCourses, refreshQuota])
 
   // ── Pre-flight estimate (P1.8) ──────────────────────────────────────────
   // Debounced: fires ~600ms after the user stops typing / selects a file.
@@ -120,7 +150,7 @@ export function UploadPage() {
     const run = async () => {
       setEstLoading(true)
       const formData = new FormData()
-      formData.append('source_type', inputType)
+      formData.append('source_type', apiSourceType(inputType))
       if (inputType === 'youtube') {
         formData.append('url', url.trim())
       } else if (inputType === 'upload' && file) {
@@ -148,65 +178,89 @@ export function UploadPage() {
     }
   }, [inputType, url, file])
 
-  useEffect(() => {
+  const loadLectures = useCallback(() => {
+    setLoadingLectures(true)
+    setLecturesError(false)
     apiFetchRaw('/lectures')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.json()
+      })
       .then((data: LectureInfo[]) => {
         const valid = data.filter(
           (l) => (l.chapter_count && l.chapter_count > 0) || (l.title && l.title !== 'New Lecture')
         )
         setLectures(valid.length > 0 ? valid : data)
-        setLoadingLectures(false)
       })
       .catch((err) => {
         console.error('Failed to fetch lectures:', err)
-        setLoadingLectures(false)
+        setLecturesError(true)
       })
+      .finally(() => setLoadingLectures(false))
   }, [])
+
+  useEffect(() => {
+    loadLectures()
+  }, [loadLectures])
 
   const userLectures = lectures.filter((l) => !l.is_demo)
   const demoLectures = lectures.filter((l) => l.is_demo)
 
 
   const handleStart = async () => {
+    if (submitting) return
+    setSubmitError(null)
+    setSubmitErrorIsQuota(false)
+    setSubmitting(inputType === 'upload' ? 'uploading' : 'starting')
     const formData = new FormData()
-    formData.append('source_type', inputType)
+    formData.append('source_type', apiSourceType(inputType))
     if (inputType === 'upload' && file) {
       formData.append('file', file)
       const duration = await readVideoDuration(file)
       if (duration) formData.append('duration', String(duration / 60))
     } else {
-      formData.append('url', url)
+      formData.append('url', url.trim())
     }
     if (courseId) formData.append('course_id', courseId)
 
     try {
       const res = await apiFetchRaw('/process', { method: 'POST', body: formData })
       if (!res.ok) {
-        let detail = `Failed to start processing (HTTP ${res.status})`
+        let detail = `Could not start processing (HTTP ${res.status}). Please try again.`
+        let isRpd = false
         try {
           const body = await res.json()
-          if (typeof body.detail === 'string') detail = body.detail
+          detail = errorDetail(body) ?? detail
+          isRpd = (body?.detail as { limitType?: string } | undefined)?.limitType === 'rpd'
         } catch {
           /* non-JSON error body — keep the generic message */
         }
         if (res.status === 401) {
           useAuthStore.getState().openAuthModal('login')
         }
+        // Plan/minutes limits (not the shared daily AI limit) can be fixed by a pass.
+        setSubmitErrorIsQuota(res.status === 429 && !isRpd)
         setSubmitError(detail)
+        setSubmitting(null)
         return
       }
       const { task_id } = await res.json()
       navigate(`/process/${task_id}`)
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : 'Network error starting processing')
+      setSubmitting(null)
     }
   }
 
+  const overPlan = estimate?.available === true && estimate.fits_plan === false
   const canSubmit =
     !isDailyLimited &&
+    !submitting &&
+    !overPlan &&
     ((inputType === 'upload' && file) ||
       ((inputType === 'youtube' || inputType === 'drive') && url.trim()))
+
+  const planLabel = quota ? (PLAN_LABEL[quota.plan_tier] ?? quota.plan_tier) : 'Free'
 
   const logout = useAuthStore((s) => s.logout)
 
@@ -276,7 +330,7 @@ export function UploadPage() {
                     {step}
                   </span>
                   {i < arr.length - 1 && (
-                    <span className="dimension-marker text-3xs">[48px]</span>
+                    <ArrowRight size={11} strokeWidth={1.5} className="text-nt4" aria-hidden="true" />
                   )}
                 </span>
               ))}
@@ -326,7 +380,7 @@ export function UploadPage() {
                   <span className="text-xs text-nt2">
                     {file ? file.name : dragActive ? 'Drop the video to upload' : 'Click to choose or drag a video file here'}
                   </span>
-                  <span className="text-2xs text-nt4">MP4, MKV, WebM up to 2 GB</span>
+                  <span className="text-2xs text-nt4">MP4, MOV, MKV, AVI or WebM, up to 2 GB</span>
                 </button>
                 <input
                   ref={fileInputRef}
@@ -359,44 +413,43 @@ export function UploadPage() {
               </div>
             )}
 
-            {/* Estimate Panel (P1.8) */}
+            {/* Estimate Panel (P1.8): length, wait time and plan fit */}
             {estLoading && (
-              <div className="mt-3 flex items-center gap-2 text-2xs text-nt3 animate-pulse">
+              <div className="mt-3 flex items-center gap-2 text-2xs text-nt3 animate-pulse" role="status">
                 <Activity size={11} strokeWidth={1.5} />
-                <span>Estimating processing cost…</span>
+                <span>Checking the lecture length…</span>
               </div>
             )}
 
             {!estLoading && estimate?.available && (
-              <div className="mt-3 rounded-md border border-bdr2 bg-nb/60 px-3 py-2.5">
+              <div className="mt-3 rounded-md border border-bdr2 bg-nb/60 px-3 py-2.5" aria-live="polite">
                 <div className="flex items-start gap-2">
                   <Info size={12} strokeWidth={1.5} className="text-nt3 mt-0.5 shrink-0" />
                   <div className="text-2xs text-nt2 leading-relaxed tabular-nums">
+                    {estimate.title && <span className="block text-nt font-medium truncate">{estimate.title}</span>}
                     {estimate.duration_min !== undefined && (
-                      <span>≈ {estimate.duration_min.toFixed(1)} min lecture</span>
-                    )}
-                    {estimate.est_calls !== undefined && (
-                      <span> · ~{estimate.est_calls} Gemini API calls</span>
+                      <span>≈ {Math.max(1, Math.round(estimate.duration_min))} min lecture</span>
                     )}
                     {estimate.est_time_min !== undefined && (
-                      <span> · ~{estimate.est_time_min} min processing</span>
+                      <span> · ready in about {Math.max(1, Math.round(estimate.est_time_min))} min</span>
                     )}
-                    {estimate.estimated_chunks !== undefined && (
-                      <span className="text-nt4"> · {estimate.estimated_chunks} chunks</span>
-                    )}
-                    {estimate.calibrated && estimate.n_calibration_runs !== undefined && (
-                      <span className="block text-nt4 mt-0.5">
-                        self-calibrating from {estimate.n_calibration_runs} past runs
+                    {estimate.fits_plan && estimate.minutes_needed !== undefined && estimate.remaining_minutes !== undefined && (
+                      <span className="block text-nt3 mt-0.5">
+                        Uses {estimate.minutes_needed} of your {estimate.remaining_minutes} remaining lecture-minutes.
                       </span>
                     )}
                   </div>
                 </div>
-                {estimate.free_trial_ok === false && (
-                  <div className="mt-2 flex items-center gap-1.5 text-2xs text-nr">
-                    <AlertTriangle size={11} strokeWidth={1.5} />
+                {overPlan && (
+                  <div className="mt-2 flex items-start gap-1.5 text-2xs text-nrt">
+                    <AlertTriangle size={11} strokeWidth={1.5} className="mt-0.5 shrink-0" />
                     <span>
-                      Over the {estimate.free_trial_min ?? DEFAULT_TRIAL_QUOTA_MINUTES}-minute free-trial limit
-                      {' — Starter or Pro handles longer lectures.'}
+                      {estimate.plan_max_min !== undefined && (estimate.duration_min ?? 0) > estimate.plan_max_min
+                        ? `Longer than the ${estimate.plan_name ?? planLabel} plan's ${estimate.plan_max_min}-minute limit per lecture.`
+                        : `Needs ${estimate.minutes_needed} lecture-minutes; you have ${estimate.remaining_minutes} left.`}{' '}
+                      <Link to="/billing" className="font-medium underline underline-offset-2 hover:text-nt">
+                        See plans
+                      </Link>
                     </span>
                   </div>
                 )}
@@ -406,16 +459,24 @@ export function UploadPage() {
             {!estLoading && estimate && !estimate.available && (
               <div className="mt-3 flex items-center gap-1.5 text-2xs text-nt4">
                 <Info size={11} strokeWidth={1.5} />
-                <span>Estimate unavailable for this source.</span>
+                <span>
+                  {inputType === 'drive'
+                    ? "We'll check the length once the video downloads."
+                    : "Couldn't read the length yet. You can still start; we'll check it during processing."}
+                </span>
               </div>
             )}
 
             {isDailyLimited && (
-              <div className="mt-3 flex items-start gap-2 text-2xs text-amber-300 rounded-md border border-amber-600/40 bg-amber-950/40 px-3 py-2">
-                <AlertTriangle size={12} strokeWidth={1.5} className="mt-0.5 shrink-0 text-amber-400" />
+              <div className="mt-3 flex items-start gap-2 text-2xs text-nat rounded-md border border-nabr bg-nab px-3 py-2" role="status">
+                <AlertTriangle size={12} strokeWidth={1.5} className="mt-0.5 shrink-0" />
                 <span>
-                  Processing is temporarily paused due to Google AI Studio daily quota limits (500 RPD).
-                  Processing resumes automatically at Pacific Midnight.
+                  New lectures are paused for today because our AI provider's daily limit was reached.
+                  Processing reopens automatically
+                  {expiresAt
+                    ? ` at ${new Date(expiresAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`
+                    : ' later today'}
+                  . Your notes, quizzes and tutor still work.
                 </span>
               </div>
             )}
@@ -423,7 +484,17 @@ export function UploadPage() {
             {submitError && (
               <div className="mt-3 flex items-start gap-1.5 text-2xs text-nr rounded-md border border-nrbr bg-nrb px-3 py-2">
                 <AlertTriangle size={11} strokeWidth={1.5} className="mt-0.5 shrink-0" />
-                <span>{submitError}</span>
+                <span>
+                  {submitError}
+                  {submitErrorIsQuota && (
+                    <>
+                      {' '}
+                      <Link to="/billing" className="font-medium underline underline-offset-2 hover:text-nt">
+                        See plans
+                      </Link>
+                    </>
+                  )}
+                </span>
               </div>
             )}
 
@@ -452,17 +523,31 @@ export function UploadPage() {
               disabled={!canSubmit}
               className="w-full mt-4 gap-2 py-2.5 rounded-md text-13 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <Sparkles size={14} strokeWidth={1.5} />
-              {isDailyLimited ? 'Processing Paused (Daily Quota Reached)' : 'Start Processing'}
+              <Sparkles size={14} strokeWidth={1.5} className={submitting ? 'animate-pulse' : undefined} />
+              {isDailyLimited
+                ? 'Paused for today'
+                : submitting === 'uploading'
+                  ? 'Uploading video…'
+                  : submitting === 'starting'
+                    ? 'Starting…'
+                    : 'Start processing'}
             </Button>
           </div>
 
           <div className="flex items-center justify-center gap-1.5 text-2xs text-nt4 mt-4">
             <Info size={11} strokeWidth={1.5} />
             <span>
-              {user
-                ? `Works with lectures up to 3 hours. New accounts include ${DEFAULT_TRIAL_QUOTA_MINUTES} minutes free trial.`
-                : `Free trial: up to ${DEFAULT_TRIAL_QUOTA_MINUTES} min per lecture. Sign in for up to 3h.`}
+              {quota ? (
+                <>
+                  {planLabel} plan · {formatMinutes(quota.remaining_minutes)} left
+                  {quota.max_lecture_minutes ? ` · lectures up to ${quota.max_lecture_minutes} min` : ''} ·{' '}
+                  <Link to="/billing" className="underline underline-offset-2 hover:text-nt2">
+                    {quota.plan_tier === 'free' ? 'Get more time' : 'Plan & billing'}
+                  </Link>
+                </>
+              ) : (
+                `Free accounts include ${DEFAULT_TRIAL_QUOTA_MINUTES} lecture-minutes every 30 days.`
+              )}
             </span>
           </div>
         </section>
@@ -486,7 +571,7 @@ export function UploadPage() {
         <section>
           <div className="flex items-center justify-between mb-3 px-1">
             <h2 className="spec-label">Your Lectures</h2>
-            {!loadingLectures && (
+            {!loadingLectures && !lecturesError && (
               <span className="font-mono text-2xs text-nt4">
                 {userLectures.length} {userLectures.length === 1 ? 'lecture' : 'lectures'}
               </span>
@@ -495,15 +580,23 @@ export function UploadPage() {
           
           <div className="flex flex-col gap-2.5">
             {loadingLectures ? (
-              <div className="flex justify-center p-6 text-nt4">
-                <span className="animate-pulse text-xs">Loading…</span>
+              <div className="flex justify-center p-6 text-nt4" role="status">
+                <span className="animate-pulse text-xs">Loading your lectures…</span>
+              </div>
+            ) : lecturesError ? (
+              <div className="bg-ns border border-nrbr rounded-lg p-5 text-center shadow-ev1">
+                <p className="text-12 text-nrt mb-3">Couldn't load your lectures. Check your connection and try again.</p>
+                <Button variant="outline" className="px-3 py-1.5 rounded-md text-11 gap-1.5" onClick={loadLectures}>
+                  <RefreshCw size={12} /> Try again
+                </Button>
               </div>
             ) : userLectures.length === 0 ? (
               <div className="bg-ns border border-bdr2 rounded-lg p-6 text-center shadow-ev1">
                 <BookOpen size={24} strokeWidth={1.5} className="mx-auto text-nt4 mb-2" />
                 <h3 className="text-12 font-medium text-nt mb-1">No personal lectures yet</h3>
                 <p className="text-11 text-nt3 max-w-sm mx-auto leading-relaxed font-sans">
-                  Drop a YouTube URL or upload a video file above to process your first lecture using your 45-minute free trial credit.
+                  Paste a YouTube link or upload a class recording above. A 30-minute lecture is usually ready in a few
+                  minutes. While you wait, open a demo below to see what you'll get.
                 </p>
               </div>
             ) : (
