@@ -11,6 +11,7 @@
 |---|---|---|---|
 | **Antigravity** (IDE) | ✅ Completed | **Tutor Chat State Refresh & Multi-User Isolation on Demo Lectures.** Scoped thread storage & checkpoints per user ID (or guest) on demo lectures; ensured new signups start with a fresh single thread ("Thread 1") and 0 messages; purged stale checkpoints in seed data and outputs. All tests and lint green. | 2026-09-05 UTC |
 | **OpenCode** (CLI) | 🟢 Idle / Ready | Standby for next assignments. | 2026-08-17 UTC |
+| **Claude Code** (CLI) | ✅ Completed | **Phase 1 launch-readiness** on `fix/threads-and-pdf`: auth audit, chat duplication, Razorpay, landing/SEO, upload→processing flow, repo cleanup. Phase 2 not started. | 2026-10-27 UTC |
 
 ---
 
@@ -33,6 +34,22 @@
 ---
 
 ## 📝 Task History & Handoff Log
+
+### [2026-10-27] — Claude Code: Phase 1 launch readiness (India SaaS)
+- **Branch**: `fix/threads-and-pdf` (continue from here). Commits, oldest first:
+  - `5e09799` auth: email-aliasing account leak closed, password reset, single auth listener
+  - `d0548a4`, `88bf9d8` chat: append-only transcript + message-id idempotency; single send pipeline (root cause of duplicated threads/messages)
+  - `1a224ff` Razorpay one-time 30-day passes (UPI + cards) replacing Lemon Squeezy: `backend/razorpay_client.py`, `backend/routers/billing.py` (order/verify), `backend/routers/webhooks.py` (`/api/webhooks/razorpay`), migration `0005_payments`, plans in `backend/plans.py`
+  - `9f2ea66` billing UI: `lib/razorpay.ts` checkout, `PlanSheet`, rupee `PricingPage`, `BillingPage` with payment history
+  - `3bf3131` landing redesign + SEO/AEO/GEO: `vite-plugin-seo.ts` (JSON-LD, noscript summary, robots/sitemap/llms.txt), `usePageMeta`, `content/faq.ts`, `content/plans.ts`
+  - `c1a8ac5` user flow: plan-aware `/estimate` (`fits_plan`, `plan_max_min`, `remaining_minutes`); upload page states (submitting, list error/retry, over-plan block, Drive `gdrive` source fix); processing page RPD detection fix (camelCase payload) + honest retry
+  - `06ee2fc` repo cleanup: dead stubs/duplicates removed, finished reports + logo explorations moved to `docs/archive/`
+- **Live E2E (2026-10-27)**: real 17-min YouTube lecture ("The essence of calculus") through the UI → upload page plan check → processing page → 4-chapter workspace; 18 minutes metered; tutor answered from the lecture with 4 references, no duplicate messages. A mid-run backend reload orphaned the job; stale-heartbeat recovery re-queued it after 15 min and it resumed from cache.
+- **Dev fix**: `vite.config.ts` now HTML-bypasses `/process` (reloading `/process/:id` in dev used to proxy to the backend and serve a stale `dist/index.html` → blank page).
+- **Verify**: `scripts/run-tests.sh` (43/43), `cd frontend && npm run lint && npx tsc -b && npx vitest run && npm run build`.
+- **Not verifiable here**: Supabase emails (project is gone; dev runs on SQLite via `DATABASE_URL=sqlite+aiosqlite:///outputs/norai_main.db`), a real Razorpay payment/webhook/refund (no test keys), Lighthouse on a production deploy.
+- **Manual setup**: Razorpay test keys + webhook (`order.paid`, `payment.captured`, `payment.failed`, `refund.processed`) → `RAZORPAY_WEBHOOK_SECRET`, `ENABLE_PAYMENTS=1`; `VITE_SITE_URL` before `npm run build`; Supabase project + redirect URLs.
+- **Known gap for Phase 2 (durability)**: a backend restart mid-pipeline leaves the job looking stuck at its last stage until the 15-min stale-heartbeat recovery re-queues it (`PIPELINE_STUCK_TIMEOUT_SEC`). Dev `--reload` triggers this whenever a `.py` file is saved during a run.
 
 ### [2026-09-05] — Antigravity: Tutor Chat State Refresh & Multi-User Isolation on Demo Lectures
 - **Agent**: Antigravity (IDE, Gemini 3.8 Flash high-thinking)

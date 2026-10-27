@@ -14,7 +14,13 @@ export default defineConfig(({ mode }) => ({
       ],
     },
     proxy: {
-      '/process': 'http://localhost:8000',
+      // /process/:taskId is also the SPA progress page — reloading it must
+      // serve the app, not the backend's (possibly stale) built index.html.
+      '/process': {
+        target: 'http://localhost:8000',
+        bypass: (req) =>
+          (req.headers.accept ?? '').includes('text/html') ? '/index.html' : undefined,
+      },
       '/estimate': 'http://localhost:8000',
       '/chat': 'http://localhost:8000',
       '/chat/stream': 'http://localhost:8000',

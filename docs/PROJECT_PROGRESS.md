@@ -59,6 +59,13 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
 
 ## Recent changes
 
+- **Phase 1 launch readiness for India (2026-10-27, branch `fix/threads-and-pdf`).**
+  - **Payments**: Razorpay one-time 30-day passes replace Lemon Squeezy. Free ₹0 / 45 min, Starter ₹149 / 300 min / 90-min lectures, Pro ₹449 / 1200 min / 180-min lectures (`backend/plans.py`, prices env-overridable). Server creates the order, verifies the checkout signature, re-fetches the payment, and grants via conditional UPDATEs, so verify and webhook can race safely. Webhooks are idempotent on `rzp:<event-id>` and fail closed without a secret. Payments are off unless `ENABLE_PAYMENTS=1` and both keys are set.
+  - **Public site**: landing page redesigned in the vellum/red-pencil system; `/pricing` in rupees; build-time SEO plugin emits JSON-LD, a noscript summary, robots.txt, sitemap.xml and llms.txt from the same content modules the pages render.
+  - **Flow**: `/estimate` reports plan fit, and the upload page blocks lectures the plan would reject before any spend. Drive uploads were broken (the UI sent `drive`, the API expects `gdrive`) and are now fixed. The processing page now detects daily-limit failures and tells users failed runs aren't charged.
+  - **Auth/chat**: email-aliasing account leak closed, password reset added; chat thread duplication fixed at the root (single send pipeline, id-based reconciliation).
+  - **Cleanup**: dead stubs and duplicate models removed; completed audits moved to `docs/archive/`.
+
 - **Tutor Chat State Refresh & Multi-User Isolation on Demo Lectures (2026-09-05).**
   - **Thread & Chat Partitioning (`backend/routers/tutor.py`)**: Gated and partitioned LangGraph checkpoints per-user on shared demo lectures (`f"{user_scope}:{thread_id}"` where `user_scope` is `user.id` or `'guest'`), preventing conversations from leaking across different user accounts.
   - **Frontend Storage Scoping (`frontend/src/lib/threadStorage.ts`)**: Scoped all localStorage keys by user ID (`norai-threads-${userScope}-${lectureId}`) so that switching accounts or signing up on the same browser gives a clean slate with no stale threads or labels.
