@@ -162,6 +162,13 @@ TUTOR_MAX_CACHED_GRAPHS = int(os.environ.get("NORAI_TUTOR_MAX_CACHED_GRAPHS", "3
 # turns at the discounted cached-input rate. TTL is short because the prefix is
 # re-created whenever the conversation summary changes (see tutor/cache.py).
 TUTOR_CACHE_TTL_SECONDS = int(os.environ.get("NORAI_TUTOR_CACHE_TTL_SECONDS", "1800"))
+# Explicit Gemini context caching for the tutor prefix (tutor/cache.py) is OFF
+# by default. Measured 2026-10-27: on the free tier every create fails
+# (cached-storage quota is 0) and costs two round trips per turn; on a paid key
+# the cache is keyed per lecture but embeds a per-thread summary, so concurrent
+# threads on one lecture delete each other's caches every turn. Gemini's
+# implicit caching already discounts the stable system-prompt prefix.
+TUTOR_CONTEXT_CACHE = os.environ.get("NORAI_TUTOR_CONTEXT_CACHE", "0") == "1"
 
 # ── Pipeline Job Queue (P4.1) ─────────────────────────────────────────────────
 # DB-backed queue + in-process worker pool (backend/jobs.py). Env-overridable.
