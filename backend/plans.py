@@ -62,9 +62,9 @@ FREE = Plan(
     period_days=30,
     features=(
         "45 lecture-minutes every 30 days",
-        "Lectures up to 45 minutes long",
+        f"Lectures up to {MAX_FREE_DURATION_MIN} minutes long",
         "Study notes, revision sheet, quiz & flashcards",
-        "Lecture-grounded AI tutor",
+        "Lecture-grounded AI tutor and PDF export",
     ),
 )
 
@@ -80,7 +80,7 @@ STARTER = Plan(
         "300 lecture-minutes (5 hours) for 30 days",
         "Lectures up to 90 minutes long",
         "Everything in Free",
-        "PDF export of notes & revision sheets",
+        "Unused minutes carry over when you buy again",
     ),
 )
 
@@ -96,7 +96,7 @@ PRO = Plan(
         "1,200 lecture-minutes (20 hours) for 30 days",
         "Lectures up to 3 hours long",
         "Everything in Starter",
-        "Priority processing queue",
+        "Lowest price per lecture-minute",
     ),
 )
 

@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
 import { FOCUS_RING, LINK_RING } from '../components/ui/shared'
 import { Dialog } from '../components/ui/Dialog'
-import { ENABLE_PAYMENTS, DEMO_LECTURES_CONFIG } from '../config/features'
+import { DEMO_LECTURES_CONFIG } from '../config/features'
 
 interface LandingPageProps {
   onStartWorkspace: () => void
@@ -87,9 +87,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
           <nav className="hidden md:flex items-center gap-6 font-display text-11 uppercase tracking-wider text-nt2 font-medium">
             <a href="#features" className={`hover:text-nt transition-colors ${LINK_RING}`}>Features</a>
             <a href="#how-it-works" className={`hover:text-nt transition-colors ${LINK_RING}`}>How It Works</a>
-            {ENABLE_PAYMENTS && (
-              <Link to="/pricing" className={`hover:text-nt transition-colors ${LINK_RING}`}>Pricing</Link>
-            )}
+            <Link to="/pricing" className={`hover:text-nt transition-colors ${LINK_RING}`}>Pricing</Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -149,9 +147,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
           <div className="md:hidden bg-ns border-t border-bdr px-6 py-4 flex flex-col gap-3 font-display text-11 uppercase tracking-wider text-nt2 font-medium">
             <a href="#features" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">Features</a>
             <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">How It Works</a>
-            {ENABLE_PAYMENTS && (
-              <Link to="/pricing" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">Pricing</Link>
-            )}
+            <Link to="/pricing" onClick={() => setMobileOpen(false)} className="hover:text-nt transition-colors">Pricing</Link>
             {user && (
               <button
                 onClick={async () => {
@@ -519,9 +515,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
             <span>© 2026 NorAI Inc. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6 font-display uppercase tracking-wider">
-            {ENABLE_PAYMENTS && (
-              <Link to="/pricing" className="hover:text-nt transition-colors">Pricing</Link>
-            )}
+            <Link to="/pricing" className="hover:text-nt transition-colors">Pricing</Link>
           </div>
         </div>
       </footer>

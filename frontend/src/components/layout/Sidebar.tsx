@@ -14,11 +14,11 @@ import { formatTimestamp } from '../../lib/video'
 import { useNavigate } from 'react-router-dom'
 import { Select } from '../ui/Select'
 import type { QuotaInfo } from '../../stores/useAuthStore'
-import { ENABLE_PAYMENTS, DEFAULT_TRIAL_QUOTA_MINUTES, DEMO_LECTURES_CONFIG } from '../../config/features'
+import { DEFAULT_TRIAL_QUOTA_MINUTES, DEMO_LECTURES_CONFIG } from '../../config/features'
 
 
 const planLabel = (tier?: string) =>
-  tier === 'pro' ? 'Pro Student' : tier === 'starter' ? 'Starter' : 'Free Trial'
+  tier === 'pro' ? 'Pro' : tier === 'starter' ? 'Starter' : 'Free'
 
 const quotaUsed = (q: QuotaInfo | null) => q?.used_minutes_this_month ?? 0
 
@@ -301,14 +301,12 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
                 <span className="font-semibold text-nt text-10 uppercase tracking-wider">
                   {planLabel(quota?.plan_tier)}
                 </span>
-                {ENABLE_PAYMENTS && (
-                  <button
-                    onClick={() => navigate('/billing')}
-                    className="text-10 text-np font-medium hover:underline cursor-pointer"
-                  >
-                    {quota && quota.plan_tier !== 'free' ? 'Manage' : 'Upgrade'}
-                  </button>
-                )}
+                <button
+                  onClick={() => navigate('/billing')}
+                  className="text-10 text-np font-medium hover:underline cursor-pointer"
+                >
+                  {quota && quota.plan_tier !== 'free' ? 'Manage' : 'Upgrade'}
+                </button>
               </div>
               <div
                 className="w-full bg-ns4 h-1.5 rounded-full overflow-hidden mb-1"

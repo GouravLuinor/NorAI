@@ -2,7 +2,6 @@
  * Application feature flags and defaults.
  * Non-destructively controls feature availability across UI and routing.
  */
-export const ENABLE_PAYMENTS = import.meta.env.VITE_ENABLE_PAYMENTS === 'true'
 export const DEFAULT_TRIAL_QUOTA_MINUTES = 45
 
 export const PRIMARY_DEMO_LECTURE_ID = 'ab648382-638f-4dde-b7c1-4007a2e638bb'

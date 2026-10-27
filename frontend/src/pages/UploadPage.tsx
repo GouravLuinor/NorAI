@@ -9,7 +9,7 @@ import { apiFetchRaw } from '../lib/http'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useCourseStore } from '../stores/useCourseStore'
 import { useRateLimitStore } from '../stores/useRateLimitStore'
-import { ENABLE_PAYMENTS, DEFAULT_TRIAL_QUOTA_MINUTES } from '../config/features'
+import { DEFAULT_TRIAL_QUOTA_MINUTES } from '../config/features'
 
 type InputType = 'youtube' | 'upload' | 'drive'
 
@@ -396,7 +396,7 @@ export function UploadPage() {
                     <AlertTriangle size={11} strokeWidth={1.5} />
                     <span>
                       Over the {estimate.free_trial_min ?? DEFAULT_TRIAL_QUOTA_MINUTES}-minute free-trial limit
-                      {ENABLE_PAYMENTS ? ' — this lecture requires Starter or Pro.' : '.'}
+                      {' — Starter or Pro handles longer lectures.'}
                     </span>
                   </div>
                 )}

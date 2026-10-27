@@ -21,6 +21,10 @@ export interface QuotaInfo {
   monthly_minutes_quota: number
   used_minutes_this_month: number
   remaining_minutes: number
+  /** Longest single lecture this plan accepts (backend/plans.py). */
+  max_lecture_minutes?: number
+  /** ISO end of a paid pass; null on Free. */
+  current_period_end?: string | null
   is_anonymous: boolean
 }
 

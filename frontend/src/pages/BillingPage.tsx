@@ -1,248 +1,269 @@
-import { useState, useEffect } from 'react'
-import { ArrowLeft, ExternalLink, Sparkles, CreditCard, BarChart3 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { ArrowLeft, BarChart3, Receipt, RefreshCw } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
+import { useToastStore } from '../stores/useToastStore'
 import { apiGet } from '../lib/http'
 import { friendlyError } from '../lib/errorCopy'
+import { formatInr, formatMinutes, usePlans, type Plan } from '../lib/plans'
+import { startCheckout } from '../lib/razorpay'
+import { PlanSheet } from '../components/billing/PlanSheet'
 import { SkeletonCard } from '../components/ui/SkeletonCard'
 import { Button } from '../components/ui/Button'
-import { FOCUS_RING } from '../components/ui/shared'
+import { usePageMeta } from '../lib/usePageMeta'
+
+interface PaymentRow {
+  order_id: string
+  plan_id: string
+  plan_name: string
+  amount_inr: number
+  status: 'paid' | 'failed' | 'refunded'
+  method: string | null
+  failure_reason: string | null
+  refunded_inr: number
+  created_at: string | null
+  paid_at: string | null
+}
 
 interface BillingData {
-  user_id?: string
-  email?: string | null
-  plan_tier: 'free' | 'starter' | 'pro'
+  plan_tier: Plan['id']
+  plan: Plan
   subscription_status: string
+  payments_enabled: boolean
   monthly_minutes_quota: number
   used_minutes_this_month: number
   remaining_minutes: number
-  is_anonymous: boolean
-  lemon_squeezy_subscription_id: string | null
-  checkout_urls: { starter: string | null; pro: string | null }
-  manage_url: string | null
+  current_period_end: string | null
+  payments: PaymentRow[]
 }
 
-const TIER_LABEL: Record<string, string> = {
-  free: 'Free Trial',
-  starter: 'Starter',
-  pro: 'Pro Student',
+const STATUS_COPY: Record<PaymentRow['status'], { label: string; cls: string }> = {
+  paid: { label: 'Paid', cls: 'text-ngt bg-ngb border-ngbr' },
+  failed: { label: 'Failed', cls: 'text-nrt bg-nrb border-nrbr' },
+  refunded: { label: 'Refunded', cls: 'text-nat bg-nab border-nabr' },
 }
 
-const TIER_DESC: Record<string, string> = {
-  free: 'Your first lecture is on us — full output, no card required.',
-  starter: '5 lecture-hours / month for regular course capture.',
-  pro: '25 lecture-hours / month with priority processing.',
-}
+const fmtDate = (iso: string | null) =>
+  iso ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
 
-const STATUS_LABEL: Record<string, string> = {
-  trial: 'Trial',
-  active: 'Active',
-  cancelled: 'Cancelled',
-  past_due: 'Past due',
-  paused: 'Paused',
-}
-
-function fmtHours(min: number) {
-  return min >= 60 ? `${(min / 60).toFixed(min % 60 === 0 ? 0 : 1)} h` : `${min} min`
+function daysLeft(iso: string | null) {
+  if (!iso) return null
+  return Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000))
 }
 
 export function BillingPage() {
   const navigate = useNavigate()
-  const { user, openAuthModal, refreshQuota } = useAuthStore()
+  const [params, setParams] = useSearchParams()
+  const user = useAuthStore((s) => s.user)
+  const refreshQuota = useAuthStore((s) => s.refreshQuota)
+  const addToast = useToastStore((s) => s.addToast)
+  const { plans } = usePlans()
   const [data, setData] = useState<BillingData | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState<string | null>(null)
+  const pickedPlan = params.get('plan') ?? undefined
+
+  usePageMeta({ title: 'Plan & billing — NorAI', description: 'Your NorAI plan, remaining lecture minutes and payments.', path: '/billing', noindex: true })
 
   const userId = user?.id
+  const load = useCallback(async () => {
+    setError(null)
+    try {
+      setData(await apiGet<BillingData>('/billing'))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }, [])
 
   useEffect(() => {
-    let active = true
-    if (!userId) {
-      setData(null)
-      return
-    }
-    apiGet<BillingData>('/billing')
-      .then((d) => {
-        if (active) setData(d)
-      })
-      .catch((e) => {
-        if (active) setError(String(e instanceof Error ? e.message : e))
-      })
-    return () => {
-      active = false
-    }
-  }, [userId])
+    if (userId) void load()
+  }, [userId, load])
 
-  useEffect(() => {
-    if (userId) void refreshQuota()
-  }, [userId, refreshQuota])
-
-  if (!user) {
-    return (
-      <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
-        <div className="max-w-md w-full text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-npb border border-npbr text-npt font-mono text-11 font-medium mb-6">
-            <Sparkles size={12} className="text-np" />
-            <span>BILLING</span>
-          </div>
-          <h1 className="text-28 font-bold font-serif text-nt tracking-tight mb-3">Sign in to manage your plan</h1>
-          <p className="text-13 text-nt2 mb-6">Your plan, usage, and subscription live here once you're signed in.</p>
-          <div className="flex justify-center gap-3">
-            <Button variant="primary" className="px-5 py-2 rounded-md text-12 gap-2" onClick={() => openAuthModal('login')}>
-              Log in
-            </Button>
-            <Button variant="outline" className="px-5 py-2 rounded-md text-12 gap-2 bg-transparent border-bdr2 hover:border-nt4" onClick={() => openAuthModal('signup')}>
-              Create account
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
+  const choose = async (plan: Plan) => {
+    if (!plan.purchasable) return
+    setBusy(plan.id)
+    try {
+      const result = await startCheckout(plan.id)
+      if (result.status === 'paid') {
+        addToast(`${plan.name} is active. Enjoy your extra lecture time!`, 'success')
+        if (pickedPlan) setParams({}, { replace: true })
+      } else if (result.status === 'pending') {
+        addToast(result.message, 'info')
+      } else if (result.status === 'failed') {
+        addToast(result.message, 'error')
+      }
+      if (result.status !== 'dismissed') await Promise.all([load(), refreshQuota()])
+    } catch (e) {
+      addToast(friendlyError(e instanceof Error ? e.message : String(e)), 'error')
+    } finally {
+      setBusy(null)
+    }
   }
 
   if (error) {
     return (
-      <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
-        <p className="text-13 text-nr mb-4">{friendlyError(error)}</p>
-        <Button variant="outline" className="px-4 py-2 rounded-md text-12 bg-transparent border-bdr2" onClick={() => navigate('/workspace')}>
-          <ArrowLeft size={14} /> Back to workspace
-        </Button>
+      <div id="main" className="min-h-screen bg-nb flex flex-col items-center justify-center gap-4 px-6 py-16 text-center">
+        <p className="text-14 text-nrt max-w-md">{friendlyError(error)}</p>
+        <div className="flex gap-3">
+          <Button variant="primary" className="px-4 py-2 rounded-md text-12 gap-2" onClick={() => void load()}>
+            <RefreshCw size={14} /> Try again
+          </Button>
+          <Button variant="outline" className="px-4 py-2 rounded-md text-12 gap-2 bg-transparent border-bdr2" onClick={() => navigate('/app')}>
+            Back to workspace
+          </Button>
+        </div>
       </div>
     )
   }
 
   if (!data) {
     return (
-      <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
-        <div className="w-full max-w-md space-y-3" aria-busy="true" aria-label="Loading billing">
+      <div id="main" className="min-h-screen bg-nb flex items-center justify-center px-6 py-16">
+        <div className="w-full max-w-3xl space-y-3" aria-busy="true" aria-label="Loading billing">
           <SkeletonCard lines={3} />
-          <SkeletonCard lines={4} />
+          <SkeletonCard lines={5} />
         </div>
       </div>
     )
   }
 
-  const pct = Math.min(100, Math.round((data.used_minutes_this_month / Math.max(1, data.monthly_minutes_quota)) * 100))
   const isPaid = data.plan_tier !== 'free'
-
-  const appendCheckoutParams = (url: string | null | undefined) => {
-    if (!url) return null
-    const targetUserId = data.user_id || userId || ''
-    const sep = url.includes('?') ? '&' : '?'
-    let fullUrl = `${url}${sep}checkout[custom][user_id]=${encodeURIComponent(targetUserId)}`
-    const targetEmail = data.email || user.email
-    if (targetEmail && !data.is_anonymous) {
-      fullUrl += `&checkout[email]=${encodeURIComponent(targetEmail)}`
-    }
-    return fullUrl
-  }
-
-  const starterUrl = appendCheckoutParams(data.checkout_urls?.starter)
-  const proUrl = appendCheckoutParams(data.checkout_urls?.pro)
+  const left = daysLeft(data.current_period_end)
+  const pct = Math.min(100, Math.round((data.used_minutes_this_month / Math.max(1, data.monthly_minutes_quota)) * 100))
+  const picked = plans.find((p) => p.id === pickedPlan && p.purchasable)
 
   return (
-    <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center py-12 px-6">
-      <div className="w-full max-w-3xl flex flex-col gap-8 relative z-10">
+    <div id="main" className="min-h-screen bg-nb text-nt">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10 flex flex-col gap-10">
         <button
-          onClick={() => navigate('/workspace')}
+          onClick={() => navigate('/app')}
           className="inline-flex items-center gap-1.5 text-12 text-nt3 hover:text-nt self-start cursor-pointer"
         >
           <ArrowLeft size={14} /> Back to workspace
         </button>
 
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-npb border border-npbr text-npt font-mono text-11 font-medium mb-4">
-            <Sparkles size={12} className="text-np" />
-            <span>BILLING &amp; PLAN</span>
-          </div>
-          <h1 className="text-32 font-bold font-serif text-nt tracking-tight mb-2 text-balance">
-            {TIER_LABEL[data.plan_tier] ?? 'Free Trial'}
-          </h1>
-          <p className="text-14 text-nt2 max-w-xl mx-auto">{TIER_DESC[data.plan_tier] ?? ''}</p>
-          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ns2 border border-bdr text-11 text-nt2">
-            <CreditCard size={12} className="text-np" />
-            Status: <strong className="text-nt font-medium">{STATUS_LABEL[data.subscription_status] ?? data.subscription_status}</strong>
-          </div>
-        </div>
-
-        {/* Usage card */}
-        <section className="rounded-lg bg-ns border border-bdr p-5">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-13 font-semibold text-nt">Monthly usage</h2>
-            <span className="text-11 text-nt3 tabular-nums">
-              {data.used_minutes_this_month} / {data.monthly_minutes_quota} mins
-            </span>
-          </div>
-          <div
-            className="w-full bg-ns4 h-2.5 rounded-full overflow-hidden mb-2"
-            role="progressbar"
-            aria-valuenow={data.used_minutes_this_month}
-            aria-valuemin={0}
-            aria-valuemax={data.monthly_minutes_quota}
-            aria-label="Monthly lecture minutes used"
-          >
-            <div className="bg-np h-full rounded-full transition-all duration-200" style={{ width: `${pct}%` }} />
-          </div>
-          <p className="text-11 text-nt3">
-            {data.remaining_minutes > 0
-              ? `${fmtHours(data.remaining_minutes)} of processing remaining this month.`
-              : 'You\'ve used your monthly allowance — upgrade to keep processing.'}
-          </p>
-          <button
-            onClick={() => navigate('/usage')}
-            className="mt-3 inline-flex items-center gap-1.5 text-11 text-np font-medium hover:underline cursor-pointer"
-          >
-            <BarChart3 size={13} /> See detailed usage &amp; cost
-          </button>
-        </section>
-
-        {/* Plan actions */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="rounded-lg bg-ns border border-bdr p-5">
-            <h2 className="text-12 font-semibold text-nt uppercase tracking-wider mb-1">Starter</h2>
-            <p className="text-11 text-nt3 mb-4">5 lecture-hours / month.</p>
-            {starterUrl ? (
-              // P4.4: styled anchor, NOT a button nested in a link.
-              <a href={starterUrl} target="_blank" rel="noreferrer"
-                className={`w-full inline-flex items-center justify-center gap-2 py-2 rounded-md text-12 transition ${FOCUS_RING} active:translate-y-[1px] ${data.plan_tier === 'starter' ? 'border border-bdr2 text-nt font-medium bg-transparent cursor-pointer hover:bg-ns2' : 'bg-npf text-npfg font-medium shadow-ev2 hover:bg-npfh cursor-pointer'}`}>
-                {data.plan_tier === 'starter' ? 'Current plan' : 'Choose Starter'} <ExternalLink size={13} />
-              </a>
-            ) : (
-              <Button variant="outline" className="w-full py-2 rounded-md text-12 bg-transparent border-bdr2" onClick={() => navigate('/pricing')}>
-                See pricing
-              </Button>
-            )}
+        <header className="grid gap-6 md:grid-cols-[1fr_minmax(0,22rem)] md:items-end">
+          <div>
+            <p className="font-mono text-11 uppercase tracking-wider text-npt">Plan &amp; billing</p>
+            <h1 className="mt-2 font-serif text-36 tracking-tight">
+              {data.plan.name} plan
+            </h1>
+            <p className="mt-2 text-14 text-nt2">
+              {isPaid && data.current_period_end
+                ? `Your pass runs until ${fmtDate(data.current_period_end)}${left !== null ? ` (${left} day${left === 1 ? '' : 's'} left)` : ''}. After that you move to Free; nothing is charged automatically.`
+                : `${data.plan.minutes} lecture-minutes every 30 days, lectures up to ${data.plan.max_lecture_min} minutes long.`}
+            </p>
           </div>
 
-          <div className="rounded-lg bg-ns border border-npbr p-5">
-            <h2 className="text-12 font-semibold text-nt uppercase tracking-wider mb-1">Pro Student</h2>
-            <p className="text-11 text-nt3 mb-4">25 lecture-hours / month, priority queue.</p>
-            {proUrl ? (
-              <a href={proUrl} target="_blank" rel="noreferrer"
-                className={`w-full inline-flex items-center justify-center gap-2 py-2 rounded-md text-12 transition ${FOCUS_RING} active:translate-y-[1px] ${data.plan_tier === 'pro' ? 'border border-bdr2 text-nt font-medium bg-transparent cursor-pointer hover:bg-ns2' : 'bg-npf text-npfg font-medium shadow-ev2 hover:bg-npfh cursor-pointer'}`}>
-                {data.plan_tier === 'pro' ? 'Current plan' : 'Choose Pro'} <ExternalLink size={13} />
-              </a>
-            ) : (
-              <Button variant="outline" className="w-full py-2 rounded-md text-12 bg-transparent border-bdr2" onClick={() => navigate('/pricing')}>
-                See pricing
-              </Button>
-            )}
-          </div>
-        </section>
-
-        {isPaid && data.manage_url && (
-          <section className="rounded-lg bg-ns border border-bdr p-5 flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-12 font-semibold text-nt mb-0.5">Manage subscription</h2>
-              <p className="text-11 text-nt3">Update billing, cancel, or change plans.</p>
+          <section aria-label="Lecture minutes" className="rounded-lg border border-bdr bg-ns p-5">
+            <div className="flex items-baseline justify-between">
+              <span className="font-serif text-28 tabular-nums">{formatMinutes(data.remaining_minutes)}</span>
+              <span className="text-11 text-nt3 tabular-nums">
+                {data.used_minutes_this_month} / {data.monthly_minutes_quota} min used
+              </span>
             </div>
-            <a href={data.manage_url} target="_blank" rel="noreferrer"
-              className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md text-12 border border-bdr2 text-nt3 font-medium bg-transparent hover:border-nt4 hover:text-nt2 transition cursor-pointer ${FOCUS_RING} active:translate-y-[1px]`}>
-              Manage <ExternalLink size={13} />
-            </a>
+            <div
+              className="mt-3 h-2 w-full overflow-hidden rounded-full bg-ns4"
+              role="progressbar"
+              aria-valuenow={data.used_minutes_this_month}
+              aria-valuemin={0}
+              aria-valuemax={data.monthly_minutes_quota}
+              aria-label="Lecture minutes used"
+            >
+              <div className="h-full rounded-full bg-np transition-[width] duration-200" style={{ width: `${pct}%` }} />
+            </div>
+            <p className="mt-2 text-11 text-nt3">
+              {data.remaining_minutes > 0 ? 'left to process' : 'Used up. Buy a pass below to keep going.'}
+            </p>
+            <button
+              onClick={() => navigate('/usage')}
+              className="mt-3 inline-flex items-center gap-1.5 text-11 font-medium text-npt hover:underline cursor-pointer"
+            >
+              <BarChart3 size={13} /> Detailed usage
+            </button>
           </section>
+        </header>
+
+        {picked && data.payments_enabled && (
+          <div className="flex flex-col gap-3 rounded-lg border border-npbr bg-npb p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-13 text-nt">
+              You picked <strong>{picked.name}</strong>: {formatMinutes(picked.minutes)} for {picked.period_days} days at {formatInr(picked.price_inr)}.
+            </p>
+            <Button variant="primary" className="px-4 py-2 rounded-md text-12" disabled={busy !== null} onClick={() => void choose(picked)}>
+              {busy === picked.id ? 'Opening checkout…' : `Pay ${formatInr(picked.price_inr)}`}
+            </Button>
+          </div>
         )}
 
-        <p className="text-center text-10 text-nt4">Payments processed securely by Lemon Squeezy.</p>
+        <section aria-labelledby="buy-heading">
+          <h2 id="buy-heading" className="font-serif text-22 mb-4">
+            {isPaid ? 'Extend or switch your pass' : 'Get more lecture time'}
+          </h2>
+          <PlanSheet
+            plans={plans}
+            paymentsEnabled={data.payments_enabled}
+            currentPlanId={data.plan_tier}
+            busyPlanId={busy}
+            onChoose={(p) => void choose(p)}
+            highlightId={picked?.id}
+          />
+          {!data.payments_enabled && (
+            <p className="mt-3 text-12 text-nt3">Paid passes open shortly. Your Free minutes work as usual.</p>
+          )}
+        </section>
+
+        <section aria-labelledby="payments-heading">
+          <h2 id="payments-heading" className="font-serif text-22 mb-4 flex items-center gap-2">
+            <Receipt size={18} className="text-nt3" aria-hidden="true" /> Payments
+          </h2>
+          {data.payments.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-bdr2 bg-ns px-5 py-6 text-13 text-nt2">
+              No payments yet. Passes you buy will show up here with their receipt details.
+            </p>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-bdr bg-ns">
+              <table className="w-full text-left text-12">
+                <thead className="border-b border-bdr text-11 uppercase tracking-wider text-nt3 font-mono">
+                  <tr>
+                    <th scope="col" className="px-4 py-2.5 font-medium">Date</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">Pass</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">Amount</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">Method</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">Status</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">Order</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-bdr">
+                  {data.payments.map((p) => (
+                    <tr key={p.order_id}>
+                      <td className="px-4 py-3 whitespace-nowrap tabular-nums">{fmtDate(p.paid_at ?? p.created_at)}</td>
+                      <td className="px-4 py-3">{p.plan_name}</td>
+                      <td className="px-4 py-3 tabular-nums">
+                        {formatInr(p.amount_inr)}
+                        {p.refunded_inr > 0 && p.status !== 'refunded' && (
+                          <span className="block text-11 text-nt3">{formatInr(p.refunded_inr)} refunded</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 uppercase text-11 text-nt2">{p.method ?? '—'}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-block rounded border px-1.5 py-0.5 font-mono text-3xs uppercase tracking-wider ${STATUS_COPY[p.status].cls}`}>
+                          {STATUS_COPY[p.status].label}
+                        </span>
+                        {p.status === 'failed' && p.failure_reason && (
+                          <span className="block mt-1 text-11 text-nt3">{p.failure_reason}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-11 text-nt3">{p.order_id}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <p className="mt-3 text-11 text-nt3">
+            Payments are processed by Razorpay. For a refund or an invoice, email support with the order id.
+          </p>
+        </section>
       </div>
     </div>
   )

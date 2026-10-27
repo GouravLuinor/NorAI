@@ -4,7 +4,7 @@ import { ToastContainer } from './components/ui/ToastContainer'
 import { AppErrorBoundary } from './components/AppErrorBoundary'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { RateLimitBanner } from './components/ui/RateLimitBanner'
-import { ENABLE_PAYMENTS, DEMO_LECTURE_IDS } from './config/features'
+import { DEMO_LECTURE_IDS } from './config/features'
 import { useAuthStore } from './stores/useAuthStore'
 import { useRateLimitStore } from './stores/useRateLimitStore'
 
@@ -42,11 +42,6 @@ function RouteFallback() {
 function LandingRouteWrapper() {
   const navigate = useNavigate()
   return <LandingPage onStartWorkspace={() => navigate('/app')} />
-}
-
-function PricingRouteWrapper() {
-  const navigate = useNavigate()
-  return <PricingPage onStartWorkspace={() => navigate('/app')} />
 }
 
 function AuthModalBridge() {
@@ -115,21 +110,14 @@ export default function App() {
                 <Route path="/forgot-password" element={<AuthPage defaultMode="forgot" />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-                {/* Soft-disable billing & pricing when payments are off */}
-                <Route
-                  path="/pricing"
-                  element={ENABLE_PAYMENTS ? <PricingRouteWrapper /> : <Navigate to="/app" replace />}
-                />
+                {/* Pricing is public; buy buttons follow the backend's payments_enabled. */}
+                <Route path="/pricing" element={<PricingPage />} />
                 <Route
                   path="/billing"
                   element={
-                    ENABLE_PAYMENTS ? (
-                      <ProtectedRoute>
-                        <BillingPage />
-                      </ProtectedRoute>
-                    ) : (
-                      <Navigate to="/app" replace />
-                    )
+                    <ProtectedRoute>
+                      <BillingPage />
+                    </ProtectedRoute>
                   }
                 />
 
