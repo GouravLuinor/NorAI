@@ -181,6 +181,11 @@ PIPELINE_MAX_RUNTIME_SEC = int(os.environ.get("NORAI_PIPELINE_MAX_RUNTIME_MIN", 
 # Worker touches heartbeat_at on the Lecture row every this many seconds so
 # long single stages (e.g. transcription) never look stuck.
 PIPELINE_HEARTBEAT_INTERVAL_SEC = 30
+# A 'processing' job that THIS process is not running (its worker died with a
+# restart / --reload) is re-queued once its heartbeat is this stale — three
+# missed beats — instead of waiting out PIPELINE_STUCK_TIMEOUT_SEC, which now
+# only applies to jobs still running in this process (hung stages).
+PIPELINE_ORPHAN_TIMEOUT_SEC = int(os.environ.get("NORAI_PIPELINE_ORPHAN_TIMEOUT_SEC", str(3 * PIPELINE_HEARTBEAT_INTERVAL_SEC)))
 # P4.2 — GC: upload files older than this are purged; lecture dirs with no DB
 # row and older than this are purged.
 UPLOAD_GC_AGE_HOURS = 24

@@ -107,7 +107,7 @@ def test_restart_survival():
                 status="processing", attempts=0, stage="transcription",
                 stage_message="Transcribing…", progress=30,
                 queued_at=_utcnow() - timedelta(seconds=100),
-                heartbeat_at=_utcnow() - timedelta(seconds=10),  # stale: worker died
+                heartbeat_at=_utcnow() - timedelta(seconds=120),  # stale: worker died
             ))
 
             # Supervisor pass 1 after restart: recover the stuck job.
@@ -162,7 +162,7 @@ def test_attempts_exhausted_fails():
                 source_type="youtube", source_url="https://example.com/vid.mp4",
                 status="processing", attempts=2,  # == PIPELINE_MAX_ATTEMPTS
                 queued_at=_utcnow() - timedelta(seconds=100),
-                heartbeat_at=_utcnow() - timedelta(seconds=10),
+                heartbeat_at=_utcnow() - timedelta(seconds=120),
             ))
             recovered = asyncio.run(jobs._recover_stale_once(factory))
             check(recovered == 1, "exhausted: stale job surfaced")
@@ -204,6 +204,48 @@ def test_fresh_heartbeat_not_recovered():
         finally:
             jobs.DATABASE_URL = original_url
             jobs.PIPELINE_STUCK_TIMEOUT_SEC = original_timeout
+
+
+# ── Test 3b: orphaned job recovered fast; job running here is not ────────────
+
+def test_orphan_recovered_fast_but_running_job_kept():
+    """A restart kills the worker thread. The job's row still says
+    'processing'; it must be re-queued after ~3 missed heartbeats, not the
+    15-min hung-stage timeout. A job this process IS running, with the same
+    heartbeat age, must be left alone (no double run on a DB hiccup)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        url = _mk_url(tmp)
+        asyncio.run(_create_schema(url))
+
+        original_url = jobs.DATABASE_URL
+        jobs.DATABASE_URL = url
+        try:
+            factory = jobs._make_session_factory()
+            for lid in ("lec-orphan", "lec-live"):
+                asyncio.run(_insert_lecture(
+                    factory,
+                    id=lid, user_id=lid, title="Test",
+                    source_type="youtube", source_url="https://example.com/vid.mp4",
+                    status="processing", attempts=0,
+                    heartbeat_at=_utcnow() - timedelta(seconds=jobs.PIPELINE_ORPHAN_TIMEOUT_SEC + 30),
+                ))
+            check(jobs.PIPELINE_ORPHAN_TIMEOUT_SEC < jobs.PIPELINE_STUCK_TIMEOUT_SEC,
+                  "orphan: orphan timeout shorter than hung-stage timeout")
+            with jobs._running_lock:
+                jobs._running.add("lec-live")
+            try:
+                recovered = asyncio.run(jobs._recover_stale_once(factory))
+            finally:
+                with jobs._running_lock:
+                    jobs._running.discard("lec-live")
+            check(recovered == 1, "orphan: exactly one job recovered")
+            check(asyncio.run(_get(factory, "lec-orphan")).status == "queued",
+                  "orphan: job with no live worker re-queued")
+            check(asyncio.run(_get(factory, "lec-live")).status == "processing",
+                  "orphan: job running in this process left alone")
+        finally:
+            jobs.DATABASE_URL = original_url
 
 
 # ── Test 4: failure mid-run re-queues while attempts remain ──────────────────

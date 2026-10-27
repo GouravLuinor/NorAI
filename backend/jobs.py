@@ -46,6 +46,7 @@ from config import (
     PIPELINE_HEARTBEAT_INTERVAL_SEC,
     PIPELINE_MAX_ATTEMPTS,
     PIPELINE_MAX_RUNTIME_SEC,
+    PIPELINE_ORPHAN_TIMEOUT_SEC,
     PIPELINE_POLL_INTERVAL_SEC,
     PIPELINE_STUCK_TIMEOUT_SEC,
     UPLOAD_GC_AGE_HOURS,
@@ -282,14 +283,27 @@ async def request_cancel(lecture_id: str) -> bool:
 
 # ── Supervisor: recovery + claiming ──────────────────────────────────────────
 
+# Lecture ids whose pipeline is executing in THIS process. A 'processing' row
+# not in this set has no live worker here (restart / --reload killed it), so
+# it is recovered after PIPELINE_ORPHAN_TIMEOUT_SEC rather than the long
+# hung-stage timeout. Single-process assumption, as for the supervisor.
+_running: set[str] = set()
+_running_lock = threading.Lock()
+
+
 async def _recover_stale_once(session_factory) -> int:
     """Re-queue or fail 'processing' jobs whose heartbeat is stale."""
-    cutoff = _utcnow() - timedelta(seconds=PIPELINE_STUCK_TIMEOUT_SEC)
+    now = _utcnow()
+    stuck_cutoff = now - timedelta(seconds=PIPELINE_STUCK_TIMEOUT_SEC)
+    orphan_cutoff = now - timedelta(seconds=PIPELINE_ORPHAN_TIMEOUT_SEC)
+    with _running_lock:
+        running = set(_running)
     async with session_factory() as session:
         result = await session.execute(select(Lecture).where(Lecture.status == "processing"))
         recovered = 0
         for lecture in result.scalars():
             hb = _normalize(lecture.heartbeat_at)
+            cutoff = stuck_cutoff if lecture.id in running else orphan_cutoff
             if hb is not None and hb >= cutoff:
                 continue
             if (lecture.attempts or 0) < PIPELINE_MAX_ATTEMPTS:
@@ -393,6 +407,8 @@ def _run_job(lecture_id: str):
     """Execute one lecture's pipeline in the executor; then finalise status."""
     from backend.logging_config import bind, clear_context
     bind(task_id=lecture_id, lecture_id=lecture_id)
+    with _running_lock:
+        _running.add(lecture_id)
     try:
         job = asyncio.run(_load_lecture(lecture_id))
         if job is None:
@@ -438,6 +454,9 @@ def _run_job(lecture_id: str):
     except Exception as exc:
         logger.exception("Job runner crashed for %s: %s", lecture_id, exc)
         clear_context()
+    finally:
+        with _running_lock:
+            _running.discard(lecture_id)
 
 
 def _handle_failure(lecture_id: str, exc: Exception, file_path: str | None = None):
