@@ -104,8 +104,9 @@ export function buildReferences(
     refs.push({
       id: img.path,
       title: img.section,
-      section: img.path,
+      section: img.chapter_id != null ? `Ch ${img.chapter_id}` : 'Screenshot',
       sectionId: '',
+      chapterId: img.chapter_id ?? undefined,
       type: 'screenshot',
     })
   }

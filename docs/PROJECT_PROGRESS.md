@@ -125,7 +125,16 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
     - **Default flipped to lean (2026-10-28).**
       - **`backend/estimator.py`:** has a lean branch. It estimates calls as transcription slices + 1 + chapters (6 for 17 min). Time scales with rounds, i.e. 1 + ceil(chapters / 3), because chapter calls run in parallel. Calibration is fitted per pipeline; entries with no `pipeline` key count as legacy. `--recalibrate --pipeline lean` is available.
       - **`ProcessingPage`:** shows the 7 lean stages. Legacy-only stage keys fold into the nearest row via `LEGACY_STAGE_ALIAS`.
-    - **Still to do:** a UI smoke test of a lean lecture through the job queue.
+    - **UI smoke test through the job queue (2026-10-28).** I processed the 8.7-min DP lecture through `/app` as the local dev user. The backend ran on SQLite with `NORAI_DEV_ACCESS=1`; I gave the browser a dev Supabase session with the token `dev-token`, which dev mode accepts.
+      - **Upload estimate:** "ready in about 2 min", 4 calls and 2 chapters, matching the recorded run exactly: 4 calls, 2 chapters, 114.5 s, `pipeline: lean`.
+      - **ProcessingPage:** shows the 7 lean stages, and the rail ticked through them in order.
+      - **Workspace:** notes with section seeks (0:00, 1:06, 2:01), 4 screenshots, revision, and a 4-question assessment all render.
+      - **Tutor:** gave a correct answer with 5 references, citing 2:15 and 2:39.
+      - **Timestamps:** median error against YouTube captions is 1.0 s (legacy: 1.5 s).
+      - **Fixed:** screenshot rows in the References panel showed the raw file path (`outputs/<id>/screenshots/…jpg`) in their label column on both pipelines. They now show "Ch N" (`frontend/src/lib/references.ts`).
+    - **Follow-ups:**
+      - `lean/chapters.select_screenshots` can pick two near-identical frames; in dp8 chapter 1, two different frames got the same "problem description" caption. Deduping by caption or by perceptual hash would fix it.
+      - Note-type references give the chapter start (0:00) rather than the section's `start_sec`.
   - **Then:** server load (frame/scene CPU+RAM per lecture, prod venv RSS 243 MB `backend.main`; chromadb can now leave requirements.txt once seed_data is re-indexed with `python -m tutor.indexing seed_data/<id>` and seed chroma dirs removed), limits at 100/1k/10k users (500 RPD, 15 RPM, embed 100/min), durability/product gaps, final before/after report. Also: tutor `output_tokens_per_turn` reads 28 for every turn — streamed output tokens likely under-metered; (AGENTS.md model name + `scripts/run-tests.sh` fixed 2026-10-28.)
 - **Phase 1 launch readiness for India (2026-10-27, branch `fix/threads-and-pdf`).**
   - **Payments**: Razorpay one-time 30-day passes replace Lemon Squeezy. Free ₹0 / 45 min, Starter ₹149 / 300 min / 90-min lectures, Pro ₹449 / 1200 min / 180-min lectures (`backend/plans.py`, prices env-overridable). Server creates the order, verifies the checkout signature, re-fetches the payment, and grants via conditional UPDATEs, so verify and webhook can race safely. Webhooks are idempotent on `rzp:<event-id>` and fail closed without a secret. Payments are off unless `ENABLE_PAYMENTS=1` and both keys are set.

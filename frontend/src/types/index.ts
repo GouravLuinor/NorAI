@@ -28,6 +28,7 @@ export interface RetrievedChunk {
 export interface RetrievedImage {
   path: string
   section: string
+  chapter_id?: number | null
   distance?: number
 }
 

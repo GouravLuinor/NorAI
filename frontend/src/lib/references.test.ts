@@ -54,9 +54,14 @@ describe('buildReferences', () => {
     const cites: VerifiedCitation[] = [
       { section: 'Leaf', heading_path: 'Top > Leaf', chunk_id: 'ch1__abc', verified: true },
     ]
-    const images: RetrievedImage[] = [{ path: 'outputs/foo/bar.jpg', section: 'Fig 1' }]
+    const images: RetrievedImage[] = [
+      { path: 'outputs/foo/bar.jpg', section: 'Fig 1', chapter_id: 2 },
+      { path: 'outputs/foo/baz.jpg', section: 'Fig 2' },
+    ]
     const refs = buildReferences([chunk()], images, '', cites)
-    expect(refs).toHaveLength(2)
-    expect(refs[1]).toMatchObject({ type: 'screenshot', id: 'outputs/foo/bar.jpg' })
+    expect(refs).toHaveLength(3)
+    // The label column shows the chapter, never the file path.
+    expect(refs[1]).toMatchObject({ type: 'screenshot', id: 'outputs/foo/bar.jpg', section: 'Ch 2', chapterId: 2 })
+    expect(refs[2]).toMatchObject({ type: 'screenshot', section: 'Screenshot' })
   })
 })
