@@ -1,0 +1,2088 @@
+{
+  "summary": {
+    "n": 23,
+    "graded": 23,
+    "accuracy_core": 1.0,
+    "accuracy_detail": 1.0,
+    "false_not_covered": 0.0,
+    "oos_abstain": 1.0,
+    "premise_corrected": 1.0,
+    "unsupported_claim": 0.0,
+    "invented_visual": 0.0,
+    "answers_citing": 1.0,
+    "citations_verified": 1.0,
+    "latency_p50_s": 4.08,
+    "calls_per_turn": 2,
+    "input_tokens_per_turn": 2095,
+    "output_tokens_per_turn": 28,
+    "cost_per_turn_usd": 0.000564
+  },
+  "rows": [
+    {
+      "category": "core",
+      "question": "What is the primary purpose of the decision stack framework?",
+      "gold_answer": "The decision stack provides a six-layer framework that helps engineers read a cloud brief, identify the bottleneck, choose appropriate services, and explain architectural trade-offs.",
+      "quote": "It shows you how to read a cloud brief, find the real bottleneck and the problem, choose the right AWS services and explain the trade-offs like an actual cloud engineer.",
+      "quote_ts": 99.8,
+      "answer": "The primary purpose of the decision stack is to provide a repeatable, systematic framework that allows you to approach any cloud architecture problem—even one you've never seen before—by breaking it down into six manageable layers. Instead of just memorizing what individual AWS services do, it helps you identify the real bottleneck in a system, choose the right services to address it, and explain the trade-offs of your design choices like a professional cloud engineer.\n\nWould you like to walk through how one of those layers, like \"Traffic,\" helps isolate a specific problem?\n\n**Sources**\n• 1:26 — explains the decision stack helps find bottlenecks and explain trade-offs\n• 1:54 — explains the framework allows you to approach any problem and know where to start\n• [N1] Section: Introduction and the Decision Stack Framework > The Six-Layer Decision Stack",
+      "latency_s": 29.88,
+      "calls": 2,
+      "input_tokens": 2177,
+      "output_tokens": 27,
+      "cost_usd": 0.000584,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:26–1:57",
+          "chapter_id": 1,
+          "distance": 0.23531842231750488,
+          "start": 86.0
+        },
+        {
+          "heading_path": "Transcript 3:46–4:15",
+          "chapter_id": 1,
+          "distance": 0.25886088609695435,
+          "start": 226.72
+        },
+        {
+          "heading_path": "Transcript 1:54–2:23",
+          "chapter_id": 1,
+          "distance": 0.24353653192520142,
+          "start": 114.8
+        },
+        {
+          "heading_path": "Transcript 28:10–28:40",
+          "chapter_id": 5,
+          "distance": 0.30062389373779297,
+          "start": 1690.72
+        },
+        {
+          "heading_path": "Introduction and the Decision Stack Framework > The Six-Layer Decision Stack",
+          "chapter_id": 1,
+          "distance": 0.18258941173553467,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction and the Decision Stack Framework > Applying the Framework",
+          "chapter_id": 1,
+          "distance": 0.18409109115600586,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "The Decision Stack Framework",
+          "distance": 0.2147926688194275
+        }
+      ],
+      "citations": [
+        {
+          "section": "1:26 — explains the decision stack helps find bottlenecks and explain trade-offs",
+          "verified": true,
+          "chunk_id": "tx_86_0a62a5a8b8",
+          "heading_path": "Transcript 1:26–1:57",
+          "heading": "Transcript 1:26",
+          "chapter_id": 1,
+          "start": 86,
+          "end": 117.2
+        },
+        {
+          "section": "1:54 — explains the framework allows you to approach any problem and know where to start",
+          "verified": true,
+          "chunk_id": "tx_114_ddefbb65cb",
+          "heading_path": "Transcript 1:54–2:23",
+          "heading": "Transcript 1:54",
+          "chapter_id": 1,
+          "start": 114,
+          "end": 143.84
+        },
+        {
+          "section": "[N1] Section: Introduction and the Decision Stack Framework > The Six-Layer Decision Stack",
+          "verified": true,
+          "chunk_id": "note_74d0341a58990892",
+          "heading_path": "Introduction and the Decision Stack Framework > The Six-Layer Decision Stack",
+          "heading": "The Six-Layer Decision Stack",
+          "chapter_id": 1,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 0,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately explains the primary purpose of the decision stack framework."
+      }
+    },
+    {
+      "category": "core",
+      "question": "Why does the lecturer advise against using a single EC2 instance for a viral startup?",
+      "gold_answer": "A single instance cannot scale to handle large traffic spikes, and it is inefficient because it incurs costs even when idle.",
+      "quote": "Their servers run 24 hours a day, seven days a week and they're paying for it, whether it's handling 10,000 user signups or sitting completely idle with no users at 3 a.m.",
+      "quote_ts": 658.7,
+      "answer": "The lecturer advises against a single EC2 instance because it creates a bottleneck where one machine is responsible for everything—website files, application code, and the database. When traffic spikes from 1,000 to 100,000 users, this architecture cannot scale to meet the demand, and the server becomes overwhelmed by the volume of requests.\n\nAdditionally, keeping everything on one machine is inefficient for a startup with a tight budget, as they cannot easily scale capacity up or down to avoid paying for idle resources.\n\nShould we walk through how offloading static content helps solve this scaling issue?\n\n**Sources**\n• 5:38 — The core problem of the current architecture and the single EC2 instance\n• [N1] Section: Scenario 1: Viral Startup Architecture > Defining the Problem",
+      "latency_s": 11.21,
+      "calls": 2,
+      "input_tokens": 2217,
+      "output_tokens": 27,
+      "cost_usd": 0.000593,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 4:13–4:43",
+          "chapter_id": 2,
+          "distance": 0.26495879888534546,
+          "start": 253.92
+        },
+        {
+          "heading_path": "Transcript 5:38–6:09",
+          "chapter_id": 2,
+          "distance": 0.2709232568740845,
+          "start": 338.24
+        },
+        {
+          "heading_path": "Transcript 0:56–1:29",
+          "chapter_id": 1,
+          "distance": 0.2789182662963867,
+          "start": 56.04
+        },
+        {
+          "heading_path": "Transcript 9:43–10:16",
+          "chapter_id": 2,
+          "distance": 0.28455090522766113,
+          "start": 583.2
+        },
+        {
+          "heading_path": "Scenario 1: Viral Startup Architecture > Defining the Problem",
+          "chapter_id": 2,
+          "distance": 0.2359786033630371,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 1: Viral Startup Architecture > Security at the Edge",
+          "chapter_id": 2,
+          "distance": 0.24239122867584229,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Problem-First Architecture",
+          "distance": 0.23057329654693604
+        }
+      ],
+      "citations": [
+        {
+          "section": "5:38 — The core problem of the current architecture and the single EC2 instance",
+          "verified": true,
+          "chunk_id": "tx_338_e519ae939f",
+          "heading_path": "Transcript 5:38–6:09",
+          "heading": "Transcript 5:38",
+          "chapter_id": 2,
+          "start": 338,
+          "end": 369.8
+        },
+        {
+          "section": "[N1] Section: Scenario 1: Viral Startup Architecture > Defining the Problem",
+          "verified": true,
+          "chunk_id": "note_e20dd1aae4f1148e",
+          "heading_path": "Scenario 1: Viral Startup Architecture > Defining the Problem",
+          "heading": "Defining the Problem",
+          "chapter_id": 2,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 1,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly conveys that a single instance cannot scale and is costly when idle."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the main advantage of using Lambda for the viral startup scenario?",
+      "gold_answer": "Lambda scales automatically based on demand and incurs no costs when the application is not being used.",
+      "quote": "When nobody's using the application, Lambda isn't running and you're paying absolutely nothing. And when a hundred thousand users show up at once, Lambda doesn't struggle or slow down.",
+      "quote_ts": 697.54,
+      "answer": "The main advantage is that Lambda solves the startup's two biggest problems simultaneously: it eliminates the cost of paying for idle server time, and it automatically handles massive traffic spikes without needing manual scaling rules. By running code only when triggered, it ensures you only pay for what you use, while its ability to spin up concurrent copies of your code allows it to manage a sudden influx of users without slowing down.\n\nShould I explain the specific limitation you need to keep in mind when choosing Lambda for this type of architecture?\n\n**Sources**\n• 11:32 — Lambda runs code on demand and scales automatically\n• 11:57 — Lambda solves both the scaling and idle cost problems\n• [N2] Section: Scenario 1: Compute and Data for the Startup > The Compute Layer Challenge",
+      "latency_s": 8.67,
+      "calls": 2,
+      "input_tokens": 2175,
+      "output_tokens": 27,
+      "cost_usd": 0.000582,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 11:57–12:30",
+          "chapter_id": 3,
+          "distance": 0.1796128749847412,
+          "start": 717.92
+        },
+        {
+          "heading_path": "Transcript 11:32–12:00",
+          "chapter_id": 3,
+          "distance": 0.1800975799560547,
+          "start": 692.26
+        },
+        {
+          "heading_path": "Transcript 32:39–33:06",
+          "chapter_id": 6,
+          "distance": 0.2209191918373108,
+          "start": 1959.02
+        },
+        {
+          "heading_path": "Transcript 22:07–22:37",
+          "chapter_id": 4,
+          "distance": 0.19286680221557617,
+          "start": 1327.88
+        },
+        {
+          "heading_path": "Scenario 1: Security, Cost, and Monitoring > Cost Efficiency in Serverless Architecture",
+          "chapter_id": 4,
+          "distance": 0.2081931233406067,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 1: Compute and Data for the Startup > The Compute Layer Challenge",
+          "chapter_id": 3,
+          "distance": 0.20002764463424683,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Problem-First Architecture",
+          "distance": 0.24410665035247803
+        }
+      ],
+      "citations": [
+        {
+          "section": "11:32 — Lambda runs code on demand and scales automatically",
+          "verified": true,
+          "chunk_id": "tx_692_04974ec6d2",
+          "heading_path": "Transcript 11:32–12:00",
+          "heading": "Transcript 11:32",
+          "chapter_id": 3,
+          "start": 692,
+          "end": 720.8
+        },
+        {
+          "section": "11:57 — Lambda solves both the scaling and idle cost problems",
+          "verified": true,
+          "chunk_id": "tx_717_f7e3f1a3b3",
+          "heading_path": "Transcript 11:57–12:30",
+          "heading": "Transcript 11:57",
+          "chapter_id": 3,
+          "start": 717,
+          "end": 750.04
+        },
+        {
+          "section": "[N2] Section: Scenario 1: Compute and Data for the Startup > The Compute Layer Challenge",
+          "verified": true,
+          "chunk_id": "note_1f47510c14849e5e",
+          "heading_path": "Scenario 1: Compute and Data for the Startup > The Compute Layer Challenge",
+          "heading": "The Compute Layer Challenge",
+          "chapter_id": 3,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 2,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately identifies automatic scaling and zero idle cost as the key advantages."
+      }
+    },
+    {
+      "category": "core",
+      "question": "Why is an auto-scaling group necessary for the e-commerce company?",
+      "gold_answer": "An auto-scaling group automatically adds or removes EC2 instances based on traffic demand, preventing site crashes during spikes.",
+      "quote": "The auto-scaling group is what adds more Easter instances when the demand increases. Together, the ALB distributes traffic and the auto-scaling group changes the amount of capacity behind it.",
+      "quote_ts": 1816.6,
+      "answer": "The e-commerce company's core problem during the Black Friday crash was a lack of capacity; their existing servers were overwhelmed, and they couldn't add new ones fast enough to handle the traffic spike. While their load balancer could distribute traffic, it couldn't create new resources, meaning once the existing servers hit their limit, the site crashed. The auto-scaling group is necessary because it automatically provisions new EC2 instances based on performance metrics—like CPU usage—ensuring the system can grow to meet demand and shrink to save costs when traffic drops.\n\nShould we walk through how the auto-scaling group and the load balancer work together to register those new servers?\n\n**Sources**\n• 33:30 — defining scaling rules based on metrics\n• 34:52 — the Black Friday crash was a capacity problem\n• [N1] Section: Scenario 2: E-commerce Resilience > Scaling and Traffic Distribution\n• [N2] Section: Scenario 2: E-commerce Resilience > Identifying the Core Problem",
+      "latency_s": 12.96,
+      "calls": 2,
+      "input_tokens": 2133,
+      "output_tokens": 29,
+      "cost_usd": 0.000576,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 33:30–34:00",
+          "chapter_id": 6,
+          "distance": 0.2107856273651123,
+          "start": 2010.34
+        },
+        {
+          "heading_path": "Transcript 29:59–30:32",
+          "chapter_id": 5,
+          "distance": 0.22044020891189575,
+          "start": 1799.44
+        },
+        {
+          "heading_path": "Transcript 39:42–40:18",
+          "chapter_id": 6,
+          "distance": 0.24900281429290771,
+          "start": 2382.5
+        },
+        {
+          "heading_path": "Transcript 34:52–35:22",
+          "chapter_id": 6,
+          "distance": 0.26917362213134766,
+          "start": 2092.54
+        },
+        {
+          "heading_path": "Scenario 2: E-commerce Resilience > Scaling and Traffic Distribution",
+          "chapter_id": 5,
+          "distance": 0.21925318241119385,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 2: E-commerce Resilience > Identifying the Core Problem",
+          "chapter_id": 5,
+          "distance": 0.22634798288345337,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Cost Optimization with Savings Plans",
+          "distance": 0.24930822849273682
+        },
+        {
+          "section": "Identifying the Core Problem",
+          "distance": 0.2606022357940674
+        }
+      ],
+      "citations": [
+        {
+          "section": "33:30 — defining scaling rules based on metrics",
+          "verified": true,
+          "chunk_id": "tx_2010_d1a99a0f2a",
+          "heading_path": "Transcript 33:30–34:00",
+          "heading": "Transcript 33:30",
+          "chapter_id": 6,
+          "start": 2010,
+          "end": 2040.58
+        },
+        {
+          "section": "34:52 — the Black Friday crash was a capacity problem",
+          "verified": true,
+          "chunk_id": "tx_2092_bb8ea954a1",
+          "heading_path": "Transcript 34:52–35:22",
+          "heading": "Transcript 34:52",
+          "chapter_id": 6,
+          "start": 2092,
+          "end": 2122.46
+        },
+        {
+          "section": "[N1] Section: Scenario 2: E-commerce Resilience > Scaling and Traffic Distribution",
+          "verified": true,
+          "chunk_id": "note_b48f2c58150e32f4",
+          "heading_path": "Scenario 2: E-commerce Resilience > Scaling and Traffic Distribution",
+          "heading": "Scaling and Traffic Distribution",
+          "chapter_id": 5,
+          "start": null,
+          "end": null
+        },
+        {
+          "section": "[N2] Section: Scenario 2: E-commerce Resilience > Identifying the Core Problem",
+          "verified": true,
+          "chunk_id": "note_252d7025e3f30a4e",
+          "heading_path": "Scenario 2: E-commerce Resilience > Identifying the Core Problem",
+          "heading": "Identifying the Core Problem",
+          "chapter_id": 5,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 3,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly explains that the auto-scaling group dynamically adds capacity during traffic spikes to prevent crashes."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the purpose of RAG in the AI-powered enterprise scenario?",
+      "gold_answer": "RAG provides the AI model with company-specific context, such as internal frameworks and policies, allowing it to produce more accurate and useful outputs.",
+      "quote": "So the AI isn't just looking at a contract with general knowledge, it's looking at that contract plus the company specific framework, plus their routing rules, plus their review deadlines.",
+      "quote_ts": 3654.26,
+      "answer": "The purpose of RAG (Retrieval Augmented Generation) is to provide an AI model with the specific company knowledge—such as internal frameworks, policies, and procedures—that it wouldn't otherwise possess. By searching an internal database and feeding that context to the AI alongside a document, RAG allows the model to generate accurate, company-specific outputs rather than relying on general knowledge alone.\n\nShould I explain how this process fits into the broader architecture, such as how the document moves through the system?\n\n**Sources**\n• 1:00:26 — The limitation of general AI knowledge regarding company-specific policies.\n• 1:00:54 — How RAG provides context to make AI output useful for business processes.\n• [N1] Section: Scenario 3: RAG, Data, and Security > Retrieval Augmented Generation (RAG)",
+      "latency_s": 3.39,
+      "calls": 2,
+      "input_tokens": 2038,
+      "output_tokens": 27,
+      "cost_usd": 0.000549,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:00:26–1:00:56",
+          "chapter_id": 9,
+          "distance": 0.22381961345672607,
+          "start": 3626.22
+        },
+        {
+          "heading_path": "Transcript 52:32–53:00",
+          "chapter_id": 8,
+          "distance": 0.31114840507507324,
+          "start": 3152.86
+        },
+        {
+          "heading_path": "Transcript 1:00:54–1:01:20",
+          "chapter_id": 9,
+          "distance": 0.23696893453598022,
+          "start": 3654.26
+        },
+        {
+          "heading_path": "Transcript 54:20–54:49",
+          "chapter_id": 8,
+          "distance": 0.302970290184021,
+          "start": 3260.58
+        },
+        {
+          "heading_path": "Scenario 3: RAG, Data, and Security > Retrieval Augmented Generation (RAG)",
+          "chapter_id": 9,
+          "distance": 0.21384143829345703,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 3: RAG, Data, and Security > Observability and Architecture Trace",
+          "chapter_id": 9,
+          "distance": 0.3303642272949219,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "1:00:26 — The limitation of general AI knowledge regarding company-specific policies.",
+          "verified": true,
+          "chunk_id": "tx_3626_961225ca78",
+          "heading_path": "Transcript 1:00:26–1:00:56",
+          "heading": "Transcript 1:00:26",
+          "chapter_id": 9,
+          "start": 3626,
+          "end": 3656.5
+        },
+        {
+          "section": "1:00:54 — How RAG provides context to make AI output useful for business processes.",
+          "verified": true,
+          "chunk_id": "tx_3654_c58762b978",
+          "heading_path": "Transcript 1:00:54–1:01:20",
+          "heading": "Transcript 1:00:54",
+          "chapter_id": 9,
+          "start": 3654,
+          "end": 3680.7
+        },
+        {
+          "section": "[N1] Section: Scenario 3: RAG, Data, and Security > Retrieval Augmented Generation (RAG)",
+          "verified": true,
+          "chunk_id": "note_d09b4e9c7516f3f8",
+          "heading_path": "Scenario 3: RAG, Data, and Security > Retrieval Augmented Generation (RAG)",
+          "heading": "Retrieval Augmented Generation (RAG)",
+          "chapter_id": 9,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 4,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately explains the role of RAG in supplying company-specific context to the AI."
+      }
+    },
+    {
+      "category": "core",
+      "question": "Why is it important to use Infrastructure as Code instead of the AWS console?",
+      "gold_answer": "Infrastructure as Code ensures that environments are identical, repeatable, and version-controlled, avoiding the errors associated with manual configuration.",
+      "quote": "Every environment comes out identical because they've all built from the same source. And because it's a file, you can track every single change, it's version control, right?",
+      "quote_ts": 4190.26,
+      "answer": "Using the AWS console—or \"ClickOps\"—is great for learning how services fit together, but it becomes a major liability in production. The main problem is that it’s nearly impossible to manually replicate an environment exactly; you’ll inevitably miss a permission or a configuration setting, leading to \"drift\" where your testing and production environments don't match, causing them to break.\n\nInfrastructure as Code (IaC) solves this by defining your entire architecture in a file. Because that file acts as the single source of truth, you can deploy identical environments every time, and since it’s just code, you can use version control to track exactly who changed what and why.\n\nShould I explain how tools like Terraform or CloudFormation actually turn that file into real infrastructure?\n\n**Sources**\n• 1:08:29 — Why ClickOps is fine for learning but insufficient for production\n• 1:08:52 — The difficulty of replicating manual configurations\n• 1:09:17 — How IaC ensures consistency and allows for version control\n• [N1] Section: Infrastructure as Code and Conclusion > Infrastructure as Code (IaC)\n• [N2] Section: Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+      "latency_s": 3.27,
+      "calls": 2,
+      "input_tokens": 2096,
+      "output_tokens": 28,
+      "cost_usd": 0.000565,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:08:29–1:08:52",
+          "chapter_id": 10,
+          "distance": 0.224665105342865,
+          "start": 4109.5
+        },
+        {
+          "heading_path": "Transcript 1:09:42–1:10:09",
+          "chapter_id": 10,
+          "distance": 0.2108067274093628,
+          "start": 4182.5
+        },
+        {
+          "heading_path": "Transcript 1:09:17–1:09:43",
+          "chapter_id": 10,
+          "distance": 0.22993332147598267,
+          "start": 4157.06
+        },
+        {
+          "heading_path": "Transcript 1:08:52–1:09:18",
+          "chapter_id": 10,
+          "distance": 0.19065380096435547,
+          "start": 4132.06
+        },
+        {
+          "heading_path": "Infrastructure as Code and Conclusion > Infrastructure as Code (IaC)",
+          "chapter_id": 10,
+          "distance": 0.14867156744003296,
+          "start": null
+        },
+        {
+          "heading_path": "Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+          "chapter_id": 10,
+          "distance": 0.17974567413330078,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "1:08:29 — Why ClickOps is fine for learning but insufficient for production",
+          "verified": true,
+          "chunk_id": "tx_4109_79c3b72b94",
+          "heading_path": "Transcript 1:08:29–1:08:52",
+          "heading": "Transcript 1:08:29",
+          "chapter_id": 10,
+          "start": 4109,
+          "end": 4132.9
+        },
+        {
+          "section": "1:08:52 — The difficulty of replicating manual configurations",
+          "verified": true,
+          "chunk_id": "tx_4132_61b8b666cf",
+          "heading_path": "Transcript 1:08:52–1:09:18",
+          "heading": "Transcript 1:08:52",
+          "chapter_id": 10,
+          "start": 4132,
+          "end": 4158.66
+        },
+        {
+          "section": "1:09:17 — How IaC ensures consistency and allows for version control",
+          "verified": true,
+          "chunk_id": "tx_4157_e3d5d7bc6d",
+          "heading_path": "Transcript 1:09:17–1:09:43",
+          "heading": "Transcript 1:09:17",
+          "chapter_id": 10,
+          "start": 4157,
+          "end": 4183.78
+        },
+        {
+          "section": "[N1] Section: Infrastructure as Code and Conclusion > Infrastructure as Code (IaC)",
+          "verified": true,
+          "chunk_id": "note_351147411d3bb3c7",
+          "heading_path": "Infrastructure as Code and Conclusion > Infrastructure as Code (IaC)",
+          "heading": "Infrastructure as Code (IaC)",
+          "chapter_id": 10,
+          "start": null,
+          "end": null
+        },
+        {
+          "section": "[N2] Section: Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+          "verified": true,
+          "chunk_id": "note_b0813f0e6295087a",
+          "heading_path": "Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+          "heading": "The Limitations of ClickOps",
+          "chapter_id": 10,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 5,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately explains how IaC ensures repeatability and version control over error-prone manual console setup."
+      }
+    },
+    {
+      "category": "core",
+      "question": "How does the lecturer define the 'traffic' layer in the decision stack?",
+      "gold_answer": "The traffic layer covers the entire journey of data from the user opening the application to how different services communicate behind the scenes.",
+      "quote": "This covers every journey that data takes from a user opening the application and content appearing on a screen to how your services talk to each other behind the scenes.",
+      "quote_ts": 132.08,
+      "answer": "The lecturer defines the traffic layer as the journey data takes from the moment a user opens an application until the content appears on their screen, as well as how different services communicate with each other behind the scenes. It focuses on how content is delivered quickly and how the system handles the flow of data.\n\nWould you like to know how this layer helps address the scaling problems mentioned in the lecture?\n\n**Sources**\n• 1:54 — definition of the traffic layer\n• [N1] Section: Introduction and the Decision Stack Framework > The Six-Layer Decision Stack",
+      "latency_s": 2.82,
+      "calls": 2,
+      "input_tokens": 2205,
+      "output_tokens": 26,
+      "cost_usd": 0.000589,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:54–2:23",
+          "chapter_id": 1,
+          "distance": 0.208673357963562,
+          "start": 114.8
+        },
+        {
+          "heading_path": "Transcript 28:38–29:07",
+          "chapter_id": 5,
+          "distance": 0.2720869183540344,
+          "start": 1718.4
+        },
+        {
+          "heading_path": "Transcript 5:38–6:09",
+          "chapter_id": 2,
+          "distance": 0.26202547550201416,
+          "start": 338.24
+        },
+        {
+          "heading_path": "Transcript 3:46–4:15",
+          "chapter_id": 1,
+          "distance": 0.2765467166900635,
+          "start": 226.72
+        },
+        {
+          "heading_path": "Introduction and the Decision Stack Framework > The Six-Layer Decision Stack",
+          "chapter_id": 1,
+          "distance": 0.2393288016319275,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 1: Viral Startup Architecture > Defining the Problem",
+          "chapter_id": 2,
+          "distance": 0.30758678913116455,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "The Decision Stack Framework",
+          "distance": 0.2787419557571411
+        }
+      ],
+      "citations": [
+        {
+          "section": "1:54 — definition of the traffic layer",
+          "verified": true,
+          "chunk_id": "tx_114_ddefbb65cb",
+          "heading_path": "Transcript 1:54–2:23",
+          "heading": "Transcript 1:54",
+          "chapter_id": 1,
+          "start": 114,
+          "end": 143.84
+        },
+        {
+          "section": "[N1] Section: Introduction and the Decision Stack Framework > The Six-Layer Decision Stack",
+          "verified": true,
+          "chunk_id": "note_74d0341a58990892",
+          "heading_path": "Introduction and the Decision Stack Framework > The Six-Layer Decision Stack",
+          "heading": "The Six-Layer Decision Stack",
+          "chapter_id": 1,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 6,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Directly and accurately provides the transcript's definition of the traffic layer."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the significance of the 'least privilege' principle in security?",
+      "gold_answer": "It ensures that every service only has the specific permissions required for its job, which limits the potential damage if a service is compromised.",
+      "quote": "Every single permission has to be scoped exactly what the service needs for a specific job, nothing more and nothing less. This is the same least privileged principle that we apply in the first scenario.",
+      "quote_ts": 2701.94,
+      "answer": "The \"least privilege\" principle is about ensuring that every service or user has exactly the permissions they need to perform their specific job—nothing more and nothing less. Think of it like a key card system: a service only gets a \"key\" to the specific \"doors\" required for its function, and it is explicitly denied access to everything else.\n\nThis is significant because it acts as a containment strategy. If a service is compromised or a bug occurs, the damage is restricted to that single \"room\" rather than allowing the threat to spread across your entire AWS account.\n\nShould we look at how this is applied to the database in the lecture's architecture?\n\n**Sources**\n• 44:59 — every single permission has to be scoped exactly what the service needs\n• [N1] Section: Scenario 2: Security, Cost, and Observability > IAM and Least Privilege\n• [N2] Section: Scenario 1: Security, Cost, and Monitoring > Identity and Access Management (IAM)",
+      "latency_s": 3.11,
+      "calls": 2,
+      "input_tokens": 2023,
+      "output_tokens": 29,
+      "cost_usd": 0.000548,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 44:59–45:25",
+          "chapter_id": 7,
+          "distance": 0.2574006915092468,
+          "start": 2699.7
+        },
+        {
+          "heading_path": "Transcript 43:46–44:10",
+          "chapter_id": 7,
+          "distance": 0.3145561218261719,
+          "start": 2626.1
+        },
+        {
+          "heading_path": "Transcript 44:08–44:36",
+          "chapter_id": 7,
+          "distance": 0.30226534605026245,
+          "start": 2648.34
+        },
+        {
+          "heading_path": "Transcript 43:20–43:48",
+          "chapter_id": 7,
+          "distance": 0.3314298987388611,
+          "start": 2600.34
+        },
+        {
+          "heading_path": "Scenario 2: Security, Cost, and Observability > IAM and Least Privilege",
+          "chapter_id": 7,
+          "distance": 0.27490782737731934,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 1: Security, Cost, and Monitoring > Identity and Access Management (IAM)",
+          "chapter_id": 4,
+          "distance": 0.2772684097290039,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "44:59 — every single permission has to be scoped exactly what the service needs",
+          "verified": true,
+          "chunk_id": "tx_2699_7b7fd4e191",
+          "heading_path": "Transcript 44:59–45:25",
+          "heading": "Transcript 44:59",
+          "chapter_id": 7,
+          "start": 2699,
+          "end": 2725.5
+        },
+        {
+          "section": "[N1] Section: Scenario 2: Security, Cost, and Observability > IAM and Least Privilege",
+          "verified": true,
+          "chunk_id": "note_ccf59fcbeeec98c6",
+          "heading_path": "Scenario 2: Security, Cost, and Observability > IAM and Least Privilege",
+          "heading": "IAM and Least Privilege",
+          "chapter_id": 7,
+          "start": null,
+          "end": null
+        },
+        {
+          "section": "[N2] Section: Scenario 1: Security, Cost, and Monitoring > Identity and Access Management (IAM)",
+          "verified": true,
+          "chunk_id": "note_326eb7bc68b59103",
+          "heading_path": "Scenario 1: Security, Cost, and Monitoring > Identity and Access Management (IAM)",
+          "heading": "Identity and Access Management (IAM)",
+          "chapter_id": 4,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 7,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately describes least privilege and its role in blast-radius containment."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the maximum execution time for an AWS Lambda function?",
+      "gold_answer": "Lambda functions have a hard limit of 15 minutes per execution.",
+      "quote": "Lambda has a hard limit on how long each function can run. 15 minutes maximum.",
+      "quote_ts": 1971.9,
+      "answer": "The maximum execution time for an AWS Lambda function is 15 minutes. If your code takes longer than that to finish, Lambda will cut it off mid-process.\n\nWould you like to know why this limit makes Lambda unsuitable for certain types of workloads?\n\n**Sources**\n• 32:39 — Lambda has a hard limit of 15 minutes maximum\n• 57:23 — Lambda has a hard limit of 15 minutes per execution",
+      "latency_s": 4.11,
+      "calls": 2,
+      "input_tokens": 2065,
+      "output_tokens": 29,
+      "cost_usd": 0.000559,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 32:39–33:06",
+          "chapter_id": 6,
+          "distance": 0.26174771785736084,
+          "start": 1959.02
+        },
+        {
+          "heading_path": "Transcript 13:49–14:36",
+          "chapter_id": 3,
+          "distance": 0.27371788024902344,
+          "start": 829.88
+        },
+        {
+          "heading_path": "Transcript 57:23–57:53",
+          "chapter_id": 8,
+          "distance": 0.26763421297073364,
+          "start": 3443.34
+        },
+        {
+          "heading_path": "Transcript 57:51–58:22",
+          "chapter_id": 8,
+          "distance": 0.2936091423034668,
+          "start": 3471.02
+        },
+        {
+          "heading_path": "Scenario 1: Compute and Data for the Startup > Understanding Cold Starts",
+          "chapter_id": 3,
+          "distance": 0.27156227827072144,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 2: Compute and Data Strategy > Compute Strategy and EC2 Selection",
+          "chapter_id": 6,
+          "distance": 0.3255237340927124,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "32:39 — Lambda has a hard limit of 15 minutes maximum",
+          "verified": true,
+          "chunk_id": "tx_1959_52cb0e2eea",
+          "heading_path": "Transcript 32:39–33:06",
+          "heading": "Transcript 32:39",
+          "chapter_id": 6,
+          "start": 1959,
+          "end": 1986.22
+        },
+        {
+          "section": "57:23 — Lambda has a hard limit of 15 minutes per execution",
+          "verified": true,
+          "chunk_id": "tx_3443_8726a00388",
+          "heading_path": "Transcript 57:23–57:53",
+          "heading": "Transcript 57:23",
+          "chapter_id": 8,
+          "start": 3443,
+          "end": 3473.18
+        }
+      ],
+      "grade": {
+        "id": 8,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states the 15-minute maximum execution time."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the specific name of the AWS service used for the document processing queue?",
+      "gold_answer": "The service used is the Simple Queue Service, or SQS.",
+      "quote": "The aid of a service is called SQS, simple queue service.",
+      "quote_ts": 3363.98,
+      "answer": "The AWS service used for the document processing queue is Amazon SQS, which stands for Simple Queue Service.\n\n**Sources**\n• 55:40 — The lecturer introduces SQS as the service used to manage document flow.\n• [N1] Section: Scenario 3: AI-Powered Enterprise Automation > Decoupling with SQS",
+      "latency_s": 3.63,
+      "calls": 2,
+      "input_tokens": 2196,
+      "output_tokens": 27,
+      "cost_usd": 0.000588,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 55:40–56:11",
+          "chapter_id": 8,
+          "distance": 0.18283891677856445,
+          "start": 3340.42
+        },
+        {
+          "heading_path": "Transcript 56:08–56:36",
+          "chapter_id": 8,
+          "distance": 0.20999562740325928,
+          "start": 3368.62
+        },
+        {
+          "heading_path": "Transcript 59:10–59:39",
+          "chapter_id": 8,
+          "distance": 0.2160581350326538,
+          "start": 3550.02
+        },
+        {
+          "heading_path": "Transcript 55:15–55:44",
+          "chapter_id": 8,
+          "distance": 0.21121305227279663,
+          "start": 3315.18
+        },
+        {
+          "heading_path": "Scenario 3: AI-Powered Enterprise Automation > Decoupling with SQS",
+          "chapter_id": 8,
+          "distance": 0.1968921422958374,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 3: AI-Powered Enterprise Automation > Compute: Why Fargate over Lambda",
+          "chapter_id": 8,
+          "distance": 0.2618902921676636,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Observability and Architecture Trace",
+          "distance": 0.22623562812805176
+        },
+        {
+          "section": "Observability and Architecture Trace",
+          "distance": 0.2273719310760498
+        }
+      ],
+      "citations": [
+        {
+          "section": "55:40 — The lecturer introduces SQS as the service used to manage document flow.",
+          "verified": true,
+          "chunk_id": "tx_3340_0f26fb09b5",
+          "heading_path": "Transcript 55:40–56:11",
+          "heading": "Transcript 55:40",
+          "chapter_id": 8,
+          "start": 3340,
+          "end": 3371.14
+        },
+        {
+          "section": "[N1] Section: Scenario 3: AI-Powered Enterprise Automation > Decoupling with SQS",
+          "verified": true,
+          "chunk_id": "note_a17f105328927d39",
+          "heading_path": "Scenario 3: AI-Powered Enterprise Automation > Decoupling with SQS",
+          "heading": "Decoupling with SQS",
+          "chapter_id": 8,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 9,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly identifies Amazon SQS."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What does the lecturer call the manual process of clicking through the AWS console?",
+      "gold_answer": "The lecturer refers to this as 'ClickOps'.",
+      "quote": "When you're starting out, you can use the AWS console, I call it ClickOps.",
+      "quote_ts": 4115.26,
+      "answer": "The lecturer calls the manual process of building infrastructure through the AWS console \"ClickOps.\"\n\nWant to know why the lecturer suggests moving away from this method in a professional environment?\n\n**Sources**\n• 1:08:29 — the lecturer introduces the term \"ClickOps\"\n• [N1] Section: Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+      "latency_s": 3.76,
+      "calls": 2,
+      "input_tokens": 2101,
+      "output_tokens": 27,
+      "cost_usd": 0.000565,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:08:29–1:08:52",
+          "chapter_id": 10,
+          "distance": 0.21883130073547363,
+          "start": 4109.5
+        },
+        {
+          "heading_path": "Transcript 1:08:52–1:09:18",
+          "chapter_id": 10,
+          "distance": 0.2259640097618103,
+          "start": 4132.06
+        },
+        {
+          "heading_path": "Transcript 1:10:34–1:10:58",
+          "chapter_id": 10,
+          "distance": 0.30001211166381836,
+          "start": 4234.1
+        },
+        {
+          "heading_path": "Transcript 0:00–0:31",
+          "chapter_id": 1,
+          "distance": 0.2965332269668579,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+          "chapter_id": 10,
+          "distance": 0.18853271007537842,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction and the Decision Stack Framework > Moving Beyond Service Memorization",
+          "chapter_id": 1,
+          "distance": 0.2875584363937378,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "1:08:29 — the lecturer introduces the term \"ClickOps\"",
+          "verified": true,
+          "chunk_id": "tx_4109_79c3b72b94",
+          "heading_path": "Transcript 1:08:29–1:08:52",
+          "heading": "Transcript 1:08:29",
+          "chapter_id": 10,
+          "start": 4109,
+          "end": 4132.9
+        },
+        {
+          "section": "[N1] Section: Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+          "verified": true,
+          "chunk_id": "note_b0813f0e6295087a",
+          "heading_path": "Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+          "heading": "The Limitations of ClickOps",
+          "chapter_id": 10,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 10,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly names ClickOps."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the name of the AWS service used to run containers on Fargate?",
+      "gold_answer": "The service is the Elastic Container Service, or ECS.",
+      "quote": "We hand that container to ECS, Elastic Container Service, and tell it to run it on Fargate.",
+      "quote_ts": 3508.46,
+      "answer": "The service used to run containers on Fargate is Amazon ECS (Elastic Container Service). ECS acts as the orchestrator, where you define your services and specify the CPU and memory requirements, while Fargate provides the underlying compute power without you needing to manage any servers.\n\nShould I explain why you might choose this over using AWS Lambda?\n\n**Sources**\n• 38:05 — ECS is responsible for orchestrating the application; Fargate provides the compute.\n• 58:20 — We hand the container to ECS and tell it to run on Fargate.",
+      "latency_s": 3.32,
+      "calls": 2,
+      "input_tokens": 2055,
+      "output_tokens": 28,
+      "cost_usd": 0.000554,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 38:05–38:39",
+          "chapter_id": 6,
+          "distance": 0.18263638019561768,
+          "start": 2285.86
+        },
+        {
+          "heading_path": "Transcript 58:20–58:47",
+          "chapter_id": 8,
+          "distance": 0.22143232822418213,
+          "start": 3500.46
+        },
+        {
+          "heading_path": "Transcript 37:26–38:08",
+          "chapter_id": 6,
+          "distance": 0.27116405963897705,
+          "start": 2246.58
+        },
+        {
+          "heading_path": "Transcript 59:10–59:39",
+          "chapter_id": 8,
+          "distance": 0.30389487743377686,
+          "start": 3550.02
+        },
+        {
+          "heading_path": "Scenario 3: AI-Powered Enterprise Automation > Scaling and Efficiency",
+          "chapter_id": 8,
+          "distance": 0.3201250433921814,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 3: AI-Powered Enterprise Automation > Compute: Why Fargate over Lambda",
+          "chapter_id": 8,
+          "distance": 0.323358416557312,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "38:05 — ECS is responsible for orchestrating the application; Fargate provides the compute.",
+          "verified": true,
+          "chunk_id": "tx_2285_9fb8e55a4a",
+          "heading_path": "Transcript 38:05–38:39",
+          "heading": "Transcript 38:05",
+          "chapter_id": 6,
+          "start": 2285,
+          "end": 2319.1
+        },
+        {
+          "section": "58:20 — We hand the container to ECS and tell it to run on Fargate.",
+          "verified": true,
+          "chunk_id": "tx_3500_4e585849a5",
+          "heading_path": "Transcript 58:20–58:47",
+          "heading": "Transcript 58:20",
+          "chapter_id": 8,
+          "start": 3500,
+          "end": 3527.58
+        }
+      ],
+      "grade": {
+        "id": 11,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly names Amazon ECS."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the purpose of a NAT gateway?",
+      "gold_answer": "A NAT gateway allows resources in a private subnet to make outbound calls to the internet while preventing inbound connections.",
+      "quote": "Now, worth noting, services in a private subnet can still make outbound calls to the internet if you set something up called a NAT gateway.",
+      "quote_ts": 1873.2,
+      "answer": "A NAT gateway allows resources located in a private subnet to initiate outbound connections to the internet, such as for downloading software updates or patches. Even though these resources are hidden from the outside world and cannot receive direct inbound traffic from the internet, the NAT gateway provides a secure way for them to reach out when necessary.\n\nShould we look at how this differs from the role of an API Gateway?\n\n**Sources**\n• 30:56 — explains that services in a private subnet can make outbound calls to the internet using a NAT gateway",
+      "latency_s": 2.74,
+      "calls": 2,
+      "input_tokens": 1977,
+      "output_tokens": 29,
+      "cost_usd": 0.000537,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 30:56–31:22",
+          "chapter_id": 5,
+          "distance": 0.25363391637802124,
+          "start": 1856.12
+        },
+        {
+          "heading_path": "Transcript 12:56–13:24",
+          "chapter_id": 3,
+          "distance": 0.32700860500335693,
+          "start": 776.04
+        },
+        {
+          "heading_path": "Transcript 12:27–12:59",
+          "chapter_id": 3,
+          "distance": 0.31815290451049805,
+          "start": 747.8
+        },
+        {
+          "heading_path": "Transcript 30:29–30:58",
+          "chapter_id": 5,
+          "distance": 0.32312488555908203,
+          "start": 1829.66
+        },
+        {
+          "heading_path": "Scenario 1: Compute and Data for the Startup > API Gateway as the Front Door",
+          "chapter_id": 3,
+          "distance": 0.31366264820098877,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 2: Security, Cost, and Observability > IAM and Least Privilege",
+          "chapter_id": 7,
+          "distance": 0.39339113235473633,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "30:56 — explains that services in a private subnet can make outbound calls to the internet using a NAT gateway",
+          "verified": true,
+          "chunk_id": "tx_1856_128d0148bf",
+          "heading_path": "Transcript 30:56–31:22",
+          "heading": "Transcript 30:56",
+          "chapter_id": 5,
+          "start": 1856,
+          "end": 1882.0
+        }
+      ],
+      "grade": {
+        "id": 12,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately describes the purpose of a NAT gateway as explained in the lecture."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the specific name of the AWS service used for AI models like Claude?",
+      "gold_answer": "The service is Amazon Bedrock.",
+      "quote": "The container sends a document to Amazon Bedrock, AWS's service for using AI models like Claude and OpenAI models directly from your own code.",
+      "quote_ts": 3574.66,
+      "answer": "The AWS service used to access AI models like Claude is called Amazon Bedrock.\n\nWould you like to know why the lecture emphasizes using it through private VPC endpoints in this scenario?\n\n**Sources**\n• 59:37 — AWS's service for using AI models like Claude and OpenAI models\n• [N1] Section: Scenario 3: AI-Powered Enterprise Automation > AI Analysis with Bedrock",
+      "latency_s": 9.82,
+      "calls": 2,
+      "input_tokens": 2082,
+      "output_tokens": 29,
+      "cost_usd": 0.000563,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 59:37–1:00:05",
+          "chapter_id": 8,
+          "distance": 0.22296571731567383,
+          "start": 3577.3
+        },
+        {
+          "heading_path": "Transcript 59:10–59:39",
+          "chapter_id": 8,
+          "distance": 0.23874402046203613,
+          "start": 3550.02
+        },
+        {
+          "heading_path": "Transcript 0:29–0:59",
+          "chapter_id": 1,
+          "distance": 0.30498039722442627,
+          "start": 29.48
+        },
+        {
+          "heading_path": "Transcript 1:03:49–1:04:17",
+          "chapter_id": 9,
+          "distance": 0.2838134169578552,
+          "start": 3829.9
+        },
+        {
+          "heading_path": "Scenario 3: AI-Powered Enterprise Automation > AI Analysis with Bedrock",
+          "chapter_id": 8,
+          "distance": 0.26181936264038086,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 3: AI-Powered Enterprise Automation > Compute: Why Fargate over Lambda",
+          "chapter_id": 8,
+          "distance": 0.3332175612449646,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "59:37 — AWS's service for using AI models like Claude and OpenAI models",
+          "verified": true,
+          "chunk_id": "tx_3577_630a70f91f",
+          "heading_path": "Transcript 59:37–1:00:05",
+          "heading": "Transcript 59:37",
+          "chapter_id": 8,
+          "start": 3577,
+          "end": 3605.7
+        },
+        {
+          "section": "[N1] Section: Scenario 3: AI-Powered Enterprise Automation > AI Analysis with Bedrock",
+          "verified": true,
+          "chunk_id": "note_6c1c885cd4f10762",
+          "heading_path": "Scenario 3: AI-Powered Enterprise Automation > AI Analysis with Bedrock",
+          "heading": "AI Analysis with Bedrock",
+          "chapter_id": 8,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 13,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly identifies Amazon Bedrock."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the name of the AWS service that tracks infrastructure-level API activity?",
+      "gold_answer": "The service is CloudTrail.",
+      "quote": "CloudTrail records AWS API activity across the accounts. Things like someone changing a security group role, modifying an auto scaling policy, creating a new database or updating IAM permissions.",
+      "quote_ts": 2904.22,
+      "answer": "The AWS service that tracks infrastructure-level API activity is called AWS CloudTrail. It logs who performed an action, when they did it, and from where, which helps you identify if configuration changes contributed to any issues.\n\nWould you like to know how this differs from the application-level logging mentioned in the lecture?\n\n**Sources**\n• 48:17 — CloudTrail records AWS API activity\n• [N1] Section: Scenario 2: Security, Cost, and Observability > Infrastructure Auditing with CloudTrail",
+      "latency_s": 4.26,
+      "calls": 2,
+      "input_tokens": 2100,
+      "output_tokens": 28,
+      "cost_usd": 0.000566,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 48:17–48:44",
+          "chapter_id": 7,
+          "distance": 0.17919182777404785,
+          "start": 2897.14
+        },
+        {
+          "heading_path": "Transcript 50:01–50:37",
+          "chapter_id": 7,
+          "distance": 0.294585645198822,
+          "start": 3001.9
+        },
+        {
+          "heading_path": "Transcript 1:03:49–1:04:17",
+          "chapter_id": 9,
+          "distance": 0.26223981380462646,
+          "start": 3829.9
+        },
+        {
+          "heading_path": "Transcript 48:42–49:09",
+          "chapter_id": 7,
+          "distance": 0.2441074252128601,
+          "start": 2922.46
+        },
+        {
+          "heading_path": "Scenario 2: Security, Cost, and Observability > Infrastructure Auditing with CloudTrail",
+          "chapter_id": 7,
+          "distance": 0.17609471082687378,
+          "start": null
+        },
+        {
+          "heading_path": "Infrastructure as Code and Conclusion > Infrastructure as Code (IaC)",
+          "chapter_id": 10,
+          "distance": 0.2689528465270996,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Infrastructure Auditing with CloudTrail",
+          "distance": 0.2623540163040161
+        }
+      ],
+      "citations": [
+        {
+          "section": "48:17 — CloudTrail records AWS API activity",
+          "verified": true,
+          "chunk_id": "tx_2897_7220fb1c2b",
+          "heading_path": "Transcript 48:17–48:44",
+          "heading": "Transcript 48:17",
+          "chapter_id": 7,
+          "start": 2897,
+          "end": 2924.06
+        },
+        {
+          "section": "[N1] Section: Scenario 2: Security, Cost, and Observability > Infrastructure Auditing with CloudTrail",
+          "verified": true,
+          "chunk_id": "note_17cf2058552ddef1",
+          "heading_path": "Scenario 2: Security, Cost, and Observability > Infrastructure Auditing with CloudTrail",
+          "heading": "Infrastructure Auditing with CloudTrail",
+          "chapter_id": 7,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 14,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly names AWS CloudTrail."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the term for the delay experienced when a Lambda function is triggered after being idle?",
+      "gold_answer": "This delay is known as a 'cold start'.",
+      "quote": "This adds some initialization time, often a few hundred milliseconds because of the cold start. And that is what we call the cold start.",
+      "quote_ts": 876.28,
+      "answer": "That delay is called a \"cold start.\" It happens because, when a function has been idle, AWS must create a new execution environment, load your code, and initialize the runtime before the function can actually run.\n\nWould you like to know why this delay is often less of a problem for users than it might seem at first?\n\n**Sources**\n• 14:33 — explanation of the cold start and initialization time\n• [N1] Section: Scenario 1: Compute and Data for the Startup > Understanding Cold Starts",
+      "latency_s": 13.32,
+      "calls": 2,
+      "input_tokens": 2095,
+      "output_tokens": 26,
+      "cost_usd": 0.000561,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 13:49–14:36",
+          "chapter_id": 3,
+          "distance": 0.20218145847320557,
+          "start": 829.88
+        },
+        {
+          "heading_path": "Transcript 14:33–15:11",
+          "chapter_id": 3,
+          "distance": 0.19786196947097778,
+          "start": 873.0
+        },
+        {
+          "heading_path": "Transcript 15:09–15:49",
+          "chapter_id": 3,
+          "distance": 0.2327553629875183,
+          "start": 909.92
+        },
+        {
+          "heading_path": "Transcript 13:22–13:51",
+          "chapter_id": 3,
+          "distance": 0.26882314682006836,
+          "start": 802.44
+        },
+        {
+          "heading_path": "Scenario 1: Compute and Data for the Startup > Understanding Cold Starts",
+          "chapter_id": 3,
+          "distance": 0.16264647245407104,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 1: Compute and Data for the Startup > Lambda Scaling and Best Practices",
+          "chapter_id": 3,
+          "distance": 0.27704185247421265,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Understanding Cold Starts",
+          "distance": 0.2591870427131653
+        }
+      ],
+      "citations": [
+        {
+          "section": "14:33 — explanation of the cold start and initialization time",
+          "verified": true,
+          "chunk_id": "tx_873_95baea53b7",
+          "heading_path": "Transcript 14:33–15:11",
+          "heading": "Transcript 14:33",
+          "chapter_id": 3,
+          "start": 873,
+          "end": 911.8
+        },
+        {
+          "section": "[N1] Section: Scenario 1: Compute and Data for the Startup > Understanding Cold Starts",
+          "verified": true,
+          "chunk_id": "note_d3df33347d15cec5",
+          "heading_path": "Scenario 1: Compute and Data for the Startup > Understanding Cold Starts",
+          "heading": "Understanding Cold Starts",
+          "chapter_id": 3,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 15,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly identifies the cold start."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How do I configure a VPN connection between my on-premises data center and AWS?",
+      "gold_answer": "The lecture does not cover hybrid cloud networking or VPN configurations.",
+      "quote": "",
+      "answer": "The lecture doesn't cover the specific technical steps for configuring a VPN connection between an on-premises data center and AWS. It focuses more on high-level architectural concepts, such as how services like CloudWatch monitor your infrastructure and why \"ClickOps\" (manual configuration) is insufficient for production environments.\n\nIn general, connecting an on-premises network to AWS involves setting up a Site-to-Site VPN, which requires configuring a Virtual Private Gateway on the AWS side and a Customer Gateway on your local hardware.\n\nSince the course emphasizes learning how to think like an engineer rather than just memorizing configurations, would you like to discuss how to determine *when* a VPN is the right architectural choice versus other connectivity options like Direct Connect?\n\n**Sources**\n• [N1] Section: Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+      "latency_s": 3.89,
+      "calls": 2,
+      "input_tokens": 2085,
+      "output_tokens": 28,
+      "cost_usd": 0.000562,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:29–0:59",
+          "chapter_id": 1,
+          "distance": 0.38672977685928345,
+          "start": 29.48
+        },
+        {
+          "heading_path": "Transcript 1:08:29–1:08:52",
+          "chapter_id": 10,
+          "distance": 0.3853212594985962,
+          "start": 4109.5
+        },
+        {
+          "heading_path": "Transcript 23:03–23:31",
+          "chapter_id": 4,
+          "distance": 0.38373327255249023,
+          "start": 1383.68
+        },
+        {
+          "heading_path": "Transcript 32:13–32:41",
+          "chapter_id": 5,
+          "distance": 0.38917481899261475,
+          "start": 1933.3
+        },
+        {
+          "heading_path": "Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+          "chapter_id": 10,
+          "distance": 0.39892029762268066,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction and the Decision Stack Framework > Applying the Framework",
+          "chapter_id": 1,
+          "distance": 0.4248676300048828,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "[N1] Section: Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+          "verified": true,
+          "chunk_id": "note_b0813f0e6295087a",
+          "heading_path": "Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+          "heading": "The Limitations of ClickOps",
+          "chapter_id": 10,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 16,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that the lecture does not cover VPN configuration."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What is the best way to migrate a legacy SQL Server database to AWS RDS?",
+      "gold_answer": "The lecture discusses choosing database types but does not provide specific migration strategies for legacy SQL Server databases.",
+      "quote": "",
+      "answer": "The lecture doesn't cover the specific technical steps for migrating a legacy SQL Server database to AWS RDS. It focuses instead on architectural decisions, such as choosing between RDS and DynamoDB based on your data's access patterns and offloading simple lookups to improve performance.\n\nIn general, AWS provides the **Database Migration Service (DMS)** to handle these types of migrations with minimal downtime.\n\nShould I explain more about how the lecture suggests deciding which parts of your data should stay in a relational database versus moving to a NoSQL option like DynamoDB?\n\n**Sources**\n• 42:52 — DynamoDB is the right choice for simple key-value lookups, while RDS is for complex relational queries.\n• [N1] Optimizing Data with DynamoDB",
+      "latency_s": 3.84,
+      "calls": 2,
+      "input_tokens": 2031,
+      "output_tokens": 27,
+      "cost_usd": 0.000547,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 43:20–43:48",
+          "chapter_id": 7,
+          "distance": 0.3419272303581238,
+          "start": 2600.34
+        },
+        {
+          "heading_path": "Transcript 41:31–41:58",
+          "chapter_id": 6,
+          "distance": 0.3408181667327881,
+          "start": 2491.3
+        },
+        {
+          "heading_path": "Transcript 1:01:17–1:01:47",
+          "chapter_id": 9,
+          "distance": 0.3469700813293457,
+          "start": 3677.98
+        },
+        {
+          "heading_path": "Transcript 42:52–43:21",
+          "chapter_id": 7,
+          "distance": 0.3351595401763916,
+          "start": 2572.22
+        },
+        {
+          "heading_path": "Scenario 2: Compute and Data Strategy > Optimizing Data with DynamoDB",
+          "chapter_id": 6,
+          "distance": 0.3641808032989502,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 2: Compute and Data Strategy > Database Pressure and Chain Reactions",
+          "chapter_id": 6,
+          "distance": 0.3896024823188782,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "42:52 — DynamoDB is the right choice for simple key-value lookups, while RDS is for complex relational queries.",
+          "verified": true,
+          "chunk_id": "tx_2572_a6b331463c",
+          "heading_path": "Transcript 42:52–43:21",
+          "heading": "Transcript 42:52",
+          "chapter_id": 7,
+          "start": 2572,
+          "end": 2601.46
+        },
+        {
+          "section": "[N1] Optimizing Data with DynamoDB",
+          "verified": true,
+          "chunk_id": "note_9f6b635af70f35f0",
+          "heading_path": "Scenario 2: Compute and Data Strategy > Optimizing Data with DynamoDB",
+          "heading": "Optimizing Data with DynamoDB",
+          "chapter_id": 6,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 17,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that the lecture does not cover migrating legacy SQL Server databases."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "Can you explain how to set up an AWS Direct Connect connection?",
+      "gold_answer": "The lecture focuses on application architecture and does not cover physical network connectivity options like Direct Connect.",
+      "quote": "",
+      "answer": "The lecture does not cover how to set up an AWS Direct Connect connection. \n\nIn general, AWS Direct Connect is a physical network service that creates a dedicated, private connection from your on-premises data center or office directly to AWS, bypassing the public internet. Setting it up involves working with a partner or provider to establish a physical cross-connect at an AWS Direct Connect location, then configuring a Virtual Interface (VIF) in the AWS console to link that physical connection to your Virtual Private Cloud (VPC).\n\nSince this is a specialized networking topic, would you like to know how this differs from a standard VPN connection?\n\n**Sources**\n• [N1] Section: Introduction and the Decision Stack Framework > Applying the Framework",
+      "latency_s": 16.19,
+      "calls": 2,
+      "input_tokens": 2054,
+      "output_tokens": 27,
+      "cost_usd": 0.000553,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 23:03–23:31",
+          "chapter_id": 4,
+          "distance": 0.37641268968582153,
+          "start": 1383.68
+        },
+        {
+          "heading_path": "Transcript 31:48–32:15",
+          "chapter_id": 5,
+          "distance": 0.3639717102050781,
+          "start": 1908.52
+        },
+        {
+          "heading_path": "Transcript 30:56–31:22",
+          "chapter_id": 5,
+          "distance": 0.3749377727508545,
+          "start": 1856.12
+        },
+        {
+          "heading_path": "Transcript 21:10–21:41",
+          "chapter_id": 4,
+          "distance": 0.38427549600601196,
+          "start": 1270.6
+        },
+        {
+          "heading_path": "Introduction and the Decision Stack Framework > Applying the Framework",
+          "chapter_id": 1,
+          "distance": 0.4075588583946228,
+          "start": null
+        },
+        {
+          "heading_path": "Infrastructure as Code and Conclusion > The Limitations of ClickOps",
+          "chapter_id": 10,
+          "distance": 0.4196784496307373,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "[N1] Section: Introduction and the Decision Stack Framework > Applying the Framework",
+          "verified": true,
+          "chunk_id": "note_dad3c1ec72cd08c4",
+          "heading_path": "Introduction and the Decision Stack Framework > Applying the Framework",
+          "heading": "Applying the Framework",
+          "chapter_id": 1,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 18,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly notes that setting up Direct Connect is not covered in the lecture."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What are the steps to implement multi-factor authentication for AWS IAM users?",
+      "gold_answer": "The lecture discusses IAM roles and permissions but does not cover user-level authentication settings like MFA.",
+      "quote": "",
+      "answer": "The lecture doesn't cover the specific steps for implementing multi-factor authentication (MFA) for IAM users. It focuses on the broader concepts of security architecture, such as using IAM roles for service-to-service communication and using security groups and network ACLs to control traffic.\n\nWould you like to explore how IAM roles are used to enforce the principle of least privilege instead?\n\n**Sources**\n• 44:34 — Network ACLs and security groups\n• [N1] IAM and Least Privilege",
+      "latency_s": 66.44,
+      "calls": 2,
+      "input_tokens": 2045,
+      "output_tokens": 25,
+      "cost_usd": 0.000548,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 49:33–50:03",
+          "chapter_id": 7,
+          "distance": 0.35235023498535156,
+          "start": 2973.5
+        },
+        {
+          "heading_path": "Transcript 44:34–45:01",
+          "chapter_id": 7,
+          "distance": 0.3460649251937866,
+          "start": 2674.54
+        },
+        {
+          "heading_path": "Transcript 3:46–4:15",
+          "chapter_id": 1,
+          "distance": 0.3966361880302429,
+          "start": 226.72
+        },
+        {
+          "heading_path": "Transcript 1:08:29–1:08:52",
+          "chapter_id": 10,
+          "distance": 0.37926697731018066,
+          "start": 4109.5
+        },
+        {
+          "heading_path": "Scenario 2: Security, Cost, and Observability > IAM and Least Privilege",
+          "chapter_id": 7,
+          "distance": 0.35073328018188477,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 1: Compute and Data for the Startup > API Gateway as the Front Door",
+          "chapter_id": 3,
+          "distance": 0.39941924810409546,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "44:34 — Network ACLs and security groups",
+          "verified": true,
+          "chunk_id": "tx_2674_dbacf90a2d",
+          "heading_path": "Transcript 44:34–45:01",
+          "heading": "Transcript 44:34",
+          "chapter_id": 7,
+          "start": 2674,
+          "end": 2701.94
+        },
+        {
+          "section": "[N1] IAM and Least Privilege",
+          "verified": true,
+          "chunk_id": "note_ccf59fcbeeec98c6",
+          "heading_path": "Scenario 2: Security, Cost, and Observability > IAM and Least Privilege",
+          "heading": "IAM and Least Privilege",
+          "chapter_id": 7,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 19,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that the lecture does not cover MFA implementation."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Since the lecturer states that AWS services should be memorized to pass exams, what is the best way to study them?",
+      "gold_answer": "The lecturer actually states that memorizing services is an outdated approach and that understanding when and why to use them is the critical skill.",
+      "quote": "That worked five years ago. It doesn't work anymore. And I know that because I have sat on the other side of the hiring table. I've watched person after person rattle off exactly what every AWS service does and then they freeze the second I asked them to actually go and design something",
+      "quote_ts": 12.8,
+      "answer": "Actually, the lecturer argues the opposite: memorizing what every service does is no longer an effective way to prepare for a career in cloud engineering. While that approach might have helped pass exams five years ago, it often leaves candidates unable to design real-world systems because they lack the ability to apply those services to specific business problems.\n\nInstead, the lecture suggests focusing on a \"problem-first\" approach: identify the business bottleneck, determine what the system actually needs, and then select the services that solve that specific problem.\n\nWould you like to walk through how to apply this \"decision stack\" framework to one of the business scenarios mentioned in the course?\n\n**Sources**\n• 0:00 — memorizing service definitions is no longer effective\n• 1:10:34 — identifying the business problem is the core skill\n• [N1] Section: Introduction and the Decision Stack Framework > Moving Beyond Service Memorization",
+      "latency_s": 4.08,
+      "calls": 2,
+      "input_tokens": 2127,
+      "output_tokens": 29,
+      "cost_usd": 0.000573,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:00–0:31",
+          "chapter_id": 1,
+          "distance": 0.2227954864501953,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Transcript 1:10:34–1:10:58",
+          "chapter_id": 10,
+          "distance": 0.3085864782333374,
+          "start": 4234.1
+        },
+        {
+          "heading_path": "Transcript 1:26–1:57",
+          "chapter_id": 1,
+          "distance": 0.3111835718154907,
+          "start": 86.0
+        },
+        {
+          "heading_path": "Transcript 0:56–1:29",
+          "chapter_id": 1,
+          "distance": 0.3095751404762268,
+          "start": 56.04
+        },
+        {
+          "heading_path": "Introduction and the Decision Stack Framework > Moving Beyond Service Memorization",
+          "chapter_id": 1,
+          "distance": 0.2133960723876953,
+          "start": null
+        },
+        {
+          "heading_path": "Infrastructure as Code and Conclusion > Problem-First Architecture",
+          "chapter_id": 10,
+          "distance": 0.3297477960586548,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:00 — memorizing service definitions is no longer effective",
+          "verified": true,
+          "chunk_id": "tx_0_0f47f693da",
+          "heading_path": "Transcript 0:00–0:31",
+          "heading": "Transcript 0:00",
+          "chapter_id": 1,
+          "start": 0,
+          "end": 31.92
+        },
+        {
+          "section": "1:10:34 — identifying the business problem is the core skill",
+          "verified": true,
+          "chunk_id": "tx_4234_36d4673385",
+          "heading_path": "Transcript 1:10:34–1:10:58",
+          "heading": "Transcript 1:10:34",
+          "chapter_id": 10,
+          "start": 4234,
+          "end": 4258.38
+        },
+        {
+          "section": "[N1] Section: Introduction and the Decision Stack Framework > Moving Beyond Service Memorization",
+          "verified": true,
+          "chunk_id": "note_d09f908095fd576f",
+          "heading_path": "Introduction and the Decision Stack Framework > Moving Beyond Service Memorization",
+          "heading": "Moving Beyond Service Memorization",
+          "chapter_id": 1,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 20,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly rejects the false premise that memorizing services is recommended."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Why does the lecturer recommend using a single availability zone for all production applications to save money?",
+      "gold_answer": "The lecturer explicitly advises against using a single availability zone for production designs, recommending at least two for resilience.",
+      "quote": "But for a revenue generating e-commerce application platform losing $50,000 per hour of downtime, keeping everything in one AZ is still not a good production design.",
+      "quote_ts": 2113.14,
+      "answer": "Actually, the lecturer recommends the opposite: they state that keeping everything in a single Availability Zone (AZ) is not a good production design for a revenue-generating application, especially one losing $50,000 per hour of downtime. Spreading across at least two AZs is necessary so that if one zone experiences an issue, the load balancer can continue routing traffic to healthy instances in the other zone.\n\nWould you like to walk through how the load balancer handles traffic across multiple zones?\n\n**Sources**\n• 34:52 — Explaining that keeping everything in one AZ is not a good production design.\n• 50:34 — Explaining how a load balancer routes traffic to healthy instances in other zones if one has an issue.\n• [N1] Section: Scenario 2: Compute and Data Strategy > Availability Zone Resilience",
+      "latency_s": 3.26,
+      "calls": 2,
+      "input_tokens": 2072,
+      "output_tokens": 29,
+      "cost_usd": 0.00056,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 34:52–35:22",
+          "chapter_id": 6,
+          "distance": 0.2993232011795044,
+          "start": 2092.54
+        },
+        {
+          "heading_path": "Transcript 34:26–34:54",
+          "chapter_id": 6,
+          "distance": 0.3256833553314209,
+          "start": 2066.18
+        },
+        {
+          "heading_path": "Transcript 50:34–51:01",
+          "chapter_id": 7,
+          "distance": 0.335323691368103,
+          "start": 3034.5
+        },
+        {
+          "heading_path": "Transcript 1:08:29–1:08:52",
+          "chapter_id": 10,
+          "distance": 0.3294445276260376,
+          "start": 4109.5
+        },
+        {
+          "heading_path": "Scenario 2: Compute and Data Strategy > Availability Zone Resilience",
+          "chapter_id": 6,
+          "distance": 0.2856208086013794,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 2: E-commerce Resilience > Identifying the Core Problem",
+          "chapter_id": 5,
+          "distance": 0.3493760824203491,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "34:52 — Explaining that keeping everything in one AZ is not a good production design.",
+          "verified": true,
+          "chunk_id": "tx_2092_bb8ea954a1",
+          "heading_path": "Transcript 34:52–35:22",
+          "heading": "Transcript 34:52",
+          "chapter_id": 6,
+          "start": 2092,
+          "end": 2122.46
+        },
+        {
+          "section": "50:34 — Explaining how a load balancer routes traffic to healthy instances in other zones if one has an issue.",
+          "verified": true,
+          "chunk_id": "tx_3034_a2de72358f",
+          "heading_path": "Transcript 50:34–51:01",
+          "heading": "Transcript 50:34",
+          "chapter_id": 7,
+          "start": 3034,
+          "end": 3061.38
+        },
+        {
+          "section": "[N1] Section: Scenario 2: Compute and Data Strategy > Availability Zone Resilience",
+          "verified": true,
+          "chunk_id": "note_7d868264650fc3a8",
+          "heading_path": "Scenario 2: Compute and Data Strategy > Availability Zone Resilience",
+          "heading": "Availability Zone Resilience",
+          "chapter_id": 6,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 21,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly rejects the premise, pointing out that multi-AZ deployment is advised for production."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Since Lambda is the best solution for all compute needs, why would anyone use EC2?",
+      "gold_answer": "The lecturer explains that Lambda is not suitable for all workloads, such as those requiring long-running processes or full server control, where EC2 is necessary.",
+      "quote": "This company's application is way more complex. It has specific software running on the servers, processes that needs longer to 15 minutes to complete and dependencies that require a full server environment. Lambda wouldn't work it.",
+      "quote_ts": 1981.86,
+      "answer": "Actually, that’s a common misconception! While Lambda is great for scaling invisibly and saving costs on idle time, it isn't a \"one-size-fits-all\" solution.\n\nThe primary reason to use EC2 is when you need full control over the server environment. EC2 provides a persistent, full server where you can install specific software, manage complex dependencies, and run processes that take longer than Lambda's 15-minute execution limit. If your application requires a custom configuration or long-running tasks that Lambda would simply cut off, EC2 is the necessary choice.\n\nShould we walk through how you might automate scaling for those EC2 servers so you don't have to manage them manually during traffic spikes?\n\n**Sources**\n• 32:39 — Lambda's 15-minute execution limit\n• 33:04 — Need for full server environments and complex software dependencies\n• [N2] Section: Scenario 2: Compute and Data Strategy > Compute Strategy and EC2 Selection",
+      "latency_s": 13.22,
+      "calls": 2,
+      "input_tokens": 2026,
+      "output_tokens": 29,
+      "cost_usd": 0.000549,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 32:39–33:06",
+          "chapter_id": 6,
+          "distance": 0.25896888971328735,
+          "start": 1959.02
+        },
+        {
+          "heading_path": "Transcript 33:04–33:33",
+          "chapter_id": 6,
+          "distance": 0.24593985080718994,
+          "start": 1984.18
+        },
+        {
+          "heading_path": "Transcript 57:00–57:26",
+          "chapter_id": 8,
+          "distance": 0.2965813875198364,
+          "start": 3420.22
+        },
+        {
+          "heading_path": "Transcript 10:38–11:08",
+          "chapter_id": 3,
+          "distance": 0.28980183601379395,
+          "start": 638.62
+        },
+        {
+          "heading_path": "Scenario 1: Compute and Data for the Startup > Lambda Scaling and Best Practices",
+          "chapter_id": 3,
+          "distance": 0.278689980506897,
+          "start": null
+        },
+        {
+          "heading_path": "Scenario 2: Compute and Data Strategy > Compute Strategy and EC2 Selection",
+          "chapter_id": 6,
+          "distance": 0.23349899053573608,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "32:39 — Lambda's 15-minute execution limit",
+          "verified": true,
+          "chunk_id": "tx_1959_52cb0e2eea",
+          "heading_path": "Transcript 32:39–33:06",
+          "heading": "Transcript 32:39",
+          "chapter_id": 6,
+          "start": 1959,
+          "end": 1986.22
+        },
+        {
+          "section": "33:04 — Need for full server environments and complex software dependencies",
+          "verified": true,
+          "chunk_id": "tx_1984_5eeeebe343",
+          "heading_path": "Transcript 33:04–33:33",
+          "heading": "Transcript 33:04",
+          "chapter_id": 6,
+          "start": 1984,
+          "end": 2013.9
+        },
+        {
+          "section": "[N2] Section: Scenario 2: Compute and Data Strategy > Compute Strategy and EC2 Selection",
+          "verified": true,
+          "chunk_id": "note_2ff7e798817021d2",
+          "heading_path": "Scenario 2: Compute and Data Strategy > Compute Strategy and EC2 Selection",
+          "heading": "Compute Strategy and EC2 Selection",
+          "chapter_id": 6,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 22,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly rejects the premise that Lambda is universally best and explains when EC2 is required."
+      }
+    }
+  ]
+}

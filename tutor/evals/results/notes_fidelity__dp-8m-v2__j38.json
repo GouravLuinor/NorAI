@@ -1,0 +1,58 @@
+{
+  "lecture_dir": "outputs/dp-8m-v2",
+  "judge": "gemini-3.8-flash",
+  "summary": {
+    "chapters": 3,
+    "notes_words": 1435,
+    "claims": 57,
+    "unsupported": 10,
+    "unsupported_rate": 0.175,
+    "missing_key_points": 10
+  },
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "total_claims": 20,
+      "unsupported_claims": [
+        "Step 2: Analyze the Assumption - Check if the assumed information is sufficient to build the solution for the current step.",
+        "Step 3: Refine State Definition - Adjust what information needs to be stored (the state) if the initial assumption fails due to missing details.",
+        "Step 4: Establish Transitions - Formulate how to transition from the known subproblems to the target problem.",
+        "Step 5: Implement and Optimize - Convert the recurrence relation into an efficient memoized or tabulated solution.",
+        "Brute-force verification of all combinations is computationally expensive, necessitating DP's optimized state-transition approach."
+      ],
+      "missing_key_points": [
+        "The speaker chose Dynamic Programming because in over 100 interviews and 554 LeetCode problems, it took the longest to master while being hard and frequently asked.",
+        "The Longest Increasing Subsequence (LIS) problem was specifically chosen because it is neither too hard nor too easy, and a friend once told the speaker they would never crack big tech interviews after failing it.",
+        "The fundamental rule of DP is that the assumed problem must be somewhat different from the original problem (assuming knowledge of the first n elements is the exact same problem).",
+        "The speaker compares making assumptions in DP to real-life practice of making assumptions when judging other people."
+      ]
+    },
+    {
+      "chapter_id": 2,
+      "total_claims": 18,
+      "unsupported_claims": [
+        "Contrasting subsequences with substrings and subarrays (the lecturer never mentions substrings or subarrays).",
+        "Evaluating all preceding elements for each index results in an overall time complexity of O(n^2) (the lecturer never mentions time complexity or big-O notation)."
+      ],
+      "missing_key_points": [
+        "Making the assumption real works through the phrase 'except the last one' by starting with only the first two numbers, then the first three, and expanding iteratively until the entire array is covered.",
+        "The final answer is obtained by taking the maximum of the longest subsequences ending at every index because the problem does not care which index the subsequence ends at.",
+        "To find the LIS ending at the current last index, you iterate through left elements, and if an element is smaller than the current last number, you can expand that subsequence by 1."
+      ]
+    },
+    {
+      "chapter_id": 3,
+      "total_claims": 19,
+      "unsupported_claims": [
+        "Dynamic programming relies heavily on breaking down problems into smaller overlapping subproblems (the speaker explicitly advises against thinking in terms of sub-problems).",
+        "Python code implementation details including the class method signature and the edge check 'if not nums: return 0' (the lecturer provides an algorithmic outline, not LeetCode Python boilerplate).",
+        "Advanced topics such as binary tree problems often use concise recursive logic in competitive programming interviews (the speaker only plugs a related video solving an Amazon binary tree problem in one line)."
+      ],
+      "missing_key_points": [
+        "A single number by itself is an increasing subsequence because it contains only one element, which justifies setting the base case to 1.",
+        "The outer loop begins at index 1 because the algorithm starts by considering the first two numbers.",
+        "After the inner loop finishes determining the maximum sequence ending at the current index, the global answer variable is updated if that length exceeds the current answer."
+      ]
+    }
+  ]
+}
