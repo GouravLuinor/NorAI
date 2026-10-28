@@ -51,10 +51,11 @@ NORAI_AUDIO_CHUNK_MINUTES = int(os.environ.get("NORAI_AUDIO_CHUNK_MINUTES", "18"
 # "legacy" = the per-chunk extract → outline → visual → merge → chapters →
 # screenshot selection → artifacts chain (~29 calls / 17-min lecture).
 # "lean" = compact transcription + ONE structure call + ONE multimodal call
-# per chapter (lean/). Read per run so an A/B needs no restart.
+# per chapter (lean/; ~6 calls, $0.033 vs $0.061). Default since 2026-10-28.
+# Read per run so an A/B needs no restart.
 def pipeline_mode() -> str:
-    mode = os.environ.get("NORAI_PIPELINE", "legacy").strip().lower()
-    return mode if mode in ("legacy", "lean") else "legacy"
+    mode = os.environ.get("NORAI_PIPELINE", "lean").strip().lower()
+    return mode if mode in ("legacy", "lean") else "lean"
 
 # ── Adaptive Chunking (P1.8 + Dynamic Content Scaling) ────────────────────────
 # Long lectures get larger chunks so the number of extraction LLM calls stays
