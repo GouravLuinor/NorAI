@@ -9,24 +9,25 @@ NorAI turns a long lecture video into a complete study experience: structured st
 ## Current Architecture
 
 ```
+Default: lean pipeline (NORAI_PIPELINE=lean, lean/)
 Video (YouTube / upload / Drive)
   → Ingestion (16kHz mono audio extract, metadata)
-  → Transcription (parallel Gemini 3.1 Flash-Lite API with 18m chunks, timestamped segments)
+  → Compact transcription ("[MM:SS] text" lines, Gemini 3.1 Flash-Lite, 18-min slices)
+      ∥ Frame Extraction + Scene Detection (keyframes, in parallel)
   → Chunking (segment→chunk, timestamps preserved)
-  → Knowledge Extraction (transcript → structured knowledge objects)
-  → Frame Extraction + Scene Detection (parallel with transcription/chunking)
-  → Chunk ↔ Screenshot Mapping
-  → Outline Generation
-  → Visual Knowledge Extraction (per-chapter, batched)
-  → Knowledge Merging
-  → Chapter Building
-  → Screenshot Selection
-  → Chapter Artifacts (study notes + revision + assessment + flashcards, 1 call/chapter)
-  → Tutor Index (notes + transcript windows + screenshot captions; flat numpy store, tutor/index/)
+  → Structure: ONE call → lecture title + chapter ranges (notes/lecture_outline.json)
+  → Chapters: ONE multimodal call per chapter (transcript + ≤12 keyframes) → notes,
+      revision, assessment, flashcards, screenshot picks + OCR (3 in parallel)
+  → Tutor Index (notes + transcript windows + screenshot captions; flat numpy store)
   → Cleanup
+
+NORAI_PIPELINE=legacy keeps the old chain (backend/orchestrator._run_legacy_stages):
+  transcription (JSON) → chunking → knowledge extraction → frames/scenes → mapping →
+  outline → visual knowledge → merging → chapter building → screenshot selection →
+  chapter artifacts → tutor index → cleanup
 ```
 
-- **Backend**: FastAPI (`backend/main.py`, all routes inline) + `backend/orchestrator.py` runs the 18-stage pipeline synchronously in a `backend/jobs.py` worker thread; progress persists to the DB and is polled by the frontend (no SSE).
+- **Backend**: FastAPI (`backend/main.py` + `backend/routers/`) + `backend/orchestrator.py` runs the pipeline (lean by default) synchronously in a `backend/jobs.py` worker thread; progress persists to the DB and is polled by the frontend (no SSE).
 - **Tutor**: LangGraph RAG (`tutor/`) — per-lecture graph isolation, persistent multi-thread memory (SQLite checkpoints), parallel text+screenshot retrieval, tool calling, quiz workflows, flashcards.
 - **Frontend**: React 19 + TypeScript + Vite, three-panel workspace (doc pane / chat / AI panel), Zustand stores, Tailwind v4. Design theme: **"Architect's Sketchbook"** (warm vellum light default + Prussian-blue dark, Space Grotesk + Newsreader, red-pencil accents).
 
@@ -34,10 +35,10 @@ Video (YouTube / upload / Drive)
 
 - `MODEL_NAME = "gemini-3.1-flash-lite"`, `TEMPERATURE = 0.4`, `GEMINI_API_KEY` from `.env` (required).
 - Pricing: **$0.25 input / $1.50 output / $0.025 cached input** per 1M tokens.
-- Transcription: **`NORAI_TRANSCRIPTION_BACKEND = "gemini"`** with 18-minute parallel chunking (`gemini-3.1-flash-lite`), yielding 9.2x speedup (53s for 71m lecture vs 498s CPU) with 0% server CPU. Optional local fallback via `NORAI_TRANSCRIPTION_BACKEND = "whisper"`.
+- Transcription: **`NORAI_TRANSCRIPTION_BACKEND = "gemini"`** with 18-minute parallel chunking (`gemini-3.1-flash-lite`), yielding 9.2x speedup (53s for 71m lecture vs 498s CPU) with 0% server CPU. Optional local fallback via `NORAI_TRANSCRIPTION_BACKEND = "whisper"`. The lean pipeline asks for compact `[MM:SS] text` lines, which use 60% fewer output tokens than legacy JSON and land within ~1 s of YouTube's captions. Don't prompt for "seconds": flash-lite answers in minutes.seconds.
 - Embeddings: `gemini-embedding-2` (768 dims) via custom Chroma embedding fn in `tutor/embedding.py` (`tutor/retrieval_config.py`). No `task_type=` arg; instructions go in the prompt.
 - Chroma store: `outputs/tutor/chroma` (override `NORAI_CHROMA_DIR`).
-- Free-tier ceiling: **15 RPM / 500 RPD** — pipeline consolidated from ~128 → ~35 LLM calls per lecture. Transient 15 RPM spikes are silently retried by internal exponential backoff; 500 RPD daily quota exhaustion fast-fails with structured 429 (`limit_type: rpd`, `retry_after_seconds`) and triggers global UI countdown banner to Midnight US Pacific Time.
+- Free-tier ceiling: **15 RPM / 500 RPD**. Calls per lecture went from ~128 to ~35 (legacy) and then to **~6 with lean** for 17 min: transcription slices + 1 structure + 1 per chapter. Transient 15 RPM spikes are silently retried by internal exponential backoff; 500 RPD daily quota exhaustion fast-fails with structured 429 (`limit_type: rpd`, `retry_after_seconds`) and triggers global UI countdown banner to Midnight US Pacific Time.
 - Trial quota: **45 minutes** default free trial processing credit (increased from 15 min).
 - Authentication: **Mandatory user auth** across all routes and API endpoints. Guest mode and `X-Guest-Id` headers removed. Public read-only preview is preserved for 3 pre-loaded demo lectures (`DEMO_LECTURE_IDS`), with interactive AI Tutor locked behind sign-up.
 - Monetization: **Soft-disabled payments** non-destructively via `ENABLE_PAYMENTS` / `VITE_ENABLE_PAYMENTS` flags. UI entry points (Pricing links, Upgrade buttons) hidden and routes redirected.
@@ -51,7 +52,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
   - **Frontend State & Lifecycles**: Fixed `loadThreadMessages` skipping default thread in `Sidebar.tsx` and `useThreadStore.ts`, added generation counters to `useChapterStore` and `useVideoStore` to drop stale out-of-order async responses, upgraded `useVideoStore.load` to parallel `Promise.all` with individual catch isolation, and stabilized `useEffect` dependencies across billing/courses/usage pages.
   - **Job Queue Durability**: Preserved uploaded video files during retryable failures in `backend/jobs.py` (`attempts < PIPELINE_MAX_ATTEMPTS`), replaced premature `orchestrator.py` error broadcasting with `jobs.py`'s `stage = "retrying"` progress countdown, and guarded `_executor.submit` against `NoneType`.
   - **Security & Concurrency**: Verified static file allowlists, video upload streaming caps, pre-flight quota enforcement, JWT verification, and LRU graph cache eviction. 100% green across all 38 backend/tutor test suites + 73 Vitest + oxlint (0 errors).
-- **Pipeline**: 18-stage orchestrator with DB-persisted progress (polled; no SSE); concurrent transcription/chunking + frame/scene extraction; graceful degradation (partial-content marker) on retry failures.
+- **Pipeline**: orchestrator (lean by default, legacy 18-stage chain behind `NORAI_PIPELINE=legacy`) with DB-persisted progress (polled; no SSE); concurrent transcription/chunking + frame/scene extraction; graceful degradation (partial-content marker) on retry failures.
 - **Per-lecture isolation**: lecture registry (`backend/lecture_registry.py`), per-lecture tutor graphs + checkpoints + Chroma indexes + thread history; backward-compatible default/global tutor mode.
 - **Tutor**: grounded Q&A with citations + timestamps, chapter-aware routing, query rewriting, confidence-aware answers, persistent multi-thread conversations, highlight-and-ask, references panel, screenshot previews.
 - **Resources**: study notes, revision notes, assessments, quiz engine (start/answer/evaluate), flashcards, chapter screenshots, PDF export (notes/revision/guide/concepts).
@@ -59,7 +60,50 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
 
 ## Recent changes
 
-- **Phase 2 — trust + cost (2026-10-27, branch `phase2`, IN PROGRESS — handoff state below).**
+- **Phase 2 — trust + cost (2026-10-27 → 2026-10-28, branch `phase2`, IN PROGRESS).**
+  - **▶ RESUME HERE (handoff, 2026-10-28, HEAD `fb734e7`; branch not merged to `master`, not pushed).**
+    - **Where things stand:**
+      - **Lean is the default pipeline and done:** built, A/B'd, judged by 3.8-flash, and smoke-tested through the UI.
+      - **Cost:** a 17-min lecture costs **$0.0335 in 9 calls**, against $0.061 in 29 for legacy.
+      - **Quality:** tutor accuracy is 1.0. Note claims the lecture doesn't support fell from 2.5–19% to ~0%.
+      - **Timestamps:** within ~1 s of YouTube's captions.
+      - The details are in the bullets below.
+    - **Recent commits (newest first):**
+      - `fb734e7` screenshot references labelled by chapter, plus the smoke-test notes.
+      - `1e4782b` 3.8 notes fidelity.
+      - `c89f069` lean made the default, with the estimator lean branch and the ProcessingPage stages.
+      - `bf2f09d` 3.8 tutor regrade.
+      - `2ae242e` the `[MM:SS]` timestamp fix.
+      - `544847d` and older: the lean build and the A/B.
+    - **Next, in order:**
+      1. **Server load:** measure frame/scene CPU and RAM per lecture and backend RSS. Then size the limits for 100 / 1k / 10k users from 15 RPM / 500 RPD on flash-lite and 100/min on embeddings. Lean uses ~6 LLM calls per 17-min lecture, so 500 RPD is about 80 lectures a day per key.
+      2. **Small lean follow-ups** (listed under "Follow-ups" below):
+         - Dedupe near-identical screenshots in `lean/chapters.select_screenshots`.
+         - Note references should seek to the section's `start_sec`.
+         - Tutor `output_tokens_per_turn` always reads 28, so streamed output is probably under-metered.
+      3. **Cleanup:**
+         - Remove `chromadb` from requirements once `seed_data` is re-indexed (`python -m tutor.indexing seed_data/<id>`).
+         - Decide when to delete the legacy chain (`_run_legacy_stages`, extract/, visual/, merge/chapter-build modules).
+         - Update `README.md` and `docs/TUTORIAL.md` for the lean pipeline.
+      4. **Final:** a before/after report, then merge `phase2` → `master` (ask the user first).
+    - **How to run things:**
+      - **Offline tests:** `scripts/run-tests.sh` (43 suites + pyflakes); estimator: `venv/bin/python backend/test_estimate.py`; frontend: `cd frontend && npx vitest run && npm run lint && npx tsc -b`.
+      - **Lean CLI:** `NORAI_PIPELINE=lean venv/bin/python -m lean.pipeline --source <url> --out outputs/<name>` (full run, ~$0.03 for 17 min), or `--reuse outputs/<id>` (structure + chapters + index only).
+      - **Tutor eval:** `NORAI_EVAL_JUDGE=gemini-3.8-flash venv/bin/python -m tutor.evals.answer_eval --set dp8|calc17|aws71 --label <x> [--lecture-dir outputs/<dir>] [--rejudge|--no-judge]`. Each `--rejudge` is 1 judge call.
+      - **Notes eval:** `... -m tutor.evals.notes_fidelity outputs/<dir> ...` makes 1 judge call per lecture. It writes `notes_fidelity__<dir>.json`; rename it with a `__j38`/`__j35` suffix to keep the judge visible.
+      - **Timestamp check (free, no LLM call):** `venv/bin/yt-dlp --skip-download --write-auto-subs --sub-langs en --sub-format json3 -o "%(id)s" <url>`, then `venv/bin/python -m tutor.evals.timestamp_check <id>.en.json3 outputs/<dir>/transcripts/<id>.json`. Re-run it whenever the transcription prompt changes.
+      - **UI smoke test locally:** the Supabase project in `.env` is gone.
+        1. Start the servers with `DATABASE_URL=sqlite+aiosqlite:///outputs/norai_main.db scripts/start-dev.sh start`.
+        2. In the browser at `http://localhost:5173`, set localStorage `sb-eaaeujkkiflzunrwyfzx-auth-token` to `{"access_token":"dev-token","refresh_token":"x","token_type":"bearer","expires_in":2592000,"expires_at":<now+30d>,"user":{"id":"dev-user-0000-0000-0000-000000000000","aud":"authenticated","email":"dev@norai.local","app_metadata":{},"user_metadata":{}}}`.
+        3. Reload. `NORAI_DEV_ACCESS=1` maps `dev-token` to the dev user (Pro, unlimited minutes). Upload lives at `/app`.
+    - **Quotas (free tier, per API key):**
+      - gemini-3.8-flash and gemini-3.6-flash: 20 requests a day, 5 a minute.
+      - 3.1/3.5 flash-lite: ~500 a day.
+      - gemini-embedding-2: 100 a minute, plus a daily cap.
+      - The user swaps keys when a quota runs out, and paid test calls are fine.
+    - **Eval artifacts:**
+      - `tutor/evals/results/`: `<set>__baseline.json` (3.8-graded), `*_j35.json` (3.5-lite), `*_v2_j38.json` and `*_lean_j38.json`, and `notes_fidelity__<dir>__j35|j38.json`.
+      - Lecture dirs (gitignored): `outputs/dp-8m-v2`, `outputs/01c0e1ce-…` (calc17), `outputs/aws-71m-v2` (legacy); `outputs/lean-dp8|lean-calc17|lean-aws71` (lean reuse); `outputs/lean-full-calc17` (lean full run); `outputs/dc58a8de-…` (UI smoke test).
   - **Landed (committed):**
     - `8e4ecdd` orphaned pipelines (worker gone after restart) recover in ~90 s (`PIPELINE_ORPHAN_TIMEOUT_SEC` = 3× heartbeat) instead of 15 min; live jobs still get the 15-min stuck timeout (`backend/jobs.py` `_running` set).
     - `c9c63fe` Gemini retry honours the server's "retry in Xs" hint (embedding free tier is 100 docs/min).
@@ -68,11 +112,11 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
     - `7195cad` chat shows only verified citations; timestamp refs seek the video.
   - **Tutor eval harness (`tutor/evals/answer_eval.py`, `make_questions.py`, sets in `tutor/evals/data/`):** 66 transcript-grounded questions (core/detail/out_of_scope/false_premise) over dp8 (`outputs/dp-8m-v2`), calc17 (`outputs/01c0e1ce…`), aws71 (`outputs/aws-71m-v2`). Run: `venv/bin/python -m tutor.evals.answer_eval --set dp8 --label v2 [--no-judge|--rejudge]`. Judge = `gemini-3.8-flash` (20 calls/day, often 503) — override with `NORAI_EVAL_JUDGE=gemini-3.5-flash-lite`; keep the SAME judge for baseline vs v2 (rejudge baselines if switching).
   - **Baseline (old Chroma/notes-only tutor):** core acc dp8 .94 / calc17 .75 / aws71 .94; detail acc 0.0 / .56 / 1.0; false "not covered" .38 / .07 / 0; OOS abstain 0 / .25 / 1.0; unsupported lecture claims .78 / .20 / .04; invented visuals .83 / 1.0 / 0; citations verified .62 / .66 / .58; p50 5.5–7.1 s; 3 calls/turn, ~$0.0005/turn. (AWS set is easy — compare within a set only.)
-  - **v2 eval NOT yet graded.** v2 answers are collected and committed for all 3 sets (`results/*__v2.json`, ungraded: dp8 23, calc17 20, aws71 23 rows) — just run `--rejudge` per set with the same judge as the baselines. Manual read of dp8 v2: detail Qs now right with verified timestamps, OOS + Prim's false premise handled; the "time complexity" OOS question is still answered because the **notes contain O(n²) which the transcript never says** (came from extraction `inferred_knowledge`) — root fix is the lean pipeline below. Prompt placeholder citation fixed (model copied "a few words on what was said there").
+  - **v2 eval: graded** (see the 3.5-lite and 3.8 tables below; `results/*__v2_j35.json`, `*__v2_j38.json`). Manual read of dp8 v2: detail Qs now right with verified timestamps, OOS + Prim's false premise handled; the "time complexity" OOS question is still answered because the **notes contain O(n²) which the transcript never says** (came from extraction `inferred_knowledge`) — root fix is the lean pipeline below. Prompt placeholder citation fixed (model copied "a few words on what was said there").
   - **Cost baseline (ledger, 17-min calc):** 29 calls, 81.7k in / 27.0k out, $0.061. Transcription 1 call $0.023 (11.3k JSON output tokens for ~3.9k tokens of speech — output dominates); extract 11 calls; outline 1; visual 4 (20.3k in); screenshot selection 4 (15.9k in, frames re-uploaded); notes 4; embed 4. 71-min: 87 calls, 1,054 s. Flash-lite 3.1 does NOT think by default (thoughts=None), so ledger output counts are complete. Frames at `MEDIA_RESOLUTION_LOW` = ~270 tokens vs 1,100 default, same OCR quality on slides/diagrams.
   - **Findings driving the next step:** chapter JSON fed to the notes call is a 3×-redundant LLM paraphrase (≈7 KB) that is *larger* than the chapter's raw transcript (≈4.5 KB) and carries invented `inferred_knowledge`. Visual stage labels 3Blue1Brown animations "talking_head". `combine_notes()` mutates module globals (`_nsg.NOTES_DIR`) — unsafe with concurrent pipelines. One invalid quiz question fails the whole chapter's artifacts (pydantic validator) → degraded chapter.
   - **Lean pipeline — DEFAULT since 2026-10-28.** `NORAI_PIPELINE=lean|legacy` (default `lean`; `legacy` still works; read per run via `config.pipeline_mode()`). Orchestrator: legacy stages 2–16 moved verbatim into `_run_legacy_stages()`; lean = `lean/pipeline.run_lean_stages()`. Ingestion, duration limits, tutor index, metering and cleanup are shared.
-    - `transcription/gemini_transcriber.py` `compact=True`: one `[start] text` line per sentence, parsed by `parse_compact_transcript` (end = next start, capped at 1 s + 0.6 s/word so silences don't stretch sentences). Output-token saving NOT measured yet (needs a fresh download — the eval lectures' audio was cleaned up).
+    - `transcription/gemini_transcriber.py` `compact=True`: one `[MM:SS] text` line per sentence, parsed by `parse_compact_transcript` (end = next start, capped at 1 s + 0.6 s/word so silences don't stretch sentences). Saves 60% of transcription output tokens (measured in the full run below).
     - `lean/structure.py`: ONE call over the chunk-tagged transcript → title + contiguous chapter ranges (repaired locally), target ≈ 1 chapter / 4 min (cap 10). Writes the outline with a top-level `chunks` list; `backend/video_map.load_chunk_times` reads it first (fallback `merged_objects/`).
     - `lean/chapters.py`: ONE call per chapter = chapter transcript `[m:ss]` + ≤12 evenly-sampled keyframes inline at `MEDIA_RESOLUTION_LOW` → notes sections with `start_sec` (NotesView seeks to it; falls back to the old chunk guess), revision, quiz (each question repaired/validated alone, bad ones dropped), per-frame OCR/type/importance → `screenshots/selected/chapter_N_screenshots.json` + `visual_objects/visual_analysis_chN.json`. Notes length target ≈ ½ the chapter's spoken words (300–2200) with strict grounding rules. Daily-quota errors fail the run; other failures degrade one chapter and leave no cache marker (retried next run).
     - Shared writers in `notes/notes_generator.py` (`write_chapter_artifacts`, `write_degraded_chapter`, `write_combined_notes`) — legacy no longer mutates module globals to write notes.md. `cache_util.digest` now treats over-long strings as literals (was `OSError: File name too long`).
@@ -86,7 +130,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       | calc17 | baseline / v2 / lean | .63 / 1.0 / 1.0 | .07 / 0 / 0 | 0 / .75 / 1.0 | .66 / .94 / .98 | 6.7 / 4.0 / 4.3 | 3 / 2 / 2 |
       | aws71 | baseline / v2 / lean | 1.0 / 1.0 / 1.0 | 0 / 0 / 0 | 1.0 / 1.0 / 1.0 | .58 / .96 / 1.0 | 7.1 / 4.0 / 4.1 | 3 / 2 / 2 |
 
-      Core accuracy and premise correction 1.0 everywhere; cost ≈ $0.00055/turn. **The 3.5-lite judge is lenient** (same baseline answers: unsupported-claim rate .78 under 3.8 vs .04 under 3.5-lite; it scored v2's dp8 "O(n²)" answer as an abstention). Hand check of that question: v2 answers O(n²) from the legacy notes; lean says the lecture doesn't give it, then labels O(n²) as general knowledge — the root fix works. `tutor/evals/notes_fidelity.py` under 3.5-lite is too erratic to use (uniform 1-per-chapter / 4-per-chapter missing-point counts; 0 unsupported on legacy calc17 notes that contain invented material) — re-run under 3.8-flash when it's available (6 calls).
+      Core accuracy and premise correction 1.0 everywhere; cost ≈ $0.00055/turn. **The 3.5-lite judge is lenient** (same baseline answers: unsupported-claim rate .78 under 3.8 vs .04 under 3.5-lite; it scored v2's dp8 "O(n²)" answer as an abstention). Hand check of that question: v2 answers O(n²) from the legacy notes; lean says the lecture doesn't give it, then labels O(n²) as general knowledge — the root fix works. `tutor/evals/notes_fidelity.py` under 3.5-lite is too erratic to use (uniform 1-per-chapter / 4-per-chapter missing-point counts; 0 unsupported on legacy calc17 notes that contain invented material) — superseded by the 3.8 run below.
     - **Full `--source` run (2026-10-28, `outputs/lean-full-calc17`, 17-min calculus video, after the timestamp fix below):** it completed with 4 chapters, 0 degraded, and 142 s wall time. Stage times: transcription 40 s, outline 27 s, chapters 24 s.
       - **Calls and cost:** 9 calls for **$0.0335**, against 29 calls and $0.061 for legacy. That splits into 1 transcription, 1 outline, 4 chapter and 3 embedding calls.
       - **Compact transcription:** 4,470 output tokens against 11.3k for legacy JSON (−60%). It cost $0.0131 against $0.023. It kept 2,948 of 2,949 words, in 123 segments.
@@ -135,7 +179,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
     - **Follow-ups:**
       - `lean/chapters.select_screenshots` can pick two near-identical frames; in dp8 chapter 1, two different frames got the same "problem description" caption. Deduping by caption or by perceptual hash would fix it.
       - Note-type references give the chapter start (0:00) rather than the section's `start_sec`.
-  - **Then:** server load (frame/scene CPU+RAM per lecture, prod venv RSS 243 MB `backend.main`; chromadb can now leave requirements.txt once seed_data is re-indexed with `python -m tutor.indexing seed_data/<id>` and seed chroma dirs removed), limits at 100/1k/10k users (500 RPD, 15 RPM, embed 100/min), durability/product gaps, final before/after report. Also: tutor `output_tokens_per_turn` reads 28 for every turn — streamed output tokens likely under-metered; (AGENTS.md model name + `scripts/run-tests.sh` fixed 2026-10-28.)
+  - **Then (see RESUME HERE above):** server load (frame/scene CPU+RAM per lecture, prod venv RSS 243 MB `backend.main`; chromadb can now leave requirements.txt once seed_data is re-indexed with `python -m tutor.indexing seed_data/<id>` and seed chroma dirs removed), limits at 100/1k/10k users (500 RPD, 15 RPM, embed 100/min), durability/product gaps, final before/after report. Also: tutor `output_tokens_per_turn` reads 28 for every turn — streamed output tokens likely under-metered; (AGENTS.md model name + `scripts/run-tests.sh` fixed 2026-10-28.)
 - **Phase 1 launch readiness for India (2026-10-27, branch `fix/threads-and-pdf`).**
   - **Payments**: Razorpay one-time 30-day passes replace Lemon Squeezy. Free ₹0 / 45 min, Starter ₹149 / 300 min / 90-min lectures, Pro ₹449 / 1200 min / 180-min lectures (`backend/plans.py`, prices env-overridable). Server creates the order, verifies the checkout signature, re-fetches the payment, and grants via conditional UPDATEs, so verify and webhook can race safely. Webhooks are idempotent on `rzp:<event-id>` and fail closed without a secret. Payments are off unless `ENABLE_PAYMENTS=1` and both keys are set.
   - **Public site**: landing page redesigned in the vellum/red-pencil system; `/pricing` in rupees; build-time SEO plugin emits JSON-LD, a noscript summary, robots.txt, sitemap.xml and llms.txt from the same content modules the pages render.
