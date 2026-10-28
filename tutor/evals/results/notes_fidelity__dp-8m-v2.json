@@ -1,0 +1,49 @@
+{
+  "lecture_dir": "outputs/dp-8m-v2",
+  "judge": "gemini-3.5-flash-lite",
+  "summary": {
+    "chapters": 3,
+    "notes_words": 1435,
+    "claims": 38,
+    "unsupported": 6,
+    "unsupported_rate": 0.158,
+    "missing_key_points": 5
+  },
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "total_claims": 13,
+      "unsupported_claims": [
+        "Step 3: Refine State Definition - Adjust what information needs to be stored (the state) if the initial assumption fails due to missing details.",
+        "Step 4: Establish Transitions - Formulate how to transition from the known subproblems to the target problem.",
+        "Step 5: Implement and Optimize - Convert the recurrence relation into an efficient memoized or tabulated solution."
+      ],
+      "missing_key_points": [
+        "The lecturer mentions giving more than 100 interviews and solving 554 LeetCode problems.",
+        "The lecturer mentions a friend giving him the LIS problem and telling him he would never crack big tech interviews if he could not solve it.",
+        "The specific example numbers given in the transcript are 0, 1, 2, and 3, resulting in a length of 4."
+      ]
+    },
+    {
+      "chapter_id": 2,
+      "total_claims": 14,
+      "unsupported_claims": [
+        "Unlike substrings, subsequences do not need to be contiguous elements within the original array; they only need to maintain their relative left-to-right order.",
+        "Table comparing Substring / Subarray vs Subsequence vs LIS State Requirement."
+      ],
+      "missing_key_points": [
+        "The lecturer explains how taking the first two numbers, then the first three numbers, makes the assumption real by defining the last number as the current end of consideration."
+      ]
+    },
+    {
+      "chapter_id": 3,
+      "total_claims": 11,
+      "unsupported_claims": [
+        "Python implementation code block containing specific syntax like def lengthOfLIS(self, nums: List[int]) -> int."
+      ],
+      "missing_key_points": [
+        "The lecturer concludes by recommending a video where he solves an Amazon interview binary tree problem in just one line."
+      ]
+    }
+  ]
+}

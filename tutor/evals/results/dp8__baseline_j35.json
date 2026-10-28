@@ -1,0 +1,1737 @@
+{
+  "summary": {
+    "n": 23,
+    "graded": 23,
+    "accuracy_core": 1.0,
+    "accuracy_detail": 0.062,
+    "false_not_covered": 0.25,
+    "oos_abstain": 0.0,
+    "premise_corrected": 1.0,
+    "unsupported_claim": 0.043,
+    "invented_visual": 0.696,
+    "answers_citing": 0.913,
+    "citations_verified": 0.618,
+    "latency_p50_s": 5.48,
+    "calls_per_turn": 3,
+    "input_tokens_per_turn": 1830,
+    "output_tokens_per_turn": 28,
+    "cost_per_turn_usd": 0.000496
+  },
+  "rows": [
+    {
+      "category": "core",
+      "question": "Why does the lecturer argue that dynamic programming is not technically an algorithm?",
+      "gold_answer": "The lecturer explains that dynamic programming is more accurately described as a problem-solving technique rather than a specific algorithm.",
+      "quote": "Technically speaking, DP is not an algorithm. It's actually a problem solving technique.",
+      "quote_ts": 18.14,
+      "answer": "The lecturer distinguishes Dynamic Programming (DP) as a **problem-solving paradigm** or technique rather than a single, isolated algorithm because it doesn't provide a fixed set of steps to solve every problem. Instead, it is a framework for breaking down complex problems into overlapping sub-problems and storing their results to avoid redundant calculations.\n\nAs seen in the lecture slide on \"Array Storage and State Definition,\" the core of this technique lies in how you define your state—such as anchoring a subsequence to a specific index rather than just looking at the array length—to transform a brute-force approach into an optimized one.\n\nWould you like to walk through how we define those states for a specific problem?\n\n**Sources**\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING\n• Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 8.42,
+      "calls": 3,
+      "input_tokens": 1696,
+      "output_tokens": 29,
+      "cost_usd": 0.000464,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.275790943218463,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "chapter_id": 1,
+          "distance": 0.3193082911070769,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.3479536522079931,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.39054716303543335
+        }
+      ],
+      "citations": [
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "verified": true,
+          "chunk_id": "chunk_92513e39da090fbe",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "heading": "1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1
+        },
+        {
+          "section": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "verified": true,
+          "chunk_id": "chunk_29cbab2b945a862a",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "heading": "2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 0,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor correctly explains why DP is not an algorithm but invents a specific lecture slide."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the primary reason the lecturer recommends using assumptions instead of breaking problems into sub-problems?",
+      "gold_answer": "Breaking problems into sub-problems can become overly mathematical and difficult to understand, whereas making assumptions leverages our natural human tendency to make judgments.",
+      "quote": "Most people learn to solve DP problems by breaking them into sub-problems. And when you try to do that, the approach becomes quite mathematical and hard to understand. That's why, instead of thinking in terms of sub-problems, I recommend making an assumption.",
+      "quote_ts": 40.02,
+      "answer": "The lecturer recommends using assumptions because jumping straight into abstract mathematical sub-problem decomposition can be intimidating and creates a steep learning curve. By starting with an assumption—pretending you already have the answer to a smaller version of the problem—you shift your focus from complex theory to a more intuitive, practical construction of the solution.\n\nAs shown in the lecture slide on \"Array Storage and State Definition,\" this approach helps you systematically identify what information (or \"state\") you actually need to store to solve the larger problem. Would you like to try applying this 5-step framework to a specific problem?\n\n**Sources**\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE\n• Array Storage and State Definition",
+      "latency_s": 5.69,
+      "calls": 3,
+      "input_tokens": 1803,
+      "output_tokens": 29,
+      "cost_usd": 0.000491,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "chapter_id": 1,
+          "distance": 0.30138847066492436,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.3103719688180644,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.3224835977088143,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.4398577086308052
+        }
+      ],
+      "citations": [
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "verified": true,
+          "chunk_id": "chunk_92513e39da090fbe",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "heading": "1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1
+        },
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "verified": true,
+          "chunk_id": "chunk_70c48396084dc88a",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "heading": "2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "chapter_id": 1
+        },
+        {
+          "section": "Array Storage and State Definition",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 1,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor captures the reference explanation well while hallucinating a visual slide."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the fundamental requirement for the original problem and the assumed problem in dynamic programming?",
+      "gold_answer": "The original problem and the assumed problem must be somewhat different from each other for the dynamic programming approach to be effective.",
+      "quote": "The main point I am trying to make here is that the original problem and the assumed problem have to be somewhat different for dynamic programming to work.",
+      "quote_ts": 189.54,
+      "answer": "The fundamental requirement is that the subproblem must differ from the original problem. If the subproblem is identical to the original, you haven't actually broken the problem down; you've just created a circular dependency.\n\nTo make progress, you must restrict the scope of the subproblem. For example, in the Longest Increasing Subsequence problem shown in the lecture slide on *Array Storage and State Definition*, instead of asking for the LIS of the entire array, we anchor the subproblem to a specific endpoint, such as the LIS ending precisely at index $i$. This constraint allows you to build the solution for the larger problem using the results of these smaller, anchored pieces.\n\nShould we walk through how that \"anchoring\" helps us build the final solution?\n\n**Sources**\n• Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 9.64,
+      "calls": 3,
+      "input_tokens": 2036,
+      "output_tokens": 29,
+      "cost_usd": 0.000549,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.22470822583398709,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.2516098556429156,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "chapter_id": 1,
+          "distance": 0.2921192267704441,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.27070782418556005,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "chapter_id": 1,
+          "distance": 0.2934269558479161,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.35459668331533045
+        }
+      ],
+      "citations": [
+        {
+          "section": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "verified": true,
+          "chunk_id": "chunk_29cbab2b945a862a",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "heading": "2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 2,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor accurately states the requirement for DP subproblems while referencing a non-existent slide."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the purpose of the recursive rule in the context of the longest-increasing subsequence problem?",
+      "gold_answer": "The recursive rule formalizes the logic of checking all previous indices to see if a current number can extend an existing subsequence to create a longer one.",
+      "quote": "Recursive rule is just a fancy way of formalizing what we have already discussed. To find the length of the longest-increasing subsequence ending at the current last index, we go through all the indices to the left of it.",
+      "quote_ts": 352.26,
+      "answer": "The recursive rule serves to build the solution for a larger problem by leveraging the results of smaller, previously solved subproblems. Specifically, for the Longest Increasing Subsequence (LIS) problem, it determines if the current element at index $i$ can extend an existing increasing subsequence that ends at some earlier index $j$.\n\nAs shown in the lecture slide on Array Storage and State Definition (frame 416), we maintain an array where each entry stores the length of the LIS ending at that specific index. The recursive rule checks if the value at the current index is greater than the value at a previous index; if it is, we update our current state to be the maximum of its existing value or the length of the subsequence ending at $j$ plus one. This ensures that we are always extending the longest possible valid sequence found so far.\n\nShould we walk through a quick example to see how that update happens in practice?\n\n**Sources**\n• Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS\n• Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 5.88,
+      "calls": 3,
+      "input_tokens": 2017,
+      "output_tokens": 29,
+      "cost_usd": 0.000545,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.16348048340424925,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.21876275424729974,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.22788501041263354,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.2319970277084098,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2,
+          "distance": 0.2402883213772009,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.32629648064364847
+        }
+      ],
+      "citations": [
+        {
+          "section": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "verified": true,
+          "chunk_id": "chunk_038d5a906426269a",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "heading": "5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "verified": true,
+          "chunk_id": "chunk_36b1957a16fef066",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "heading": "5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 3,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The recursive rule is explained correctly, though it mentions a fabricated visual slide."
+      }
+    },
+    {
+      "category": "core",
+      "question": "How does the lecturer define the base case for the longest-increasing subsequence problem?",
+      "gold_answer": "The base case is defined by initializing the length of the longest-increasing subsequence ending at any index to 1, because each individual number is a subsequence of length 1.",
+      "quote": "Each number by itself can be seen as a subsequence of length 1, ending at its own index. And this subsequence is an increasing subsequence because it has only one number. So the initial length for the longest-increasing subsequence ending at any index would be 1.",
+      "quote_ts": 414.62,
+      "answer": "The lecturer defines the base case by recognizing that any single element in a sequence is, by itself, a valid increasing subsequence of length 1. To represent this, you initialize an array (often called `lis`) where every entry is set to 1, as shown in the lecture slide on Array Storage and State Definition, which illustrates the `lis` array initialized with 1s across all indices. This ensures that the minimum possible length for any non-empty subsequence is correctly accounted for before you begin checking for longer sequences.\n\nShould we walk through how this base case is used when you start comparing elements to build longer subsequences?\n\n**Sources**\n• Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION\n• Array Storage and State Definition (File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg)",
+      "latency_s": 4.26,
+      "calls": 3,
+      "input_tokens": 1921,
+      "output_tokens": 27,
+      "cost_usd": 0.000517,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.2394901887612536,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.26925213936374615,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.264946551157763,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "chapter_id": 3,
+          "distance": 0.22050881722383653,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.2733158700664081,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.31146147818488357
+        }
+      ],
+      "citations": [
+        {
+          "section": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "verified": true,
+          "chunk_id": "chunk_b6ca0336569a94ed",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "heading": "2. BASE CASE AND INITIALIZATION",
+          "chapter_id": 3
+        },
+        {
+          "section": "Array Storage and State Definition (File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 4,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The base case definition matches the transcript, accompanied by an invented visual."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the final step in determining the answer to the longest-increasing subsequence problem once the array of lengths is populated?",
+      "gold_answer": "To get the final answer, you take the maximum value found in the array that stores the lengths of the longest-increasing subsequences ending at every index.",
+      "quote": "Now for the answer of the original question, we don't care about which index the subsequence ends at. So we take the maximum of longest subsequence ending at every index and that would be our final answer.",
+      "quote_ts": 336.7,
+      "answer": "Once you have populated your state array (often called `lis` or `Length`), where each index $i$ stores the length of the longest increasing subsequence ending exactly at that position, the final step is to find the maximum value across the entire array. This is because the global longest increasing subsequence could end at any index $i$ in the original sequence, so you must extract $\\max(\\text{Length}[0 \\dots n-1])$ to find the overall solution.\n\nAs shown in the lecture slide on \"Array Storage and State Definition\" (frame 416), this state array tracks the local maximums for every possible ending position, and the global maximum represents the optimal result for the entire input.\n\nWould you like to walk through an example array to see how this final extraction works?\n\n**Sources**\n• Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 4.63,
+      "calls": 3,
+      "input_tokens": 2033,
+      "output_tokens": 27,
+      "cost_usd": 0.000544,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.24530031524449203,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2,
+          "distance": 0.25274832661156954,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "chapter_id": 3,
+          "distance": 0.26601965572864983,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "chapter_id": 1,
+          "distance": 0.3073617020769117,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.28808080098790245,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.32363657461503836
+        }
+      ],
+      "citations": [
+        {
+          "section": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "verified": true,
+          "chunk_id": "chunk_36b1957a16fef066",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "heading": "5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 5,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The final step is correctly identified as taking the maximum value from the array."
+      }
+    },
+    {
+      "category": "core",
+      "question": "How does the implementation handle the process of considering an increasing number of elements from the input array?",
+      "gold_answer": "An outer for loop is used to incrementally consider more numbers from the array, starting from the first two and ending at the last index.",
+      "quote": "Now we have a for loop that decides how many numbers of the array are we considering at the current time. In the beginning, we are considering only the first two numbers. So we start the loop at the index 1. In the end, we want to consider all the numbers.",
+      "quote_ts": 463.06,
+      "answer": "The implementation handles this by using a nested loop structure to incrementally build the solution. The outer loop moves through the array index by index, effectively expanding the \"prefix\" of the array we are considering, while the inner loop looks back at all previously processed elements to see if the current number can extend an existing increasing subsequence.\n\nAs shown in the lecture slide on **Array Storage and State Definition**, the `lis` array stores the longest subsequence ending at each specific index. By checking every `j < i`, the algorithm ensures that for each new element `nums[i]`, we find the best possible subsequence length that could have been formed by any of the elements appearing before it.\n\nShould we walk through how the `lis` values update for a small example array like `[10, 9, 2, 5]`?\n\n**Sources**\n• Algorithm Design, State Definition, and Implementation > 3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 6.91,
+      "calls": 3,
+      "input_tokens": 2136,
+      "output_tokens": 29,
+      "cost_usd": 0.000575,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2,
+          "distance": 0.27668680515460753,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "chapter_id": 3,
+          "distance": 0.29054903718388203,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "chapter_id": 3,
+          "distance": 0.28645413422372745,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 4. STATE TRANSITION COMPARISON",
+          "chapter_id": 3,
+          "distance": 0.23560813960655824,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.28215482445343554,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.2971272920333986
+        }
+      ],
+      "citations": [
+        {
+          "section": "Algorithm Design, State Definition, and Implementation > 3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "verified": true,
+          "chunk_id": "chunk_e507dbb5a281f16d",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "heading": "3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 6,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The nested loop approach is accurately explained with a reference to an invented slide."
+      }
+    },
+    {
+      "category": "core",
+      "question": "Why is it important to know the ending number of a subsequence when solving the longest-increasing subsequence problem?",
+      "gold_answer": "Knowing the ending number is necessary to determine if a new number can be added to the end of the existing subsequence to extend it.",
+      "quote": "If you remember, we compared 3 to the highest number in the longest subsequence so far to decide whether the subsequence can be expanded by adding 3 to it. So knowing where a subsequence ends is very important to solve this problem",
+      "quote_ts": 208.06,
+      "answer": "Knowing the ending number is crucial because, as shown in the lecture slide on \"Array Storage and State Definition,\" the validity of extending a subsequence depends entirely on whether the next element is strictly greater than the current tail. If you don't track the value of the last element, you wouldn't know if a new number can legally be appended to maintain the \"strictly increasing\" property.\n\nEssentially, the state definition needs to capture enough information to make future decisions, and the terminal value is the specific constraint that dictates whether an extension is possible.\n\nShould we walk through how the `lis` array updates based on these comparisons?\n\n**Sources**\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS\n• Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 4.81,
+      "calls": 3,
+      "input_tokens": 1919,
+      "output_tokens": 28,
+      "cost_usd": 0.000519,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.23930164184014746,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "chapter_id": 1,
+          "distance": 0.24801718568903486,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "chapter_id": 3,
+          "distance": 0.2667779201168061,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.23970621080311727,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.24957372712382153,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.33415839655146606
+        }
+      ],
+      "citations": [
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "verified": true,
+          "chunk_id": "chunk_d3128b20455197f4",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "heading": "5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "chapter_id": 1
+        },
+        {
+          "section": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "verified": true,
+          "chunk_id": "chunk_038d5a906426269a",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "heading": "5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 7,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The reason for knowing the ending number is correctly stated based on the transcript."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "How many coding problems has the lecturer solved on LeetCode?",
+      "gold_answer": "The lecturer has solved 554 problems on LeetCode.",
+      "quote": "In my journey to solve 554 lead code problems, DP is what took me the longest time to master.",
+      "quote_ts": 22.66,
+      "answer": "The lecture materials provided do not mention how many LeetCode problems the lecturer has solved. The focus of this lecture is strictly on the methodology of Dynamic Programming, such as the 5-step framework and the Longest Increasing Subsequence benchmark, rather than the lecturer's personal coding history.\n\nWould you like to walk through the 5-step framework mentioned in the notes to see how it applies to a problem?\n\n**Sources**\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 5.95,
+      "calls": 3,
+      "input_tokens": 1567,
+      "output_tokens": 29,
+      "cost_usd": 0.000433,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.3498558903918606,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.347899174406604,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.4158997915461633
+        }
+      ],
+      "citations": [
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "verified": true,
+          "chunk_id": "chunk_92513e39da090fbe",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "heading": "1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1
+        },
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "verified": true,
+          "chunk_id": "chunk_4530ae6312022f9c",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "heading": "3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 8,
+        "verdict": "incorrect",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor falsely claims the lecture does not mention the number of LeetCode problems solved."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What specific example numbers does the lecturer use to illustrate the longest-increasing subsequence?",
+      "gold_answer": "The lecturer uses the sequence 0, 1, 2, and 3 to demonstrate an increasing subsequence.",
+      "quote": "If you look at this example, 0, 1, 2 and 3 appear in an increasing order, which is our longest subsequence.",
+      "quote_ts": 101.02,
+      "answer": "The lecturer uses the array `[10, 9, 2, 5, 3, 7, 101, 18]` to illustrate the Longest Increasing Subsequence (LIS) problem. As shown in the slide on Array Storage and State Definition, this sequence is used to demonstrate how to track the length of the longest subsequence ending at each index by comparing the current value with all preceding elements.\n\nWould you like to walk through how the state values are calculated for this specific array?\n\n**Sources**\n• Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 4.59,
+      "calls": 3,
+      "input_tokens": 2017,
+      "output_tokens": 29,
+      "cost_usd": 0.000545,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.267985609678447,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.2955562564268017,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.31319227761432966,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "chapter_id": 2,
+          "distance": 0.3109088045810823,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.32136201011822985,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.3279296573483652
+        }
+      ],
+      "citations": [
+        {
+          "section": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "verified": true,
+          "chunk_id": "chunk_bbf8325df40a96e8",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "heading": "1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 9,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": true,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor hallucinates a specific example array that was not present in the transcript."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the lecturer's name?",
+      "gold_answer": "The lecturer's name is Sahil.",
+      "quote": "My name is Sahil and I'll see you in the next one.",
+      "quote_ts": 517.7,
+      "answer": "I don't have access to the lecturer's name in the provided course materials. The lecture resources focus specifically on the technical aspects of Dynamic Programming, such as the LIS problem formulation and state initialization.",
+      "latency_s": 4.44,
+      "calls": 3,
+      "input_tokens": 1432,
+      "output_tokens": 24,
+      "cost_usd": 0.000392,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.4232582404919163,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "chapter_id": 3,
+          "distance": 0.4567470110883536,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.44428328793001015
+        }
+      ],
+      "citations": [],
+      "grade": {
+        "id": 10,
+        "verdict": "incorrect",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor incorrectly states it lacks access to the lecturer's name, which was given at the end."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "How many interviews has the lecturer conducted?",
+      "gold_answer": "The lecturer has given more than 100 interviews.",
+      "quote": "The answer from my experience of giving more than 100 interviews is Dynamic programming.",
+      "quote_ts": 9.34,
+      "answer": "This topic doesn't appear to be covered in the lecture material. The provided notes focus on the methodology of Dynamic Programming and specific problem-solving techniques rather than the lecturer's personal background or professional history. \n\nWould you like to walk through the 5-step framework mentioned in the lecture for solving DP problems instead?",
+      "latency_s": 5.49,
+      "calls": 3,
+      "input_tokens": 1440,
+      "output_tokens": 24,
+      "cost_usd": 0.000394,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.4257467984681027,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.4051399309632916,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.4446493578736862
+        }
+      ],
+      "citations": [],
+      "grade": {
+        "id": 11,
+        "verdict": "incorrect",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor incorrectly claims the topic is not covered despite it being in the transcript."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What other type of coding problem does the lecturer mention as being difficult for many people?",
+      "gold_answer": "The lecturer mentions that many people also find binary tree problems to be very difficult.",
+      "quote": "Other than DP, many people also find solving binary tree problems very difficult.",
+      "quote_ts": 506.94,
+      "answer": "The lecture highlights that Dynamic Programming is frequently cited as the most challenging and critical topic encountered in technical coding interviews. While it doesn't explicitly list other specific problem types as being equally difficult, it notes that the traditional approach of using rigorous mathematical sub-problem decomposition is what often makes DP feel intimidating to beginners.\n\nThe lecture slide on Array Storage and State Definition (frame 416) suggests that shifting away from that abstract mathematical focus toward a more intuitive, assumption-based framework is key to overcoming this difficulty.\n\n**Sources**\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING\n• Array Storage and State Definition",
+      "latency_s": 4.68,
+      "calls": 3,
+      "input_tokens": 1587,
+      "output_tokens": 28,
+      "cost_usd": 0.000435,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.2908091069053613,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.32965006216336223,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.3742829153933276
+        }
+      ],
+      "citations": [
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "verified": true,
+          "chunk_id": "chunk_92513e39da090fbe",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "heading": "1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1
+        },
+        {
+          "section": "Array Storage and State Definition",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 12,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor fails to mention binary trees despite the transcript explicitly discussing them."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What company's interview problem does the lecturer mention solving in one line in another video?",
+      "gold_answer": "The lecturer mentions solving a binary tree problem from an Amazon interview in one line.",
+      "quote": "If you are one of them, watch this video where I solve a binary tree problem asked in an Amazon interview in just one line.",
+      "quote_ts": 511.62,
+      "answer": "I don't recall the lecturer mentioning a specific company's interview problem that can be solved in one line in this particular lecture. The material focuses on the fundamentals of Dynamic Programming and using the Longest Increasing Subsequence as a benchmark to build intuition.\n\nWould you like to walk through the 5-step framework mentioned in the lecture for solving DP problems?\n\n**Sources**\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 4.55,
+      "calls": 3,
+      "input_tokens": 1588,
+      "output_tokens": 29,
+      "cost_usd": 0.000437,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.3345536496046304,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.33406076546323316,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.3870688370828803
+        }
+      ],
+      "citations": [
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "verified": true,
+          "chunk_id": "chunk_92513e39da090fbe",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "heading": "1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1
+        },
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "verified": true,
+          "chunk_id": "chunk_4530ae6312022f9c",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "heading": "3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 13,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor fails to recall the Amazon interview problem mentioned in the transcript."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What did the lecturer's friend tell him when he could not solve the longest-increasing subsequence problem?",
+      "gold_answer": "The friend told him that he would never be able to crack coding interviews at big tech companies if he could not solve such easy problems.",
+      "quote": "When I could not solve this problem, he told me that I would never be able to crack coding interviews at big tech companies if I could not solve such easy problems.",
+      "quote_ts": 79.1,
+      "answer": "I couldn't find any mention of a story involving the lecturer's friend in the provided lecture materials. The resources focus on the technical definition of the Longest Increasing Subsequence (LIS), the importance of state definition, and the logic behind the dynamic programming approach.\n\nThe lecture slide on \"Array Storage and State Definition\" (frame 416) highlights that when formulating these solutions, we must track the length of the subsequence ending at each specific index to build our final answer. Would you like to walk through how that state definition works?\n\n**Sources**\n• Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS\n• Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 5.07,
+      "calls": 3,
+      "input_tokens": 1938,
+      "output_tokens": 29,
+      "cost_usd": 0.000525,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.2884378817558946,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.3160398755010352,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.3147088013908682,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "chapter_id": 1,
+          "distance": 0.3247664036812268,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.3192295824446181,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.3603400855165423
+        }
+      ],
+      "citations": [
+        {
+          "section": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "verified": true,
+          "chunk_id": "chunk_bbf8325df40a96e8",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "heading": "1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "verified": true,
+          "chunk_id": "chunk_038d5a906426269a",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "heading": "5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "verified": true,
+          "chunk_id": "chunk_4530ae6312022f9c",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "heading": "3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1
+        },
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "verified": true,
+          "chunk_id": "chunk_d3128b20455197f4",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "heading": "5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "chapter_id": 1
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 14,
+        "verdict": "incorrect",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor incorrectly claims the friend story is missing from the lecture materials."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the specific phrase the lecturer repeats to explain how to make the assumption real?",
+      "gold_answer": "The lecturer repeatedly uses the phrase \"except the last one\" to explain the iterative process.",
+      "quote": "You must have noticed me saying the same phrase except the last one again and again. The answer lies in this very simple phrase.",
+      "quote_ts": 290.54,
+      "answer": "The lecturer emphasizes that to make the assumption real, you should **\"assume you already have the answer\"** for the smaller subproblems. As shown in the slide on Array Storage and State Definition, this shifts your focus from trying to solve the entire problem at once to simply figuring out how to combine those already-solved pieces to reach your next step.\n\nWould you like to try applying this \"assume you have the answer\" mindset to a simple problem like finding the maximum sum of a subarray?\n\n**Sources**\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE\n• Array Storage and State Definition (frame_416.jpg)",
+      "latency_s": 4.77,
+      "calls": 3,
+      "input_tokens": 1568,
+      "output_tokens": 26,
+      "cost_usd": 0.000427,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "chapter_id": 1,
+          "distance": 0.39506778601612746,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.3886607115968864,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.46481660251049317
+        }
+      ],
+      "citations": [
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "verified": true,
+          "chunk_id": "chunk_70c48396084dc88a",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "heading": "2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "chapter_id": 1
+        },
+        {
+          "section": "Array Storage and State Definition (frame_416.jpg)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 15,
+        "verdict": "partial",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "The tutor misses the exact repeated phrase requested but provides general related information."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What is the time complexity of the dynamic programming solution for the longest-increasing subsequence problem?",
+      "gold_answer": "The lecture does not provide information regarding the time complexity of the solution.",
+      "quote": "",
+      "answer": "The dynamic programming solution for the Longest Increasing Subsequence (LIS) problem has a time complexity of $O(n^2)$. This occurs because, for every index $i$ in the array, the algorithm iterates through all preceding indices to check if they can extend an existing subsequence.\n\nThe lecture slide on \"Array Storage and State Definition\" illustrates this by showing how we maintain an array of lengths where each entry is updated by comparing the current element against all previous ones. Should we walk through why this nested iteration leads to the $O(n^2)$ complexity?\n\n**Sources**\n• Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 8.59,
+      "calls": 3,
+      "input_tokens": 2020,
+      "output_tokens": 28,
+      "cost_usd": 0.000543,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.2254919308819946,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2,
+          "distance": 0.22605089651494592,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.23484102560980757,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.2773788368216016,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.2533813394598743,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.3180980831275768
+        }
+      ],
+      "citations": [
+        {
+          "section": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "verified": true,
+          "chunk_id": "chunk_36b1957a16fef066",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "heading": "5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 16,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "Out-of-scope question answered correctly with general knowledge after noting context."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How can I implement this solution using Python instead of pseudocode?",
+      "gold_answer": "The lecture does not provide specific code implementation in any programming language.",
+      "quote": "",
+      "answer": "To implement the Longest Increasing Subsequence (LIS) algorithm, you can use a list to store the length of the longest subsequence ending at each index, initialized to 1 since every single element is a subsequence of length one. As shown in the lecture code, you iterate through the array with an outer loop and check all preceding elements with an inner loop to see if they can form an increasing sequence.\n\nThe lecture slide (frame 416) illustrates this state definition by showing how each index in the array maps to a specific \"state\" representing the LIS ending at that position. By updating `lis[i]` whenever you find a smaller preceding element, you effectively build the solution incrementally.\n\nWould you like to walk through how the `lis` array changes step-by-step for a small example like `[10, 9, 2, 5]`?\n\n**Sources**\n• Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION\n• Algorithm Design, State Definition, and Implementation > 3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS\n• Array Storage and State Definition (frame 416)",
+      "latency_s": 5.75,
+      "calls": 3,
+      "input_tokens": 1616,
+      "output_tokens": 28,
+      "cost_usd": 0.000443,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "chapter_id": 3,
+          "distance": 0.38265392429593204,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "chapter_id": 2,
+          "distance": 0.39438507229088593,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.3982219913940249
+        }
+      ],
+      "citations": [
+        {
+          "section": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "verified": true,
+          "chunk_id": "chunk_0917f425c651ab89",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "heading": "3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "chapter_id": 2
+        },
+        {
+          "section": "Algorithm Design, State Definition, and Implementation > 3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "verified": true,
+          "chunk_id": "chunk_e507dbb5a281f16d",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "heading": "3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Array Storage and State Definition (frame 416)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 17,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "Out-of-scope question answered correctly with appropriate programming context."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "Are there any alternative algorithms that solve the longest-increasing subsequence problem faster than dynamic programming?",
+      "gold_answer": "The lecture does not discuss alternative algorithms or performance comparisons for this problem.",
+      "quote": "",
+      "answer": "Yes, while the standard dynamic programming approach takes $O(n^2)$ time, you can solve the Longest Increasing Subsequence (LIS) problem in $O(n \\log n)$ time using a greedy approach combined with binary search. Instead of just storing the length of the LIS ending at each index, you maintain a auxiliary array that tracks the smallest possible tail for all increasing subsequences of various lengths discovered so far.\n\nAs shown in the lecture slide on \"Array Storage and State Definition\" (frame 416), the standard DP approach focuses on building up the state by looking at all previous indices $j < i$. The $O(n \\log n)$ method optimizes this by using binary search to quickly find where a new element fits into your current \"best\" subsequence candidates, effectively replacing the inner loop of the DP.\n\nWould you like to walk through how that binary search process updates the candidate array?\n\n**Sources**\n• Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 5.48,
+      "calls": 3,
+      "input_tokens": 1932,
+      "output_tokens": 28,
+      "cost_usd": 0.000522,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.24253098820379415,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.26914986484987224,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "chapter_id": 1,
+          "distance": 0.2953366600731333,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.3126356926195244,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.27816734117346587,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.360250016699285
+        }
+      ],
+      "citations": [
+        {
+          "section": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "verified": true,
+          "chunk_id": "chunk_bbf8325df40a96e8",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "heading": "1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 18,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "Out-of-scope question answered correctly using standard algorithm knowledge."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What are the memory requirements for the LIS array used in this approach?",
+      "gold_answer": "The lecture does not mention the space complexity or memory requirements for the LIS array.",
+      "quote": "",
+      "answer": "The memory requirement for the `lis` array is $O(n)$, where $n$ is the number of elements in the input sequence. This is because we allocate a single array of size $n$ to store the length of the longest increasing subsequence ending at each index $i$, as shown in the lecture slide on Array Storage and State Definition.\n\nSince we only need to store one integer value for each position in the input array, the space complexity scales linearly with the input size.\n\n**Sources**\n• Algorithm Design, State Definition, and Implementation\n• Array Storage and State Definition",
+      "latency_s": 4.39,
+      "calls": 3,
+      "input_tokens": 2113,
+      "output_tokens": 29,
+      "cost_usd": 0.000568,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2,
+          "distance": 0.27964213876354704,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "chapter_id": 3,
+          "distance": 0.2520565249970186,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.2751272810117944,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "chapter_id": 3,
+          "distance": 0.25502495019225435,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 4. COMPARISON: SUBSTRING VS SUBSEQUENCE",
+          "chapter_id": 2,
+          "distance": 0.3039957993000624,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.2787627175541798
+        }
+      ],
+      "citations": [
+        {
+          "section": "Algorithm Design, State Definition, and Implementation",
+          "verified": true,
+          "chunk_id": "chunk_e507dbb5a281f16d",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "heading": "3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "chapter_id": 3
+        },
+        {
+          "section": "Array Storage and State Definition",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 19,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": true,
+        "note": "Out-of-scope memory requirements correctly provided using general algorithm knowledge."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Why does the lecturer suggest that Prim's algorithm is the hardest algorithm in coding interviews?",
+      "gold_answer": "The lecturer actually identifies dynamic programming, not Prim's algorithm, as the hardest and most frequently asked topic in coding interviews.",
+      "quote": "Which of these is the hardest algorithm asked in coding interviews? Is it A. Tykstra's algorithm or B. Prim's algorithm or C. Dynamic programming? The answer from my experience of giving more than 100 interviews is Dynamic programming.",
+      "quote_ts": 0.02,
+      "answer": "Actually, the lecture doesn't label Prim's algorithm as the hardest; it identifies **Dynamic Programming** as the most challenging and critical topic for technical coding interviews. The difficulty often stems from the fact that DP is a problem-solving paradigm rather than a single, isolated algorithm, which can make it feel abstract compared to more straightforward approaches.\n\nAs shown in the lecture slide on Array Storage and State Definition, the key to mastering this is moving away from purely mathematical sub-problem decomposition and instead using a structured framework that starts with making an intuitive assumption.\n\nWould you like to walk through that 5-step framework to see how it simplifies approaching these problems?\n\n**Sources**\n• 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING\n• Array Storage and State Definition",
+      "latency_s": 4.99,
+      "calls": 3,
+      "input_tokens": 1590,
+      "output_tokens": 27,
+      "cost_usd": 0.000435,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.3087206999379303,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.36149363442167814,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.45779019958025946
+        }
+      ],
+      "citations": [
+        {
+          "section": "1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "verified": true,
+          "chunk_id": "chunk_92513e39da090fbe",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "heading": "1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1
+        },
+        {
+          "section": "Array Storage and State Definition",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 20,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": true,
+        "note": "The tutor successfully corrects the false premise about Prim's algorithm."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Why does the lecturer claim that the longest-increasing subsequence problem is too hard for beginners?",
+      "gold_answer": "The lecturer explicitly states that the problem is neither too hard nor too easy, which is why he chose it for the demonstration.",
+      "quote": "There are two reasons why I picked this problem. 1. This problem is neither too hard, nor too easy.",
+      "quote_ts": 66.06,
+      "answer": "Actually, the lecturer doesn't claim it is \"too hard\"; rather, they describe it as a \"benchmark challenge\" because it has a balanced difficulty level. It is complex enough to move beyond trivial problems, yet structured enough to teach first-principles thinking.\n\nThe core challenge for students is shifting from a brute-force mindset to a Dynamic Programming (DP) state-transition approach. As shown in the lecture slide on *Array Storage and State Definition* (frame 416), you cannot simply define the subproblem as \"the LIS of the first $n$ numbers,\" because that just mirrors the original problem. Instead, you have to learn to anchor the subproblem to a specific index $i$, which is a conceptual leap for many beginners.\n\nShould we walk through how that \"anchoring\" at index $i$ changes the way you think about the transitions?\n\n**Sources**\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)\n• Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE\n• Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+      "latency_s": 13.83,
+      "calls": 3,
+      "input_tokens": 1969,
+      "output_tokens": 29,
+      "cost_usd": 0.000533,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.275937990630326,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.29079684540228135,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 5. KEY TAKEAWAYS FOR SEQUENCE PROBLEMS",
+          "chapter_id": 1,
+          "distance": 0.2710534005015598,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.298563037707111,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.2739979606296561,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.327294744101137
+        }
+      ],
+      "citations": [
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "verified": true,
+          "chunk_id": "chunk_4530ae6312022f9c",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "heading": "3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1
+        },
+        {
+          "section": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "verified": true,
+          "chunk_id": "chunk_29cbab2b945a862a",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "heading": "2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2
+        },
+        {
+          "section": "Array Storage and State Definition | File: outputs/dp-8m-v2/screenshots/keyframes/frame_416.jpg",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 21,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": true,
+        "note": "The tutor successfully corrects the false premise regarding the problem's difficulty."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Why does the lecturer recommend assuming you know the entire sequence to solve the problem?",
+      "gold_answer": "The lecturer states that assuming you know the sequence does not work; instead, you should assume you know the length of the longest-increasing subsequence ending at each index.",
+      "quote": "What if we knew the length of the longest-increasing subsequence ending at each index of the array? Would that help us?",
+      "quote_ts": 236.66,
+      "answer": "Actually, the lecturer recommends the opposite: you shouldn't assume you know the entire sequence. Instead, the \"Assumption Technique\" is a tool to help you figure out what specific information you *actually* need to store in your state.\n\nWhen you start by assuming you know the answer to a smaller subproblem, you often realize that knowing just the length of an LIS isn't enough to build the next step. For example, as shown in the table in the lecture notes, if you only know the length of an LIS for a prefix, you can't tell if a new number can be appended because you don't know the value of the last element. This forces you to refine your state to include the \"terminating value\" (the last element of the subsequence), as seen in the state definition slide (frame 416), which anchors the subproblem to a specific index $i$ rather than just the length of the prefix.\n\nShould we walk through how that refined state helps us build the transition for the next element?\n\n**Sources**\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE\n• Introduction to Dynamic Programming and Problem-Solving Techniques > 4. EVALUATING INDUCTIVE ASSUMPTIONS IN LIS\n• Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE\n• Array Storage and State Definition (frame 416)",
+      "latency_s": 6.96,
+      "calls": 3,
+      "input_tokens": 2144,
+      "output_tokens": 28,
+      "cost_usd": 0.000574,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "chapter_id": 1,
+          "distance": 0.2842694518192719,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 4. EVALUATING INDUCTIVE ASSUMPTIONS IN LIS",
+          "chapter_id": 1,
+          "distance": 0.29814234213595825,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.31239184998206593,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.33163206193155426,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.34226701308657825,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Array Storage and State Definition",
+          "distance": 0.36369875418129427
+        }
+      ],
+      "citations": [
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "verified": true,
+          "chunk_id": "chunk_70c48396084dc88a",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "heading": "2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "chapter_id": 1
+        },
+        {
+          "section": "Introduction to Dynamic Programming and Problem-Solving Techniques > 4. EVALUATING INDUCTIVE ASSUMPTIONS IN LIS",
+          "verified": true,
+          "chunk_id": "chunk_b08388e57ffb55c9",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 4. EVALUATING INDUCTIVE ASSUMPTIONS IN LIS",
+          "heading": "4. EVALUATING INDUCTIVE ASSUMPTIONS IN LIS",
+          "chapter_id": 1
+        },
+        {
+          "section": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "verified": true,
+          "chunk_id": "chunk_29cbab2b945a862a",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "heading": "2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2
+        },
+        {
+          "section": "Array Storage and State Definition (frame 416)",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null
+        }
+      ],
+      "grade": {
+        "id": 22,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": true,
+        "note": "The tutor successfully corrects the false assumption about assuming the entire sequence."
+      }
+    }
+  ]
+}

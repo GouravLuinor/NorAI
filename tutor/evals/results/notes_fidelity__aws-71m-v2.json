@@ -1,0 +1,91 @@
+{
+  "lecture_dir": "outputs/aws-71m-v2",
+  "judge": "gemini-3.5-flash-lite",
+  "summary": {
+    "chapters": 7,
+    "notes_words": 3577,
+    "claims": 108,
+    "unsupported": 0,
+    "unsupported_rate": 0.0,
+    "missing_key_points": 28
+  },
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "total_claims": 14,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "The speaker introduces himself as Sleiman with over 11 years in tech.",
+        "Mention of software company studytech.ai and academy with 900+ engineers.",
+        "Presentation of three specific real-world business scenarios: viral startup, e-commerce company, and Fortune 500 finance company.",
+        "Detailed breakdown of the 6 layers of the decision stack: traffic, compute, data, security, cost, and observability."
+      ]
+    },
+    {
+      "chapter_id": 2,
+      "total_claims": 16,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "The brief for the viral startup: running on a single EC2 instance, expecting traffic jump from 1,000 to 100,000 users over a weekend.",
+        "Detailed explanation of Route 53 working like a phone book for DNS resolution.",
+        "Explanation of Amazon S3 spreading copies across multiple data centers within a chosen AWS region.",
+        "Explanation of AWS WAF filtering out bots and scrapers at the edge."
+      ]
+    },
+    {
+      "chapter_id": 3,
+      "total_claims": 15,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Explanation of API Gateway acting as a reception desk with a public internet address.",
+        "Detailed walkthrough of the Lambda cold start mechanism and execution environment initialization.",
+        "Comparison of DynamoDB on-demand versus provisioned capacity modes.",
+        "Explanation of IAM key cards and the principle of least privilege."
+      ]
+    },
+    {
+      "chapter_id": 4,
+      "total_claims": 17,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Scenario 2 brief: Mid-size e-commerce company losing $50,000 per hour of downtime on Black Friday.",
+        "Explanation of VPC subnets, public vs. private subnets, and NAT gateways.",
+        "Detailed analysis of why monolithic architectures scale differently compared to microservices.",
+        "Explanation of Amazon ECS with Fargate for containerized workloads."
+      ]
+    },
+    {
+      "chapter_id": 5,
+      "total_claims": 15,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Explanation of why database connection pools get flooded when servers drown under traffic spikes.",
+        "Discussion of AWS Savings Plans offering committed pricing for baseline instances.",
+        "The importance of tracking business metrics like orders per minute and cart abandonment rate.",
+        "Detailed end-to-end trace of adding an item to the shopping cart."
+      ]
+    },
+    {
+      "chapter_id": 6,
+      "total_claims": 16,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Scenario 3 brief: Fortune 500 financial services company with 40 people manually reading documents daily.",
+        "Explanation of SQS (Simple Queue Service) for decoupling ingestion from processing.",
+        "Why Lambda's 15-minute timeout makes Fargate a better fit for large document processing.",
+        "Explanation of Retrieval-Augmented Generation (RAG) and Amazon Bedrock integration via private VPC endpoints."
+      ]
+    },
+    {
+      "chapter_id": 7,
+      "total_claims": 15,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Contrast between ClickOps using the AWS Management Console and Infrastructure as Code using Terraform or CloudFormation.",
+        "Importance of version control and environment parity when managing infrastructure configuration files.",
+        "Comprehensive summary of all three business problems and their corresponding problem-first architectural solutions.",
+        "Final career advice encouraging students to book a call with the team and become undeniable in cloud engineering."
+      ]
+    }
+  ]
+}

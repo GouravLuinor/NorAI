@@ -1,0 +1,55 @@
+{
+  "lecture_dir": "outputs/01c0e1ce-9c2f-4809-afd8-611424f49390",
+  "judge": "gemini-3.5-flash-lite",
+  "summary": {
+    "chapters": 4,
+    "notes_words": 1495,
+    "claims": 28,
+    "unsupported": 0,
+    "unsupported_rate": 0.0,
+    "missing_key_points": 13
+  },
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "total_claims": 8,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "The speaker introduces the 10-day video series structure.",
+        "The example uses a circle with a specific radius of three.",
+        "Mentions the triangle's base of three and height of 2 pi times 3.",
+        "The concept of evaluating the integral bounds from zero to three."
+      ]
+    },
+    {
+      "chapter_id": 2,
+      "total_claims": 7,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Mention of velocity and distance traveled as an example of adding small quantities.",
+        "Transition to questioning the area under a parabola like X squared.",
+        "Discussion of the difficulty of solving area under curves directly without general tools."
+      ]
+    },
+    {
+      "chapter_id": 3,
+      "total_claims": 6,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Concrete numerical example using numbers like three and 3.001.",
+        "Explanation that the derivative is the ratio as DX gets smaller and smaller.",
+        "Statement of the Fundamental Theorem of Calculus connecting the two big ideas."
+      ]
+    },
+    {
+      "chapter_id": 4,
+      "total_claims": 7,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Thanks and acknowledgment given to Patreon supporters for financial backing and feedback.",
+        "Mention of keeping ads off new videos for their first month.",
+        "Reflecting on the speaker's astonishment at being able to spend time working on these videos."
+      ]
+    }
+  ]
+}

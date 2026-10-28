@@ -40,7 +40,7 @@ from transcription.gemini_transcriber import _parse_ts
 
 logger = logging.getLogger(__name__)
 
-PROMPT_VERSION = "chapter-v3"
+PROMPT_VERSION = "chapter-v4"
 MAX_FRAMES = 12          # keyframes sent per chapter (evenly sampled in time)
 MAX_SELECTED = 4         # screenshots placed in the notes per chapter
 MIN_SELECTED_IMPORTANCE = 6
@@ -54,6 +54,12 @@ NOTES_WORDS_MIN, NOTES_WORDS_MAX = 300, 2200
 def notes_word_target(transcript_words: int) -> int:
     target = int(transcript_words * NOTES_WORDS_RATIO) // 50 * 50
     return max(NOTES_WORDS_MIN, min(NOTES_WORDS_MAX, target))
+
+
+def notes_section_count(words: int) -> int:
+    """Flash-lite undershoots word totals on long chapters but follows a
+    section count, so the length target is also expressed as ~150-word cards."""
+    return max(3, min(12, round(words / 150)))
 
 
 # ── Schema ────────────────────────────────────────────────────────────────────
@@ -243,8 +249,9 @@ GROUNDING (most important):
 
 Produce:
 1. study_notes_title: the chapter title.
-2. study_notes_sections: 3-8 cards covering everything the lecturer teaches here, in
-   lecture order, AT LEAST {words} words in total (the transcript has {transcript_words}).
+2. study_notes_sections: {sections} cards (one per idea or step the lecturer moves
+   through), in lecture order, each 120-200 words: AT LEAST {words} words in total (the
+   transcript has {transcript_words}).
    Spend that length on the lecturer's own specifics (the concrete values they plug in,
    intermediate steps, analogies, asides on why it matters), never on outside material.
    section_type: definition | callout | table | list | code | prose. start: the [m:ss]
@@ -324,6 +331,7 @@ def process_chapter(outline: dict, idx: int, chunks: list[dict], segments: list[
         concepts=", ".join(ch.get("focus_concepts") or []) or "—",
         neighbours=_neighbours(outline, idx), k=len(frames), transcript=transcript,
         words=notes_word_target(transcript_words), transcript_words=transcript_words,
+        sections=notes_section_count(notes_word_target(transcript_words)),
     )
 
     def _call():

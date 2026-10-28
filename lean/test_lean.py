@@ -60,6 +60,8 @@ def test_chapter_count_range():
     assert ls.chapter_count_range(71, 3) == (3, 3, 3), "never more chapters than chunks"
     assert lc.notes_word_target(100) == 300 and lc.notes_word_target(2949) == 1450
     assert lc.notes_word_target(13539) == 2200
+    assert lc.notes_section_count(300) == 3 and lc.notes_section_count(900) == 6
+    assert lc.notes_section_count(2200) == 12
     print("PASS test_chapter_count_range")
 
 

@@ -1,0 +1,1848 @@
+{
+  "summary": {
+    "n": 20,
+    "graded": 20,
+    "accuracy_core": 1.0,
+    "accuracy_detail": 1.0,
+    "false_not_covered": 0.0,
+    "oos_abstain": 1.0,
+    "premise_corrected": 1.0,
+    "unsupported_claim": 0.0,
+    "invented_visual": 0.0,
+    "answers_citing": 0.95,
+    "citations_verified": 0.978,
+    "latency_p50_s": 4.32,
+    "calls_per_turn": 2,
+    "input_tokens_per_turn": 2139,
+    "output_tokens_per_turn": 28,
+    "cost_per_turn_usd": 0.000575
+  },
+  "rows": [
+    {
+      "category": "core",
+      "question": "What is the primary goal of the series regarding how students should perceive calculus?",
+      "gold_answer": "The goal is for students to understand the core ideas of calculus so deeply that they feel as though they could have invented the subject themselves.",
+      "quote": "And my goal is for you to come away feeling like you could have invented calculus yourself.",
+      "quote_ts": 52.95,
+      "answer": "The primary goal is to move away from treating calculus as a collection of arbitrary rules and formulas to be memorized. Instead, the series aims to build a deep, visual intuition so that you feel you could have invented these concepts yourself through exploration and logical reasoning.\n\nWould you like to start by looking at how this visual approach helps explain a specific concept, like the area of a circle?\n\n**Sources**\n• 0:36 — Calculus has a lot of rules and formulas which are often presented as things to be memorized.\n• 14:33 — The goal is for you to feel that you could have invented calculus yourself.\n• [N1] Section: Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+      "latency_s": 17.57,
+      "calls": 2,
+      "input_tokens": 2013,
+      "output_tokens": 29,
+      "cost_usd": 0.000545,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:15–0:42",
+          "chapter_id": 1,
+          "distance": 0.2060176134109497,
+          "start": 15.45
+        },
+        {
+          "heading_path": "Transcript 0:36–1:06",
+          "chapter_id": 1,
+          "distance": 0.2065197229385376,
+          "start": 36.95
+        },
+        {
+          "heading_path": "Transcript 14:33–15:05",
+          "chapter_id": 4,
+          "distance": 0.21748054027557373,
+          "start": 873.15
+        },
+        {
+          "heading_path": "Transcript 13:15–13:43",
+          "chapter_id": 4,
+          "distance": 0.2764616012573242,
+          "start": 795.15
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+          "chapter_id": 1,
+          "distance": 0.15256482362747192,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus > Calculus as Exploration",
+          "chapter_id": 4,
+          "distance": 0.19140028953552246,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:36 — Calculus has a lot of rules and formulas which are often presented as things to be memorized.",
+          "verified": true,
+          "chunk_id": "tx_36_7befd499e7",
+          "heading_path": "Transcript 0:36–1:06",
+          "heading": "Transcript 0:36",
+          "chapter_id": 1,
+          "start": 36,
+          "end": 66.05
+        },
+        {
+          "section": "14:33 — The goal is for you to feel that you could have invented calculus yourself.",
+          "verified": true,
+          "chunk_id": "tx_873_bd7c0dc3bc",
+          "heading_path": "Transcript 14:33–15:05",
+          "heading": "Transcript 14:33",
+          "chapter_id": 4,
+          "start": 873,
+          "end": 905.55
+        },
+        {
+          "section": "[N1] Section: Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+          "verified": true,
+          "chunk_id": "note_a01317491ef4da0d",
+          "heading_path": "Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+          "heading": "The Goal of Calculus Intuition",
+          "chapter_id": 1,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 0,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor accurately captures the lecturer's goal of fostering deep intuition."
+      }
+    },
+    {
+      "category": "core",
+      "question": "How does the lecture propose one can find the area of a circle using calculus-like thinking?",
+      "gold_answer": "You can approximate the area by slicing the circle into many thin concentric rings, treating each as a rectangle, and summing their areas as the thickness of the rings approaches zero.",
+      "quote": "Let's take one of those rings, which has some inner radius R that's between zero and three. If we can find a nice expression for the area of each ring like this one, and if we have a nice way to add them all up, it might lead us to an understanding of the full circle's area.",
+      "quote_ts": 150.35,
+      "answer": "The lecture suggests finding the area of a circle by \"chopping\" it into many thin, concentric rings. By straightening each of these rings out, you can approximate them as rectangles, where the width is the circumference ($2\\pi r$) and the thickness is a tiny increment in the radius ($dr$). \n\nBy summing the areas of these many small rectangles, you can transition from an approximation to the precise area of the circle. As you make those rings thinner and thinner, the sum of their areas converges to the area under the graph of the circumference function, which results in the familiar formula $\\pi r^2$.\n\nShould we walk through how that sum of rectangles turns into the area of a triangle?\n\n**Sources**\n• 2:07 — slicing the circle into concentric rings\n• 3:00 — straightening the ring into a rectangle with width 2πr and thickness dr\n• [N2] Section: Approximating Area with Rectangles > From Approximation to Precision",
+      "latency_s": 4.04,
+      "calls": 2,
+      "input_tokens": 2194,
+      "output_tokens": 28,
+      "cost_usd": 0.000589,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:14–1:44",
+          "chapter_id": 1,
+          "distance": 0.19591307640075684,
+          "start": 74.65
+        },
+        {
+          "heading_path": "Transcript 2:36–3:05",
+          "chapter_id": 1,
+          "distance": 0.2128545641899109,
+          "start": 156.35
+        },
+        {
+          "heading_path": "Transcript 2:07–2:45",
+          "chapter_id": 1,
+          "distance": 0.21813660860061646,
+          "start": 127.85
+        },
+        {
+          "heading_path": "Transcript 3:00–3:29",
+          "chapter_id": 2,
+          "distance": 0.22814667224884033,
+          "start": 180.25
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > Exploring the Area of a Circle",
+          "chapter_id": 1,
+          "distance": 0.19774210453033447,
+          "start": null
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > From Approximation to Precision",
+          "chapter_id": 2,
+          "distance": 0.21396291255950928,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Exploring the Area of a Circle",
+          "distance": 0.23019623756408691
+        },
+        {
+          "section": "The Method of Concentric Rings",
+          "distance": 0.23870038986206055
+        }
+      ],
+      "citations": [
+        {
+          "section": "2:07 — slicing the circle into concentric rings",
+          "verified": true,
+          "chunk_id": "tx_127_3fddb72b04",
+          "heading_path": "Transcript 2:07–2:45",
+          "heading": "Transcript 2:07",
+          "chapter_id": 1,
+          "start": 127,
+          "end": 165.55
+        },
+        {
+          "section": "3:00 — straightening the ring into a rectangle with width 2πr and thickness dr",
+          "verified": true,
+          "chunk_id": "tx_180_e596229b84",
+          "heading_path": "Transcript 3:00–3:29",
+          "heading": "Transcript 3:00",
+          "chapter_id": 2,
+          "start": 180,
+          "end": 209.75
+        },
+        {
+          "section": "[N2] Section: Approximating Area with Rectangles > From Approximation to Precision",
+          "verified": true,
+          "chunk_id": "note_73261f147d340685",
+          "heading_path": "Approximating Area with Rectangles > From Approximation to Precision",
+          "heading": "From Approximation to Precision",
+          "chapter_id": 2,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 1,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly explains the method of concentric rings and approximating them as rectangles."
+      }
+    },
+    {
+      "category": "core",
+      "question": "When approximating the area of a circle with rings, what does the sum of the areas of the rectangles represent?",
+      "gold_answer": "As the thickness of the rings becomes smaller, the sum of the areas of the rectangles approaches the area under the graph of the function 2 pi R.",
+      "quote": "Adding all of those numbers could be seen in a different, pretty clever way as adding the areas of many thin rectangles sitting underneath a graph. The graph of the function 2 pi R, in this case.",
+      "quote_ts": 438.15,
+      "answer": "The sum of the areas of those rectangles represents the area underneath the graph of the function $f(r) = 2\\pi r$. By arranging the rectangles side-by-side, their combined area forms a shape that, as the rings get thinner and thinner, perfectly matches the area under that line.\n\nEssentially, the process of summing these thin rectangular strips transforms the original problem of finding the circle's area into the problem of finding the area under a graph.\n\nDoes it make sense why that specific function, $2\\pi r$, describes the height of those rectangles?\n\n**Sources**\n• 7:18 — adding areas of thin rectangles under the graph of 2πr\n• 8:28 — original problem becomes equivalent to finding the area under a graph\n• [N1] Section: Approximating Area with Rectangles > Visualizing the Sum of Rectangles",
+      "latency_s": 3.24,
+      "calls": 2,
+      "input_tokens": 2232,
+      "output_tokens": 29,
+      "cost_usd": 0.000599,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 5:18–5:43",
+          "chapter_id": 2,
+          "distance": 0.16531038284301758,
+          "start": 318.15
+        },
+        {
+          "heading_path": "Transcript 3:53–4:26",
+          "chapter_id": 2,
+          "distance": 0.1934833526611328,
+          "start": 233.25
+        },
+        {
+          "heading_path": "Transcript 8:28–8:53",
+          "chapter_id": 2,
+          "distance": 0.19476044178009033,
+          "start": 508.15
+        },
+        {
+          "heading_path": "Transcript 7:18–7:48",
+          "chapter_id": 2,
+          "distance": 0.1881263256072998,
+          "start": 438.15
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > Visualizing the Sum of Rectangles",
+          "chapter_id": 2,
+          "distance": 0.18345439434051514,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > The Method of Concentric Rings",
+          "chapter_id": 1,
+          "distance": 0.1799408197402954,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "The Method of Concentric Rings",
+          "distance": 0.18193936347961426
+        },
+        {
+          "section": "Slicing the Circle",
+          "distance": 0.20222222805023193
+        }
+      ],
+      "citations": [
+        {
+          "section": "7:18 — adding areas of thin rectangles under the graph of 2πr",
+          "verified": true,
+          "chunk_id": "tx_438_532024b278",
+          "heading_path": "Transcript 7:18–7:48",
+          "heading": "Transcript 7:18",
+          "chapter_id": 2,
+          "start": 438,
+          "end": 468.55
+        },
+        {
+          "section": "8:28 — original problem becomes equivalent to finding the area under a graph",
+          "verified": true,
+          "chunk_id": "tx_508_4870f09be8",
+          "heading_path": "Transcript 8:28–8:53",
+          "heading": "Transcript 8:28",
+          "chapter_id": 2,
+          "start": 508,
+          "end": 533.55
+        },
+        {
+          "section": "[N1] Section: Approximating Area with Rectangles > Visualizing the Sum of Rectangles",
+          "verified": true,
+          "chunk_id": "note_b843eb5267fd7089",
+          "heading_path": "Approximating Area with Rectangles > Visualizing the Sum of Rectangles",
+          "heading": "Visualizing the Sum of Rectangles",
+          "chapter_id": 2,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 2,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly identifies that the sum of the rectangular areas approaches the area under the graph of 2 pi R."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the relationship between the area under a graph and the derivative of that area function?",
+      "gold_answer": "The derivative of the function that represents the area under a graph is equal to the height of the graph at that point.",
+      "quote": "Any function defined as the area under some graph has this property, that DA divided by DX, a slight nudge to the output of A divided by a slight nudge to the input that caused it. Is about equal to the height of the graph at that point.",
+      "quote_ts": 766.15,
+      "answer": "The relationship is that the derivative of the area function—the rate at which the area grows—is exactly equal to the height of the graph at that point. \n\nIf you define a function $A(x)$ as the area under a curve up to a point $x$, and you nudge $x$ by a tiny amount ($dx$), the resulting sliver of area ($dA$) is essentially a thin rectangle with a height equal to the function value. Because the area of that sliver is height times width ($dA \\approx \\text{height} \\cdot dx$), the ratio of the change in area to the change in input ($\\frac{dA}{dx}$) is approximately the height of the graph, and this approximation becomes perfect as $dx$ gets smaller.\n\nWould you like to walk through how this helps us \"reverse engineer\" the area function itself?\n\n**Sources**\n• 12:46 — the ratio DA/DX is about equal to the height of the graph\n• [N1] Section: Introducing Derivatives and the Mystery Function > Analyzing Tiny Changes in Area",
+      "latency_s": 8.84,
+      "calls": 2,
+      "input_tokens": 2274,
+      "output_tokens": 27,
+      "cost_usd": 0.000608,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 12:30–12:54",
+          "chapter_id": 3,
+          "distance": 0.20016872882843018,
+          "start": 750.15
+        },
+        {
+          "heading_path": "Transcript 14:04–14:36",
+          "chapter_id": 4,
+          "distance": 0.23177409172058105,
+          "start": 844.15
+        },
+        {
+          "heading_path": "Transcript 12:46–13:20",
+          "chapter_id": 3,
+          "distance": 0.20661592483520508,
+          "start": 766.15
+        },
+        {
+          "heading_path": "Transcript 9:13–9:48",
+          "chapter_id": 3,
+          "distance": 0.23731684684753418,
+          "start": 553.15
+        },
+        {
+          "heading_path": "Introducing Derivatives and the Mystery Function > Analyzing Tiny Changes in Area",
+          "chapter_id": 3,
+          "distance": 0.1745169758796692,
+          "start": null
+        },
+        {
+          "heading_path": "Introducing Derivatives and the Mystery Function > The Mystery of the Area Function",
+          "chapter_id": 3,
+          "distance": 0.20375514030456543,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Understanding Derivatives",
+          "distance": 0.20310556888580322
+        },
+        {
+          "section": "The Mystery of the Area Function",
+          "distance": 0.24529004096984863
+        }
+      ],
+      "citations": [
+        {
+          "section": "12:46 — the ratio DA/DX is about equal to the height of the graph",
+          "verified": true,
+          "chunk_id": "tx_766_cb26b43513",
+          "heading_path": "Transcript 12:46–13:20",
+          "heading": "Transcript 12:46",
+          "chapter_id": 3,
+          "start": 766,
+          "end": 800.55
+        },
+        {
+          "section": "[N1] Section: Introducing Derivatives and the Mystery Function > Analyzing Tiny Changes in Area",
+          "verified": true,
+          "chunk_id": "note_b470652caed625b9",
+          "heading_path": "Introducing Derivatives and the Mystery Function > Analyzing Tiny Changes in Area",
+          "heading": "Analyzing Tiny Changes in Area",
+          "chapter_id": 3,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 3,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor accurately explains that the derivative of the area function is equal to the graph's height."
+      }
+    },
+    {
+      "category": "core",
+      "question": "What is the Fundamental Theorem of Calculus?",
+      "gold_answer": "It is the principle that integrals and derivatives are inverses of each other, specifically that the derivative of an area function returns the original function defining the graph.",
+      "quote": "And this back and forth between integrals and derivatives, where the derivative of a function for the area under a graph. Gives you back the function defining the graph itself, is called the fundamental theorem of calculus.",
+      "quote_ts": 850.15,
+      "answer": "The Fundamental Theorem of Calculus describes the inverse relationship between derivatives and integrals. It shows that if you have a function representing the area under a graph, its derivative is simply the function that defines the graph itself. This allows you to \"reverse engineer\" an unknown function if you know its derivative.\n\nEssentially, it ties together the two main pillars of calculus by demonstrating that integration and differentiation are inverse operations of each other.\n\nWould you like to walk through the example of how this works with $x^2$?\n\n**Sources**\n• 14:04 — The relationship between integrals and derivatives\n• [N1] The Fundamental Theorem of Calculus > The Fundamental Theorem of Calculus",
+      "latency_s": 5.18,
+      "calls": 2,
+      "input_tokens": 2017,
+      "output_tokens": 29,
+      "cost_usd": 0.000547,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 14:04–14:36",
+          "chapter_id": 4,
+          "distance": 0.23985904455184937,
+          "start": 844.15
+        },
+        {
+          "heading_path": "Transcript 9:13–9:48",
+          "chapter_id": 3,
+          "distance": 0.2774636745452881,
+          "start": 553.15
+        },
+        {
+          "heading_path": "Transcript 0:15–0:42",
+          "chapter_id": 1,
+          "distance": 0.3224015235900879,
+          "start": 15.45
+        },
+        {
+          "heading_path": "Transcript 9:44–10:15",
+          "chapter_id": 3,
+          "distance": 0.3054908514022827,
+          "start": 584.15
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus > The Fundamental Theorem of Calculus",
+          "chapter_id": 4,
+          "distance": 0.20098942518234253,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+          "chapter_id": 1,
+          "distance": 0.3396545648574829,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "14:04 — The relationship between integrals and derivatives",
+          "verified": true,
+          "chunk_id": "tx_844_66c9b6c611",
+          "heading_path": "Transcript 14:04–14:36",
+          "heading": "Transcript 14:04",
+          "chapter_id": 4,
+          "start": 844,
+          "end": 876.55
+        },
+        {
+          "section": "[N1] The Fundamental Theorem of Calculus > The Fundamental Theorem of Calculus",
+          "verified": true,
+          "chunk_id": "note_4e1c28cb06b76564",
+          "heading_path": "The Fundamental Theorem of Calculus > The Fundamental Theorem of Calculus",
+          "heading": "The Fundamental Theorem of Calculus",
+          "chapter_id": 4,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 4,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly defines the Fundamental Theorem of Calculus as the inverse relationship between integrals and derivatives."
+      }
+    },
+    {
+      "category": "core",
+      "question": "How does the lecturer define a derivative in the context of this introductory lesson?",
+      "gold_answer": "A derivative is loosely defined as a measure of how sensitive a function's output is to small changes in its input.",
+      "quote": "But loosely speaking, it's a measure of how sensitive a function is to small changes in its input.",
+      "quote_ts": 806.15,
+      "answer": "The lecturer defines the derivative as the ratio of a tiny change in a function's output to a tiny change in its input—specifically, what that ratio approaches as the input change (denoted as $dx$) gets smaller and smaller. Loosely speaking, it is a measure of how sensitive a function is to those small changes. In the context of the area under a curve, the derivative of the area function is simply the height of the graph at that point.\n\nWould you like to see how this relationship helps us \"reverse engineer\" the original function?\n\n**Sources**\n• 12:46 — the ratio of a slight nudge to the output divided by a slight nudge to the input\n• 13:15 — the derivative is what the ratio approaches as $dx$ gets smaller\n• 13:15 — loosely defined as a measure of sensitivity to small changes\n• N2 — the derivative of the area function is the value of the function defining the curve",
+      "latency_s": 7.36,
+      "calls": 2,
+      "input_tokens": 2162,
+      "output_tokens": 28,
+      "cost_usd": 0.000581,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 13:15–13:43",
+          "chapter_id": 4,
+          "distance": 0.24150550365447998,
+          "start": 795.15
+        },
+        {
+          "heading_path": "Transcript 12:46–13:20",
+          "chapter_id": 3,
+          "distance": 0.2600509524345398,
+          "start": 766.15
+        },
+        {
+          "heading_path": "Transcript 14:04–14:36",
+          "chapter_id": 4,
+          "distance": 0.31566303968429565,
+          "start": 844.15
+        },
+        {
+          "heading_path": "Transcript 13:40–14:08",
+          "chapter_id": 4,
+          "distance": 0.3089268207550049,
+          "start": 820.15
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus > Understanding Derivatives",
+          "chapter_id": 4,
+          "distance": 0.23618125915527344,
+          "start": null
+        },
+        {
+          "heading_path": "Introducing Derivatives and the Mystery Function > Introducing Derivatives",
+          "chapter_id": 3,
+          "distance": 0.29083001613616943,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Understanding Derivatives",
+          "distance": 0.29188305139541626
+        }
+      ],
+      "citations": [
+        {
+          "section": "12:46 — the ratio of a slight nudge to the output divided by a slight nudge to the input",
+          "verified": true,
+          "chunk_id": "tx_766_cb26b43513",
+          "heading_path": "Transcript 12:46–13:20",
+          "heading": "Transcript 12:46",
+          "chapter_id": 3,
+          "start": 766,
+          "end": 800.55
+        },
+        {
+          "section": "13:15 — the derivative is what the ratio approaches as $dx$ gets smaller",
+          "verified": true,
+          "chunk_id": "tx_795_cc9db7b73e",
+          "heading_path": "Transcript 13:15–13:43",
+          "heading": "Transcript 13:15",
+          "chapter_id": 4,
+          "start": 795,
+          "end": 823.55
+        },
+        {
+          "section": "13:15 — loosely defined as a measure of sensitivity to small changes",
+          "verified": true,
+          "chunk_id": "tx_795_cc9db7b73e",
+          "heading_path": "Transcript 13:15–13:43",
+          "heading": "Transcript 13:15",
+          "chapter_id": 4,
+          "start": 795,
+          "end": 823.55
+        },
+        {
+          "section": "N2 — the derivative of the area function is the value of the function defining the curve",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 5,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor accurately conveys the lecturer's definition of a derivative."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What specific radius does the lecturer use as an example to explain the area of a circle?",
+      "gold_answer": "The lecturer uses a circle with a radius of three to demonstrate the concept.",
+      "quote": "Just you and a circle. Let's say with radius three.",
+      "quote_ts": 122.15,
+      "answer": "The lecturer uses a radius of 3 as the specific example to walk through the calculation. By slicing the circle into rings and approximating them as rectangles, the sum of those areas forms a triangle with a base of 3 and a height of $2\\pi(3)$, leading to an area of $\\pi(3)^2$.\n\nShould we walk through how that approximation turns into the final formula for any radius $R$?\n\n**Sources**\n• 3:53 — the range of the inner radius\n• 6:02 — the calculation using a radius of 3",
+      "latency_s": 6.51,
+      "calls": 2,
+      "input_tokens": 2218,
+      "output_tokens": 26,
+      "cost_usd": 0.000592,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:14–1:44",
+          "chapter_id": 1,
+          "distance": 0.24448275566101074,
+          "start": 74.65
+        },
+        {
+          "heading_path": "Transcript 2:36–3:05",
+          "chapter_id": 1,
+          "distance": 0.2440575361251831,
+          "start": 156.35
+        },
+        {
+          "heading_path": "Transcript 3:53–4:26",
+          "chapter_id": 2,
+          "distance": 0.27714383602142334,
+          "start": 233.25
+        },
+        {
+          "heading_path": "Transcript 6:02–6:29",
+          "chapter_id": 2,
+          "distance": 0.2510574460029602,
+          "start": 362.15
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > The Method of Concentric Rings",
+          "chapter_id": 1,
+          "distance": 0.26251232624053955,
+          "start": null
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > From Approximation to Precision",
+          "chapter_id": 2,
+          "distance": 0.2799169421195984,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Exploring the Area of a Circle",
+          "distance": 0.21883070468902588
+        },
+        {
+          "section": "The Method of Concentric Rings",
+          "distance": 0.24339908361434937
+        }
+      ],
+      "citations": [
+        {
+          "section": "3:53 — the range of the inner radius",
+          "verified": true,
+          "chunk_id": "tx_233_830c2b1279",
+          "heading_path": "Transcript 3:53–4:26",
+          "heading": "Transcript 3:53",
+          "chapter_id": 2,
+          "start": 233,
+          "end": 266.55
+        },
+        {
+          "section": "6:02 — the calculation using a radius of 3",
+          "verified": true,
+          "chunk_id": "tx_362_9a41b548e2",
+          "heading_path": "Transcript 6:02–6:29",
+          "heading": "Transcript 6:02",
+          "chapter_id": 2,
+          "start": 362,
+          "end": 389.55
+        }
+      ],
+      "grade": {
+        "id": 6,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly identifies a radius of three as the example."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What notation does the lecturer introduce for the tiny thickness of the rings?",
+      "gold_answer": "The lecturer uses the notation DR to represent a tiny difference in the radius.",
+      "quote": "In the spirit of using what will come to be standard calculus notation, let's call that thickness DR for a tiny difference in the radius from one ring to the next.",
+      "quote_ts": 196.25,
+      "answer": "The lecturer introduces the notation $dr$ to represent the tiny thickness of each ring. This represents a small difference in the radius from one ring to the next, which becomes more accurate as you choose smaller and smaller values for it.\n\nWould you like to see how this $dr$ helps us transition from an approximation to a precise calculation?\n\n**Sources**\n• 3:00 — calling the thickness DR\n• [N1] Section: Approximating Area with Rectangles > Slicing the Circle",
+      "latency_s": 4.34,
+      "calls": 2,
+      "input_tokens": 2185,
+      "output_tokens": 29,
+      "cost_usd": 0.000589,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 3:00–3:29",
+          "chapter_id": 2,
+          "distance": 0.21483075618743896,
+          "start": 180.25
+        },
+        {
+          "heading_path": "Transcript 3:53–4:26",
+          "chapter_id": 2,
+          "distance": 0.2621305584907532,
+          "start": 233.25
+        },
+        {
+          "heading_path": "Transcript 6:26–6:56",
+          "chapter_id": 2,
+          "distance": 0.2675386667251587,
+          "start": 386.55
+        },
+        {
+          "heading_path": "Transcript 4:16–4:41",
+          "chapter_id": 2,
+          "distance": 0.2501153349876404,
+          "start": 256.95
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > Slicing the Circle",
+          "chapter_id": 2,
+          "distance": 0.26634156703948975,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > The Method of Concentric Rings",
+          "chapter_id": 1,
+          "distance": 0.3205573558807373,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Slicing the Circle",
+          "distance": 0.27240169048309326
+        },
+        {
+          "section": "The Method of Concentric Rings",
+          "distance": 0.28394949436187744
+        }
+      ],
+      "citations": [
+        {
+          "section": "3:00 — calling the thickness DR",
+          "verified": true,
+          "chunk_id": "tx_180_e596229b84",
+          "heading_path": "Transcript 3:00–3:29",
+          "heading": "Transcript 3:00",
+          "chapter_id": 2,
+          "start": 180,
+          "end": 209.75
+        },
+        {
+          "section": "[N1] Section: Approximating Area with Rectangles > Slicing the Circle",
+          "verified": true,
+          "chunk_id": "note_6babbb546d18cd4e",
+          "heading_path": "Approximating Area with Rectangles > Slicing the Circle",
+          "heading": "Slicing the Circle",
+          "chapter_id": 2,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 7,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly names DR as the notation for the tiny thickness."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What value does the lecturer suggest as a concrete example for the thickness DR?",
+      "gold_answer": "The lecturer suggests using 0.1 as a concrete example for the thickness DR.",
+      "quote": "Maybe you think of it as something like 0.1.",
+      "quote_ts": 207.55,
+      "answer": "The lecturer suggests using 0.1 as a concrete example for the thickness $dr$ to help visualize how we slice the circle into rings.\n\nWould you like to explore why making that value smaller improves the accuracy of the area calculation?\n\n**Sources**\n• 3:27 — the lecturer mentions 0.1 as an example for the thickness\n• [N1] Section: Approximating Area with Rectangles > Slicing the Circle",
+      "latency_s": 3.7,
+      "calls": 2,
+      "input_tokens": 2116,
+      "output_tokens": 26,
+      "cost_usd": 0.000567,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 6:52–7:23",
+          "chapter_id": 2,
+          "distance": 0.29144561290740967,
+          "start": 412.55
+        },
+        {
+          "heading_path": "Transcript 4:16–4:41",
+          "chapter_id": 2,
+          "distance": 0.29746735095977783,
+          "start": 256.95
+        },
+        {
+          "heading_path": "Transcript 3:00–3:29",
+          "chapter_id": 2,
+          "distance": 0.28967320919036865,
+          "start": 180.25
+        },
+        {
+          "heading_path": "Transcript 3:27–4:02",
+          "chapter_id": 2,
+          "distance": 0.28853416442871094,
+          "start": 207.55
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > Slicing the Circle",
+          "chapter_id": 2,
+          "distance": 0.3155335783958435,
+          "start": null
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > From Approximation to Precision",
+          "chapter_id": 2,
+          "distance": 0.3920601010322571,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "3:27 — the lecturer mentions 0.1 as an example for the thickness",
+          "verified": true,
+          "chunk_id": "tx_207_bad351c292",
+          "heading_path": "Transcript 3:27–4:02",
+          "heading": "Transcript 3:27",
+          "chapter_id": 2,
+          "start": 207,
+          "end": 242.55
+        },
+        {
+          "section": "[N1] Section: Approximating Area with Rectangles > Slicing the Circle",
+          "verified": true,
+          "chunk_id": "note_6babbb546d18cd4e",
+          "heading_path": "Approximating Area with Rectangles > Slicing the Circle",
+          "heading": "Slicing the Circle",
+          "chapter_id": 2,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 8,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly points out 0.1 as the example thickness."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What is the slope of the line representing the circumference function 2 pi R?",
+      "gold_answer": "The slope of the line is 2 pi.",
+      "quote": "A nice way to think about this setup is to draw the graph of 2 pi R, which is a straight line that has a slope 2 pi.",
+      "quote_ts": 313.15,
+      "answer": "The slope of the line representing the function $2\\pi R$ is $2\\pi$. \n\nSince this is a linear function of the form $f(R) = mR$ (where $R$ is the radius), the constant $2\\pi$ acts as the slope, $m$. In the context of the lecture, this line represents how the circumference of the rings increases as you move from the center of the circle outward.\n\nShould we walk through how the area under this specific line relates to the total area of the circle?\n\n**Sources**\n• 4:59 — The graph of 2πR is a straight line with a slope of 2π.\n• [N1] Section: Approximating Area with Rectangles > Visualizing the Sum of Rectangles",
+      "latency_s": 4.38,
+      "calls": 2,
+      "input_tokens": 2164,
+      "output_tokens": 28,
+      "cost_usd": 0.000582,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 4:59–5:21",
+          "chapter_id": 2,
+          "distance": 0.2325107455253601,
+          "start": 299.15
+        },
+        {
+          "heading_path": "Transcript 3:00–3:29",
+          "chapter_id": 2,
+          "distance": 0.26903223991394043,
+          "start": 180.25
+        },
+        {
+          "heading_path": "Transcript 4:34–5:02",
+          "chapter_id": 2,
+          "distance": 0.272762656211853,
+          "start": 274.85
+        },
+        {
+          "heading_path": "Transcript 2:36–3:05",
+          "chapter_id": 1,
+          "distance": 0.2843695878982544,
+          "start": 156.35
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > Visualizing the Sum of Rectangles",
+          "chapter_id": 2,
+          "distance": 0.2657986879348755,
+          "start": null
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > Slicing the Circle",
+          "chapter_id": 2,
+          "distance": 0.3198127746582031,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Visualizing the Sum of Rectangles",
+          "distance": 0.25527626276016235
+        }
+      ],
+      "citations": [
+        {
+          "section": "4:59 — The graph of 2πR is a straight line with a slope of 2π.",
+          "verified": true,
+          "chunk_id": "tx_299_56b4b44d60",
+          "heading_path": "Transcript 4:59–5:21",
+          "heading": "Transcript 4:59",
+          "chapter_id": 2,
+          "start": 299,
+          "end": 321.55
+        },
+        {
+          "section": "[N1] Section: Approximating Area with Rectangles > Visualizing the Sum of Rectangles",
+          "verified": true,
+          "chunk_id": "note_b843eb5267fd7089",
+          "heading_path": "Approximating Area with Rectangles > Visualizing the Sum of Rectangles",
+          "heading": "Visualizing the Sum of Rectangles",
+          "chapter_id": 2,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 9,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor accurately states the slope is 2 pi."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What example does the lecturer mention regarding calculating distance traveled?",
+      "gold_answer": "The lecturer mentions calculating the distance a car has traveled based on its velocity at each point in time.",
+      "quote": "Things like figuring out how far a car has traveled based on its velocity at each point in time.",
+      "quote_ts": 478.15,
+      "answer": "The lecturer explains that to calculate the distance a car has traveled, you can break the journey down into many small moments in time. At each point, you multiply the car's velocity by a tiny change in time, denoted as $dt$, to find the small distance covered during that interval. Summing these tiny bits of distance together is equivalent to finding the area under a graph of the car's velocity over time.\n\n**Sources**\n• 7:41 — using the sum of small quantities to solve problems like distance traveled\n• 8:04 — multiplying velocity by a tiny change in time, $dt$\n• [N1] Section: Approximating Area with Rectangles > Generalizing the Calculus Approach",
+      "latency_s": 3.9,
+      "calls": 2,
+      "input_tokens": 2048,
+      "output_tokens": 28,
+      "cost_usd": 0.000553,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 8:04–8:30",
+          "chapter_id": 2,
+          "distance": 0.23516619205474854,
+          "start": 484.15
+        },
+        {
+          "heading_path": "Transcript 7:41–8:13",
+          "chapter_id": 2,
+          "distance": 0.29747283458709717,
+          "start": 461.15
+        },
+        {
+          "heading_path": "Transcript 1:14–1:44",
+          "chapter_id": 1,
+          "distance": 0.3565673828125,
+          "start": 74.65
+        },
+        {
+          "heading_path": "Transcript 9:13–9:48",
+          "chapter_id": 3,
+          "distance": 0.3314707279205322,
+          "start": 553.15
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > Generalizing the Calculus Approach",
+          "chapter_id": 2,
+          "distance": 0.32126176357269287,
+          "start": null
+        },
+        {
+          "heading_path": "Introducing Derivatives and the Mystery Function > Introducing Derivatives",
+          "chapter_id": 3,
+          "distance": 0.40252983570098877,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "7:41 — using the sum of small quantities to solve problems like distance traveled",
+          "verified": true,
+          "chunk_id": "tx_461_871b766932",
+          "heading_path": "Transcript 7:41–8:13",
+          "heading": "Transcript 7:41",
+          "chapter_id": 2,
+          "start": 461,
+          "end": 493.55
+        },
+        {
+          "section": "8:04 — multiplying velocity by a tiny change in time, $dt$",
+          "verified": true,
+          "chunk_id": "tx_484_37759586fe",
+          "heading_path": "Transcript 8:04–8:30",
+          "heading": "Transcript 8:04",
+          "chapter_id": 2,
+          "start": 484,
+          "end": 510.55
+        },
+        {
+          "section": "[N1] Section: Approximating Area with Rectangles > Generalizing the Calculus Approach",
+          "verified": true,
+          "chunk_id": "note_6c6ca560c15085b1",
+          "heading_path": "Approximating Area with Rectangles > Generalizing the Calculus Approach",
+          "heading": "Generalizing the Calculus Approach",
+          "chapter_id": 2,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 10,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly recounts the car distance and velocity example."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What specific curve does the lecturer use as an example of a more complex area problem?",
+      "gold_answer": "The lecturer uses the parabola defined by the function X squared.",
+      "quote": "But imagine instead something like a parabola, the graph of X squared.",
+      "quote_ts": 548.15,
+      "answer": "The lecturer uses the parabola defined by the function $f(x) = x^2$ as an example of a more complex area problem. They specifically pose the challenge of finding the area under this curve between the values of $x=0$ and $x=3$.\n\nWould you like to explore why the lecturer calls the function for this area a \"mystery function\"?\n\n**Sources**\n• 8:51 — the lecturer introduces the parabola $x^2$ as an example\n• 9:13 — the lecturer poses the problem of finding the area under $x^2$ between 0 and 3\n• [N1] Section: Introducing Derivatives and the Mystery Function > The Mystery of the Area Function",
+      "latency_s": 3.46,
+      "calls": 2,
+      "input_tokens": 2212,
+      "output_tokens": 29,
+      "cost_usd": 0.000595,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 8:51–9:18",
+          "chapter_id": 3,
+          "distance": 0.24653548002243042,
+          "start": 531.15
+        },
+        {
+          "heading_path": "Transcript 9:13–9:48",
+          "chapter_id": 3,
+          "distance": 0.25172823667526245,
+          "start": 553.15
+        },
+        {
+          "heading_path": "Transcript 8:28–8:53",
+          "chapter_id": 2,
+          "distance": 0.3082836866378784,
+          "start": 508.15
+        },
+        {
+          "heading_path": "Transcript 9:44–10:15",
+          "chapter_id": 3,
+          "distance": 0.28604036569595337,
+          "start": 584.15
+        },
+        {
+          "heading_path": "Introducing Derivatives and the Mystery Function > The Mystery of the Area Function",
+          "chapter_id": 3,
+          "distance": 0.2299257516860962,
+          "start": null
+        },
+        {
+          "heading_path": "Introducing Derivatives and the Mystery Function > Introducing Derivatives",
+          "chapter_id": 3,
+          "distance": 0.3258432149887085,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "The Mystery of the Area Function",
+          "distance": 0.2332039475440979
+        },
+        {
+          "section": "The Mystery of the Area Function",
+          "distance": 0.2593700885772705
+        }
+      ],
+      "citations": [
+        {
+          "section": "8:51 — the lecturer introduces the parabola $x^2$ as an example",
+          "verified": true,
+          "chunk_id": "tx_531_82077b1d45",
+          "heading_path": "Transcript 8:51–9:18",
+          "heading": "Transcript 8:51",
+          "chapter_id": 3,
+          "start": 531,
+          "end": 558.55
+        },
+        {
+          "section": "9:13 — the lecturer poses the problem of finding the area under $x^2$ between 0 and 3",
+          "verified": true,
+          "chunk_id": "tx_553_a4a4ad9d8f",
+          "heading_path": "Transcript 9:13–9:48",
+          "heading": "Transcript 9:13",
+          "chapter_id": 3,
+          "start": 553,
+          "end": 588.55
+        },
+        {
+          "section": "[N1] Section: Introducing Derivatives and the Mystery Function > The Mystery of the Area Function",
+          "verified": true,
+          "chunk_id": "note_ab94681269aa7f54",
+          "heading_path": "Introducing Derivatives and the Mystery Function > The Mystery of the Area Function",
+          "heading": "The Mystery of the Area Function",
+          "chapter_id": 3,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 11,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly identifies the parabola X squared as the example."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "How long will the series of videos be, according to the introduction?",
+      "gold_answer": "The series consists of videos published once per day for 10 days.",
+      "quote": "This is the first video in a series on the essence of calculus, and I'll be publishing the following videos once per day for the next 10 days.",
+      "quote_ts": 16.58,
+      "answer": "The series is designed to be a binge-watchable set of videos published once per day over the next 10 days.\n\n**Sources**\n• 0:15 — The goal and release schedule for the series",
+      "latency_s": 2.7,
+      "calls": 2,
+      "input_tokens": 2021,
+      "output_tokens": 27,
+      "cost_usd": 0.000544,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:15–0:42",
+          "chapter_id": 1,
+          "distance": 0.25759637355804443,
+          "start": 15.45
+        },
+        {
+          "heading_path": "Transcript 14:59–15:29",
+          "chapter_id": 4,
+          "distance": 0.34426218271255493,
+          "start": 899.15
+        },
+        {
+          "heading_path": "Transcript 8:04–8:30",
+          "chapter_id": 2,
+          "distance": 0.341217577457428,
+          "start": 484.15
+        },
+        {
+          "heading_path": "Transcript 14:33–15:05",
+          "chapter_id": 4,
+          "distance": 0.33335065841674805,
+          "start": 873.15
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+          "chapter_id": 1,
+          "distance": 0.3294864296913147,
+          "start": null
+        },
+        {
+          "heading_path": "The Fundamental Theorem of Calculus > Calculus as Exploration",
+          "chapter_id": 4,
+          "distance": 0.3502318859100342,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:15 — The goal and release schedule for the series",
+          "verified": true,
+          "chunk_id": "tx_15_a0f9d3f846",
+          "heading_path": "Transcript 0:15–0:42",
+          "heading": "Transcript 0:15",
+          "chapter_id": 1,
+          "start": 15,
+          "end": 42.15
+        }
+      ],
+      "grade": {
+        "id": 12,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly states the video release schedule."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "What does the lecturer call the tiny difference in area when nudging X by DX?",
+      "gold_answer": "The lecturer calls this tiny difference in area DA.",
+      "quote": "Represented with this sliver that I'm going to call DA for a tiny difference in area.",
+      "quote_ts": 656.15,
+      "answer": "The lecturer calls that tiny sliver of area \"DA.\" It represents the small change in the total area resulting from a tiny nudge to the input, which is denoted as DX.\n\nShould we walk through why that sliver can be approximated as a rectangle?\n\n**Sources**\n• 10:33 — the lecturer introduces the term DA for a tiny difference in area\n• 11:04 — the lecturer explains that the sliver can be approximated as a rectangle with height X squared and width DX",
+      "latency_s": 2.53,
+      "calls": 2,
+      "input_tokens": 2310,
+      "output_tokens": 29,
+      "cost_usd": 0.00062,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 10:33–11:07",
+          "chapter_id": 3,
+          "distance": 0.20677924156188965,
+          "start": 633.15
+        },
+        {
+          "heading_path": "Transcript 11:04–11:42",
+          "chapter_id": 3,
+          "distance": 0.18795466423034668,
+          "start": 664.15
+        },
+        {
+          "heading_path": "Transcript 11:34–12:09",
+          "chapter_id": 3,
+          "distance": 0.23294776678085327,
+          "start": 694.15
+        },
+        {
+          "heading_path": "Transcript 12:46–13:20",
+          "chapter_id": 3,
+          "distance": 0.21905410289764404,
+          "start": 766.15
+        },
+        {
+          "heading_path": "Introducing Derivatives and the Mystery Function > Analyzing Tiny Changes in Area",
+          "chapter_id": 3,
+          "distance": 0.22390681505203247,
+          "start": null
+        },
+        {
+          "heading_path": "Introducing Derivatives and the Mystery Function > Introducing Derivatives",
+          "chapter_id": 3,
+          "distance": 0.24570941925048828,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Analyzing Tiny Changes in Area",
+          "distance": 0.19622600078582764
+        },
+        {
+          "section": "Understanding Derivatives",
+          "distance": 0.23950648307800293
+        }
+      ],
+      "citations": [
+        {
+          "section": "10:33 — the lecturer introduces the term DA for a tiny difference in area",
+          "verified": true,
+          "chunk_id": "tx_633_c6f9fe1a96",
+          "heading_path": "Transcript 10:33–11:07",
+          "heading": "Transcript 10:33",
+          "chapter_id": 3,
+          "start": 633,
+          "end": 667.55
+        },
+        {
+          "section": "11:04 — the lecturer explains that the sliver can be approximated as a rectangle with height X squared and width DX",
+          "verified": true,
+          "chunk_id": "tx_664_07fc0d8054",
+          "heading_path": "Transcript 11:04–11:42",
+          "heading": "Transcript 11:04",
+          "chapter_id": 3,
+          "start": 664,
+          "end": 702.55
+        }
+      ],
+      "grade": {
+        "id": 13,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly identifies DA as the tiny difference in area."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How do you calculate the volume of a sphere using calculus?",
+      "gold_answer": "The lecture does not provide information on calculating the volume of a sphere.",
+      "quote": "",
+      "answer": "The lecture doesn't cover the volume of a sphere, as it focuses on the area of a circle to introduce the core concepts of calculus. However, the intuition is very similar: just as you can think of a circle as a collection of thin concentric rings, you can think of a sphere as a collection of thin spherical shells.\n\nBy calculating the surface area of these shells and \"summing\" them up using integration—much like we summed the rectangles to find the area of a circle—you can derive the volume formula.\n\nWould you like to walk through how we used that \"summing\" process to derive the area of the circle?\n\n**Sources**\n• 1:14 — thinking about the area of a circle\n• [N2] Section: Approximating Area with Rectangles > From Approximation to Precision",
+      "latency_s": 4.3,
+      "calls": 2,
+      "input_tokens": 2036,
+      "output_tokens": 29,
+      "cost_usd": 0.000552,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:14–1:44",
+          "chapter_id": 1,
+          "distance": 0.30981940031051636,
+          "start": 74.65
+        },
+        {
+          "heading_path": "Transcript 14:04–14:36",
+          "chapter_id": 4,
+          "distance": 0.3373687267303467,
+          "start": 844.15
+        },
+        {
+          "heading_path": "Transcript 3:00–3:29",
+          "chapter_id": 2,
+          "distance": 0.3379514217376709,
+          "start": 180.25
+        },
+        {
+          "heading_path": "Transcript 0:36–1:06",
+          "chapter_id": 1,
+          "distance": 0.353798508644104,
+          "start": 36.95
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > Exploring the Area of a Circle",
+          "chapter_id": 1,
+          "distance": 0.30750608444213867,
+          "start": null
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > From Approximation to Precision",
+          "chapter_id": 2,
+          "distance": 0.31450361013412476,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "1:14 — thinking about the area of a circle",
+          "verified": true,
+          "chunk_id": "tx_74_197b428336",
+          "heading_path": "Transcript 1:14–1:44",
+          "heading": "Transcript 1:14",
+          "chapter_id": 1,
+          "start": 74,
+          "end": 104.45
+        },
+        {
+          "section": "[N2] Section: Approximating Area with Rectangles > From Approximation to Precision",
+          "verified": true,
+          "chunk_id": "note_73261f147d340685",
+          "heading_path": "Approximating Area with Rectangles > From Approximation to Precision",
+          "heading": "From Approximation to Precision",
+          "chapter_id": 2,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 14,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly states the lecture does not cover spheres and provides valid out-of-scope help."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What is the history of the notation used for integrals?",
+      "gold_answer": "The lecture does not discuss the historical origins of mathematical notation.",
+      "quote": "",
+      "answer": "The lecture doesn't cover the history of integral notation. It focuses instead on building an intuitive understanding of calculus by exploring problems like the area of a circle and the relationship between integrals and derivatives.\n\nIn general, the integral symbol ($\\int$) was introduced by Gottfried Wilhelm Leibniz in the late 17th century. He chose it because it is an elongated \"S,\" standing for the Latin word *summa* (sum), reflecting the idea that an integral is essentially a sum of infinitely many, infinitesimally thin slices.\n\nWould you like to explore how that \"summing\" concept relates to the \"tiny thickness\" ($dr$) mentioned in the lecture?",
+      "latency_s": 4.4,
+      "calls": 2,
+      "input_tokens": 2042,
+      "output_tokens": 29,
+      "cost_usd": 0.000552,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 3:00–3:29",
+          "chapter_id": 2,
+          "distance": 0.35650813579559326,
+          "start": 180.25
+        },
+        {
+          "heading_path": "Transcript 13:40–14:08",
+          "chapter_id": 4,
+          "distance": 0.3584481477737427,
+          "start": 820.15
+        },
+        {
+          "heading_path": "Transcript 1:41–2:16",
+          "chapter_id": 1,
+          "distance": 0.3562217950820923,
+          "start": 101.65
+        },
+        {
+          "heading_path": "Transcript 14:04–14:36",
+          "chapter_id": 4,
+          "distance": 0.3609575629234314,
+          "start": 844.15
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > Generalizing the Calculus Approach",
+          "chapter_id": 2,
+          "distance": 0.3749764561653137,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+          "chapter_id": 1,
+          "distance": 0.3615313172340393,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [],
+      "grade": {
+        "id": 15,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly notes the lecture omits notation history before giving general knowledge."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How does the chain rule work for complex trigonometric functions?",
+      "gold_answer": "The lecture mentions the chain rule as a topic to be covered but does not explain how to apply it to trigonometric functions.",
+      "quote": "",
+      "answer": "The lecture doesn't cover the specific mechanics of the chain rule for trigonometric functions. It focuses on the high-level goal of understanding calculus through visual intuition rather than memorizing rules like the chain rule or derivative formulas.\n\nIn general, the chain rule is used when you have a \"function inside a function,\" like $\\sin(x^2)$. You differentiate the outer function while keeping the inner part the same, then multiply by the derivative of that inner part.\n\nSince the lecture emphasizes building intuition for *why* these rules exist, would you like to explore the visual idea of a \"tiny nudge\" to an input, which is the core concept behind how derivatives handle complex relationships?\n\n**Sources**\n• 0:36 — The goal of moving away from rote memorization of rules\n• 13:15 — Loosely defining the derivative as a measure of sensitivity to small changes",
+      "latency_s": 4.63,
+      "calls": 2,
+      "input_tokens": 2003,
+      "output_tokens": 28,
+      "cost_usd": 0.000541,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:36–1:06",
+          "chapter_id": 1,
+          "distance": 0.3703644871711731,
+          "start": 36.95
+        },
+        {
+          "heading_path": "Transcript 12:30–12:54",
+          "chapter_id": 3,
+          "distance": 0.39761602878570557,
+          "start": 750.15
+        },
+        {
+          "heading_path": "Transcript 14:04–14:36",
+          "chapter_id": 4,
+          "distance": 0.3841385841369629,
+          "start": 844.15
+        },
+        {
+          "heading_path": "Transcript 13:15–13:43",
+          "chapter_id": 4,
+          "distance": 0.4048537015914917,
+          "start": 795.15
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+          "chapter_id": 1,
+          "distance": 0.3751716613769531,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > Exploring the Area of a Circle",
+          "chapter_id": 1,
+          "distance": 0.3960535526275635,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:36 — The goal of moving away from rote memorization of rules",
+          "verified": true,
+          "chunk_id": "tx_36_7befd499e7",
+          "heading_path": "Transcript 0:36–1:06",
+          "heading": "Transcript 0:36",
+          "chapter_id": 1,
+          "start": 36,
+          "end": 66.05
+        },
+        {
+          "section": "13:15 — Loosely defining the derivative as a measure of sensitivity to small changes",
+          "verified": true,
+          "chunk_id": "tx_795_cc9db7b73e",
+          "heading_path": "Transcript 13:15–13:43",
+          "heading": "Transcript 13:15",
+          "chapter_id": 4,
+          "start": 795,
+          "end": 823.55
+        }
+      ],
+      "grade": {
+        "id": 16,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly notes the lecture does not explain trigonometric chain rules."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What are the career prospects for someone who studies calculus?",
+      "gold_answer": "The lecture does not provide information regarding career paths for students of calculus.",
+      "quote": "",
+      "answer": "The lecture doesn't cover career prospects; its focus is entirely on building a deep, visual intuition for the core concepts of calculus so that you understand where its rules and formulas come from. The goal is to help you see calculus as a discoverable subject rather than a collection of abstract facts to be memorized.\n\nWould you like to explore one of those core concepts, like how we can use visual reasoning to understand the area of a circle?\n\n**Sources**\n• 0:36 — The goal of understanding where calculus formulas come from\n• [N1] Section: Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+      "latency_s": 3.48,
+      "calls": 2,
+      "input_tokens": 2025,
+      "output_tokens": 26,
+      "cost_usd": 0.000544,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:36–1:06",
+          "chapter_id": 1,
+          "distance": 0.31621819734573364,
+          "start": 36.95
+        },
+        {
+          "heading_path": "Transcript 14:33–15:05",
+          "chapter_id": 4,
+          "distance": 0.3328006863594055,
+          "start": 873.15
+        },
+        {
+          "heading_path": "Transcript 0:15–0:42",
+          "chapter_id": 1,
+          "distance": 0.32999736070632935,
+          "start": 15.45
+        },
+        {
+          "heading_path": "Transcript 9:13–9:48",
+          "chapter_id": 3,
+          "distance": 0.32997584342956543,
+          "start": 553.15
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+          "chapter_id": 1,
+          "distance": 0.33276158571243286,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > Exploring the Area of a Circle",
+          "chapter_id": 1,
+          "distance": 0.3352733254432678,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:36 — The goal of understanding where calculus formulas come from",
+          "verified": true,
+          "chunk_id": "tx_36_7befd499e7",
+          "heading_path": "Transcript 0:36–1:06",
+          "heading": "Transcript 0:36",
+          "chapter_id": 1,
+          "start": 36,
+          "end": 66.05
+        },
+        {
+          "section": "[N1] Section: Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+          "verified": true,
+          "chunk_id": "note_a01317491ef4da0d",
+          "heading_path": "Introduction and the Area of a Circle > The Goal of Calculus Intuition",
+          "heading": "The Goal of Calculus Intuition",
+          "chapter_id": 1,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 17,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor correctly identifies that career prospects are not covered in the lecture."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Why does the lecturer claim that the area of a circle is impossible to determine without calculus?",
+      "gold_answer": "The lecturer does not claim it is impossible; rather, they use the known formula for the area of a circle to show how calculus can explain why that formula is true.",
+      "quote": "Maybe you know that this is pi times its radius squared. But why? Is there a nice way to think about where this formula comes from?",
+      "quote_ts": 97.75,
+      "answer": "Actually, the lecturer doesn't claim that the area of a circle is impossible to determine without calculus. Instead, they use the area of a circle as a way to *discover* the core ideas of calculus, showing how you can arrive at the formula $\\pi R^2$ by breaking the shape into smaller, manageable pieces.\n\nThe goal is to move beyond just knowing the formula and instead develop the \"problem-solving tools and techniques\" that define how a mathematician thinks. By chopping the circle into rings and rearranging them into a shape that resembles a triangle, you can see how the area of those pieces converges to the final result.\n\nWould you like to walk through how those rings turn into that triangle?\n\n**Sources**\n• 1:41 — exploring the area of a circle leads to a glimpse of calculus\n• 6:02 — the area of a circle is pi times R squared\n• [N1] Section: Introduction and the Area of a Circle > Exploring the Area of a Circle",
+      "latency_s": 3.26,
+      "calls": 2,
+      "input_tokens": 2181,
+      "output_tokens": 28,
+      "cost_usd": 0.000586,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:14–1:44",
+          "chapter_id": 1,
+          "distance": 0.2354905605316162,
+          "start": 74.65
+        },
+        {
+          "heading_path": "Transcript 1:41–2:16",
+          "chapter_id": 1,
+          "distance": 0.2695131301879883,
+          "start": 101.65
+        },
+        {
+          "heading_path": "Transcript 6:02–6:29",
+          "chapter_id": 2,
+          "distance": 0.267939031124115,
+          "start": 362.15
+        },
+        {
+          "heading_path": "Transcript 3:00–3:29",
+          "chapter_id": 2,
+          "distance": 0.2816959023475647,
+          "start": 180.25
+        },
+        {
+          "heading_path": "Introduction and the Area of a Circle > Exploring the Area of a Circle",
+          "chapter_id": 1,
+          "distance": 0.2403126358985901,
+          "start": null
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > From Approximation to Precision",
+          "chapter_id": 2,
+          "distance": 0.28689509630203247,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "Exploring the Area of a Circle",
+          "distance": 0.27843761444091797
+        },
+        {
+          "section": "The Method of Concentric Rings",
+          "distance": 0.2929995656013489
+        }
+      ],
+      "citations": [
+        {
+          "section": "1:41 — exploring the area of a circle leads to a glimpse of calculus",
+          "verified": true,
+          "chunk_id": "tx_101_ad153e7c43",
+          "heading_path": "Transcript 1:41–2:16",
+          "heading": "Transcript 1:41",
+          "chapter_id": 1,
+          "start": 101,
+          "end": 136.15
+        },
+        {
+          "section": "6:02 — the area of a circle is pi times R squared",
+          "verified": true,
+          "chunk_id": "tx_362_9a41b548e2",
+          "heading_path": "Transcript 6:02–6:29",
+          "heading": "Transcript 6:02",
+          "chapter_id": 2,
+          "start": 362,
+          "end": 389.55
+        },
+        {
+          "section": "[N1] Section: Introduction and the Area of a Circle > Exploring the Area of a Circle",
+          "verified": true,
+          "chunk_id": "note_4eed61592530beeb",
+          "heading_path": "Introduction and the Area of a Circle > Exploring the Area of a Circle",
+          "heading": "Exploring the Area of a Circle",
+          "chapter_id": 1,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 18,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "The tutor successfully rejects the false premise that the area cannot be found without calculus."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "Since the lecture proves that the area of a circle is exactly equal to the sum of the rectangles with a thickness of 0.1, why do we need smaller values?",
+      "gold_answer": "The lecture explains that the sum using a thickness of 0.1 is only an approximation, and that smaller values are needed to improve accuracy.",
+      "quote": "And even though that's not perfect, for smaller and smaller choices of DR, this is actually going to be a better and better approximation for that area.",
+      "quote_ts": 218.35,
+      "answer": "Actually, the lecture doesn't claim the area is *exactly* equal when the thickness is 0.1; it says that 0.1 is just a starting point for an approximation. Because the rings are curved, a rectangle with a thickness of 0.1 is always slightly \"wrong\"—it doesn't perfectly match the shape of the ring.\n\nWe need smaller values of $dr$ because as $dr$ gets smaller, the error in each rectangle shrinks, and the total sum gets closer and closer to the true, precise area of the circle. The \"exact\" answer only emerges when we consider the limit where $dr$ becomes infinitesimally small, which allows us to treat the sum as the area under the graph of $2\\pi r$.\n\nShould I explain why that specific graph ($2\\pi r$) represents the area of the circle so perfectly?\n\n**Sources**\n• 3:27 — approximating the ring as a rectangle is not perfect\n• 5:18 — the approximation gets less wrong as $dr$ gets smaller\n• 7:18 — the sum approaches the area under the graph as $dr$ gets smaller",
+      "latency_s": 5.01,
+      "calls": 2,
+      "input_tokens": 2323,
+      "output_tokens": 29,
+      "cost_usd": 0.000622,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 3:27–4:02",
+          "chapter_id": 2,
+          "distance": 0.24700921773910522,
+          "start": 207.55
+        },
+        {
+          "heading_path": "Transcript 3:53–4:26",
+          "chapter_id": 2,
+          "distance": 0.2454378604888916,
+          "start": 233.25
+        },
+        {
+          "heading_path": "Transcript 5:18–5:43",
+          "chapter_id": 2,
+          "distance": 0.23136019706726074,
+          "start": 318.15
+        },
+        {
+          "heading_path": "Transcript 7:18–7:48",
+          "chapter_id": 2,
+          "distance": 0.22231507301330566,
+          "start": 438.15
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > From Approximation to Precision",
+          "chapter_id": 2,
+          "distance": 0.20660054683685303,
+          "start": null
+        },
+        {
+          "heading_path": "Approximating Area with Rectangles > Slicing the Circle",
+          "chapter_id": 2,
+          "distance": 0.21976470947265625,
+          "start": null
+        }
+      ],
+      "images": [
+        {
+          "section": "The Method of Concentric Rings",
+          "distance": 0.27730047702789307
+        },
+        {
+          "section": "Generalizing the Calculus Approach",
+          "distance": 0.2875943183898926
+        }
+      ],
+      "citations": [
+        {
+          "section": "3:27 — approximating the ring as a rectangle is not perfect",
+          "verified": true,
+          "chunk_id": "tx_207_bad351c292",
+          "heading_path": "Transcript 3:27–4:02",
+          "heading": "Transcript 3:27",
+          "chapter_id": 2,
+          "start": 207,
+          "end": 242.55
+        },
+        {
+          "section": "5:18 — the approximation gets less wrong as $dr$ gets smaller",
+          "verified": true,
+          "chunk_id": "tx_318_c9faaf4c2c",
+          "heading_path": "Transcript 5:18–5:43",
+          "heading": "Transcript 5:18",
+          "chapter_id": 2,
+          "start": 318,
+          "end": 343.55
+        },
+        {
+          "section": "7:18 — the sum approaches the area under the graph as $dr$ gets smaller",
+          "verified": true,
+          "chunk_id": "tx_438_532024b278",
+          "heading_path": "Transcript 7:18–7:48",
+          "heading": "Transcript 7:18",
+          "chapter_id": 2,
+          "start": 438,
+          "end": 468.55
+        }
+      ],
+      "grade": {
+        "id": 19,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "The tutor successfully rejects the false premise that thickness 0.1 gives the exact area."
+      }
+    }
+  ]
+}

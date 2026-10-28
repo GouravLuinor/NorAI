@@ -1,0 +1,34 @@
+{
+  "lecture_dir": "outputs/lean-dp8",
+  "judge": "gemini-3.5-flash-lite",
+  "summary": {
+    "chapters": 2,
+    "notes_words": 828,
+    "claims": 16,
+    "unsupported": 1,
+    "unsupported_rate": 0.062,
+    "missing_key_points": 4
+  },
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "total_claims": 8,
+      "unsupported_claims": [
+        "For example, in the array [0, 1, 0, 3, 2, 3], the longest increasing subsequence is [0, 1, 2, 3], which has a length of 4."
+      ],
+      "missing_key_points": [
+        "The lecturer mentions solving 554 leetcode problems and giving over 100 interviews.",
+        "The lecturer shares a personal anecdote about a friend giving him the LIS problem and telling him he would never crack big tech interviews if he could not solve it."
+      ]
+    },
+    {
+      "chapter_id": 2,
+      "total_claims": 8,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "The lecturer concludes the video by recommending a binary tree video from an Amazon interview solved in one line.",
+        "The lecturer asks viewers to subscribe to the channel if they are learning something new."
+      ]
+    }
+  ]
+}

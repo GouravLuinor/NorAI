@@ -1,0 +1,94 @@
+{
+  "lecture_dir": "outputs/lean-aws71",
+  "judge": "gemini-3.5-flash-lite",
+  "summary": {
+    "chapters": 10,
+    "notes_words": 5956,
+    "claims": 143,
+    "unsupported": 0,
+    "unsupported_rate": 0.0,
+    "missing_key_points": 10
+  },
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "total_claims": 8,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "The lecture mentions Sleiman has 11 years in tech, runs studytech.ai, and an academy with 900+ engineers landing six-figure roles."
+      ]
+    },
+    {
+      "chapter_id": 2,
+      "total_claims": 11,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "The startup has 1 server, no budget, and traffic jumping from 1,000 to 100,000 users over a weekend."
+      ]
+    },
+    {
+      "chapter_id": 3,
+      "total_claims": 18,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Explanation of the cold start mechanism in Lambda and why it happens."
+      ]
+    },
+    {
+      "chapter_id": 4,
+      "total_claims": 12,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Step-by-step trace of the user journey from DNS lookup to DynamoDB confirmation."
+      ]
+    },
+    {
+      "chapter_id": 5,
+      "total_claims": 14,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "The e-commerce company loses $50,000 per hour of downtime."
+      ]
+    },
+    {
+      "chapter_id": 6,
+      "total_claims": 22,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Explanation of monolithic vs microservices architectures."
+      ]
+    },
+    {
+      "chapter_id": 7,
+      "total_claims": 17,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Step-by-step customer journey for adding an item to the cart in the e-commerce scenario."
+      ]
+    },
+    {
+      "chapter_id": 8,
+      "total_claims": 16,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "The finance company has 40 people manually reading documents daily."
+      ]
+    },
+    {
+      "chapter_id": 9,
+      "total_claims": 15,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Step-by-step trace of the AI contract processing flow."
+      ]
+    },
+    {
+      "chapter_id": 10,
+      "total_claims": 10,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Mention of specific student success stories landing cloud roles."
+      ]
+    }
+  ]
+}
