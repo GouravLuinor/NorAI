@@ -23,16 +23,16 @@ from transcription.gemini_transcriber import parse_compact_transcript  # noqa: E
 
 def test_parse_compact_transcript():
     text = (
-        "[0.0] Hello everyone.\n"
-        "[3.4] Today we look at\n"
+        "[00:00] Hello everyone.\n"
+        "[00:03] Today we look at\n"
         "dynamic programming.\n"          # untimed → continues previous line
         "\n"
-        "[1:05.5] After a long pause.\n"  # m:ss form, 65.5 s
-        "[60.0] Out of order.\n"          # goes backwards → clamped to 65.5
-        "[999] Past the end.\n"           # clamped to the clip duration
+        "[01:05] After a long pause.\n"   # MM:SS, as the prompt asks: 65 s
+        "[01:00] Out of order.\n"         # goes backwards → clamped to 65
+        "[999] Past the end.\n"           # bare seconds; clamped to the clip duration
     )
     segs = parse_compact_transcript(text, duration=120.0)
-    assert [s["start"] for s in segs] == [0.0, 3.4, 65.5, 65.5, 120.0], segs
+    assert [s["start"] for s in segs] == [0.0, 3.0, 65.0, 65.0, 120.0], segs
     assert segs[1]["text"] == "Today we look at dynamic programming."
     # end = next start, but no longer than the words could take
     assert segs[0]["end"] == 2.2, "2 words: start + 1 s + 2 x 0.6 s, before the next start"

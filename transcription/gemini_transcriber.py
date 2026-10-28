@@ -54,7 +54,7 @@ class GeminiTranscriptResponse(BaseModel):
 # ── Compact line format (lean pipeline) ──────────────────────────────────────
 # JSON segments spend most output tokens on keys, ids and end times (11.3k
 # output tokens for ~3.9k tokens of speech on a 17-min lecture). The compact
-# format is one "[start] text" line per sentence; end = next line's start.
+# format is one "[MM:SS] text" line per sentence; end = next line's start.
 
 _COMPACT_LINE = re.compile(r"^\s*\[(\d+(?::\d{1,2}){0,2}(?:\.\d+)?)\]\s*(.*)$")
 # A sentence ends no later than this after it starts (words x seconds + slack),
@@ -194,8 +194,9 @@ def _transcribe_audio_slice(
         prompt = (
             f"Transcribe the attached audio clip (~{duration:.0f} seconds) verbatim, from start to finish.\n"
             f"Output plain text only: one line per sentence, each line starting with the time the "
-            f"sentence begins, in seconds from the start of the clip, in square brackets. Example:\n"
-            f"[0.0] Hello everyone.\n[3.4] Today we look at dynamic programming.\n"
+            f"sentence begins, as [MM:SS] (minutes:seconds from the start of the clip). Example:\n"
+            f"[00:00] Hello everyone.\n[00:03] Today we look at dynamic programming.\n"
+            f"[01:12] The first idea is overlapping subproblems.\n"
             f"Rules: no headings, speaker labels or commentary; transcribe technical terms, acronyms, "
             f"math and code accurately; do not summarize or stop early."
         )
