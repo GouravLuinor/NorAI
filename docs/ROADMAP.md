@@ -136,7 +136,7 @@ NorAI has a working 18-stage multimodal pipeline, a genuinely grounded RAG tutor
 
 ## Phase P7 — Token reduction (standalone sprint, complete)
 
-Standalone cost-cut sprint (not part of the original phased plan). Full plan + measurements in `docs/token_reduction.md`.
+Standalone cost-cut sprint (not part of the original phased plan). The plan doc was removed on 2026-10-28; it is in git history, and the 2026-10 lean pipeline supersedes its cost baseline (see docs/PROJECT_PROGRESS.md, Phase 2).
 
 | # | Item | Status | Ref | Notes |
 |---|---|---|---|---|

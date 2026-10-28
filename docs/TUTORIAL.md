@@ -1317,7 +1317,7 @@ statuses, and a golden-QA eval harness (`tutor/evals/`).
   per-stage `usage_logs` (now with `model`/`calls` columns, migration `0003`)
   into `GET /usage`; `UsagePage.tsx` renders cost/usage breakdowns (see 4.3).
 
-## 8.8 P7 — Token reduction (see `docs/token_reduction.md`)
+## 8.8 P7 — Token reduction
 
 - **Prompt compression** — the tutor's system prompt was slashed to a lean
   instruction set (~1.5k → ~0.3k tokens); retrieval prompts trimmed; default
@@ -1328,11 +1328,11 @@ statuses, and a golden-QA eval harness (`tutor/evals/`).
   so the flag is off by default and can be toggled on a paid plan.
 - **Output-token cut** — `max_output_tokens` lowered across pipeline/tutor
   calls and the `/chat` temperature raised slightly to leaner phrasing; verified
-  via a before/after cost run in `docs/token_reduction.md`.
+  via a before/after cost run.
 
 ## 8.9 UI/UX audit execution
 
-The frontend redesign driven by `UI_UX_AUDIT_REPORT.md` shipped in `8c4cd74`
+The frontend redesign driven by the UI/UX audit shipped in `8c4cd74`
 (see Part 3 for details): three responsive tiers for the workspace (desktop /
 tablet slide-over / mobile single-pane), skeleton loading states across views,
 a custom keyboard-accessible `Select` replacing the native `<select>` on

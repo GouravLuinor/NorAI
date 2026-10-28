@@ -64,7 +64,7 @@ Decisions from the Micro-SaaS foundation work; the launch-track roadmap doc they
 
 Forward-looking work — details live in the referenced docs:
 
-- **P7 token-reduction sprint (complete 2026-08-13).** Prompt compression (≈500 tokens saved across 5 prompts), rolling-prefix Gemini context caching for the tutor (dormant — see the paid-tier preflight item below; auto-activates with a quota-enabled key), and an output-token cut (dead fields `external_knowledge`/`visual_summary` dropped, `max_output_tokens` caps added). Full plan + measurements in `docs/token_reduction.md`; ROADMAP P7.1–P7.3.
+- **P7 token-reduction sprint (complete 2026-08-13).** Prompt compression (≈500 tokens saved across 5 prompts), rolling-prefix Gemini context caching for the tutor (dormant — see the paid-tier preflight item below; auto-activates with a quota-enabled key), and an output-token cut (dead fields `external_knowledge`/`visual_summary` dropped, `max_output_tokens` caps added). Details: ROADMAP P7.1–P7.3 (the plan doc is in git history).
 - **Gemini paid-tier preflight (launch blocker).** Upgrade the Google AI Studio API from the free tier (15 RPM / 500 RPD) to pay-as-you-go Tier 1 before public launch. This also unblocks P7 context caching: the free-tier key has 0 cached-content storage quota (probe: `429 … limit=0`), so `tutor/cache.py` stays a graceful no-op until then.
 - **P0.4a — frontend auth on reads (deferred).** Ownership scoping (`ensure_lecture_access`) only 404s foreign lectures when a token is presented; the frontend sends no token on artifact reads (`default` access). Deliberately not wired yet — see `ROADMAP.md` Phase P0.
 - **Job-queue multi-worker claim-lock.** The DB-backed job queue currently assumes a single worker; running `--workers > 1` needs a claim-lock so two workers can't process the same lecture. See `backend/jobs.py`.
@@ -98,7 +98,7 @@ Decided 2026-08-14: heavy AI work is split between opencode and **Google Antigra
 
 ## 6. Lessons & Gotchas (carried over from the retired handoff log)
 
-Full log: `docs/archive/COMMUNICATOR_handoff_log.md`.
+The full log was removed on 2026-10-28; it is in git history (`git log --all -- docs/archive/COMMUNICATOR_handoff_log.md`).
 
 - **Cost baseline (P6.5, 2026-08-13)** for Phase 2 comparisons: a 12.08-min lecture (`mY3bR9qjZr4`) = 18 Gemini calls / 27,276 input / 13,382 output tokens / **$0.0269**, split extract 10 · notes 3 · visual 3 · outline 1 · embed 1. A tutor turn ≈ 2 calls ≈ $0.0006. The 2026-10-27 run of a 17-min lecture was estimated at ~35 calls.
 - **Throughput ceiling.** The shared Gemini limiter is 12 RPM (`DEFAULT_RPM_LIMIT`, env `NORAI_RPM_LIMIT`); raise it only on a paid tier.

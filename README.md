@@ -341,9 +341,7 @@ NorAI/
 │   ├── PROJECT_PROGRESS.md       # living technical changelog & architectural state
 │   ├── ROADMAP.md                # phased engineering-hardening roadmap
 │   ├── TUTORIAL.md               # complete system architecture & design tutorial
-│   ├── NOTES.md                  # developer fix log & architectural decisions
-│   ├── token_reduction.md        # prompt compression & caching benchmarks
-│   └── archive/                  # completed audits/reports, old handoff log, logo explorations
+│   └── NOTES.md                  # developer fix log & architectural decisions
 ├── AGENTS.md                     # developer and agent operational guide
 └── requirements.txt
 ```
@@ -440,9 +438,9 @@ sprint are complete; a production deployment path is agreed in
       Anki export (P6.2), click-to-video grounding (P6.3), course collections +
       share links (P6.4), usage/cost dashboard (P6.5)
 - [x] **P7 token reduction** — prompt compression, context caching (dormant on
-      free tier), output-token cuts (`docs/token_reduction.md`)
+      free tier), output-token cuts
 - [x] **UI/UX audit execution** — 3 responsive tiers, skeletons, custom Select,
-      dark-theme fixes, course/share pages (`docs/archive/UI_UX_AUDIT_REPORT.md`)
+      dark-theme fixes, course/share pages
 
 ## 🧩 Engineering Challenges
 
