@@ -562,62 +562,8 @@ def process_chapter(
 #comibines notes
 
 def combine_notes():
-    """
-    Combine all markdown files.
-    """
-
-    markdown_files = sorted(
-
-        NOTES_DIR.glob(
-            "chapter_*.md"
-        ),
-
-        key=lambda x:
-        int(
-            x.stem.split(
-                "_"
-            )[1]
-        )
-    )
-
-    final_notes = []
-
-    for file_path in (
-        markdown_files
-    ):
-
-        with open(
-            file_path,
-            "r",
-            encoding="utf-8"
-        ) as f:
-
-            final_notes.append(
-                f.read()
-            )
-
-    output_path = (
-        NOTES_DIR
-        /
-        "notes.md"
-    )
-
-    with open(
-        output_path,
-        "w",
-        encoding="utf-8"
-    ) as f:
-
-        f.write(
-            "\n\n---\n\n".join(
-                final_notes
-            )
-        )
-
-    logger.info(
-        f"Saved: "
-        f"{output_path}"
-    )
+    """Combine all markdown files under the module-level NOTES_DIR."""
+    write_combined_notes(NOTES_DIR)
 
 def main():
 
@@ -783,6 +729,98 @@ class MergedChapterArtifactsModel(BaseModel):
     assessment_questions: list[Question] = Field(description="Quiz questions with embedded flashcard_front/back/explanation fields.")
 
 
+# ── Artifact writers (shared by the legacy and lean pipelines) ────────────────
+
+def write_chapter_artifacts(
+    output_dir: str,
+    *,
+    chapter_id: int,
+    chapter_title: str,
+    notes_title: str,
+    sections: list[dict],
+    revision_summary: list[str],
+    core_concepts_breakdown: list,
+    questions: list[dict],
+) -> None:
+    """Write one chapter's notes (.md + .json), revision, assessment and
+    flashcard files in the layout the API and tutor read."""
+    out = Path(output_dir)
+    notes_dir, revision_dir = out / "notes", out / "revision"
+    assessment_dir, flashcards_dir = out / "assessment", out / "flashcards"
+    for d in (notes_dir, revision_dir, assessment_dir, flashcards_dir):
+        d.mkdir(parents=True, exist_ok=True)
+
+    # Markdown for the RAG tutor and notes.md; JSON for deterministic card rendering.
+    md_lines = [f"# {notes_title}\n"]
+    for sec in sections:
+        if sec.get("title"):
+            md_lines.append(f"## {sec['title']}")
+        md_lines.append(f"{sec.get('content_markdown', '')}\n")
+    (notes_dir / f"chapter_{chapter_id}.md").write_text("\n\n".join(md_lines), encoding="utf-8")
+    with open(notes_dir / f"chapter_{chapter_id}.json", "w", encoding="utf-8") as f:
+        json.dump(
+            {"chapter_id": chapter_id, "title": notes_title, "sections": sections},
+            f, indent=4, ensure_ascii=False,
+        )
+
+    rev_md = render_revision_markdown(
+        chapter_id=chapter_id,
+        chapter_title=chapter_title,
+        revision_summary=revision_summary,
+        core_concepts_breakdown=core_concepts_breakdown,
+    )
+    (revision_dir / f"revision_chapter_{chapter_id}.md").write_text(rev_md, encoding="utf-8")
+
+    with open(assessment_dir / f"assessment_chapter_{chapter_id}.json", "w", encoding="utf-8") as f:
+        json.dump(
+            {"chapter_id": chapter_id, "chapter_title": chapter_title, "questions": questions},
+            f, indent=4, ensure_ascii=False,
+        )
+
+    # Flashcards are a 0-call transformation of the quiz questions.
+    with open(flashcards_dir / f"flashcards_chapter_{chapter_id}.json", "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "chapter_id": chapter_id,
+                "chapter_title": chapter_title,
+                "flashcards": convert_assessment_to_flashcards(questions),
+            },
+            f, indent=4, ensure_ascii=False,
+        )
+
+
+def write_degraded_chapter(output_dir: str, chapter_id: int, chapter_title: str) -> None:
+    """Placeholder files (incomplete: true) for a chapter whose generation failed."""
+    out = Path(output_dir)
+    for d in ("notes", "revision", "assessment", "flashcards"):
+        (out / d).mkdir(parents=True, exist_ok=True)
+    (out / "notes" / f"chapter_{chapter_id}.md").write_text(
+        f"# Chapter {chapter_id}: {chapter_title}\n\n*Note: Content generation was partially degraded for this chapter.*",
+        encoding="utf-8",
+    )
+    (out / "revision" / f"revision_chapter_{chapter_id}.md").write_text(
+        f"# Revision Notes — Chapter {chapter_id}: {chapter_title}\n\n*Note: Content generation was partially degraded for this chapter.*",
+        encoding="utf-8",
+    )
+    with open(out / "assessment" / f"assessment_chapter_{chapter_id}.json", "w", encoding="utf-8") as f:
+        json.dump({"chapter_id": chapter_id, "chapter_title": chapter_title, "incomplete": True, "questions": []}, f, indent=4)
+    with open(out / "flashcards" / f"flashcards_chapter_{chapter_id}.json", "w", encoding="utf-8") as f:
+        json.dump({"chapter_id": chapter_id, "chapter_title": chapter_title, "incomplete": True, "flashcards": []}, f, indent=4)
+
+
+def write_combined_notes(notes_dir: Path) -> Path:
+    """Join every chapter_N.md under `notes_dir` into notes.md (chapter order)."""
+    notes_dir = Path(notes_dir)
+    files = sorted(notes_dir.glob("chapter_*.md"), key=lambda x: int(x.stem.split("_")[1]))
+    output_path = notes_dir / "notes.md"
+    output_path.write_text(
+        "\n\n---\n\n".join(f.read_text(encoding="utf-8") for f in files),
+        encoding="utf-8",
+    )
+    logger.info(f"Saved: {output_path}")
+    return output_path
+
+
 def process_chapter_artifacts_merged(chapter_json: dict, outline: dict, output_dir: str):
     """
     Generate Study Notes, Revision Notes, Assessment Questions, and Flashcards
@@ -861,61 +899,16 @@ Produce a valid JSON object matching MergedChapterArtifactsModel:
         data = json.loads(response.text)
         model = MergedChapterArtifactsModel(**data)
 
-        # 1a. Render & Save Unified Markdown for chapter_N.md (for RAG tutor, combine_notes, etc.)
-        md_lines = [f"# {model.study_notes_title}\n"]
-        for sec in model.study_notes_sections:
-            if sec.title:
-                md_lines.append(f"## {sec.title}")
-            md_lines.append(f"{sec.content_markdown}\n")
-        full_notes_md = "\n\n".join(md_lines)
-
-        notes_file = notes_dir / f"chapter_{chapter_id}.md"
-        with open(notes_file, "w", encoding="utf-8") as f:
-            f.write(full_notes_md)
-
-        # 1b. Save Structured JSON for 100% deterministic frontend card rendering
-        notes_json_file = notes_dir / f"chapter_{chapter_id}.json"
-        notes_json_data = {
-            "chapter_id": chapter_id,
-            "title": model.study_notes_title,
-            "sections": [s.model_dump() for s in model.study_notes_sections]
-        }
-        with open(notes_json_file, "w", encoding="utf-8") as f:
-            json.dump(notes_json_data, f, indent=4, ensure_ascii=False)
-
-        # 2. Render & Save Revision Markdown
-        rev_md = render_revision_markdown(
+        write_chapter_artifacts(
+            output_dir,
             chapter_id=chapter_id,
             chapter_title=chapter_title,
+            notes_title=model.study_notes_title,
+            sections=[sec.model_dump() for sec in model.study_notes_sections],
             revision_summary=model.revision_summary,
             core_concepts_breakdown=model.core_concepts_breakdown,
+            questions=[q.model_dump() for q in model.assessment_questions],
         )
-        rev_file = revision_dir / f"revision_chapter_{chapter_id}.md"
-        with open(rev_file, "w", encoding="utf-8") as f:
-            f.write(rev_md)
-
-        # 3. Save Assessment Questions JSON
-        questions_dicts = [q.model_dump() for q in model.assessment_questions]
-        ass_data = {
-            "chapter_id": chapter_id,
-            "chapter_title": chapter_title,
-            "questions": questions_dicts,
-        }
-        ass_file = assessment_dir / f"assessment_chapter_{chapter_id}.json"
-        with open(ass_file, "w", encoding="utf-8") as f:
-            json.dump(ass_data, f, indent=4, ensure_ascii=False)
-
-        # 4. Save Flashcards JSON (0-call transformation)
-        cards = convert_assessment_to_flashcards(questions_dicts)
-        cards_data = {
-            "chapter_id": chapter_id,
-            "chapter_title": chapter_title,
-            "flashcards": cards,
-        }
-        cards_file = flashcards_dir / f"flashcards_chapter_{chapter_id}.json"
-        with open(cards_file, "w", encoding="utf-8") as f:
-            json.dump(cards_data, f, indent=4, ensure_ascii=False)
-
         logger.info(f"Chapter {chapter_id} consolidated artifacts generated successfully.")
         write_marker(marker, chapter_json)
         return
@@ -924,21 +917,7 @@ Produce a valid JSON object matching MergedChapterArtifactsModel:
 
     # Graceful degradation: write fallback files for all 4 artifacts with incomplete: true
     logger.error(f"Chapter {chapter_id} consolidated artifacts failed after 3 retries. Marking incomplete.")
-    notes_file = notes_dir / f"chapter_{chapter_id}.md"
-    with open(notes_file, "w", encoding="utf-8") as f:
-        f.write(f"# Chapter {chapter_id}: {chapter_title}\n\n*Note: Content generation was partially degraded for this chapter.*")
-
-    rev_file = revision_dir / f"revision_chapter_{chapter_id}.md"
-    with open(rev_file, "w", encoding="utf-8") as f:
-        f.write(f"# Revision Notes — Chapter {chapter_id}: {chapter_title}\n\n*Note: Content generation was partially degraded for this chapter.*")
-
-    ass_file = assessment_dir / f"assessment_chapter_{chapter_id}.json"
-    with open(ass_file, "w", encoding="utf-8") as f:
-        json.dump({"chapter_id": chapter_id, "chapter_title": chapter_title, "incomplete": True, "questions": []}, f, indent=4)
-
-    cards_file = flashcards_dir / f"flashcards_chapter_{chapter_id}.json"
-    with open(cards_file, "w", encoding="utf-8") as f:
-        json.dump({"chapter_id": chapter_id, "chapter_title": chapter_title, "incomplete": True, "flashcards": []}, f, indent=4)
+    write_degraded_chapter(output_dir, chapter_id, chapter_title)
 
     write_marker(marker, chapter_json)
 
@@ -967,11 +946,7 @@ def generate_consolidated_chapter_artifacts(
             except Exception as e:
                 logger.error(f"Merged chapter artifact worker failed: {e}")
 
-    # Combine notes & revision files into main summary files
-    import notes.notes_generator as _nsg
-    _nsg.NOTES_DIR = Path(output_dir) / "notes"
-    _nsg.CHAPTER_DIR = Path(chapters_dir)
-    combine_notes()
+    write_combined_notes(Path(output_dir) / "notes")
 
     return {
         "output_dir": output_dir,

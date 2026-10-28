@@ -39,8 +39,12 @@ def digest(*sources) -> str:
         if isinstance(src, Path):
             src = str(src)
         if isinstance(src, str):
+            try:
+                is_file = Path(src).is_file()
+            except (OSError, ValueError):  # long text / NUL byte: a literal, not a path
+                is_file = False
             p = Path(src)
-            if p.is_file():
+            if is_file:
                 h.update(b"F:")
                 h.update(_file_digest(p).encode())
             else:

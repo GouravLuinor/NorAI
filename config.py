@@ -47,6 +47,15 @@ RETRY_JITTER_MAX = float(os.environ.get("NORAI_RETRY_JITTER_MAX", "3.0"))
 NORAI_TRANSCRIPTION_BACKEND = os.environ.get("NORAI_TRANSCRIPTION_BACKEND", "gemini")
 NORAI_AUDIO_CHUNK_MINUTES = int(os.environ.get("NORAI_AUDIO_CHUNK_MINUTES", "18"))
 
+# ── Pipeline variant ─────────────────────────────────────────────────────────
+# "legacy" = the per-chunk extract → outline → visual → merge → chapters →
+# screenshot selection → artifacts chain (~29 calls / 17-min lecture).
+# "lean" = compact transcription + ONE structure call + ONE multimodal call
+# per chapter (lean/). Read per run so an A/B needs no restart.
+def pipeline_mode() -> str:
+    mode = os.environ.get("NORAI_PIPELINE", "legacy").strip().lower()
+    return mode if mode in ("legacy", "lean") else "legacy"
+
 # ── Adaptive Chunking (P1.8 + Dynamic Content Scaling) ────────────────────────
 # Long lectures get larger chunks so the number of extraction LLM calls stays
 # bounded. TARGET_MAX_CHUNKS scales the chunk count; MAX_SEGMENTS_PER_CHUNK

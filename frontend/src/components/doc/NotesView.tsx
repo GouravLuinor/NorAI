@@ -188,6 +188,8 @@ interface SectionItem {
   heading: string
   body: string
   cardType?: CardType
+  /** Where the section's material starts in the video (lean pipeline notes). */
+  startSec?: number | null
 }
 
 export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId: number | null; screenshotsExpanded?: boolean }) {
@@ -244,7 +246,8 @@ export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId
           const parsedSecs: SectionItem[] = ((data as { sections?: Array<Record<string, unknown>> }).sections || []).map((sec) => ({
             heading: (sec.title as string) || '',
             body: ((sec.content_markdown as string) || '').replace(/!\[.*?\]\(.*?\)/g, '').trim(),
-            cardType: sec.section_type as CardType
+            cardType: sec.section_type as CardType,
+            startSec: typeof sec.start_sec === 'number' ? sec.start_sec : null,
           }))
           setSections(parsedSecs)
         } else {
@@ -305,7 +308,7 @@ export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId
       {partiallyGenerated && <PartialContentBadge className="mb-6" />}
 
       {sections.map((section, idx) => {
-        const { heading, body, cardType: explicitType } = section
+        const { heading, body, cardType: explicitType, startSec } = section
         if (!body) return null
 
         const innerContent = (
@@ -322,7 +325,9 @@ export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId
           )
         }
 
-        const sectionSec = videoEmbeddable && chapterId != null ? sectionStart(chapterId, idx) : null
+        const sectionSec = !videoEmbeddable
+          ? null
+          : startSec ?? (chapterId != null ? sectionStart(chapterId, idx) : null)
         const seekAction = sectionSec != null ? (
           <button
             type="button"

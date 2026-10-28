@@ -4,8 +4,9 @@ backend/video_map.py — P6.3: per-lecture seek map for click-to-video grounding
 Builds `{chapters: [...], chunks: [...]}` purely from on-disk artifacts, so the
 frontend can jump the YouTube player to the exact moment:
 
-  - `notes/lecture_outline.json`  → chapter → chunk_ids
-  - `merged_objects/chunk_*.json` → chunk_id → start/end (seconds)
+  - `notes/lecture_outline.json`  → chapter → chunk_ids, and (lean pipeline)
+                                   a top-level `chunks` list of start/end
+  - `merged_objects/chunk_*.json` → chunk_id → start/end (legacy pipeline)
 
 Deterministic, no LLM, read-only. A chapter with no resolvable timestamp gets
 `start_sec`/`end_sec = None` and the frontend simply hides its seek chip.
@@ -52,13 +53,31 @@ def load_outline_chapters(base: Path) -> list[dict]:
     return outline.get("chapters", [])
 
 
+def _outline_chunk_times(base: Path) -> dict[int, dict]:
+    """chunk_id → start/end from the outline's top-level `chunks` list."""
+    try:
+        outline = json.loads((base / "notes" / "lecture_outline.json").read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    times: dict[int, dict] = {}
+    for c in outline.get("chunks") or []:
+        start = _safe_float(c.get("start"))
+        if c.get("chunk_id") is None or start is None:
+            continue
+        times[int(c["chunk_id"])] = {"start_sec": start, "end_sec": _safe_float(c.get("end"))}
+    return times
+
+
 def load_chunk_times(base: Path) -> dict[int, dict]:
     """
-    Read every `merged_objects/chunk_*.json` and map chunk_id → its recorded
-    start/end seconds. Chunks without a numeric start/end are skipped.
+    Map chunk_id → its recorded start/end seconds: from the outline's `chunks`
+    list when present (lean pipeline), else from every
+    `merged_objects/chunk_*.json`. Chunks without a numeric start are skipped.
     """
     base = Path(base)
-    times: dict[int, dict] = {}
+    times = _outline_chunk_times(base)
+    if times:
+        return times
     merged_dir = base / "merged_objects"
     if not merged_dir.exists():
         return times
