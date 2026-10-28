@@ -9,6 +9,7 @@ NorAI: turns a lecture video into study notes, revision notes, assessments, flas
 - `config.py` — single source of truth for pipeline constants, model name, output dirs, and `get_api_key()`. Pipeline modules import defaults from here.
 - `backend/` — FastAPI app. `main.py` (app factory, lifespan, middleware, static/SPA catch-all; ~850 lines) + `backend/routers/` domain routers (`webhooks`, `billing`, `courses`, `quiz`, `content`, `tutor`) mounted without prefixes so paths are unchanged. Shared helpers live in `backend/access.py` (auth/access checks, guest caps, persona handling, usage flushers) and `backend/lecture_db.py (`_db` + DDL-ensure helpers). `orchestrator.py` runs the full 18-stage pipeline synchronously inside a `backend/jobs.py` worker thread; progress is persisted to the Lecture DB row and polled by the frontend — no SSE. `backend/gemini_client.py` is the single Gemini client factory + retry/RPM policy used by tutor/, extract/, transcription/, notes/, visual/.
 - `tutor/` — RAG tutor: `graph.py`, `nodes.py`, `nodes_retrieval.py`, `retriever.py`, `embedding.py` (custom Chroma embedding fn for gemini-embedding-2), `memory.py`, `quiz_nodes.py`. Has its own `config.py` (re-exports root config) and `retrieval_config.py`.
+- `lean/` — the lean pipeline (`NORAI_PIPELINE=lean`; default `legacy`): compact transcription → one structure call → one multimodal call per chapter. See docs/PROJECT_PROGRESS.md.
 - One pipeline-stage dir each: `ingest/`, `transcription/`, `chunking/`, `extract/`, `visual/`, `notes/`, `revision_notes/`, `assessment/`, `flashcards/`, `retrieval/`, `vectordb/`.
 - `frontend/` — React + TypeScript. `src/stores/` (Zustand), `src/pages/`, `src/components/`, `src/types/`.
 - `outputs/` — ALL generated artifacts land here under `outputs/<lecture-id>/` (notes, transcripts, chapters, screenshots, tutor checkpoints, chroma DB, `backend.log`). Gitignored; treat as throwaway.
@@ -31,12 +32,12 @@ Lint is **oxlint**, NOT eslint: `cd frontend && npm run lint`.
 
 Build: `npm run build` (= `tsc -b && vite build`).
 
-Tests: there is NO test framework/pytest. Tests are standalone `test_*.py` scripts (e.g. `tutor/test_chunker.py`, `assessment/test_schema.py`) run directly: `python tutor/test_chunker.py`. Integration tests for full lecture runs don't exist.
+Tests: there is NO test framework/pytest. Tests are standalone `test_*.py` scripts (e.g. `tutor/test_chunker.py`, `assessment/test_schema.py`) run directly: `python tutor/test_chunker.py`. Run the whole offline suite (+ pyflakes on backend/) with `scripts/run-tests.sh`. Integration tests for full lecture runs don't exist.
 
 ## Environment & model config
 
 - `GEMINI_API_KEY` is required (root `config.py:get_api_key()` raises `ValueError` if absent). Loaded from `.env` via python-dotenv. `.env` is gitignored — never commit it.
-- Model defaults live ONLY in root `config.py`: `MODEL_NAME = "gemini-3.5-flash-lite"`, `TEMPERATURE = 0.4`, retry/RPM limits. The separate `tutor/config.py` re-exports these so the tutor and core stay in sync.
+- Model defaults live ONLY in root `config.py`: `MODEL_NAME = "gemini-3.1-flash-lite"`, `TEMPERATURE = 0.4`, retry/RPM limits. The separate `tutor/config.py` re-exports these so the tutor and core stay in sync.
 - Embeddings use `gemini-embedding-2` (768 dims), configured in `tutor/retrieval_config.py`. It does NOT accept `task_type=`; task instructions go in the prompt. Older embedding models (gemini-embedding-001/-exp) are deprecated — don't introduce them.
 - Chroma persistent store defaults to `outputs/tutor/chroma`, overridable via `NORAI_CHROMA_DIR`.
 - CORS in `backend/main.py` is deliberately broad (all common Vite ports). Keep it broad during dev.
