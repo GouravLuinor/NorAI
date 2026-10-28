@@ -1,0 +1,100 @@
+{
+  "lecture_dir": "outputs/aws-71m-v2",
+  "judge": "gemini-3.8-flash",
+  "summary": {
+    "chapters": 7,
+    "notes_words": 3577,
+    "claims": 163,
+    "unsupported": 4,
+    "unsupported_rate": 0.025,
+    "missing_key_points": 30
+  },
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "total_claims": 23,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Before drawing architecture or selecting services, engineers must define and clarify the exact business problem being solved; jumping straight into design without clarifying requirements leads to failing technical interviews.",
+        "The lecture introduces three contrasting real-world case studies to demonstrate the Decision Stack: a viral startup on one server, an e-commerce site losing $50k/hour during downtime, and a Fortune 500 financial firm manually processing documents.",
+        "Slow page load times lead directly to page abandonment and lost business revenue, especially during global marketing campaigns when traffic comes from all over the world.",
+        "While S3 automatically replicates files across multiple data centers within a chosen region, CloudFront edge locations are required to cache content globally near end-users."
+      ]
+    },
+    {
+      "chapter_id": 2,
+      "total_claims": 22,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "While Lambda scales automatically, it remains bound by account concurrency and service quotas; planned traffic surges require load testing and requesting quota increases in advance.",
+        "For massive planned launches where expected traffic dwarfs historical table levels, DynamoDB's warm throughput must be checked and prepared in advance even when using on-demand mode.",
+        "Lambda cold start latency (a few hundred milliseconds) is rarely an issue for web applications because the user spends several seconds interacting with static assets already loaded from CloudFront before triggering backend functions.",
+        "DynamoDB provides single-digit millisecond response times and operates like a key-value dictionary, scaling automatically without pre-allocating storage or traffic capacity."
+      ]
+    },
+    {
+      "chapter_id": 3,
+      "total_claims": 21,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Senior cloud engineers avoid over-architecting; details in a brief (like running in a single Availability Zone) may be contextual and not the direct cause of an outage, though they must still be addressed for production standards.",
+        "The serverless startup architecture is modular: if complex cross-table reporting is required later, the database layer can be swapped without re-architecting the other five layers.",
+        "CloudWatch alarms should be configured with precise thresholds (Lambda errors, DynamoDB throttling, latency spikes) to send immediate notifications to phones or email.",
+        "The lecturer shares placement results from his academy, highlighting how candidates with hands-on architectural problem-solving skills transitioned from IT support to six-figure engineering roles at AWS, Microsoft, and American Express."
+      ]
+    },
+    {
+      "chapter_id": 4,
+      "total_claims": 24,
+      "unsupported_claims": [
+        "Public subnets feature a route table directing traffic to an Internet Gateway (IGW)."
+      ],
+      "missing_key_points": [
+        "Lambda is unsuitable for the e-commerce workload because execution times can exceed Lambda's strict 15-minute execution limit, and the legacy application has full-server dependencies.",
+        "An Availability Zone (AZ) is a distinct physical data center facility within an AWS region featuring independent power, networking, and infrastructure.",
+        "Engineers should not overcorrect a single-AZ vulnerability by leaping directly to a complex multi-region architecture; multi-AZ within one region solves the resilience requirement appropriately.",
+        "Migrating an existing monolith directly into containerized microservices (ECS with Fargate) is too large a transformation for an urgent outage fix; the direct solution is EC2 in an Auto Scaling Group behind an ALB."
+      ]
+    },
+    {
+      "chapter_id": 5,
+      "total_claims": 26,
+      "unsupported_claims": [
+        "Security Groups: Stateful, resource-level firewalls... Network ACLs: Stateless, subnet-level filtering",
+        "AWS Savings Plans offering discounts up to 72% for steady baseline servers under 1- or 3-year terms."
+      ],
+      "missing_key_points": [
+        "DynamoDB was chosen for inventory strictly because the access pattern is a simple key-value lookup; if inventory required joins with supplier contracts or purchase orders, it should remain in RDS.",
+        "CloudWatch alarms can trigger automated responses directly, such as executing Auto Scaling policies to launch instances before an engineer even reads the notification.",
+        "CloudWatch alerts should link directly to predefined runbooks so on-call teams have clear, step-by-step procedures to resolve issues without scrambling.",
+        "An in-memory caching layer such as Amazon ElastiCache can be added later to speed up product pages without tearing down the existing infrastructure.",
+        "Detailed five-step request lifecycle: CloudFront/S3 edge delivery -> ALB routing across AZs -> EC2 instance handling add-to-cart -> DynamoDB stock check -> Multi-AZ RDS cart update."
+      ]
+    },
+    {
+      "chapter_id": 6,
+      "total_claims": 23,
+      "unsupported_claims": [
+        "Document Formats: Unstandardized (.pdf, .docx, .md, .rtf)"
+      ],
+      "missing_key_points": [
+        "The financial services document processing problem is fundamentally governed by strict compliance regulations mandating that sensitive financial data never leaves the private AWS environment.",
+        "AI spending is generating unprecedented market demand for talent, but self-studying engineers remain stuck because they collect unaligned certifications rather than building market-demanded architectural skills.",
+        "The workload exhibits extreme variation in document size (from 1 page to 50 pages), requiring an architecture capable of deep analysis without execution cutoffs.",
+        "Without an SQS queue buffer, batch uploads (like 200 documents arriving at 9 AM Monday) would force the provisioning of expensive peak compute that sits idle for the remaining 23 hours of the day."
+      ]
+    },
+    {
+      "chapter_id": 7,
+      "total_claims": 24,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Amazon Aurora was chosen over standard RDS because AWS rebuilt its engine for significantly faster performance and higher concurrency across multiple business teams querying the same data.",
+        "S3 versioning preserves original document state for legal compliance proof, while S3 lifecycle rules automatically transition older files to cheaper tiers after 90 days and deep archive after a year.",
+        "Amazon Bedrock guarantees that foundation model providers do not get access to customer prompts, completions, or logs, ensuring strict regulatory compliance.",
+        "Decoupling the AI model via Bedrock allows the company to swap foundation models through configuration changes for better performance or lower cost without altering containers, queues, or databases.",
+        "Detailed five-step execution flow: internal portal upload to S3 -> SQS message notification -> continuous Fargate container polling and download -> Bedrock analysis via PrivateLink with RAG -> structured write to Aurora."
+      ]
+    }
+  ]
+}

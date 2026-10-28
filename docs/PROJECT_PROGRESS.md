@@ -110,13 +110,22 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
         - **"How many interviews":** lean distinguished "conducted" from "given" interviews, and the judge marked that as "not covered".
         - **The full example array `[0,1,0,3,2,3]`:** the judge flagged it as unsupported, but it comes from the slide's OCR text.
       - **Result:** lean holds up under the stricter judge.
-    - **3.8 notes fidelity: 1 of 6 done.** The free tier allows 20 requests a day for 3.8-flash, and that limit ran out. The finished one is legacy dp8 (`outputs/dp-8m-v2`, saved as `notes_fidelity__dp-8m-v2__j38.json`): 57 claims, 10 unsupported (.175), 10 missing key points.
-      - **Still to run** (rename each output to `__j38.json` afterwards): `NORAI_EVAL_JUDGE=gemini-3.8-flash venv/bin/python -m tutor.evals.notes_fidelity outputs/lean-dp8 outputs/01c0e1ce-9c2f-4809-afd8-611424f49390 outputs/lean-calc17 outputs/aws-71m-v2 outputs/lean-aws71`
-      - **Earlier results:** the 3.5-lite fidelity files were renamed `notes_fidelity__*__j35.json`.
+    - **3.8 notes fidelity: done** (`notes_fidelity__*__j38.json`; 3.5-lite results kept as `__j35`). It took 6 judge calls plus 2 retries (one 503, one 504).
+
+      | Lecture (legacy / lean) | Notes words | Claims | Unsupported (rate) | Missing key points |
+      |---|---|---|---|---|
+      | dp8 | 1,435 / 828 | 57 / 36 | 10 (.175) / 1 (.028) | 10 / 3 |
+      | calc17 | 1,495 / 1,770 | 70 / 88 | 13 (.186) / 0 (0) | 19 / 7 |
+      | aws71 | 3,577 / 5,956 | 163 / 248 | 4 (.025) / 1 (.004) | 30 / 29 |
+
+      - **Legacy:** its unsupported claims are textbook padding the lecturer never says, such as "calculus is the study of change", the Riemann-sum and sigma terminology, and invented DP "Step 2–5" wording.
+      - **Lean dp8:** the one flag is the example array, which is on the slide (the judge sees only the transcript).
+      - **Lean aws71:** the one flag is "4,500-employee firm"; the lecturer says "a 4,500 financial services company".
+      - **Result:** lean notes are effectively fully grounded and miss fewer key points, even where they are shorter.
     - **Default flipped to lean (2026-10-28).**
       - **`backend/estimator.py`:** has a lean branch. It estimates calls as transcription slices + 1 + chapters (6 for 17 min). Time scales with rounds, i.e. 1 + ceil(chapters / 3), because chapter calls run in parallel. Calibration is fitted per pipeline; entries with no `pipeline` key count as legacy. `--recalibrate --pipeline lean` is available.
       - **`ProcessingPage`:** shows the 7 lean stages. Legacy-only stage keys fold into the nearest row via `LEGACY_STAGE_ALIAS`.
-    - **Still to do:** the 5 remaining 3.8 notes-fidelity runs, and a UI smoke test of a lean lecture through the job queue.
+    - **Still to do:** a UI smoke test of a lean lecture through the job queue.
   - **Then:** server load (frame/scene CPU+RAM per lecture, prod venv RSS 243 MB `backend.main`; chromadb can now leave requirements.txt once seed_data is re-indexed with `python -m tutor.indexing seed_data/<id>` and seed chroma dirs removed), limits at 100/1k/10k users (500 RPD, 15 RPM, embed 100/min), durability/product gaps, final before/after report. Also: tutor `output_tokens_per_turn` reads 28 for every turn — streamed output tokens likely under-metered; (AGENTS.md model name + `scripts/run-tests.sh` fixed 2026-10-28.)
 - **Phase 1 launch readiness for India (2026-10-27, branch `fix/threads-and-pdf`).**
   - **Payments**: Razorpay one-time 30-day passes replace Lemon Squeezy. Free ₹0 / 45 min, Starter ₹149 / 300 min / 90-min lectures, Pro ₹449 / 1200 min / 180-min lectures (`backend/plans.py`, prices env-overridable). Server creates the order, verifies the checkout signature, re-fetches the payment, and grants via conditional UPDATEs, so verify and webhook can race safely. Webhooks are idempotent on `rzp:<event-id>` and fail closed without a secret. Payments are off unless `ENABLE_PAYMENTS=1` and both keys are set.

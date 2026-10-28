@@ -1,0 +1,49 @@
+{
+  "lecture_dir": "outputs/lean-calc17",
+  "judge": "gemini-3.8-flash",
+  "summary": {
+    "chapters": 4,
+    "notes_words": 1770,
+    "claims": 88,
+    "unsupported": 0,
+    "unsupported_rate": 0.0,
+    "missing_key_points": 7
+  },
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "total_claims": 20,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "The video series consists of daily videos published once per day for the next 10 days.",
+        "The circumference formula $2\\pi r$ is essentially the definition of $\\pi$."
+      ]
+    },
+    {
+      "chapter_id": 2,
+      "total_claims": 26,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "The small increment $dr$ plays two distinct roles: it is a factor in each product ($2\\pi r \\cdot dr$) and it dictates the spacing between successive values of $r$.",
+        "A scaled $y$-axis is needed for plotting because $2\\pi r$ reaches around $19$ at $r=3$, making the graph tall for the screen."
+      ]
+    },
+    {
+      "chapter_id": 3,
+      "total_claims": 24,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "When facing a genuinely hard problem in math, a good policy is to not try to get the answer directly, but rather play around to build familiarity between the functions.",
+        "For the numerical example at $x=3$ nudged to $3.001$, the change in area $(A(3.001) - A(3)) / 0.001$ is approximately $3^2 = 9$."
+      ]
+    },
+    {
+      "chapter_id": 4,
+      "total_claims": 18,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Patreon supporters receive early access to videos and help keep ads off new videos for their first month."
+      ]
+    }
+  ]
+}

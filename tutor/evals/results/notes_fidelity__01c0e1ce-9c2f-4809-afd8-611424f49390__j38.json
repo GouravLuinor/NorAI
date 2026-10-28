@@ -1,0 +1,78 @@
+{
+  "lecture_dir": "outputs/01c0e1ce-9c2f-4809-afd8-611424f49390",
+  "judge": "gemini-3.8-flash",
+  "summary": {
+    "chapters": 4,
+    "notes_words": 1495,
+    "claims": 70,
+    "unsupported": 13,
+    "unsupported_rate": 0.186,
+    "missing_key_points": 19
+  },
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "total_claims": 18,
+      "unsupported_claims": [
+        "Calculus is fundamentally the study of change and accumulation.",
+        "Derivatives: Representing the rate of change of a function.",
+        "Total area is calculated by the integral formula \\int_0^r 2\\pi R \\, dR = \\pi R^2 \\Big|_0^r = \\pi r^2.",
+        "The function f(R) = 2\\pi R represents the rate at which the area of the circle grows as the radius increases."
+      ],
+      "missing_key_points": [
+        "The rectangular ring approximations are aligned side-by-side under the line y = 2*pi*R, which has a slope of 2*pi.",
+        "The total area under the graph forms a triangle with base R (or 3) and height 2*pi*R (or 6*pi), giving an area of 1/2 * base * height = pi * R^2.",
+        "The lecturer uses a concrete circle of radius 3 and a ring thickness dR of 0.1 to illustrate the concept.",
+        "The rectangular approximation improves as dR decreases because the inner and outer circumferences of the ring become nearly equal in length.",
+        "The thickness dR serves a dual role: it is a factor in each ring's area and defines the spacing between successive radius values."
+      ]
+    },
+    {
+      "chapter_id": 2,
+      "total_claims": 19,
+      "unsupported_claims": [
+        "Terminology and formal framework of 'Riemann Sum' and sigma notation (\\sum).",
+        "Evaluating the circle area via algebraic definite integration: A = \\int_{0}^{r} 2\\pi R \\, dR = [\\pi R^2]_{0}^{r} = \\pi r^2.",
+        "Applying Riemann sums to calculate 'work and volume in physics and engineering'."
+      ],
+      "missing_key_points": [
+        "Many hard problems can be reframed as finding the area under a graph when they break down into a sum of thin rectangular quantities.",
+        "The distance traveled by a car can be approximated by summing velocity times a tiny time increment dt, which is equivalent to the area under a velocity graph.",
+        "Adding up all rectangular areas directly would be a monstrously complex decimal sum, but the aggregate area simply forms a right triangle.",
+        "For a radius of 3, the triangle under y = 2*pi*R has a base of 3 and height around 19 (2*pi*3), yielding an area of 9*pi."
+      ]
+    },
+    {
+      "chapter_id": 3,
+      "total_claims": 17,
+      "unsupported_claims": [
+        "The integral formula using a dummy variable: A(x) = \\int_{0}^{x} f(t) dt or A(x) = \\int f(x) dx.",
+        "The formal limit definition of the derivative: f'(x) = \\lim_{h \\to 0} \\frac{f(x+h)-f(x)}{h}.",
+        "Describing the derivative geometrically as a 'tangent line slope'."
+      ],
+      "missing_key_points": [
+        "The specific central example explored is finding the area under the parabola y = x^2 between 0 and x.",
+        "A concrete numerical example is examined: nudging x from 3 to 3.001 gives (A(3.001) - A(3)) / 0.001 \\approx 3^2.",
+        "Derivatives provide the key to solving integrals because one can reverse-engineer what the area function must be if its derivative is known.",
+        "The Fundamental Theorem of Calculus states that the derivative of the area function yields back the function defining the graph itself, making them inverse operations.",
+        "The derivative dA/dx is loosely introduced as a measure of how sensitive a function's output is to tiny changes in its input."
+      ]
+    },
+    {
+      "chapter_id": 4,
+      "total_claims": 16,
+      "unsupported_claims": [
+        "The notation A(x) = \\int_{0}^{x} t^2 dt.",
+        "The claim that Patreon facilitates a shift away from ad-driven models that prioritize click-through rates over depth.",
+        "The claim that Patreon ensures permanent ad-free access for the general public (the lecturer only keeps ads off for the first month)."
+      ],
+      "missing_key_points": [
+        "The lecture series will publish one video per day for the next 10 days.",
+        "Calculus rules often memorized without intuition include the product rule, chain rule, implicit differentiation, and Taylor series.",
+        "Ads are specifically kept off new videos for their first month as a thank-you to the community.",
+        "Patreon supporters receive early access to new videos and future 'Essence of' series.",
+        "Viewers are encouraged to think like early mathematicians and consider whether they could have discovered these truths from diagrams."
+      ]
+    }
+  ]
+}

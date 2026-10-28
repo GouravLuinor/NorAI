@@ -1,0 +1,32 @@
+{
+  "lecture_dir": "outputs/lean-dp8",
+  "judge": "gemini-3.8-flash",
+  "summary": {
+    "chapters": 2,
+    "notes_words": 828,
+    "claims": 36,
+    "unsupported": 1,
+    "unsupported_rate": 0.028,
+    "missing_key_points": 3
+  },
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "total_claims": 18,
+      "unsupported_claims": [
+        "In the array [0, 1, 0, 3, 2, 3], the longest increasing subsequence is [0, 1, 2, 3], which has a length of 4 (the transcript refers to an example with subsequence 0, 1, 2, 3 of length 4, but never gives this specific input array)."
+      ],
+      "missing_key_points": [
+        "There are 5 structured steps to solve any dynamic programming problem, starting with making an assumption.",
+        "Dynamic programming is considered the hardest interview topic based on the speaker's experience across 100+ interviews and 554 LeetCode problems.",
+        "The speaker was initially told by a friend that failing to solve Longest Increasing Subsequence meant they would never crack big tech coding interviews."
+      ]
+    },
+    {
+      "chapter_id": 2,
+      "total_claims": 18,
+      "unsupported_claims": [],
+      "missing_key_points": []
+    }
+  ]
+}

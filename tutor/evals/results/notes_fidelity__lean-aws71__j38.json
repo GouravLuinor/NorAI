@@ -1,0 +1,115 @@
+{
+  "lecture_dir": "outputs/lean-aws71",
+  "judge": "gemini-3.8-flash",
+  "summary": {
+    "chapters": 10,
+    "notes_words": 5956,
+    "claims": 248,
+    "unsupported": 1,
+    "unsupported_rate": 0.004,
+    "missing_key_points": 29
+  },
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "total_claims": 24,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Reciting what an AWS service does versus knowing when and why to use it are two completely different skills.",
+        "Candidates frequently freeze in interviews when asked to actually design a system despite memorizing service descriptions.",
+        "The three upcoming business problems will demonstrate three different domains and architectures using the same Decision Stack."
+      ]
+    },
+    {
+      "chapter_id": 2,
+      "total_claims": 23,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "In job interviews, jumping straight to drawing architecture diagrams without clarifying the core problem and requirements will prevent candidates from getting hired.",
+        "Slow loading times directly cause users to abandon pages, resulting in lost revenue.",
+        "Once content is cached at an edge location, subsequent local requests do not make a round trip back to the origin S3 bucket."
+      ]
+    },
+    {
+      "chapter_id": 3,
+      "total_claims": 27,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Before a major launch on Lambda, engineers should load test, check concurrency limits, and request quota increases in advance.",
+        "If a DynamoDB table with Provisioned capacity receives traffic spikes exceeding capacity, requests are throttled and parts of the application will fail.",
+        "For an enormous planned launch that exceeds anything a DynamoDB table has handled before, engineers should check warm throughput and prepare the table for the peak."
+      ]
+    },
+    {
+      "chapter_id": 4,
+      "total_claims": 25,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "If the startup grows and requires complex reporting across connected data later on, the database layer can be swapped out without rebuilding the rest of the architecture.",
+        "Developing an architectural mindset focused on trade-offs helps engineers get hired faster and progress more rapidly in their roles."
+      ]
+    },
+    {
+      "chapter_id": 5,
+      "total_claims": 24,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "A key differentiator between senior and junior cloud engineers is the ability not to over-architect and knowing which brief details to fix versus leave.",
+        "Briefs and interview prompts often include contextual details intentionally to see if candidates get sidetracked down the wrong path.",
+        "Services in a private subnet can still make outbound internet connections if a NAT Gateway is configured, while remaining inaccessible from inbound traffic."
+      ]
+    },
+    {
+      "chapter_id": 6,
+      "total_claims": 27,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Overloaded servers failing to scale cause database connections to pile up until hitting the maximum connection limit, creating a chain reaction where drowning servers act as terrible database clients.",
+        "Compute issues must be stabilized first before diagnosing potential database issues like missing indexes, poor queries, or undersized instances ('fix the fire before redecorating the kitchen').",
+        "If inventory lookups required complex relational joins with supplier contracts and purchase orders, they should remain in RDS rather than DynamoDB."
+      ]
+    },
+    {
+      "chapter_id": 7,
+      "total_claims": 26,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Tracking business metrics like orders per minute and cart abandonment turns monitoring into a business tool that communicates system health directly to executive leadership in terms of revenue.",
+        "Alarms can trigger automated responses, such as auto-scaling policies adding servers before engineers read the alert, or paging on-call staff with pre-written runbooks.",
+        "CloudTrail tracks infrastructure configuration changes (such as modified security group rules or auto-scaling policies) to diagnose root causes if configuration mistakes contributed to an outage."
+      ]
+    },
+    {
+      "chapter_id": 8,
+      "total_claims": 25,
+      "unsupported_claims": [
+        "The scenario involves a 4,500-employee financial services firm"
+      ],
+      "missing_key_points": [
+        "Strict financial regulations require that document storage and transmission remain entirely within the company's private AWS environment without crossing the public internet.",
+        "Unlike Lambda, continuous Fargate containers can maintain open connections across documents, eliminating repeated connection and initialization overhead when processing thousands of files.",
+        "Without SQS queuing, batch document uploads (such as 200 reports uploaded simultaneously on Monday morning) would force the system to provision wasteful peak compute capacity."
+      ]
+    },
+    {
+      "chapter_id": 9,
+      "total_claims": 26,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Database writes are deliberately separated from the Fargate processing container so that containers handling untrusted external documents do not hold credentials to write directly to the production database.",
+        "Bedrock configuration allows swapping out underlying AI models for newer, cheaper, or better-performing ones without altering containers, queues, or databases.",
+        "The billing alarm is set substantially higher than predictable daily spending so it alerts within an hour if a container gets caught in an expensive retry loop on a corrupted document."
+      ]
+    },
+    {
+      "chapter_id": 10,
+      "total_claims": 21,
+      "unsupported_claims": [],
+      "missing_key_points": [
+        "Relying solely on ClickOps is insufficient to secure high-paying cloud roles because real production systems require repeatable, automated deployment.",
+        "Infrastructure as Code files are tracked in version control, creating an auditable history of who made changes, what changed, when, and why.",
+        "Being able to walk through business problems layer-by-layer while justifying trade-offs distinguishes production-ready engineers from candidates who have merely memorized services for exams."
+      ]
+    }
+  ]
+}
