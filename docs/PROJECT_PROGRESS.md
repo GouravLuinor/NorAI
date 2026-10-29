@@ -82,10 +82,10 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       1. ~~**Server load**~~ — done 2026-10-29, see "Server load" below. Open decisions from it: keyframe-only frame decode (6× less CPU), keyframe pruning (disk), paid Gemini tier + `NORAI_MAX_CONCURRENT_PIPELINES` 2–3 before ~1k users.
       2. ~~**Small lean follow-ups**~~ — done 2026-10-29 (see "Follow-ups" below): screenshot dedupe, note refs seek to the section start, streamed tutor output metered correctly.
       3. ~~**Cleanup**~~ — done 2026-10-29 (see "Cleanup" below): keyframe-only decode, legacy chain deleted, seed_data re-indexed, `chromadb` removed, README/TUTORIAL/AGENTS updated.
-      4. **Final (next):** the before/after report is written (`docs/PHASE2_REPORT.md`); next is merging `phase2` → `master` (ask the user first). The post-cleanup paid smoke run passed (see "Cleanup" below).
+      4. ~~**Final**~~ — done 2026-10-29: report in `docs/PHASE2_REPORT.md`, `master` fast-forwarded to `phase2` (not pushed). A 52-min lecture then ran end to end through the browser ($0.099, 449 s) and exposed empty `RECITATION` chapter replies that weren't retried; fixed with `gemini_client.generate_nonempty` (see the report's "Long-lecture run").
       - Still-open decisions from "Server load": keyframe pruning / JPEG quality (disk), paid Gemini tier + `NORAI_MAX_CONCURRENT_PIPELINES` 2–3 before ~1k users.
     - **How to run things:**
-      - **Offline tests:** `scripts/run-tests.sh` (41 suites + pyflakes); estimator: `venv/bin/python backend/test_estimate.py`; frontend: `cd frontend && npx vitest run && npm run lint && npx tsc -b`.
+      - **Offline tests:** `scripts/run-tests.sh` (42 suites + pyflakes); estimator: `venv/bin/python backend/test_estimate.py`; frontend: `cd frontend && npx vitest run && npm run lint && npx tsc -b`.
       - **Lean CLI:** `venv/bin/python -m lean.pipeline --source <url> --out outputs/<name>` (full run, ~$0.03 for 17 min), or `--reuse outputs/<id>` (structure + chapters + index only).
       - **Tutor eval:** `NORAI_EVAL_JUDGE=gemini-3.8-flash venv/bin/python -m tutor.evals.answer_eval --set dp8|calc17|aws71 --label <x> [--lecture-dir outputs/<dir>] [--rejudge|--no-judge]`. Each `--rejudge` is 1 judge call.
       - **Notes eval:** `... -m tutor.evals.notes_fidelity outputs/<dir> ...` makes 1 judge call per lecture. It writes `notes_fidelity__<dir>.json`; rename it with a `__j38`/`__j35` suffix to keep the judge visible.

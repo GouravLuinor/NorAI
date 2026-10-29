@@ -25,7 +25,7 @@ from pathlib import Path
 from google.genai import types
 from pydantic import BaseModel, Field
 
-from backend.gemini_client import get_client, invoke_with_policy
+from backend.gemini_client import generate_nonempty, get_client
 from backend.usage_ledger import record_generate_usage
 from cache_util import outputs_current, write_marker
 from config import MODEL_NAME
@@ -177,20 +177,21 @@ def generate_outline(chunks_path: str, output_dir: str, *, source_title: str = "
             ),
         )
         record_generate_usage("outline", MODEL_NAME, resp)
-        if not resp or not resp.text:
-            raise ValueError("Structure call returned an empty response")
-        return LecturePlan.model_validate_json(resp.text)
+        return resp
 
     try:
-        plan = invoke_with_policy(_call, node="Lean structure")
+        plan = LecturePlan.model_validate_json(generate_nonempty(_call, node="Lean structure").text)
+        fallback = False
     except ValueError as e:
         # Unparseable plan: one chapter over the whole lecture still yields
         # a usable workspace (the chapter call does the real work).
         logger.error("Lean structure call failed, using a single chapter: %s", e)
         plan = LecturePlan(lecture_title=source_title or "Untitled Lecture", chapters=[])
+        fallback = True
 
     outline = build_outline(plan.lecture_title or source_title, repair_plan(plan, len(chunks)), chunks)
     outline_path.write_text(json.dumps(outline, indent=2, ensure_ascii=False), encoding="utf-8")
-    write_marker(marker, PROMPT_VERSION, transcript, source_title)
+    if not fallback:  # a fallback plan is re-asked on the next run
+        write_marker(marker, PROMPT_VERSION, transcript, source_title)
     logger.info("Lean outline: %d chapters over %d chunks", len(outline["chapters"]), len(chunks))
     return outline

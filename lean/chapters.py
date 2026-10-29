@@ -30,7 +30,7 @@ from google.genai import types
 from pydantic import BaseModel, Field, ValidationError
 
 from assessment.assessment_models import Question
-from backend.gemini_client import get_client, invoke_with_policy
+from backend.gemini_client import generate_nonempty, get_client
 from backend.rate_limit_handler import GeminiDailyQuotaExceededException
 from backend.usage_ledger import record_generate_usage
 from cache_util import outputs_current, write_marker
@@ -366,12 +366,10 @@ def process_chapter(outline: dict, idx: int, chunks: list[dict], segments: list[
             ),
         )
         record_generate_usage("notes", MODEL_NAME, resp)
-        if not resp or not resp.text:
-            raise ValueError("Chapter call returned an empty or blocked response")
         return resp
 
     try:
-        data = json.loads(invoke_with_policy(_call, node=f"Lean chapter {n}").text)
+        data = json.loads(generate_nonempty(_call, node=f"Lean chapter {n}").text)
         body = _ChapterBody.model_validate(data)
     except GeminiDailyQuotaExceededException:
         raise  # fail the run (not metered) instead of shipping placeholders

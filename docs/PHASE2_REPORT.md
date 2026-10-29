@@ -10,6 +10,7 @@ Phase 2 ("trust + cost") replaced the 18-stage legacy pipeline with a 5-stage le
 | 17-min lecture, full run | 29 calls, $0.061, 242 s | 9 calls, **$0.0335 (−45 %)**, **142 s (−41 %)** |
 | 8.7-min lecture (dp8) | 21–22 LLM calls, 169–251 s | 4 LLM calls + 3 embed batches, $0.0208, 114–116 s |
 | 71-min lecture (aws71) | 87 LLM calls, 1,054 s | ~15 calls (estimator; no full run made) |
+| 52-min lecture (MIT ML), via the UI | — | 13 LLM calls + 4 embed batches, $0.099, 449 s |
 | Unsupported claims in notes (3.8-flash judge) | 2.5–19 % | 0–2.8 % |
 | Transcript timestamps vs YouTube captions | drifted to −73 s by 16 min | median 0.4 s, p90 0.9 s |
 | Tutor: detail-question accuracy | 0 / .56 / 1.0 | 1.0 / 1.0 / 1.0 |
@@ -93,9 +94,22 @@ Measured on 1 core, modelling the planned Hostinger KVM 1 box (1 vCPU / 4 GB / 5
 
 ## Not verified / still open
 
-- **No full lean run on a long lecture.** aws71 (71 min) only went through `--reuse` (structure + chapters on the legacy transcript). Its 15-call figure is the estimator's.
+- **Long lectures: one full run so far.** A 52-min MIT OCW lecture went end to end through the browser (see "Long-lecture run" below). aws71 (71 min) only went through `--reuse`, so its 15-call figure is the estimator's.
 - **Existing lectures aren't backfilled.** They keep their legacy notes and screenshot selections until re-run; their tutor index is built lazily on the first question.
 - **Decisions before ~1k users:** a paid Gemini tier, `NORAI_MAX_CONCURRENT_PIPELINES` 2–3, and keyframe pruning or object storage.
+
+## Long-lecture run (2026-10-29, after the merge)
+
+MIT OCW "11. Introduction to Machine Learning" (`h0e2HAPTGF4`, 51.5 min, slides + speaker), submitted at `/app` as the local Pro dev user, lecture `76d3c034`.
+
+- **Estimate vs actual:** the upload page said "ready in about 5 min" and the estimator planned 14 calls / 10 chapters. The run took **449 s (7.5 min)** with 13 LLM calls (3 transcription slices, 1 structure, 9 chapters) and 4 embed batches: **$0.099**.
+- **Where the time went:** download 56 s (two yt-dlp strategies failed first), audio extraction 33 s, transcription 104 s (636 segments), keyframes 14 s in parallel (564 decoded → 133 kept), structure 5 s, chapters 56 s, then **~190 s on the tutor index**: 176 docs exceed the free tier's 100 embed requests/min, so it waited on three 429s. On a paid key the run would be ~4.5 min.
+- **Bug found: 2 of 9 chapters degraded.** Both chapter calls came back with no text. The chapter call didn't retry empty replies (`invoke_with_policy` treats a `ValueError` as terminal unless told otherwise), so one empty reply wrote placeholders. The reason was **`RECITATION`**: Gemini withholds output that matches text it has seen, and MIT OCW transcripts are widely published.
+  - **Fix:** `backend/gemini_client.generate_nonempty` re-asks up to 3 times and puts the finish reason in the error; the chapter and structure calls use it. The structure call no longer writes its cache marker when it falls back to a single chapter, so the fallback isn't kept forever. Test: `backend/test_generate_nonempty.py`.
+  - **Repair:** re-running the content stages on the same dir called Gemini only for the 2 degraded chapters (the rest were cached): chapter 1 succeeded first try, chapter 5 got `RECITATION` twice and succeeded on the third ask. $0.014, 63 s; the index sync embedded only the 12 new docs.
+- **Workspace:** 9 chapters with seek times, notes with section seeks, slide screenshots (2–4 per chapter after duplicate-slide removal, loaded lazily), revision and assessment all render; no console errors.
+- **Tutor:** "which two features separated receivers from linemen?" → height and weight, 3 references. "What learning rate did the professor recommend for a neural network?" → the lecture doesn't cover neural networks or learning rates.
+- **Still open:** popular lectures can hit `RECITATION` repeatedly; 3 asks were enough here. If it recurs, re-asking with a higher temperature or a "paraphrase, don't quote" line in the chapter prompt are the next levers.
 
 ## Merging into `master`
 

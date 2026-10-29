@@ -207,3 +207,35 @@ def invoke_with_policy(
             time.sleep(wait_time)
 
     raise RuntimeError(f"[{node}] failed after {attempts} retries.") from last_err
+
+
+def empty_reason(resp: Any) -> str:
+    """Why a generate_content reply carries no text: the prompt block reason
+    or the first candidate's finish reason (e.g. SAFETY, RECITATION)."""
+    if resp is None:
+        return "no response"
+    feedback = getattr(resp, "prompt_feedback", None)
+    if feedback is not None and getattr(feedback, "block_reason", None):
+        return f"prompt blocked: {feedback.block_reason}"
+    candidates = getattr(resp, "candidates", None) or []
+    if not candidates:
+        return "no candidates"
+    return f"finish_reason={getattr(candidates[0], 'finish_reason', None)}"
+
+
+def generate_nonempty(fn: Callable[[], Any], *, node: str, attempts: int = 3) -> Any:
+    """``invoke_with_policy(fn)``, re-asking when the reply has no text.
+
+    Flash-lite occasionally returns an empty candidate for a prompt that
+    succeeds when re-sent; a deterministic block (SAFETY/RECITATION) comes
+    back every time, so the extra asks are capped. Raises ValueError (with the
+    finish reason) once ``attempts`` replies were all empty.
+    """
+    resp = None
+    for attempt in range(attempts):
+        resp = invoke_with_policy(fn, node=node)
+        if resp is not None and resp.text:
+            return resp
+        logger.warning("[%s] empty response (%s), attempt %d/%d",
+                       node, empty_reason(resp), attempt + 1, attempts)
+    raise ValueError(f"[{node}] empty or blocked response after {attempts} attempts ({empty_reason(resp)})")
