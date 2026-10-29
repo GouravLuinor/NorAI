@@ -68,7 +68,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       - **Timestamps:** within ~1 s of YouTube's captions.
       - The details are in the bullets below.
     - **Recent commits (newest first):**
-      - (uncommitted at handoff) cleanup: keyframe-only decode, legacy chain deleted, seed_data re-indexed, `chromadb` removed (see "Cleanup" below).
+      - `f321768` cleanup: keyframe-only decode, legacy chain deleted, seed_data re-indexed, `chromadb` removed (see "Cleanup" below).
       - `6d18dd9` lean follow-ups: screenshot dedupe, note-section seek, tutor stream metering (see "Follow-ups" below).
       - `54fed35` server-load measurements + `scripts/bench_local_stages.py` (see "Server load" below).
       - `9ec342a` / `52fdd08` docs cleanup, handoff, `tutor/evals/timestamp_check.py`.
@@ -82,7 +82,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       1. ~~**Server load**~~ — done 2026-10-29, see "Server load" below. Open decisions from it: keyframe-only frame decode (6× less CPU), keyframe pruning (disk), paid Gemini tier + `NORAI_MAX_CONCURRENT_PIPELINES` 2–3 before ~1k users.
       2. ~~**Small lean follow-ups**~~ — done 2026-10-29 (see "Follow-ups" below): screenshot dedupe, note refs seek to the section start, streamed tutor output metered correctly.
       3. ~~**Cleanup**~~ — done 2026-10-29 (see "Cleanup" below): keyframe-only decode, legacy chain deleted, seed_data re-indexed, `chromadb` removed, README/TUTORIAL/AGENTS updated.
-      4. **Final (next):** a before/after report, then merge `phase2` → `master` (ask the user first). Not yet done since the cleanup: a paid full `--source` run through the deleted-legacy code path (~$0.02 for dp8) — the offline suite, import checks and a keyframe-path run passed.
+      4. **Final (next):** a before/after report, then merge `phase2` → `master` (ask the user first). The post-cleanup paid smoke run passed (see "Cleanup" below).
       - Still-open decisions from "Server load": keyframe pruning / JPEG quality (disk), paid Gemini tier + `NORAI_MAX_CONCURRENT_PIPELINES` 2–3 before ~1k users.
     - **How to run things:**
       - **Offline tests:** `scripts/run-tests.sh` (41 suites + pyflakes); estimator: `venv/bin/python backend/test_estimate.py`; frontend: `cd frontend && npx vitest run && npm run lint && npx tsc -b`.
@@ -208,7 +208,8 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
         - The `tutor/chroma/` dirs were removed from git, and `chromadb` was removed from `requirements.txt`; nothing imported it anymore. `imagehash` and `pillow` went too: only the deleted screenshot selector imported them.
         - `sync_demo_seed_data` now copies `tutor/index/` into an existing demo dir that lacks one, without a full re-copy, so the dir's demo tutor threads survive. Verified locally on all 3 `outputs/<demo>` dirs.
       - **Docs:** README, TUTORIAL and AGENTS.md now describe the lean pipeline and the NumPy index. The dead `NORAI_CHROMA_DIR` was dropped from `.env.example`. README quotas were also corrected to 45 / 300 / 1200 min.
-      - **Verified:** `scripts/run-tests.sh` 41/41 + pyflakes, `backend/test_estimate.py` 44/44, vitest 86/86, oxlint 0, `tsc -b` clean. `backend.orchestrator` and `backend.main` import cleanly, and `lean.pipeline.extract_keyframes` ran on dp8 (56 keyframes, 12 sampled for chapter 1). No paid pipeline run has been made since the deletion.
+      - **Verified:** `scripts/run-tests.sh` 41/41 + pyflakes, `backend/test_estimate.py` 44/44, vitest 86/86, oxlint 0, `tsc -b` clean. `backend.orchestrator` and `backend.main` import cleanly, and `lean.pipeline.extract_keyframes` ran on dp8 (56 keyframes, 12 sampled for chapter 1). No paid pipeline run had been made at that point; see the smoke run below.
+      - **Paid smoke run after the commit (2026-10-29):** `python -m lean.pipeline --source https://www.youtube.com/watch?v=sWnBVPRA0yQ --out outputs/lean-smoke-cleanup` (dp8, 8.7 min) exited 0 in 116 s with **7 calls / $0.0208**: 1 transcription, 1 structure, 2 chapters, 3 embed batches. Stages: keyframes 2.2 s (56 kept, in parallel with transcription), transcription 43.6 s, structure 19.6 s, chapters 27.7 s. 2 chapters, 0 degraded; 4 screenshots per chapter, picked from the new keyframes, which now carry real timestamps (e.g. 45.13 s) instead of 8 s multiples. Tutor index: 37 docs. The log's errors were all recovered: two yt-dlp strategies failed before a third worked, and one Gemini 503 ("high demand") succeeded on retry.
     - **Server load (2026-10-29).** Target box: Hostinger KVM 1, 1 vCPU / 4 GB / 50 GB NVMe (`docs/DEPLOYMENT_PLAN.md`). No LLM calls were made.
       - **Tool:** `scripts/bench_local_stages.py <url|file> --out <scratch> [--transcript <json>]` runs ingest, frames, scenes and chunking, each in a fresh process. It reports wall time, CPU (including ffmpeg children), peak RSS and disk. Pin it with `taskset -c 0` to model 1 vCPU.
       - **Inputs:** local YouTube downloads fall back to 360p progressive (format 18), because the 720p DASH streams 403 without the POT server. Production (POT, `height<=720`) gets 720p, so 720p was benchmarked on x264 upscales (5 s GOP, 2 Mbps) of calc17 and aws71.
