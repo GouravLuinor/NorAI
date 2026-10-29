@@ -82,7 +82,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       1. ~~**Server load**~~ — done 2026-10-29, see "Server load" below. Open decisions from it: keyframe-only frame decode (6× less CPU), keyframe pruning (disk), paid Gemini tier + `NORAI_MAX_CONCURRENT_PIPELINES` 2–3 before ~1k users.
       2. ~~**Small lean follow-ups**~~ — done 2026-10-29 (see "Follow-ups" below): screenshot dedupe, note refs seek to the section start, streamed tutor output metered correctly.
       3. ~~**Cleanup**~~ — done 2026-10-29 (see "Cleanup" below): keyframe-only decode, legacy chain deleted, seed_data re-indexed, `chromadb` removed, README/TUTORIAL/AGENTS updated.
-      4. **Final (next):** a before/after report, then merge `phase2` → `master` (ask the user first). The post-cleanup paid smoke run passed (see "Cleanup" below).
+      4. **Final (next):** the before/after report is written (`docs/PHASE2_REPORT.md`); next is merging `phase2` → `master` (ask the user first). The post-cleanup paid smoke run passed (see "Cleanup" below).
       - Still-open decisions from "Server load": keyframe pruning / JPEG quality (disk), paid Gemini tier + `NORAI_MAX_CONCURRENT_PIPELINES` 2–3 before ~1k users.
     - **How to run things:**
       - **Offline tests:** `scripts/run-tests.sh` (41 suites + pyflakes); estimator: `venv/bin/python backend/test_estimate.py`; frontend: `cd frontend && npx vitest run && npm run lint && npx tsc -b`.
