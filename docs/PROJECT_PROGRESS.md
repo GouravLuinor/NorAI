@@ -61,7 +61,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
 ## Recent changes
 
 - **Phase 2 — trust + cost (2026-10-27 → 2026-10-28, branch `phase2`, IN PROGRESS).**
-  - **▶ RESUME HERE (handoff, 2026-10-28, HEAD `fb734e7`; branch not merged to `master`, not pushed).**
+  - **▶ RESUME HERE (handoff, 2026-10-29; branch not merged to `master`, not pushed).**
     - **Where things stand:**
       - **Lean is the default pipeline and done:** built, A/B'd, judged by 3.8-flash, and smoke-tested through the UI.
       - **Cost:** a 17-min lecture costs **$0.0335 in 9 calls**, against $0.061 in 29 for legacy.
@@ -69,6 +69,8 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       - **Timestamps:** within ~1 s of YouTube's captions.
       - The details are in the bullets below.
     - **Recent commits (newest first):**
+      - server-load measurements + `scripts/bench_local_stages.py` (see "Server load" below).
+      - `9ec342a` / `52fdd08` docs cleanup, handoff, `tutor/evals/timestamp_check.py`.
       - `fb734e7` screenshot references labelled by chapter, plus the smoke-test notes.
       - `1e4782b` 3.8 notes fidelity.
       - `c89f069` lean made the default, with the estimator lean branch and the ProcessingPage stages.
@@ -76,7 +78,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       - `2ae242e` the `[MM:SS]` timestamp fix.
       - `544847d` and older: the lean build and the A/B.
     - **Next, in order:**
-      1. **Server load:** measure frame/scene CPU and RAM per lecture and backend RSS. Then size the limits for 100 / 1k / 10k users from 15 RPM / 500 RPD on flash-lite and 100/min on embeddings. Lean uses ~6 LLM calls per 17-min lecture, so 500 RPD is about 80 lectures a day per key.
+      1. ~~**Server load**~~ — done 2026-10-29, see "Server load" below. Open decisions from it: keyframe-only frame decode (6× less CPU), keyframe pruning (disk), paid Gemini tier + `NORAI_MAX_CONCURRENT_PIPELINES` 2–3 before ~1k users.
       2. **Small lean follow-ups** (listed under "Follow-ups" below):
          - Dedupe near-identical screenshots in `lean/chapters.select_screenshots`.
          - Note references should seek to the section's `start_sec`.
@@ -179,7 +181,44 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
     - **Follow-ups:**
       - `lean/chapters.select_screenshots` can pick two near-identical frames; in dp8 chapter 1, two different frames got the same "problem description" caption. Deduping by caption or by perceptual hash would fix it.
       - Note-type references give the chapter start (0:00) rather than the section's `start_sec`.
-  - **Then (see RESUME HERE above):** server load (frame/scene CPU+RAM per lecture, prod venv RSS 243 MB `backend.main`; chromadb can now leave requirements.txt once seed_data is re-indexed with `python -m tutor.indexing seed_data/<id>` and seed chroma dirs removed), limits at 100/1k/10k users (500 RPD, 15 RPM, embed 100/min), durability/product gaps, final before/after report. Also: tutor `output_tokens_per_turn` reads 28 for every turn — streamed output tokens likely under-metered; (AGENTS.md model name + `scripts/run-tests.sh` fixed 2026-10-28.)
+    - **Server load (2026-10-29).** Target box: Hostinger KVM 1, 1 vCPU / 4 GB / 50 GB NVMe (`docs/DEPLOYMENT_PLAN.md`). No LLM calls were made.
+      - **Tool:** `scripts/bench_local_stages.py <url|file> --out <scratch> [--transcript <json>]` runs ingest, frames, scenes and chunking, each in a fresh process. It reports wall time, CPU (including ffmpeg children), peak RSS and disk. Pin it with `taskset -c 0` to model 1 vCPU.
+      - **Inputs:** local YouTube downloads fall back to 360p progressive (format 18), because the 720p DASH streams 403 without the POT server. Production (POT, `height<=720`) gets 720p, so 720p was benchmarked on x264 upscales (5 s GOP, 2 Mbps) of calc17 and aws71.
+      - **Per lecture, 1 core, 720p:**
+
+        | Lecture | Ingest (audio) | Frames (cv2 seek / 8 s) | Scenes | Chunking | Peak RSS (any stage) |
+        |---|---|---|---|---|---|
+        | calc17 (17 min) | 6.3 s | 17.4 s, 129 frames | 1.0 s, 19 keyframes | 0.02 s | 97 MB |
+        | aws71 (71 min) | 21 s | 87.6 s, 534 frames | 4.7 s, 265 keyframes | 0.02 s | 107 MB |
+
+        That is ≈ **1.6 CPU-s per lecture-minute** at 720p and ≈ 0.5 at 360p. On all 12 cores OpenCV spreads the frame stage over ~5 of them (calc17: 5.3 s wall, 29 CPU-s). The YouTube download added ~6 CPU-s of yt-dlp work for 8.7 min.
+      - **Keyframe-only decode is 6× cheaper.** `ffmpeg -threads 1 -skip_frame nokey … select='gte(t-prev_selected_t,8)'` took **3.0 s** (102 frames), against 17.4 s for the current per-frame `cap.set(POS_MSEC)` seek and 34.6 s for an `fps=1/8` full decode. The cost: frames land on keyframes, about every 5 s on this GOP, instead of exactly every 8 s. Not implemented yet.
+      - **Backend RSS:** the prod-equivalent `import backend.main` is **199 MB**; the ~243 MB under uvicorn was measured earlier. Two concurrent 720p frame stages in-process peak at **263 MB** (+64 MB), so RAM is not the constraint on a 4 GB box. The dev `venv/` shows **675 MB**: `openai-whisper` and `sentence-transformers` pull in torch, and `langchain_core` imports `transformers` whenever it is installed. Neither is in `requirements.txt`, so prod is unaffected, but don't read dev RSS as prod.
+      - **Disk per lecture:**
+        - **Transient, deleted by `cleanup_lecture_dir`:** the video (~25 MB per 17 min at 360p; 720p real YouTube is a few × that), audio 0.48 MB/min, raw frames 0.5 MB/min at 720p.
+        - **Kept:** all of `screenshots/keyframes/` (720p: calc17 1.4 MB, aws71 33 MB, ~0.1–0.5 MB/min depending on how often slides change). It dominates the per-lecture footprint (calc17 lean total ~1 MB at 360p). Chapter calls send ≤ 12 frames each, and fewer are selected.
+        - **Tutor index:** 3.3–3.9 docs per lecture-minute (dp8 36, calc17 66, aws71 236), ~150 KB for 17 min.
+      - **Gemini usage per lecture (estimator, lean):** calls are 4 / 6 / 11 / 15 / 18 for 9 / 17 / 30 / 60 / 120 min. Tutor turns make 1 `generate_answer` call, plus `rewrite_query` on follow-ups (≈ 1.3 flash-lite calls per turn), plus 1 query embedding. A 30-min lecture's index is ~110 docs, which on its own exceeds the 100 docs/min free embedding limit, so the build waits on the retry hint.
+      - **Sizing model:** the assumptions are 90 / 8 / 2 % Free / Starter / Pro using 60 / 40 / 40 % of their 45 / 300 / 1200 min. That is 43.5 lecture-min per user per month, or 1.45 × 30-min lectures. Each lecture gets 10 tutor turns. A peak day is 2× average, and the peak hour carries 15 % of that day.
+
+        | Monthly users | Lectures/day (avg / peak) | Flash-lite calls on peak day | Peak-hour RPM | Peak-hour embed docs/min | 1-vCPU load at peak hour (now / keyframe decode) | Concurrent pipelines at peak | New kept storage/month |
+        |---|---|---|---|---|---|---|---|
+        | 100 | 5 / 10 | 232 | 0.6 | 3 | 2 % / 1 % | 0.1 | ~1.3 GB |
+        | 1k | 48 / 97 | 2,320 | 5.8 | 29 | 19 % / 5 % | 1.0 | ~13 GB |
+        | 10k | 483 / 967 | 23,200 | 58 | 292 | 193 % / 54 % | 9.7 | ~130 GB |
+
+      - **What that means:**
+        - **100 users:** fits as-is. That's one free-tier key (232 of 500 RPD at peak), KVM 1, and `NORAI_MAX_CONCURRENT_PIPELINES=1`.
+        - **1k users:**
+          - **Gemini:** a peak day is 4.6× one key's RPD. Move to a paid tier; pooling free keys across accounts breaks Google's terms and isn't a plan.
+          - **Concurrency:** one pipeline (~4 min wall per 30-min lecture) runs at ~100 % utilisation in the peak hour, so the queue grows. Set `NORAI_MAX_CONCURRENT_PIPELINES=2–3`. Pipelines wait on LLM latency, not CPU, and each extra one costs ~32 MB.
+          - **Disk:** ~13 GB/month fills the 50 GB disk in ~3 months. Prune unused keyframes or lower their JPEG quality (cv2 default 95), or move them to object storage.
+        - **10k users:**
+          - **CPU:** the current extractor alone needs ~2 vCPU at peak. Use keyframe-only decode plus a 2-vCPU box, which also leaves headroom for request handling, since the frame stage competes with uvicorn on 1 core.
+          - **Concurrency:** ~10 pipelines.
+          - **Rate limit:** the process-wide limiter `NORAI_RPM_LIMIT` (default 12) would throttle 58 RPM, so raise it to match the paid tier.
+          - **Storage:** keyframes need object storage.
+  - **Then (see RESUME HERE above):** chromadb can leave requirements.txt once seed_data is re-indexed with `python -m tutor.indexing seed_data/<id>` and seed chroma dirs removed; durability/product gaps; final before/after report. Also: tutor `output_tokens_per_turn` reads 28 for every turn — streamed output tokens likely under-metered; (AGENTS.md model name + `scripts/run-tests.sh` fixed 2026-10-28.)
 - **Phase 1 launch readiness for India (2026-10-27, branch `fix/threads-and-pdf`).**
   - **Payments**: Razorpay one-time 30-day passes replace Lemon Squeezy. Free ₹0 / 45 min, Starter ₹149 / 300 min / 90-min lectures, Pro ₹449 / 1200 min / 180-min lectures (`backend/plans.py`, prices env-overridable). Server creates the order, verifies the checkout signature, re-fetches the payment, and grants via conditional UPDATEs, so verify and webhook can race safely. Webhooks are idempotent on `rzp:<event-id>` and fail closed without a secret. Payments are off unless `ENABLE_PAYMENTS=1` and both keys are set.
   - **Public site**: landing page redesigned in the vellum/red-pencil system; `/pricing` in rupees; build-time SEO plugin emits JSON-LD, a noscript summary, robots.txt, sitemap.xml and llms.txt from the same content modules the pages render.
