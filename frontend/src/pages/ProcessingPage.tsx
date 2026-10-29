@@ -14,8 +14,8 @@ interface StageInfo {
   key: string
 }
 
-// Stages the lean pipeline (default) reports. Frames and scenes are captured
-// alongside transcription, so they have no row of their own.
+// Stages the pipeline reports. Frames and scenes are captured alongside
+// transcription, so they have no row of their own.
 const STAGES: StageInfo[] = [
   { label: 'Downloading video', key: 'ingestion' },
   { label: 'Transcribing lecture & capturing slides', key: 'transcription' },
@@ -25,19 +25,6 @@ const STAGES: StageInfo[] = [
   { label: 'Indexing for tutor', key: 'tutor_index' },
   { label: 'Cleaning up', key: 'cleanup' },
 ]
-
-// NORAI_PIPELINE=legacy reports more stages; fold each into the row it
-// belongs to, in order, so the rail still advances.
-const LEGACY_STAGE_ALIAS: Record<string, string> = {
-  knowledge_extraction: 'chunking',
-  frame_extraction: 'chunking',
-  scene_detection: 'chunking',
-  mapping: 'chunking',
-  visual_knowledge: 'chapter_artifacts',
-  knowledge_merging: 'chapter_artifacts',
-  chapter_building: 'chapter_artifacts',
-  screenshot_selection: 'chapter_artifacts',
-}
 
 const RAIL_X = 'calc(0.75rem + 1.5rem + 0.625rem + 0.4375rem)'
 
@@ -85,7 +72,7 @@ export function ProcessingPage() {
         retry_after_seconds?: number
       },
     ) => {
-      const stage = data.stage ? (LEGACY_STAGE_ALIAS[data.stage] ?? data.stage) : data.stage
+      const stage = data.stage
       if (stage === 'complete' || (data.progress != null && data.progress >= 100)) {
         setCompletedStages(prev => {
           const next = new Set(prev)

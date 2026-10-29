@@ -68,7 +68,7 @@ from backend.db.models import User, Subscription, Lecture, UsageLog, Course, Cou
 from backend.usage import record_pipeline_outcome, rollover_if_needed
 from backend.plans import get_plan
 from tutor.llm import make_chat_llm
-from tutor.vector_store import has_tutor_index
+from tutor.vector_store import VectorStore, has_tutor_index, index_dir
 from config import (
     CHECKPOINT_DB_PATH,
     DEMO_LECTURE_IDS,
@@ -152,6 +152,10 @@ def sync_demo_seed_data():
         dst = outputs_dir / lid
         if not src.exists():
             continue
+        # Demo dirs seeded before the tutor index existed only carry a Chroma
+        # store: copy the index in, keeping the dir's tutor threads.
+        if dst.exists() and VectorStore.exists(index_dir(src)) and not VectorStore.exists(index_dir(dst)):
+            shutil.copytree(index_dir(src), index_dir(dst), dirs_exist_ok=True)
         if dst.exists() and _demo_seed_complete(dst):
             continue
         if dst.exists():

@@ -12,7 +12,6 @@ lecture-grounded AI tutor.**
 [![TypeScript](https://img.shields.io/badge/TypeScript-Frontend-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Gemini](https://img.shields.io/badge/Gemini-Multimodal_AI-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Agent_Workflows-1C3C3C?style=for-the-badge)](https://www.langchain.com/langgraph)
-[![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector_Store-FF6B35?style=for-the-badge)](https://www.trychroma.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Auth_+_Postgres-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 
 **Lecture In → Understanding → Structure → Practice → Recall → Conversation**
@@ -77,12 +76,13 @@ demonstrations, and other educationally important frames.
 
 ### 2. Dynamic lecture structure
 NorAI does **not** assume every lecture has a fixed number of chapters.
-The outline stage determines lecture title, chapter count, boundaries,
-titles, focus concepts, and source chunk membership.
+One structure call over the timestamped transcript decides the lecture
+title, chapter count, titles, and contiguous chapter boundaries.
 
 ### 3. Lecture-scoped retrieval
-Every lecture gets isolated artifacts, a per-lecture Chroma index, and a
-per-lecture tutor graph. Tutor answers are grounded in the active lecture
+Every lecture gets isolated artifacts, its own tutor index (transcript
+windows, note sections, and screenshot captions), and a per-lecture tutor
+graph. Tutor answers are grounded in the active lecture
 instead of a shared global knowledge pool — and citations are **verified**
 before they are shown (a deterministic post-check drops fabricated ones).
 
@@ -110,13 +110,13 @@ connected workspace.
 │                 DB-Backed Job Queue (backend/jobs.py)             │
 │                 supervisor thread + bounded worker pool            │
 │                 sync pipeline runs inside a worker thread          │
-│  Ingest → Transcribe → Extract → Visual → Outline → Merge →       │
-│  Chapters → Notes/Revision/Assessment/Flashcards → Index          │
+│  Ingest → Transcribe ∥ Keyframes → Structure → Chapters          │
+│  (notes/revision/assessment/flashcards, one call each) → Index    │
 └──────────────┬────────────────────────────┬────────────────────────┘
                │                            │
       ┌────────▼─────────┐        ┌─────────▼────────────────┐
       │ Supabase Postgres │        │ Retrieval / Tutor Layer │
-      │ users, lectures,  │        │ LangGraph, ChromaDB     │
+      │ users, lectures,  │        │ LangGraph, vector index │
       │ subscriptions,    │        │ Hybrid BM25 + dense     │
       │ usage_logs,       │        │ Verified citations       │
       │ webhook_events,   │        │ Persistent threads       │
@@ -133,56 +133,46 @@ survives restarts — a stale heartbeat re-queues the job and, because
 every stage is cache-first, recovery is near-free. Progress is persisted
 to the DB and **polled** by the frontend (no SSE).
 
-## 🔄 18-Stage Processing Pipeline
+## 🔄 Processing Pipeline
+
+A 17-minute lecture takes **9 Gemini calls (~$0.03)** and about 2.5 minutes:
+1 transcription, 1 structure, 4 chapter, and 3 embedding calls.
 
 | # | Stage | What happens |
 |---|---|---|
-| 1 | **Ingestion** | Resolve source (YouTube via `yt-dlp`, Drive via `gdown`, or upload) and create lecture-scoped media artifacts |
-| 2 | **Transcription** | Faster-Whisper converts audio into timestamped transcript segments |
-| 3 | **Chunking** | Adaptive chunking builds context-preserving transcript chunks |
-| 4 | **Knowledge Extraction** | Per-chunk Gemini structured extraction: concepts, explanations, formulas, code, relationships |
-| 5 | **Frame Extraction** | OpenCV samples the lecture's visual stream (runs in parallel with 2–4) |
-| 6 | **Scene Detection** | Pixel-diff threshold dedup reduces frames to meaningful keyframes |
-| 7 | **Chunk ↔ Screenshot Mapping** | Associates transcript chunks with relevant visuals by timestamp |
-| 8 | **Dynamic Outline Generation** | LLM infers title, 3–6 chapters, boundaries, and focus concepts |
-| 9 | **Visual Understanding** | Gemini multimodal reads chapter-batched keyframes → `visual_objects/` |
-| 10 | **Knowledge Merging** | Fuses textual + visual knowledge into merged objects |
-| 11 | **Chapter Building** | Aggregates merged objects into typed chapters (no LLM) |
-| 12 | **Screenshot Selection** | Two-pass quality scoring → perceptual-hash dedup → top-K ranking |
-| 13–16 | **Consolidated Chapter Artifacts** | **One Gemini call per chapter** produces study notes + revision + assessment + flashcards (`MergedChapterArtifactsModel`) — stages 13–16 are a single consolidated call |
-| 17 | **Tutor Index** | Diff-syncs embeddings of `notes/chapter_*.md` into the per-lecture Chroma `norai_notes` collection (content-hashed ids) |
-| 18 | **Screenshot Index** | Indexes screenshot captions into `screenshot_captions` (diff-sync) |
-| — | **Cleanup** | Deletes transient dirs on success, failure, or cancel |
+| 1 | **Ingestion** | Resolve source (YouTube via `yt-dlp`, Drive via `gdown`, or upload) and extract audio |
+| 2 | **Transcription** | Gemini transcribes the audio as compact `[MM:SS] text` lines, one per sentence (18-min slices in parallel for long lectures) |
+| 2′ | **Keyframes** | In parallel with 2: FFmpeg decodes only the video's keyframes, and pixel-diff scene detection keeps the distinct ones |
+| 3 | **Chunking** | Adaptive chunking groups transcript segments into chunks (no LLM) |
+| 4 | **Structure** | **One call** over the chunk-tagged transcript → lecture title + contiguous chapter ranges (≈ 1 chapter / 4 min) |
+| 5 | **Chapters** | **One multimodal call per chapter** (3 in parallel): the chapter's transcript + up to 12 of its keyframes → study notes (each section with its start time), revision, quiz/flashcards, and per-frame OCR + screenshot picks |
+| 6 | **Tutor Index** | Embeds ~45 s transcript windows, note sections, and screenshot captions + OCR (content-hashed ids, so re-indexing unchanged content embeds nothing) |
+| — | **Cleanup** | Deletes transient dirs (video, audio, raw frames) on success, failure, or cancel |
 
-Because every expensive stage is **hash-of-inputs cached** (P1) and the
-index is diff-synced, re-running a lecture costs ~0 Gemini calls.
+Chapter results are **hash-of-inputs cached**, so re-running a lecture
+only pays for what changed. A failed chapter is marked degraded instead
+of failing the lecture.
 
 ## 🔬 Inside the Multimodal Pipeline
 
-### 🎙️ Speech Understanding
-NorAI uses **Faster-Whisper** and preserves timestamp-aware transcript
-segments.
+### 🎙️ Speech
+`Audio → [MM:SS] transcript lines → segments (timestamps within ~1 s of YouTube's captions)`
 
-`Audio → Timestamped Transcript → Context-Preserving Chunks → Structured Knowledge`
+The transcript is the ground truth for everything downstream: notes are
+written straight from what the lecturer said, not from an intermediate
+LLM paraphrase.
 
-### 📸 Visual Understanding
-`Video → Frame Extraction → Scene Detection → Keyframes → Temporal Chunk Mapping → Multimodal Analysis`
+### 📸 Visuals
+`Video → keyframe-only decode → scene detection → keyframes → sampled per chapter → OCR + type + importance`
 
-Visual analysis can capture code snippets, diagrams, formulas, slides,
-architecture drawings, UI demonstrations, and worked examples.
+Encoders place keyframes at scene cuts, so slides, code, diagrams, and
+formulas that appear for only a few seconds are still captured. Frames go
+to the chapter call at low media resolution (~270 tokens each, with the
+same OCR quality on slides and diagrams).
 
-### 🧬 Knowledge Fusion
-
-```
-Spoken Knowledge ─────────┐
-                          ├──► Unified Lecture Knowledge
-Visual Knowledge ─────────┘
-```
-
-### 🧭 Dynamic Outline Generation
-The lecture outline is generated from processed knowledge itself. A
-lecture can become four chapters, six chapters, or another structure
-depending on content.
+### 🧭 Dynamic Structure
+A lecture can become two chapters or ten, depending on its length and
+content; chapter boundaries follow the transcript.
 
 ## 🤖 Lecture-Grounded AI Tutor
 
@@ -190,7 +180,7 @@ depending on content.
 User Question
       ↓
 Lecture-Scoped Hybrid Retrieval (BM25 + dense, RRF-fused)
-Relevant Note Chunks + Screenshot Context + Conversation State
+Transcript Windows (ground truth) + Note Sections + Screenshots + Conversation State
       ↓
 Grounded Tutor Response (verified citations)
 ```
@@ -199,9 +189,12 @@ The tutor layer includes:
 
 - **LangGraph** for stateful AI workflows (with **async** nodes on an
   `AsyncSqliteSaver` checkpointer so turns don't block the event loop)
-- **ChromaDB** for persistent vector retrieval, plus **BM25** for lexical
-  search fused via **RRF** (reciprocal rank fusion)
-- lecture-specific note indexes and screenshot-caption retrieval
+- a per-lecture vector index (`tutor/vector_store.py`: a float16 matrix +
+  `docs.json`, exact cosine; ~100–450 KB per lecture) plus **BM25** for
+  lexical search, fused via **RRF** (reciprocal rank fusion)
+- transcript-grounded answers: the tutor decides whether the lecture covers
+  the question, partly covers it, doesn't cover it, or rests on a false
+  premise, and cites `m:ss` timestamps that are checked against the transcript
 - persistent conversation threads per lecture
 - **real token streaming** — `/chat/stream` drives the graph with
   `graph.astream_events(version="v2")` and forwards `on_chat_model_stream`
@@ -235,8 +228,8 @@ drive **SM-2 spaced repetition** (interval/ease progression with a Due
 filter), and the whole deck can be exported as an **Anki `.apkg`** file.
 
 ### 🎬 Click-to-Video Grounding (P6.3)
-Per-chapter YouTube seek maps (`backend/video_map.py`) are built during the
-visual stage. The workspace docks the lecture player, auto-seeks when you
+Per-chapter seek maps (`backend/video_map.py`) come from the chapter
+ranges, and each note section carries its own start time. The workspace docks the lecture player, auto-seeks when you
 switch chapters, and "Watch video" buttons jump to the exact moment for a
 note section or tutor citation.
 
@@ -261,12 +254,11 @@ Artifacts are isolated under `outputs/`:
 outputs/
 ├── lectures.json
 ├── <lecture-id-a>/
-│   ├── videos/ · audio/ · metadata/
-│   ├── transcripts/ · chunks/ · objects/ · visual_objects/
-│   ├── merged_objects/ · mappings/ · chapters/
+│   ├── videos/ · audio/ · chunks/ · screenshots/raw/   (transient, deleted after the run)
+│   ├── transcripts/ · visual_objects/
 │   ├── notes/ · revision/ · assessment/ · flashcards/
-│   ├── screenshots/
-│   └── tutor/  (chroma index + graph checkpoints)
+│   ├── screenshots/keyframes/ · screenshots/selected/
+│   └── tutor/  (index/ + graph checkpoints)
 └── <lecture-id-b>/
     └── ...
 ```
@@ -295,16 +287,16 @@ rather than during every pipeline run.
 | **Documents** | React Markdown, KaTeX | Markdown and math rendering |
 | **Backend** | FastAPI, Uvicorn | APIs, webhooks, quota, pipeline integration |
 | **Job Queue** | DB-backed (SQLAlchemy) | Durable pipeline scheduling (P4) |
-| **AI** | Google Gemini (`gemini-3.5-flash-lite`) | Text generation and multimodal understanding |
+| **AI** | Google Gemini (`gemini-3.1-flash-lite`, `gemini-embedding-2`) | Transcription, multimodal notes, tutor, embeddings |
 | **AI Workflows** | LangGraph | Stateful tutor flows |
-| **Speech** | Faster-Whisper | Lecture transcription |
-| **Vector Store** | ChromaDB + BM25 | Hybrid (RRF-fused) retrieval |
-| **Visual Processing** | OpenCV | Frame and image processing |
+| **Speech** | Gemini (Faster-Whisper optional, local) | Lecture transcription |
+| **Vector Store** | NumPy matrix + BM25 | Hybrid (RRF-fused) retrieval |
+| **Visual Processing** | FFmpeg, OpenCV | Keyframe decode and scene detection |
 | **Media** | FFmpeg | Audio/video processing |
 | **Video Sources** | yt-dlp, gdown | Online video ingestion |
 | **Auth + DB** | Supabase | JWT auth (JWKS), Postgres storage |
 | **Schema** | Alembic | Versioned migrations (P4.3) |
-| **Storage** | File system, Supabase Postgres, ChromaDB, SQLite | Artifacts, app data, vectors, checkpoints |
+| **Storage** | File system, Supabase Postgres, SQLite | Artifacts + vectors, app data, checkpoints |
 
 ## 🗂️ Repository Structure
 
@@ -314,7 +306,7 @@ NorAI/
 ├── cache_util.py                 # hash-of-inputs caching markers (P1.4)
 ├── backend/
 │   ├── main.py                   # all routes (incl. /process, /chat, /quota, /billing)
-│   ├── orchestrator.py           # sync 18-stage pipeline (runs in job worker thread)
+│   ├── orchestrator.py           # sync pipeline: ingest → lean/ → tutor index (job worker thread)
 │   ├── jobs.py                   # DB-backed job queue + supervisor (P4.1)
 │   ├── auth.py                   # Supabase JWT/JWKS verification (fail-closed)
 │   ├── usage.py                  # usage metering + quota rollover (P2)
@@ -323,9 +315,9 @@ NorAI/
 │   ├── db/                       # async SQLAlchemy engine, models, migrations
 │   ├── routers/                  # (webhooks router used; rest empty)
 │   └── test_*.py                 # standalone offline test suites
-├── ingest/  transcription/  chunking/
-├── extract/  visual/  notes/
-├── revision_notes/  assessment/  flashcards/
+├── lean/                         # structure call + per-chapter multimodal call
+├── ingest/  transcription/  chunking/  visual/ (keyframes)
+├── notes/ (artifact writers)  revision_notes/  assessment/  flashcards/
 ├── tutor/                        # RAG tutor: graph, nodes, retriever, bm25,
 │                                 # embedding, memory, quiz_nodes, citations, llm
 ├── migrations/  +  alembic.ini   # versioned schema migrations (P4.3)
@@ -406,8 +398,9 @@ cd frontend && npm run test    # Vitest frontend suites
 npm run build                  # tsc -b + vite build (CI parity)
 ```
 
-**Quotas:** Free trial = 1 video of ≤15 minutes. Starter = 300
-minutes/month. Pro = 1500 minutes/month. Usage is metered per completed
+**Quotas:** Free = 45 minutes (lectures up to 45 min). Starter = 300
+minutes (lectures up to 90 min). Pro = 1200 minutes (lectures up to 180
+min); paid plans are 30-day passes. Usage is metered per completed
 lecture and enforced *before* any Gemini spend.
 
 ## 🧪 Development Status
@@ -420,14 +413,13 @@ sprint are complete; a production deployment path is agreed in
 ### Implemented
 - [x] Lecture video ingestion (YouTube / Drive / upload)
 - [x] Cloud Gemini API audio transcription with timestamped segments (zero-CPU, 9.2x speedup)
-- [x] Adaptive chunking + structured knowledge extraction
-- [x] Multimodal visual understanding (frames, scenes, mapping, analysis)
-- [x] Dynamic outline generation + chapter construction
-- [x] Study notes, revision notes, assessment, flashcards (one call/chapter)
-- [x] Important screenshot selection + screenshot-caption retrieval
+- [x] Keyframe-only frame decode + scene detection
+- [x] One structure call → dynamic chapter boundaries
+- [x] One multimodal call per chapter: notes, revision, assessment, flashcards, screenshot picks
+- [x] Screenshot OCR + caption retrieval
 - [x] Multi-lecture artifact isolation + lecture registry
 - [x] React + TypeScript workspace with progress polling
-- [x] Lecture-specific ChromaDB indexes, hybrid retrieval, verified citations
+- [x] Lecture-specific transcript + notes indexes, hybrid retrieval, verified timestamp citations
 - [x] Persistent tutor threads + Highlight & Ask + document search
 - [x] On-demand PDF generation (notes, revision, assessment, guide, mind-map)
 - [x] Supabase auth (JWKS verification) + Postgres persistence
@@ -455,7 +447,7 @@ NorAI is also a practical exploration of real-world AI systems engineering:
 - enforcing quota before any LLM spend, and self-calibrating cost estimates from real metrics
 - isolating artifacts and retrieval indexes per lecture, preventing cross-lecture state leaks
 - handling malformed JSON from LLM responses and retrying structured generation
-- mapping timestamped transcript chunks to visual keyframes and fusing text + visual knowledge
+- grounding notes in the transcript plus on-screen frames in one multimodal call per chapter
 - dynamically determining chapter counts and boundaries
 - cutting re-run cost to ~0 with hash-of-inputs caching + diff-synced vector indexing
 - tuning print CSS for exactly-one-page-per-chapter PDFs and keeping screenshots in the print
@@ -503,14 +495,21 @@ NorAI is also a practical exploration of real-world AI systems engineering:
 
 ## 📊 Performance & Cost
 
-Pipeline runtime and model usage depend on lecture duration, transcript
-chunk count, extracted keyframes, visual-analysis retries, model choice,
-API rate limits, local hardware, and network conditions. `POST /estimate`
-gives a per-lecture prediction of Gemini calls and wall-clock minutes,
-self-calibrated from real recorded metrics (P1.8).
+Measured on `gemini-3.1-flash-lite`:
 
-> Add reproducible benchmarks here with lecture duration, hardware,
-> model, frame count, and pipeline configuration.
+| Lecture | Gemini calls | Cost | Wall time |
+|---|---|---|---|
+| 17 min (calculus) | 9 | $0.0335 | 142 s |
+| 8.7 min (DP), via the UI | 4 + embeddings | — | 115 s |
+
+The previous 18-stage chain took 29 calls and $0.061 for the same 17-minute
+lecture.
+
+Local CPU per lecture (1 vCPU, 720p) is under ~0.3 CPU-seconds per lecture
+minute for frames and scenes; the 71-min lecture takes 15 s for frames and 6 s for scenes.
+`POST /estimate` predicts Gemini calls and wall-clock minutes per lecture
+and self-calibrates from recorded runs (P1.8). Sizing for 100 / 1k / 10k
+users is in `docs/PROJECT_PROGRESS.md` ("Server load").
 
 ## 🤝 Contributing
 

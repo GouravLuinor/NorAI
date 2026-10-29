@@ -1,6 +1,6 @@
 # NorAI — Full-Project Tutorial & Interview Prep
 
-Everything built in this project — from the 18-stage pipeline and RAG tutor to
+Everything built in this project — from the lecture pipeline and RAG tutor to
 the Supabase auth and PDF exports — the concepts behind it, what you should know
 as a developer, and the questions interviewers are likely to ask, with full
 answers.
@@ -34,14 +34,17 @@ earliest skeleton/mock-data commits are folded into the architecture parts).
 | `5760bc3` | **P6.5** per-stage Gemini usage/cost dashboard |
 | `fa01920` / `dc68924` | **P7** token reduction — prompt compression + context caching + output-token cut |
 | `8c4cd74` | **P6.4 + UI/UX audit execution** — course collections + share links, and the Architect's Sketchbook v2 redesign (3 responsive tiers, skeletons, custom Select, dark-theme fixes) |
+| `92051a6` | **Phase 2** tutor grounds on the transcript; Chroma replaced by a per-lecture NumPy index |
+| `544847d` → `c89f069` | **Phase 2** lean pipeline built, A/B'd against the 18-stage chain, made the default |
+| (phase2 cleanup) | 18-stage chain deleted, keyframe-only frame decode, `chromadb` removed |
 
 **What you learned in one paragraph:** you built an end-to-end AI platform that
-turns lecture videos into structured study material. An **18-stage multimodal
-pipeline** (Faster-Whisper transcription + Gemini knowledge extraction + OpenCV
-visual analysis) runs in a background thread inside a **DB-backed job queue** and
-persists progress to the database; a **LangGraph + ChromaDB RAG tutor** with
-hybrid (dense+BM25) retrieval and verified citations retrieves lecture-grounded
-context and answers conversationally — with **real token streaming** over SSE; a
+turns lecture videos into structured study material. A **lean multimodal
+pipeline** (Gemini transcription, one structure call, then one multimodal call
+per chapter over its transcript + keyframes) runs in a background thread inside
+a **DB-backed job queue** and persists progress to the database; a **LangGraph
+RAG tutor** over a per-lecture vector index, with hybrid (dense+BM25) retrieval
+and verified timestamp citations, answers from what the lecturer actually said — with **real token streaming** over SSE; a
 **React workspace** with notes/revision/assessment/flashcards/mind-map panels
 polls progress and streams tutor answers; then you **productionized** it with
 Postgres, real Supabase auth (JWT verified via JWKS), usage metering and Lemon
@@ -50,36 +53,39 @@ finally shipped a **P0→P7 hardening pass**: security gates, pipeline cost cuts
 billing/quota, retrieval evals, a restart-survivable job queue, Docker, a test
 suite, **retention features** (SM-2 spaced repetition, Anki export, click-to-video
 grounding, course collections + share links, usage/cost dashboard), a **token-reduction
-sprint** (prompt compression, dormant context caching, output-token cut), and a
-frontend **UI/UX audit execution** (3 responsive tiers, skeletons, custom Select).
+sprint** (prompt compression, dormant context caching, output-token cut), a
+frontend **UI/UX audit execution** (3 responsive tiers, skeletons, custom Select),
+and **Phase 2**: the 18-stage chain (29 calls, $0.061 for 17 min) replaced by the
+lean pipeline (9 calls, $0.0335) with notes that no longer invent material.
 
 ---
 
-# Part 1 — The 18-Stage Pipeline
+# Part 1 — The Lecture Pipeline
 
 ## 1.1 Big picture: video in → knowledge out
 
-The pipeline is the heart of NorAI. A single lecture video goes through
-transcription, knowledge extraction, visual analysis, merging, and dynamic
-chapter structuring to produce notes, revision material, assessments, flashcards,
-and searchable indexes.
+The pipeline is the heart of NorAI. A lecture video is transcribed and its
+keyframes captured in parallel; one LLM call maps the chapters, and one
+multimodal call per chapter writes notes, revision material, a quiz/flashcards,
+and picks the screenshots. Then the tutor index is built.
 
 ```
 Lecture Video
-  ↓
-Text branch (transcript)      Visual branch (frames)
-  ↓                            ↓
-  transcribe ──────────────►   extract frames
-  chunk ────────────────────►  scene detect
-  extract knowledge ────────►  └──► map chunks↔screenshots
-        └───────────┬─────────────┘
-                    ↓
-   outline (dynamic chapters) → visual understanding → merge
-                    ↓
-   chapters → study notes + revision + assessment + flashcards
-                    ↓
-   tutor index (notes) + screenshot index (ChromaDB)
+  ↓ ingest (yt-dlp / gdown / upload → audio + video)
+  ├── transcription: Gemini, "[MM:SS] text" lines ─┐
+  └── keyframes: keyframe-only decode → scenes ────┤ (in parallel)
+                                                   ↓
+  chunking (local) → structure: 1 call → title + chapter ranges
+                                                   ↓
+  chapters: 1 multimodal call each (transcript + ≤12 keyframes)
+     → notes (+ section start times), revision, quiz → flashcards,
+       per-frame OCR, screenshot picks
+                                                   ↓
+  tutor index: transcript windows + note sections + screenshots
 ```
+
+A 17-minute lecture: **9 Gemini calls, $0.0335, ~2.5 min** (1 transcription +
+1 structure + 4 chapters + 3 embedding batches).
 
 ## 1.2 The execution model (understand this cold)
 
@@ -90,8 +96,8 @@ no longer spawns a raw thread — it **enqueues a `Lecture` row** with
 polls the DB, claims jobs within global + per-user concurrency caps, and runs
 each one in a bounded `ThreadPoolExecutor`. Why a worker thread and not asyncio?
 
-- The pipeline makes long blocking calls (FFmpeg, Faster-Whisper, Gemini HTTP)
-  that would stall an async event loop.
+- The pipeline makes long blocking calls (FFmpeg, Gemini HTTP) that would
+  stall an async event loop.
 - The DB-backed queue gives you **durability**: jobs survive a server restart,
   and a job whose heartbeat goes stale is re-queued and resumed (P4.1).
 
@@ -111,16 +117,18 @@ uploads and DB-orphaned lecture dirs. Because every pipeline stage is
 **cache-first** (P1.4, hash-of-inputs), a recovered job re-runs at **~0 Gemini
 calls** — crash recovery is effectively a cheap resume.
 
-Inside the worker thread, the two independent branches run **in parallel** with
-a `ThreadPoolExecutor(max_workers=2)`:
+Inside the worker thread (`lean/pipeline.run_lean_stages`), the two independent
+branches run **in parallel** with a `ThreadPoolExecutor(max_workers=2)`:
 
 ```python
-def _run_text_branch():    # transcription → chunking → knowledge extraction
-def _run_visual_branch():  # frame extraction → scene detection
+def _text():    # Gemini transcription
+def _visual():  # keyframe-only frame decode → scene detection
 ```
 
-Both branches' `.result()` are awaited before the sequential stages that follow.
-This halves wall-clock time for the two expensive, independent parts.
+Both `.result()`s are awaited before the sequential stages that follow. The
+keyframe branch finishes well inside transcription (on 1 vCPU, ~4 s for a
+17-min lecture against ~40 s of transcription), so it adds no wall time. Chapter calls then run
+3 at a time.
 
 > **Single-process assumption:** the supervisor is deliberately single-worker.
 > Multiple uvicorn workers would each start a supervisor; a DB claim-lock would
@@ -151,38 +159,30 @@ the worker checks between stages and turns into `PipelineCancelled`.
 
 ## 1.4 Stage-by-stage (the actual order in the code)
 
-| # | Progress stage | What happens | Engine |
-|---|---|---|---|
-| 1 | `ingestion` | `process_source` routes YouTube (`yt-dlp`) / Google Drive (`gdown`) / upload; extracts MP3 via FFmpeg; writes `videos/`, `audio/`, `metadata/` | Local tools |
-| 2–4 | `transcription` → `chunking` → `knowledge_extraction` | **Faster-Whisper** → timestamped `transcripts/*.json`; groups ~15 transcript segments (adaptive) into chunks; per-chunk **Gemini** structured `KnowledgeObject` with retries + rate limiter | Local + Gemini |
-| 5–6 | `frame_extraction` → `scene_detection` | samples frames every 8s via OpenCV → pixel-diff threshold dedup → keyframes (runs in parallel with 2–4) | Local |
-| 7 | `mapping` | associates keyframes to transcript chunks by timestamp → `mappings/chunk_screenshot_mapping.json` | Local |
-| 8 | `outline` | LLM infers title + 3–6 chapters, renumbers `chapter_id`s, assigns chunk ranges | Gemini |
-| 9 | `visual_knowledge` | **Gemini multimodal** reads chapter-batched keyframe images → `visual_objects/` | Gemini |
-| 10 | `knowledge_merging` | fuses text + visual objects → `merged_objects/` | Local |
-| 11 | `chapter_building` | aggregates merged objects into Pydantic `Chapter`s (no LLM) → `chapters/chapter_N.json` | Local |
-| 12 | `screenshot_selection` | two-pass: quality scoring (Gemini) → perceptual-hash dedup → top-K ranking → `screenshots/selected/` | Gemini + local |
-| 13–16 | `chapter_artifacts` | **one Gemini call per chapter** → study notes + revision + assessment + flashcards (`MergedChapterArtifactsModel`) — stages 13–16 are a single consolidated call | Gemini |
-| 17 | `tutor_index` | chunks `notes/chapter_*.md`, diff-syncs embeds into per-lecture Chroma `norai_notes` (content-hashed ids) | Chroma + Gemini embed |
-| 18 | `screenshot_index` | indexes screenshot captions into `screenshot_captions` collection (diff-sync) | Chroma + Gemini embed |
-| — | `cleanup` | deletes transient dirs (videos/audio/raw/chunks/mappings/metadata) on success, failure, or cancel | Local |
+| Progress stage | What happens | Engine |
+|---|---|---|
+| `ingestion` | `process_source` routes YouTube (`yt-dlp`) / Google Drive (`gdown`) / upload; extracts audio via FFmpeg; writes `videos/`, `audio/`, `metadata/` | Local tools |
+| `transcription` | Gemini transcribes the audio (18-min slices in parallel) as one `[MM:SS] text` line per sentence → `transcripts/*.json`. **In parallel:** `visual/extract_frames.py` decodes only keyframes, `visual/scene_detector.py` keeps distinct ones → `screenshots/keyframes/` | Gemini + local |
+| `chunking` | adaptive chunking groups transcript segments into chunks | Local |
+| `outline` | `lean/structure.py`: **one call** over the chunk-tagged transcript → title + contiguous chapter ranges (repaired locally) | Gemini |
+| `chapter_artifacts` | `lean/chapters.py`: **one multimodal call per chapter** → notes, revision, quiz, frame OCR, screenshot picks; `notes/artifacts.py` writes the files | Gemini |
+| `tutor_index` | `tutor/indexing.py` embeds transcript windows, note sections and screenshots into `tutor/index/` (content-hashed ids) | Gemini embed |
+| `cleanup` | deletes transient dirs (videos/audio/raw frames/chunks/metadata) on success, failure, or cancel | Local |
 
 ## 1.5 Design principle: partial failure tolerance
 
-Nearly every stage from `mapping` onward is wrapped in:
+**A failed optional piece never destroys the whole run:**
 
-```python
-try:
-    ...
-except Exception as e:
-    logger.error(f"X failed (continuing): {e}")
-```
+- keyframe extraction failing → notes without screenshots;
+- one chapter call failing → that chapter is written as **degraded**
+  (`incomplete: true`) with no cache marker, so the next run retries just it;
+- one bad quiz question → that question is dropped (each is validated alone),
+  not the chapter.
 
-**A failed optional stage never destroys the whole run.** Only ingestion, the
-duration check, and the two parallel branches hard-fail. If outline generation
-itself fails, a hardcoded single-chapter fallback outline is written so the
-pipeline can continue. This "design for partial failure" is one of the stated
-project principles and a great interview answer.
+Ingestion, the duration check, transcription, and the structure call
+hard-fail, and so does a **daily-quota** error (retrying would only burn more
+attempts). This "design for partial failure" is one of the stated project
+principles and a great interview answer.
 
 ## 1.6 The free-trial duration gate
 
@@ -217,71 +217,95 @@ Since P4.1 the **DB `lectures` row is the source of truth for lifecycle** —
 maps id → output dir, and `GET /lectures` merges both. A daily GC sweep (P4.2)
 removes DB-orphaned lecture dirs and stale uploads.
 
-## 1.8 Knowledge extraction (Stage 4) & merging (Stage 10)
+## 1.8 Transcription: compact lines, not JSON
 
-- `extract/` sends each chunk to Gemini and gets a structured `KnowledgeObject`
-  via Pydantic validation — this is **structured output**: the LLM is forced
-  into a schema, and malformed JSON is retried.
-- `visual/visual_extractor.py` sends chapter-batched keyframes to Gemini's
-  **Files API** (multimodal) and produces per-chapter visual knowledge.
-- `extract/merger.py` fuses the text and visual objects into a unified
-  `merged_objects/chunk_N.json`. This is "knowledge fusion" — a lecture is
-  treated as speech **+** visuals, not just a transcript.
+`transcription/gemini_transcriber.py` asks for one `[MM:SS] text` line per
+sentence; `parse_compact_transcript` sets each segment's end to the next start,
+capped at 1 s + 0.6 s/word so a silence doesn't stretch a sentence.
 
-## 1.9 Dynamic outline (Stage 8) — no fixed chapter count
+Two real findings drove this:
 
-`notes/outline_generator.py` builds "proto chapters" from merged chunks, asks
-Gemini for 3–6 chapters, **caps the count** to `max(3, min(8, total_chunks // 3))`,
-renumbers `chapter_id` 1…N, and assigns `start_chunk`/`end_chunk`/`chunk_ids`.
-Different lectures get different structures — the app never assumes a fixed
-number of chapters.
+- **Output tokens dominate transcription cost.** JSON segments spent most of
+  their 11.3k output tokens (17-min lecture) on keys, ids and end times. Compact
+  lines took 4,470 tokens (−60%) and kept 2,948 of 2,949 words.
+- **Ask for the unit you can check.** A prompt that asked for "seconds" got
+  minutes.seconds back (`[1.05]` meant 1:05). Asking for `[MM:SS]` brought the
+  median error against YouTube's captions to **0.4 s** (p90 0.9 s);
+  `tutor/evals/timestamp_check.py` measures it with no LLM call.
 
-## 1.10 Consolidated chapter artifacts (Stage 13) — the cost saver
+## 1.9 Keyframes: decode only what you keep
 
-This is the current "live" path (`notes/notes_generator.py` →
-`generate_consolidated_chapter_artifacts`). For **each chapter** it makes
-**one** Gemini call with `response_schema=MergedChapterArtifactsModel` that
-returns:
+`visual/extract_frames.py` runs FFmpeg with `-skip_frame nokey`, so the decoder
+touches only keyframes, and keeps every one at least 1 s apart. Scene detection
+(mean pixel difference against the last kept frame, plus a forced frame every
+60 s) then picks the distinct ones.
 
-- `study_notes_sections` (typed: definition | callout | table | list | code | prose)
-- `revision_summary` + `core_concepts_breakdown`
-- `assessment_questions` (with embedded flashcard fields)
+- **6× less CPU** than the old loop, which seeked with OpenCV every 8 s: each
+  seek decodes from the previous keyframe. On 1 vCPU at 720p, a 17-min lecture
+  takes 3.6 s instead of 17.4 s, and a 71-min one 15 s instead of 88 s.
+- **Better coverage.** Encoders put keyframes at scene cuts, which is exactly
+  where a new slide appears. A slide shown for 4 s is caught at its cut, where a
+  fixed 8 s grid catches it only by luck.
+- **Fallback:** if a video's keyframes leave a gap of more than 3 × 8 s (e.g. a
+  screen recording with one keyframe a minute), it seeks every 8 s with OpenCV
+  instead; if OpenCV can't decode the codec, a full FFmpeg decode.
 
-Then it writes 4 files: `notes/chapter_N.md` + `chapter_N.json`,
-`revision/revision_chapter_N.md`, `assessment/assessment_chapter_N.json`, and
-`flashcards/flashcards_chapter_N.json`. On repeated failure it writes degraded
-fallbacks flagged `incomplete: true`.
+## 1.10 Structure: one call maps the chapters
 
-> Interview takeaway: consolidating four artifact types into **one LLM call per
-> chapter** is a deliberate cost optimization — instead of 4+ paid calls per
-> chapter, you get 1. The older `generate_study_notes` / `generate_revision_notes_*`
-> paths are legacy/standalone.
+`lean/structure.py` sends the chunk-tagged transcript (`[chunk 3 | 4:12] …`)
+and asks for a title and contiguous chapter ranges. The target is about one
+chapter per 4 minutes, capped at 10, with at least one per 12 minutes
+(`chapter_count_range`). The response is **repaired locally** rather than
+re-asked: consistent boundaries are kept, and overlaps or gaps are resolved by
+moving a chapter's start to the previous end + 1, so the chapters always cover
+every chunk in order. The outline also stores
+each chunk's times, which `backend/video_map.py` reads for chapter seeking.
 
-## 1.11 Screenshot selection (Stage 12) — quality + dedup
+## 1.11 Chapters: one multimodal call writes everything
 
-Two passes per chapter:
+`lean/chapters.py` sends each chapter's **raw timestamped transcript** plus up
+to 12 of its keyframes (evenly sampled, at `MEDIA_RESOLUTION_LOW` ≈ 270
+tokens/frame, same OCR quality on slides) and gets back, in one structured
+response:
 
-1. **Pass 1 quality scoring** in batches of 10 — Gemini scores each frame
-   (`content_density`, `instructor_occlusion`, `is_transition_or_decorative`);
-   then **perceptual-hash dedup** (`imagehash.phash`, dropping pairs within a
-   Hamming distance ≤ 6, keeping the highest-density survivor) removes
-   near-duplicate frames.
-2. **Pass 2 ranking** — Gemini ranks survivors, then a **deterministic top-K cut**
-   in code (`compute_target_count()` → 3/4/5/6 based on candidate count) sets the
-   final selection.
+- notes sections, each with a `start_sec` (NotesView seeks to it);
+- revision summary + core concepts;
+- quiz questions (with flashcard fields);
+- per-frame OCR text, type and importance → the chapter's screenshots
+  (importance ≥ 6, at most 4, near-duplicate slides dropped by OCR-word
+  Jaccard ≥ 0.8).
+
+`notes/artifacts.py` writes `notes/chapter_N.{md,json}`, `revision/`,
+`assessment/`, `flashcards/`, and `notes.md`.
+
+> **Interview takeaway — why this beat the 18-stage chain:** the old chain
+> extracted "knowledge objects" per chunk, merged them with a separate visual
+> analysis, built chapters, and *then* wrote notes from that paraphrase. The
+> paraphrase was **larger than the transcript** (≈7 KB vs ≈4.5 KB per chapter)
+> and carried invented `inferred_knowledge`, so 2.5–19% of note claims weren't
+> in the lecture (judged by gemini-3.8-flash). Writing straight from the
+> transcript + frames cut that to ~0%, with 9 calls instead of 29 and $0.0335
+> instead of $0.061.
 
 ## 1.12 Assessment & flashcards: 0 extra LLM calls
 
-- `assessment/` generates questions **inside** the consolidated artifacts call;
-  the schema is a flat `Question` with `question_id, chapter_id, type,
+- Questions are generated **inside** the chapter call; the schema
+  (`assessment/assessment_models.py`) is a flat `Question` with `question_id, chapter_id, type,
   difficulty, concepts, question, options, answer, explanation` + embedded
   `flashcard_front/back/explanation`. Pydantic validators enforce rules like
-  "options ≥ 2 only for MCQ/True-False" and "answer ∈ options".
+  "options ≥ 2 only for MCQ/True-False" and "answer ∈ options". Each question
+  is repaired (e.g. answer "B" → option 2) and validated **alone**, so one bad
+  question is dropped instead of failing the chapter.
 - `flashcards/generate_flashcards.py` is a **deterministic 0-LLM-call transform**:
   it just extracts `flashcard_front/back/explanation` from each question,
   truncating to 15/20/30 words. No model call for cards.
 
 ## 1.13 Pipeline economics (P1) — make re-runs free
+
+> History: these P1 changes were made on the 18-stage chain. Hash-of-inputs
+> caching, adaptive chunking, and the self-calibrating estimate carried over to
+> the lean pipeline; the extraction/visual/selection stages they tuned were
+> deleted with that chain.
 
 A cluster of P1 changes cut a full lecture from ~128 LLM calls to ~35, and a
 re-run of the *same* lecture id to **0 paid calls**:
@@ -321,8 +345,8 @@ stalled pipeline is ~0 Gemini calls because every paid stage is cache-first.
 ## 2.1 Big picture
 
 The tutor is a **retrieval-augmented generation (RAG)** system: for each user
-question it retrieves relevant note chunks **and** screenshots from
-lecture-scoped ChromaDB indexes, injects them as context into a Gemini prompt,
+question it retrieves transcript windows, note sections **and** screenshots
+from the lecture's own index, injects them as context into a Gemini prompt,
 and streams the grounded answer back.
 
 ```
@@ -359,40 +383,52 @@ llm.ainvoke(...)`. Tutor turns no longer block the event loop; `ainvoke_tutor`
 caches graphs in an LRU bounded at `TUTOR_MAX_CACHED_GRAPHS` (32, connections
 closed on eviction).
 
-## 2.3 Two retrieval indexes, hybrid search
+## 2.3 One index, three doc kinds, hybrid search
 
-ChromaDB per-lecture, two collections:
+Each lecture has one index under `outputs/<id>/tutor/index/`
+(`tutor/vector_store.py`): a float16 matrix (`vectors.npy`) plus `docs.json`
+(ids, texts, metadata), searched by **exact cosine** in NumPy. A lecture is a
+few hundred docs, so exact search is microseconds and there's no ANN index to
+tune. It's 100–450 KB per lecture against 6–7 MB for the Chroma store it
+replaced, and the backend uses ~90 MB less RAM.
 
-| Collection | Contents | Metadata |
+`tutor/indexing.py` builds three doc kinds in one embedding pass:
+
+| Kind | Contents | Metadata |
 |---|---|---|
-| `norai_notes` | heading-tree chunks of `notes/chapter_*.md` | `heading`, `heading_path`, `chapter_id`, `source` |
-| `screenshot_captions` | screenshot reason/caption strings | `path`, `section`, `importance`, `chapter_id` |
+| `transcript` | ~45 s overlapping windows of what the lecturer said | `start`, `end`, `chapter_id` |
+| `notes` | heading-tree sections of `notes/chapter_*.md` | `heading`, `heading_path`, `chapter_id`, `start` (lean notes) |
+| `screenshot` | selected screenshots: caption + OCR text | `path`, `section`, `importance`, `chapter_id` |
 
-`tutor/retriever.py` exposes `retrieve(query, chapter_id, k)` and
-`retrieve_images(...)`. Query results are **filtered by `chapter_id`** via
-Chroma's `where={"chapter_id": {"$eq": n}}`, so the tutor stays grounded in the
-active chapter. Results include `distance` (cosine); images sort by
-`(distance asc, importance desc)`.
+Ids are **content hashes**, so `VectorStore.sync` embeds only new docs and
+drops removed ones; re-indexing an unchanged lecture costs 0 calls.
 
-Since P3 the notes retriever is **hybrid**: a BM25 sparse index
-(`tutor/bm25.py`, lazy-built) is fused with the dense Chroma cosine scores via
-**Reciprocal Rank Fusion** (`retriever.py`, 60/40 dense/sparse weight). Lexical
-matching catches exact terms embeddings miss. `retrieve()` also does **context
-expansion** (`tutor/context_expand.py`) — when a leaf chunk hits, its parent
-section + sibling chunks are pulled too.
+`tutor/retriever.py` `retrieve()` returns 4 transcript windows + 2 note
+sections by default, each kind **hybrid**: cosine candidates fused with a BM25
+sparse index (`tutor/bm25.py`) via **Reciprocal Rank Fusion**, optionally
+filtered by `chapter_id`. Lexical matching catches exact terms embeddings miss;
+`retrieve()` also does **context expansion** (`tutor/context_expand.py`) for
+note hits. `retrieve_images()` queries the screenshot kind.
 
-Clients are **module-level singletons cached with `@lru_cache`** keyed by
-`chroma_dir` — this avoids re-creating the Chroma client (and its Rust
-underpinnings) on every request, and sidesteps a known Chroma 1.x multi-client
-bug. If an index doesn't exist, a clear `IndexNotBuiltError` is raised instead of
-a cryptic Chroma exception.
+**Why the transcript, not just the notes?** Notes are an LLM summary: they drop
+details (names, numbers, asides) and can add material. A tutor grounded only in
+notes said "the lecture doesn't mention X" about things the lecturer said, and
+answered from note content the lecturer never said. The prompt now treats the
+transcript as ground truth and the notes as an AI summary, and asks the model
+to decide first whether the lecture covers the question (covered / partial /
+not covered / false premise). Detail-question accuracy went from 0 and 0.56
+(dp8, calc17 eval sets) to 1.0.
+
+Lectures processed before the index existed are indexed lazily on their first
+question; `python -m tutor.indexing outputs/<id>` backfills one ahead of time.
 
 ## 2.4 The custom embedding function (a real gemini gotcha)
 
-`tutor/embedding.py` implements `GeminiEmbeddingFunction` for Chroma. Why custom?
-The built-in Chroma wrapper only documents `gemini-embedding-001` and passes a
-`task_type=` parameter — but **`gemini-embedding-2` dropped `task_type`
-entirely**; task instructions belong in the prompt text:
+`tutor/embedding.py` implements `GeminiEmbeddingFunction`. Why custom? Common
+wrappers (Chroma's included, which this project used first) only document
+`gemini-embedding-001` and pass a `task_type=` parameter — but
+**`gemini-embedding-2` dropped `task_type` entirely**; task instructions belong
+in the prompt text:
 
 ```
 Documents:  "title: {title} | text: {content}"
@@ -1222,7 +1258,7 @@ These are the concepts interviewers will probe most:
   substring match).
 - **Static allowlist** — `/static` is no longer a blanket mount. An
   image-only allowlist (`resolve_static_path`) means transcripts, answer keys,
-  `checkpoints.sqlite`, Chroma DBs, and `backend.log` are **not servable**;
+  `checkpoints.sqlite`, tutor indexes, and `backend.log` are **not servable**;
   traversal is blocked.
 - **`/process` input gate** — `source_type` validated; YouTube/Drive URLs must
   pass `is_youtube_url`/`is_gdrive_url` (kills **SSRF** before download); upload
@@ -1378,7 +1414,7 @@ Inter + JetBrains Mono fonts, and the course/share pages. Verified by
 | **SSE** | Server-Sent Events — one-way server→client stream (`data:` frames) |
 | **Polling** | Client repeatedly fetches status instead of receiving pushes |
 | **RAG** | Retrieval-Augmented Generation — retrieve context, then generate |
-| **Vector store** | DB that searches by embedding similarity (ChromaDB) |
+| **Vector store** | Searches by embedding similarity (here: a per-lecture NumPy matrix, exact cosine; earlier ChromaDB) |
 | **Embedding** | Dense numeric vector representing text meaning |
 | **Asymmetric embedding** | Documents and queries formatted differently before embedding |
 | **BM25** | Classic lexical (keyword) retrieval scoring |
@@ -1492,11 +1528,12 @@ A: `POST /process` **enqueues a `Lecture` row** (`status="queued"`); a
 global + per-user concurrency caps, and runs the fully synchronous pipeline
 (`run_pipeline`) in a worker thread from a bounded `ThreadPoolExecutor`. FastAPI
 stays responsive, and the frontend polls `GET /process/{id}/status` (DB-backed).
-Inside, the two independent branches — text (transcribe → chunk → extract) and
-visual (frames → scenes) — run in parallel with a `ThreadPoolExecutor(max_workers=2)`.
+Inside, the two independent branches — transcription and keyframes (frames →
+scenes) — run in parallel with a `ThreadPoolExecutor(max_workers=2)`, then
+chapter calls run 3 at a time.
 
 **Q: Why a background thread instead of an async task?**
-A: The pipeline makes long blocking calls (FFmpeg, Faster-Whisper, Gemini HTTP).
+A: The pipeline makes long blocking calls (FFmpeg, Gemini HTTP).
 Running those on the event loop would block every other request. A worker thread
 keeps the server responsive. Blocking LLM calls in request handlers are
 similarly offloaded with `asyncio.to_thread`, and the tutor's own LLM calls are
@@ -1521,10 +1558,11 @@ dead weight (no endpoint ever registered a queue). The only real SSE in the app
 is `/chat/stream` (Part 2.10).
 
 **Q: How did you make the pipeline resilient to failures?**
-A: Two layers. **Partial-failure tolerance:** only hard-dependency stages
-(ingestion, duration check, the two parallel branches) fail the run; everything
-from mapping onward is wrapped in try/except that logs and continues, and
-outline generation writes a single-chapter fallback on failure. **Job-level
+A: Two layers. **Partial-failure tolerance:** only hard dependencies
+(ingestion, duration check, transcription, the structure call, a daily-quota
+error) fail the run; missing keyframes mean notes without screenshots, a failed
+chapter is written as degraded and retried on the next run, and a bad quiz
+question is dropped on its own. **Job-level
 retries:** a failed run with attempts left is re-queued by the supervisor and
 resumed cache-first (P4.1) — cheap because unchanged stages skip via hash-of-inputs.
 
@@ -1537,12 +1575,22 @@ duration and raises if it exceeds `MAX_FREE_DURATION_MIN` while
 stops the spend, the in-pipeline check catches anything that slips through.
 
 **Q: Why one LLM call per chapter instead of one per artifact?**
-A: Cost. `generate_consolidated_chapter_artifacts` makes a single Gemini call
-per chapter with `response_schema=MergedChapterArtifactsModel` returning notes
-sections + revision summary + assessment questions (with embedded flashcard
-fields). Four artifact types, one paid call. Flashcards are then a pure
-transform — zero extra LLM calls. Combined with P1's hash-of-inputs caching and
-diff-synced indexing, a full lecture costs ~35 calls and a re-run costs 0.
+A: Cost and grounding. `lean/chapters.py` makes a single multimodal call per
+chapter (its transcript + up to 12 keyframes) returning notes sections,
+revision summary, quiz questions with flashcard fields, and per-frame OCR for
+screenshot selection. Flashcards are then a pure transform — zero extra calls.
+A 17-min lecture is 9 calls ($0.0335) in total, against 29 ($0.061) for the
+old chain that extracted, merged and selected in separate stages, and a re-run
+costs ~0 thanks to hash-of-inputs caching.
+
+**Q: What did you delete, and how did you decide it was safe?**
+A: The 18-stage chain (per-chunk extraction, visual analysis, merging, chapter
+building, two-pass screenshot selection). Lean ran behind a flag first and was
+A/B'd on three lectures: tutor accuracy, judged notes fidelity (unsupported
+claims 2.5–19% → ~0%), timestamps against YouTube captions, and a UI smoke test.
+Only then was it made the default, and later deleted. The code that **reads**
+old lectures stayed (e.g. `merged_objects/` chunk times), because the demo
+lectures and existing users' lectures were made by the old chain.
 
 ### RAG & Embeddings
 
@@ -1550,15 +1598,16 @@ diff-synced indexing, a full lecture costs ~35 calls and a re-run costs 0.
 A: `load_memory` rebuilds the prompt window → `detect_chapter` scopes to the
 chapter (and remembers `last_chapter_id` for anaphoric follow-ups) →
 `rewrite_query` makes the question self-contained → `retrieve` (hybrid
-dense+BM25 with RRF fusion) + `retrieve_images` query the per-lecture Chroma
-indexes (filtered by `chapter_id`) → `generate_answer` injects the results as
+dense+BM25 with RRF fusion, transcript windows + note sections) +
+`retrieve_images` query the per-lecture index (optionally filtered by
+`chapter_id`) → `generate_answer` injects the results as
 CONTEXT SystemMessages into a Gemini prompt → `verify_citations` deterministically
 checks the answer's Sources against the retrieved chunk ids → `save_memory`
 summarizes when history grows. Grounded in the lecture, not the model's general
 knowledge — and the citations you see in the UI are verified, not LLM-claimed.
 
-**Q: Why did you write a custom Chroma embedding function?**
-A: The built-in Chroma wrapper only documents `gemini-embedding-001` and passes a
+**Q: Why did you write a custom embedding function?**
+A: The built-in Chroma wrapper (used before the NumPy index) only documents `gemini-embedding-001` and passes a
 `task_type=` parameter, but **`gemini-embedding-2` removed `task_type`** — task
 instructions go in the prompt text instead. My `GeminiEmbeddingFunction` formats
 documents as `"title: … | text: …"` and queries as
@@ -1572,13 +1621,20 @@ with **Reciprocal Rank Fusion** (60/40 dense/sparse) — combine the *rank* of e
 result from both lists rather than raw scores, which are on different scales.
 This measurably raised hit-rate on the golden-QA eval suite (P3).
 
-**Q: Why two Chroma collections and where-filtering?**
-A: `norai_notes` holds study-note chunks (with `heading`, `heading_path`,
-`chapter_id`, `source` metadata); `screenshot_captions` holds screenshot reasons
-(with `path`, `section`, `importance`, `chapter_id`). Queries use `where=
-{"chapter_id": {"$eq": n}}` so retrieval is scoped to the active chapter, and
-images sort by `(distance asc, importance desc)` so the best + most relevant
-win.
+**Q: Why did you replace Chroma with a NumPy matrix?**
+A: A lecture's index is a few hundred docs, so exact cosine over a float16
+matrix is microseconds; an ANN database buys nothing at that size. It dropped
+the per-lecture store from 6–7 MB to 100–450 KB, cut ~90 MB of backend RSS, and
+removed a heavy dependency (and its multi-client quirks). Each doc carries a
+`kind` (transcript / notes / screenshot) and `chapter_id`, so one store serves
+all three lookups with simple metadata filters.
+
+**Q: Why ground the tutor on the transcript instead of the notes?**
+A: Notes are an LLM summary that drops details and can add material. Grounded
+on notes, the tutor said "not covered" about things the lecturer said and
+answered from invented note content. With transcript windows as ground truth
+(and `m:ss` citations checked against them), detail accuracy went from 0 and
+0.56 to 1.0 on two eval sets, and verified citations from ~0.6 to ~1.0.
 
 **Q: How did you give the tutor long-term memory without huge prompts?**
 A: Windowing + incremental summarization. Each turn, `load_memory_node` rebuilds

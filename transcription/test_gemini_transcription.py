@@ -11,34 +11,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import MODEL_NAME, NORAI_TRANSCRIPTION_BACKEND, MODEL_PRICING
-from transcription.transcribe import transcribe_audio
-from transcription.gemini_transcriber import (
-    slice_audio_for_transcription,
-    GeminiTranscriptResponse,
-    TranscriptSegment,
-)
+from transcription.gemini_transcriber import slice_audio_for_transcription
 
 
-def test_config_and_schemas():
-    print("Testing config and schemas...")
+def test_config():
+    print("Testing config...")
     assert MODEL_NAME == "gemini-3.1-flash-lite", f"Unexpected MODEL_NAME: {MODEL_NAME}"
     assert NORAI_TRANSCRIPTION_BACKEND == "gemini", f"Unexpected backend: {NORAI_TRANSCRIPTION_BACKEND}"
     assert "gemini-3.1-flash-lite" in MODEL_PRICING, "gemini-3.1-flash-lite missing from MODEL_PRICING"
     assert MODEL_PRICING["gemini-3.1-flash-lite"]["input_per_1M"] == 0.25
     assert MODEL_PRICING["gemini-3.1-flash-lite"]["output_per_1M"] == 1.50
 
-    # Test Pydantic schema validation
-    resp = GeminiTranscriptResponse(
-        language="en",
-        language_probability=0.99,
-        segments=[
-            TranscriptSegment(segment_id=0, start=0.0, end=5.2, text="Welcome to this lecture on AWS architecture."),
-            TranscriptSegment(segment_id=1, start=5.2, end=10.5, text="Today we will examine EC2, S3, and DynamoDB.")
-        ]
-    )
-    assert len(resp.segments) == 2
-    assert resp.segments[1].end == 10.5
-    print("  ✓ Config and schemas validated successfully.")
+    print("  ✓ Config validated successfully.")
 
 
 def test_audio_slicing_logic():
@@ -75,7 +59,7 @@ if __name__ == "__main__":
     print("=" * 60)
     print("RUNNING GEMINI TRANSCRIPTION UNIT TESTS")
     print("=" * 60)
-    test_config_and_schemas()
+    test_config()
     test_audio_slicing_logic()
     print("=" * 60)
     print("ALL TESTS PASSED!")

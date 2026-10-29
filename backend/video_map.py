@@ -6,7 +6,7 @@ frontend can jump the YouTube player to the exact moment:
 
   - `notes/lecture_outline.json`  → chapter → chunk_ids, and (lean pipeline)
                                    a top-level `chunks` list of start/end
-  - `merged_objects/chunk_*.json` → chunk_id → start/end (legacy pipeline)
+  - `merged_objects/chunk_*.json` → chunk_id → start/end (lectures from the retired legacy pipeline, incl. the seeded demos)
 
 Deterministic, no LLM, read-only. A chapter with no resolvable timestamp gets
 `start_sec`/`end_sec = None` and the frontend simply hides its seek chip.

@@ -36,7 +36,7 @@ from backend.usage_ledger import record_generate_usage
 from cache_util import outputs_current, write_marker
 from config import MODEL_NAME
 from lean.structure import fmt_ts
-from notes.notes_generator import CoreConceptItem, write_chapter_artifacts, write_degraded_chapter
+from notes.artifacts import CoreConceptItem, write_chapter_artifacts, write_degraded_chapter
 from transcription.gemini_transcriber import _parse_ts
 
 logger = logging.getLogger(__name__)

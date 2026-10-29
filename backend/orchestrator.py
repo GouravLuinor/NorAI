@@ -1,7 +1,9 @@
 """
 backend/orchestrator.py
 
-Complete NorAI pipeline: runs every stage for a single video source.
+Complete NorAI pipeline for a single video source: ingestion + duration
+limits, the lean content stages (lean/pipeline.py), the tutor index, metering
+and cleanup.
 Runs synchronously inside a worker thread owned by the P4.1 job queue
 (backend/jobs.py). Progress is reported through the `on_progress` callback
 (which persists to the Lecture row in the DB); cancellation is signalled by
@@ -21,7 +23,6 @@ from typing import Any
 
 
 from backend.lecture_registry import create_lecture, update_lecture_title
-from config import pipeline_mode
 
 # P1.8: call/batch counters + metrics recording for self-calibration.
 from backend.ratelimit import snapshot_llm_calls
@@ -32,20 +33,8 @@ from backend.usage import record_pipeline_outcome
 # P6.5: per-stage ledger deltas feed one UsageLog row per stage.
 from backend.usage_ledger import snapshot_usage, diff_usage
 
-# ── All pipeline imports ────────────────────────────────────────────────────
 from ingest.ingest import process_source
-from transcription.transcribe import transcribe_audio
-from chunking.chunk import chunk_transcript
-from extract.extractor import extract_all_chunks
-from visual.extract_frames import extract_frames
-from visual.scene_detector import detect_scenes
-from visual.mapper import create_chunk_screenshot_mapping
-from visual.visual_extractor import process_all_chunks as process_visual_chunks
-from extract.merger import merge_all_chunks
-from notes.chapter_builder import build_chapters_pipeline
-from notes.notes_generator import generate_study_notes, generate_consolidated_chapter_artifacts
-from notes.screenshot_selector import select_screenshots_for_lecture
-from notes.outline_generator import generate_lecture_outline
+from lean.pipeline import run_lean_stages
 
 import logging
 logger = logging.getLogger(__name__)
@@ -67,15 +56,15 @@ class TerminalPipelineError(ValueError):
 # ── Cleanup (P4.2) ───────────────────────────────────────────────────────────
 
 # Transient dirs always removed after a run, on success OR failure.
-_TEMP_DIRS = ("videos", "audio", "screenshots/raw", "chunks", "mappings", "metadata")
+_TEMP_DIRS = ("videos", "audio", "screenshots/raw", "chunks", "metadata")
 
 
 def cleanup_lecture_dir(lecture_dir: Path) -> None:
     """Remove transient pipeline directories.
 
-    `objects/`, `visual_objects/`, `merged_objects/`, `notes/` and `tutor/`
-    are KEPT: they hold the hash-of-inputs cache markers + outputs that make
-    re-runs cost ~0 API calls (P1.3/P1.4) and give failed runs cheap retryable
+    `transcripts/`, `notes/`, `screenshots/keyframes/`, `visual_objects/` and
+    `tutor/` are KEPT: they hold the hash-of-inputs cache markers + outputs
+    that make re-runs cost ~0 API calls and give failed runs cheap retryable
     state.
     """
     try:
@@ -86,158 +75,6 @@ def cleanup_lecture_dir(lecture_dir: Path) -> None:
         logger.info("Cleaned transient dirs under %s", lecture_dir)
     except Exception as e:
         logger.warning(f"Failed to clean intermediate dirs under {lecture_dir}: {e}")
-
-
-# ── Legacy content stages (NORAI_PIPELINE=legacy) ───────────────────────────
-
-def _run_legacy_stages(lecture_dir: Path, out: str, task_id: str, video_path: str,
-                       audio_path: str, meta_path: str, _report, _check_cancel,
-                       _metrics: dict) -> None:
-    """Stages 2-16: per-chunk extraction → outline → visual → merge →
-    chapters → screenshot selection → consolidated chapter artifacts."""
-    # ── Stage 2-6: Parallel Processing (Text Branch & Visual Branch) ────
-    from concurrent.futures import ThreadPoolExecutor
-
-    def _run_text_branch():
-        _report("transcription", "Transcribing lecture…", 8)
-        _check_cancel()
-        _t_tr = time.perf_counter()
-        tr = transcribe_audio(audio_path, meta_path, output_dir=out)
-        _metrics["stage_seconds"]["transcription"] = round(time.perf_counter() - _t_tr, 2)
-        t_json = tr["transcript_json_path"]
-        try:
-            with open(t_json, encoding="utf-8") as _f:
-                _tr = json_lib.load(_f)
-            _metrics["num_segments"] = len(_tr.get("segments", []))
-        except Exception:
-            pass
-
-        _report("chunking", "Chunking transcript…", 14)
-        _check_cancel()
-        ch = chunk_transcript(t_json, output_dir=out)
-        c_path = ch["chunks_path"]
-        _metrics["num_chunks"] = ch.get("num_chunks")
-        _metrics["segments_per_chunk"] = ch.get("segments_per_chunk")
-
-        _report("knowledge_extraction", "Extracting knowledge…", 20)
-        _check_cancel()
-        ke = extract_all_chunks(c_path, output_dir=out)
-        o_dir = ke["objects_dir"]
-        return c_path, o_dir
-
-    def _run_visual_branch():
-        _report("frame_extraction", "Extracting frames…", 26)
-        _check_cancel()
-        lec_path = Path(out)
-        raw_dir = str(lec_path / "screenshots" / "raw")
-        fe = extract_frames(video_path, raw_dir)
-        f_meta = fe["metadata_file"]
-
-        _report("scene_detection", "Detecting key scenes…", 32)
-        _check_cancel()
-        keyframes_dir = str(lec_path / "screenshots" / "keyframes")
-        detect_scenes(f_meta, keyframes_dir)
-        kf_meta = str(Path(keyframes_dir) / "metadata.json")
-        return kf_meta
-
-    with ThreadPoolExecutor(max_workers=2) as exec_pipe:
-        fut_text = exec_pipe.submit(_run_text_branch)
-        fut_visual = exec_pipe.submit(_run_visual_branch)
-        chunks_path, objects_dir = fut_text.result()
-        keyframes_meta = fut_visual.result()
-
-    # ── Stage 7: Chunk‑to‑Screenshot Mapping ───────────────────────────
-    _report("mapping", "Mapping screenshots to chunks…", 35)
-    _check_cancel()
-    mappings_dir = str(lecture_dir / "mappings")
-    Path(mappings_dir).mkdir(parents=True, exist_ok=True)
-    mapping_path = str(Path(mappings_dir) / "chunk_screenshot_mapping.json")
-    create_chunk_screenshot_mapping(chunks_path, keyframes_meta, mapping_path)
-
-    # ── Stage 8: Outline Generation ───────────────────────────────────
-    _report("outline", "Generating lecture outline…", 40)
-    _check_cancel()
-    chapters_dir = str(lecture_dir / "chapters")
-    notes_dir    = str(lecture_dir / "notes")
-    Path(chapters_dir).mkdir(parents=True, exist_ok=True)
-    Path(notes_dir).mkdir(parents=True, exist_ok=True)
-    try:
-        outline_result = generate_lecture_outline(objects_dir, out)
-        outline_path   = str(Path(notes_dir) / "lecture_outline.json")
-        _metrics["num_chapters"] = (outline_result or {}).get("num_chapters")
-    except Exception as e:
-        logger.error(f"Outline generation failed (continuing): {e}")
-        import json as _json
-        fallback = {
-            "lecture_title": "Untitled Lecture",
-            "chapters": [
-                {
-                    "chapter_id": 1,
-                    "title": "Full Lecture",
-                    "start_chunk": 0,
-                    "end_chunk": 0,
-                    "focus_concepts": [],
-                    "chunk_ids": [],
-                }
-            ],
-        }
-        outline_path = str(Path(notes_dir) / "lecture_outline.json")
-        Path(outline_path).parent.mkdir(parents=True, exist_ok=True)
-        with open(outline_path, "w", encoding="utf-8") as f:
-            _json.dump(fallback, f, indent=2)
-
-    # Update lecture title in registry (works for both success and fallback)
-    try:
-        import json as _json
-        with open(outline_path, encoding="utf-8") as f:
-            outline_data = _json.load(f)
-        real_title = outline_data.get("lecture_title", "Untitled Lecture")
-        _metrics["title"] = real_title
-        update_lecture_title(task_id, real_title)
-    except Exception:
-        pass
-
-    # ── Stage 9: Visual Knowledge (Chapter-Aligned) ───────────────────
-    _report("visual_knowledge", "Understanding visuals…", 46)
-    _check_cancel()
-    visual_objects_dir = str(lecture_dir / "visual_objects")
-    try:
-        process_visual_chunks(mapping_path, visual_objects_dir, outline_path=outline_path)
-    except Exception as e:
-        logger.error(f"Visual knowledge failed (continuing): {e}")
-
-    # ── Stage 10: Knowledge Merging ────────────────--------------------
-    _report("knowledge_merging", "Merging knowledge…", 52)
-    _check_cancel()
-    merged_dir = str(lecture_dir / "merged_objects")
-    try:
-        merge_all_chunks(objects_dir, visual_objects_dir, merged_dir)
-    except Exception as e:
-        logger.error(f"Knowledge merging failed (continuing): {e}")
-
-    # ── Stage 11: Chapter Building ─────────────────────────────────────
-    _report("chapter_building", "Building chapters…", 58)
-    _check_cancel()
-    try:
-        build_chapters_pipeline(outline_path, merged_dir, chapters_dir)
-    except Exception as e:
-        logger.error(f"Chapter building failed (continuing): {e}")
-
-    # ── Stage 12: Screenshot Selection ─────────────────────────────────
-    _report("screenshot_selection", "Selecting screenshots…", 64)
-    _check_cancel()
-    try:
-        select_screenshots_for_lecture(chapters_dir, out)
-    except Exception as e:
-        logger.error(f"Screenshot selection failed (continuing): {e}")
-
-    # ── Stages 13–16: Consolidated Artifact Generation ─────────────────
-    _report("chapter_artifacts", "Generating study notes, revision & assessment…", 75)
-    _check_cancel()
-    try:
-        generate_consolidated_chapter_artifacts(chapters_dir, outline_path, out)
-    except Exception as e:
-        logger.error(f"Consolidated chapter artifacts generation failed (continuing): {e}")
 
 
 # ── Pipeline runner (SYNCHRONOUS — runs in a worker thread) ─────────────────
@@ -268,6 +105,9 @@ def run_pipeline(
         "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "lecture_id": task_id,
         "source_type": source_type,
+        # Tags the entry for estimator calibration; entries without it came
+        # from the retired legacy chain.
+        "pipeline": "lean",
         "title": None,
         "duration_sec": None,
         "num_segments": None,
@@ -371,25 +211,14 @@ def run_pipeline(
                 logger.warning(f"Failed to compute planned estimate: {e}")
 
 
-        # ── Stages 2-16: content (legacy chain, or the lean pipeline) ───────
-        _metrics["pipeline"] = pipeline_mode()
-        if _metrics["pipeline"] == "lean":
-            from lean.pipeline import run_lean_stages
+        # ── Content: transcription ∥ keyframes → structure → chapters ───────
+        lean = run_lean_stages(
+            out, video_path, audio_path, meta_path,
+            report=_report, check_cancel=_check_cancel, metrics=_metrics,
+        )
+        update_lecture_title(task_id, lean["outline"]["lecture_title"])
 
-            lean = run_lean_stages(
-                out, video_path, audio_path, meta_path,
-                report=_report, check_cancel=_check_cancel, metrics=_metrics,
-            )
-            update_lecture_title(task_id, lean["outline"]["lecture_title"])
-        else:
-            _run_legacy_stages(
-                lecture_dir, out, task_id, video_path, audio_path, meta_path,
-                _report, _check_cancel, _metrics,
-            )
-
-        # REMOVED: PDFs are now generated on-demand when user clicks download
-
-        # ── Stages 17–18: Tutor Index (notes + transcript + screenshots) ────
+        # ── Tutor Index (notes + transcript + screenshots) ────
         _report("tutor_index", "Indexing for tutor…", 96)
         _check_cancel()
         try:

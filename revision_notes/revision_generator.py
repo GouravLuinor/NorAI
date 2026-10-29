@@ -1,12 +1,8 @@
 """
 revision_generator.py
 
-The LLM-based per-chapter revision generator was replaced by the consolidated
-chapter-artifact stage (notes/notes_generator.process_chapter_artifacts_merged),
-which produces structured revision summaries in one call. What survives here is
-the pure-markdown bridge that renders those structured summaries into the
-revision chapter files. Everything else in this module was dead code and was
-deleted (see ROADMAP P1.5).
+Renders a chapter's structured revision summary (from lean/chapters.py's one
+call per chapter) into its revision markdown file.
 """
 
 import logging

@@ -37,91 +37,64 @@ def check(label: str, cond: bool):
 
 # ── Estimator math ────────────────────────────────────────────────────────────
 
-def test_estimate_baseline_matches_observed():
-    """8.43-min lecture → 88 segs, 6 chunks, 3 chapters, 17 calls (observed)."""
-    with patch.dict("os.environ", {"MAX_FREE_DURATION_MIN": "15"}):
-        est = estimate_pipeline(8.43, metrics_path="/nonexistent/metrics.jsonl", pipeline="legacy")
-    check("baseline 17 calls", est["est_calls"] == 17)
-    check("baseline 6 chunks", est["estimated_chunks"] == 6)
-    check("baseline 3 chapters", est["estimated_chapters"] == 3)
-    check("baseline within free trial", est["free_trial_ok"] is True)
+def test_estimate_lean_matches_observed():
+    """17.07-min run: 123 segments → 9 chunks, 4 chapters, 1 + 1 + 4 = 6 counted calls."""
+    est = estimate_pipeline(17.07, segments=123, metrics_path="/nonexistent/metrics.jsonl")
+    check("9 chunks", est["estimated_chunks"] == 9)
+    check("4 chapters", est["estimated_chapters"] == 4)
+    check("6 calls", est["est_calls"] == 6)
+    check("3 min (observed 2.4)", est["est_time_min"] == 3)
+    long = estimate_pipeline(71, metrics_path="/nonexistent/metrics.jsonl")
+    check("71 min: 4 slices + 1 + chapters", long["est_calls"] == 4 + 1 + long["estimated_chapters"])
+    check("71 min: 10 chapters (cap)", long["estimated_chapters"] == 10)
 
 
 def test_estimate_long_lecture_bounded():
-    """3-hour lecture: adaptive spc bounds chunk count and calls."""
-    est = estimate_pipeline(181, metrics_path="/nonexistent/metrics.jsonl", pipeline="legacy")
+    """3-hour lecture: adaptive spc bounds the chunk count."""
+    est = estimate_pipeline(181, metrics_path="/nonexistent/metrics.jsonl")
     check("3h spc == 30 (cap)", est["segments_per_chunk"] == 30)
     check("3h chunks bounded (<=65)", est["estimated_chunks"] <= 65)
-    check("3h chapters dynamic scale (<=16)", est["estimated_chapters"] <= 16)
+    check("3h chapters: 1 per 12 min floor (16)", est["estimated_chapters"] == 16)
     check("3h exceeds free trial", est["free_trial_ok"] is False)
 
 
 def test_estimate_segments_override():
-    est = estimate_pipeline(8.43, segments=88, metrics_path="/nonexistent/metrics.jsonl", pipeline="legacy")
+    est = estimate_pipeline(8.43, segments=88, metrics_path="/nonexistent/metrics.jsonl")
     check("segments override respected", est["segments"] == 88)
+    check("8.43 min within free trial", est["free_trial_ok"] is True)
 
 
 def test_estimate_no_calibration_uses_defaults():
-    est = estimate_pipeline(10, metrics_path="/nonexistent/metrics.jsonl", pipeline="legacy")
+    est = estimate_pipeline(10, metrics_path="/nonexistent/metrics.jsonl")
     check("no calibration → not calibrated", est["calibrated"] is False)
     check("no calibration → 0 runs", est["n_calibration_runs"] == 0)
 
 
-def test_estimate_lean_matches_observed():
-    """Lean 17.07-min run: 123 segments → 9 chunks, 4 chapters, 1 + 1 + 4 = 6 counted calls."""
-    est = estimate_pipeline(17.07, segments=123, metrics_path="/nonexistent/metrics.jsonl", pipeline="lean")
-    check("lean pipeline reported", est["pipeline"] == "lean")
-    check("lean 9 chunks", est["estimated_chunks"] == 9)
-    check("lean 4 chapters", est["estimated_chapters"] == 4)
-    check("lean 6 calls", est["est_calls"] == 6)
-    check("lean 3 min (observed 2.4)", est["est_time_min"] == 3)
-    legacy = estimate_pipeline(17.07, segments=123, metrics_path="/nonexistent/metrics.jsonl", pipeline="legacy")
-    check("lean faster than legacy", est["est_time_min"] < legacy["est_time_min"])
-    long = estimate_pipeline(71, metrics_path="/nonexistent/metrics.jsonl", pipeline="lean")
-    check("lean 71 min: 4 slices + 1 + 10 chapters", long["est_calls"] == 4 + 1 + long["estimated_chapters"])
-
-
-def test_calibration_per_pipeline():
-    """Legacy entries (no "pipeline" key) must not calibrate lean, and vice versa."""
-    metrics = _fake_metrics_dir()
-    check("legacy entries ignored for lean", load_calibration(metrics, "lean")["n_fresh_runs"] == 0)
-    for i in range(MIN_CALIBRATION_SAMPLES):
-        record_metrics({
-            "pipeline": "lean", "completed": True, "llm_calls": 6, "num_segments": 123,
-            "duration_sec": 1024.0, "num_chunks": 9, "num_chapters": 4, "embed_batches": 3,
-            "stage_seconds": {"transcription": 40.0, "pipeline": 142.0},
-        }, metrics)
-    lean = load_calibration(metrics, "lean")
-    check("lean counts its 5 runs", lean["n_fresh_runs"] == 5)
-    check("lean has no selection ratio", lean["selection_ratio"] is None)
-    # (142 - 40 - 30) / (1 structure + 2 chapter waves) = 24 s per round
-    check("lean sec_per_call fit on rounds", abs(lean["sec_per_call"] - 24.0) < 0.01)
-    check("legacy still 5 runs", load_calibration(metrics, "legacy")["n_fresh_runs"] == 5)
-
-
 # ── Calibration layer ─────────────────────────────────────────────────────────
 
-def _fake_metrics_dir():
+def _fake_metrics_dir(pipeline: str | None = "lean"):
     tmp = Path(tempfile.mkdtemp())
     metrics = tmp / "metrics.jsonl"
-    # 5 fresh runs, all with the same call mix: 6+1+3+2+3+2 = 17.
+    # 5 fresh runs of the 17-min lecture: 1 slice + 1 structure + 4 chapters.
     for i in range(MIN_CALIBRATION_SAMPLES):
         entry = {
             "ts": "2026-01-01T00:00:00+0000",
             "lecture_id": f"f{i}",
             "source_type": "youtube",
-            "duration_sec": 506.0,
-            "num_segments": 88,
+            "duration_sec": 1024.0,
+            "num_segments": 123,
             "segments_per_chunk": 15,
-            "num_chunks": 6,
-            "num_chapters": 3,
-            "llm_calls": 17,
-            "embed_batches": 2,
-            "stage_seconds": {"transcription": 400.0, "pipeline": 1500.0},
+            "num_chunks": 9,
+            "num_chapters": 4,
+            "llm_calls": 6,
+            "embed_batches": 3,
+            "stage_seconds": {"transcription": 40.0, "pipeline": 142.0},
             "completed": True,
             "error": None,
             "planned": None,
         }
+        if pipeline:
+            entry["pipeline"] = pipeline
         record_metrics(entry, metrics)
     return metrics
 
@@ -130,20 +103,26 @@ def test_calibration_fits_from_fresh_runs():
     metrics = _fake_metrics_dir()
     cal = load_calibration(metrics)
     check("calibration counts 5 runs", cal["n_fresh_runs"] == 5)
-    check("segs_per_min ≈ 10.4", abs(cal["segs_per_min"] - 88 / 8.433) < 0.1)
-    check("transcription_realtime ≈ 0.79", abs(cal["transcription_realtime"] - 400.0 / 506.0) < 0.01)
-    check("selection_ratio ≈ 2/3", abs(cal["selection_ratio"] - 2.0 / 3.0) < 0.01)
-    # est now calibrated: segs_per_min ≈ 10.4 → still 6 chunks/17 calls
-    est = estimate_pipeline(8.43, metrics_path=metrics, pipeline="legacy")
+    check("segs_per_min ≈ 7.2", abs(cal["segs_per_min"] - 123 / (1024.0 / 60)) < 0.01)
+    check("transcription_realtime ≈ 0.039", abs(cal["transcription_realtime"] - 40.0 / 1024.0) < 0.001)
+    # (142 - 40 - 30) / (1 structure + 2 chapter waves) = 24 s per round
+    check("sec_per_call fit on rounds", abs(cal["sec_per_call"] - 24.0) < 0.01)
+    est = estimate_pipeline(17.07, segments=123, metrics_path=metrics)
     check("calibrated flag true", est["calibrated"] is True)
-    check("calibrated 17 calls", est["est_calls"] == 17)
+    check("calibrated 6 calls", est["est_calls"] == 6)
+
+
+def test_calibration_ignores_legacy_entries():
+    """Entries without a "pipeline" key came from the retired legacy chain."""
+    check("legacy entries ignored", load_calibration(_fake_metrics_dir(pipeline=None))["n_fresh_runs"] == 0)
+    check("legacy-tagged entries ignored", load_calibration(_fake_metrics_dir(pipeline="legacy"))["n_fresh_runs"] == 0)
 
 
 def test_calibration_ignores_rerun_zero_calls():
     tmp = Path(tempfile.mkdtemp())
     metrics = tmp / "m.jsonl"
     record_metrics({
-        "completed": True, "llm_calls": 0, "num_segments": 88,
+        "pipeline": "lean", "completed": True, "llm_calls": 0, "num_segments": 88,
         "duration_sec": 506.0, "num_chunks": 6, "num_chapters": 3,
         "embed_batches": 0, "stage_seconds": {"transcription": 0, "pipeline": 20},
     }, metrics)
@@ -231,13 +210,12 @@ def test_estimate_bad_source_type_400():
 
 
 if __name__ == "__main__":
-    test_estimate_baseline_matches_observed()
+    test_estimate_lean_matches_observed()
     test_estimate_long_lecture_bounded()
     test_estimate_segments_override()
     test_estimate_no_calibration_uses_defaults()
-    test_estimate_lean_matches_observed()
-    test_calibration_per_pipeline()
     test_calibration_fits_from_fresh_runs()
+    test_calibration_ignores_legacy_entries()
     test_calibration_ignores_rerun_zero_calls()
     test_recalibrate_cli_prints()
     test_estimate_youtube_success()

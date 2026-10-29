@@ -3,11 +3,10 @@ transcription/gemini_transcriber.py
 
 Cloud-based audio transcription using Google AI Studio Gemini API (gemini-3.1-flash-lite).
 Supports single-file transcription for short lectures (<18 mins) and automated parallel
-FFmpeg chunking for long lectures (18–120+ mins), providing fast, accurate, zero-CPU
-transcription with exact timestamp anchoring.
+FFmpeg chunking for long lectures (18–120+ mins). The model writes one compact
+"[MM:SS] text" line per sentence (see parse_compact_transcript).
 """
 
-import json
 import logging
 import os
 import re
@@ -17,7 +16,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
 from google import genai
 from google.genai import types
 
@@ -36,25 +34,12 @@ from transcription.transcribe import (
 logger = logging.getLogger(__name__)
 
 
-# ── Pydantic Output Schemas ──────────────────────────────────────────────────
-
-class TranscriptSegment(BaseModel):
-    segment_id: int
-    start: float = Field(description="Cumulative elapsed start time in seconds relative to the audio chunk start.")
-    end: float = Field(description="Cumulative elapsed end time in seconds relative to the audio chunk start.")
-    text: str = Field(description="Verbatim spoken text during this time window.")
-
-
-class GeminiTranscriptResponse(BaseModel):
-    language: str = Field(default="en", description="ISO 639-1 language code (e.g. 'en')")
-    language_probability: float = Field(default=0.99, description="Confidence score for language detection (0.0 to 1.0)")
-    segments: list[TranscriptSegment] = Field(description="Chronological list of timestamped transcript segments.")
-
-
-# ── Compact line format (lean pipeline) ──────────────────────────────────────
-# JSON segments spend most output tokens on keys, ids and end times (11.3k
-# output tokens for ~3.9k tokens of speech on a 17-min lecture). The compact
-# format is one "[MM:SS] text" line per sentence; end = next line's start.
+# ── Compact line format ──────────────────────────────────────────────────────
+# JSON segments spent most output tokens on keys, ids and end times (11.3k
+# output tokens for ~3.9k tokens of speech on a 17-min lecture), and their
+# float-seconds timestamps drifted by up to a minute. The compact format is one
+# "[MM:SS] text" line per sentence (-60% output tokens, median error 0.4 s
+# against YouTube captions); end = next line's start.
 
 _COMPACT_LINE = re.compile(r"^\s*\[(\d+(?::\d{1,2}){0,2}(?:\.\d+)?)\]\s*(.*)$")
 # A sentence ends no later than this after it starts (words x seconds + slack),
@@ -169,12 +154,10 @@ def _transcribe_audio_slice(
     client: genai.Client,
     slice_info: dict[str, Any],
     model_name: str = MODEL_NAME,
-    compact: bool = False,
 ) -> list[dict[str, Any]]:
     """
-    Upload one audio chunk to Gemini File API, request a transcription
-    (structured JSON, or compact "[start] text" lines when `compact`),
-    and adjust segment timestamps with start_offset.
+    Upload one audio chunk to Gemini File API, request a compact "[MM:SS] text"
+    transcription, and adjust segment timestamps with start_offset.
     """
     slice_idx = slice_info["index"]
     start_offset = slice_info["start_offset"]
@@ -190,33 +173,16 @@ def _transcribe_audio_slice(
     t_upload = time.perf_counter() - t0
     logger.info(f"Audio slice {slice_idx+1} uploaded in {t_upload:.2f}s: {audio_upload.name}")
 
-    if compact:
-        prompt = (
-            f"Transcribe the attached audio clip (~{duration:.0f} seconds) verbatim, from start to finish.\n"
-            f"Output plain text only: one line per sentence, each line starting with the time the "
-            f"sentence begins, as [MM:SS] (minutes:seconds from the start of the clip). Example:\n"
-            f"[00:00] Hello everyone.\n[00:03] Today we look at dynamic programming.\n"
-            f"[01:12] The first idea is overlapping subproblems.\n"
-            f"Rules: no headings, speaker labels or commentary; transcribe technical terms, acronyms, "
-            f"math and code accurately; do not summarize or stop early."
-        )
-        config = types.GenerateContentConfig(temperature=0.1, max_output_tokens=65536)
-    else:
-        prompt = (
-            f"You are an expert audio transcription system. "
-            f"Listen to the attached audio clip (duration ~{duration:.1f} seconds) and transcribe every word verbatim from start to finish. "
-            f"Rules:\n"
-            f"1. Break the transcript into sequential, natural sentence-level segments.\n"
-            f"2. Timestamps ('start' and 'end') MUST be in numeric seconds from the start of this audio clip (0.0 to {duration:.1f}).\n"
-            f"3. Accurately transcribe all technical terminology, acronyms, math notations, and code concepts.\n"
-            f"4. Do not summarize or stop early; provide full continuous verbatim transcription."
-        )
-        config = types.GenerateContentConfig(
-            temperature=0.1,
-            response_mime_type="application/json",
-            response_schema=GeminiTranscriptResponse,
-            max_output_tokens=65536,
-        )
+    prompt = (
+        f"Transcribe the attached audio clip (~{duration:.0f} seconds) verbatim, from start to finish.\n"
+        f"Output plain text only: one line per sentence, each line starting with the time the "
+        f"sentence begins, as [MM:SS] (minutes:seconds from the start of the clip). Example:\n"
+        f"[00:00] Hello everyone.\n[00:03] Today we look at dynamic programming.\n"
+        f"[01:12] The first idea is overlapping subproblems.\n"
+        f"Rules: no headings, speaker labels or commentary; transcribe technical terms, acronyms, "
+        f"math and code accurately; do not summarize or stop early."
+    )
+    config = types.GenerateContentConfig(temperature=0.1, max_output_tokens=65536)
 
     contents_payload: Any = [audio_upload, prompt]
 
@@ -243,10 +209,7 @@ def _transcribe_audio_slice(
     if not response or not response.text:
         raise RuntimeError(f"Transcription failed for audio slice {slice_idx+1}")
 
-    if compact:
-        raw_segments = parse_compact_transcript(response.text, duration)
-    else:
-        raw_segments = json.loads(response.text).get("segments", [])
+    raw_segments = parse_compact_transcript(response.text, duration)
 
     adjusted_segments = []
     for s in raw_segments:
@@ -269,7 +232,6 @@ def transcribe_with_gemini(
     output_dir: str,
     model_name: str = MODEL_NAME,
     chunk_minutes: int = NORAI_AUDIO_CHUNK_MINUTES,
-    compact: bool = False,
 ) -> dict[str, Any]:
     """
     Transcribe audio via Google AI Studio Gemini API.
@@ -306,7 +268,7 @@ def transcribe_with_gemini(
             "duration": duration,
             "file_path": audio_path,
         }
-        all_segments = _transcribe_audio_slice(client, slice_info, model_name=model_name, compact=compact)
+        all_segments = _transcribe_audio_slice(client, slice_info, model_name=model_name)
     else:
         # Parallel chunked transcription
         temp_slice_dir = Path(output_dir) / "audio_slices"
@@ -322,7 +284,7 @@ def transcribe_with_gemini(
         max_workers = min(len(slices), 6)
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_idx = {
-                executor.submit(_transcribe_audio_slice, client, s, model_name, compact): s["index"]
+                executor.submit(_transcribe_audio_slice, client, s, model_name): s["index"]
                 for s in slices
             }
             for future in as_completed(future_to_idx):

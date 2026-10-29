@@ -1,5 +1,5 @@
 """
-lean/pipeline.py — the lean pipeline's content stages (NORAI_PIPELINE=lean).
+lean/pipeline.py — the pipeline's content stages.
 
     transcription (compact lines) ─┐
       → local chunking             ├→ structure (1 call) → chapters (1 call each)
@@ -26,10 +26,9 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from chunking.chunk import chunk_transcript
-from config import NORAI_TRANSCRIPTION_BACKEND
 from lean.chapters import generate_chapters
 from lean.structure import generate_outline
-from notes.notes_generator import write_combined_notes
+from notes.artifacts import write_combined_notes
 
 logger = logging.getLogger(__name__)
 
@@ -39,13 +38,8 @@ def _noop(*_a, **_k):
 
 
 def transcribe(audio_path: str, meta_path: str, out: str) -> str:
-    if NORAI_TRANSCRIPTION_BACKEND.lower() in ("gemini", "api", "cloud"):
-        from transcription.gemini_transcriber import transcribe_with_gemini
-        tr = transcribe_with_gemini(audio_path, meta_path, output_dir=out, compact=True)
-    else:
-        from transcription.transcribe import transcribe_audio
-        tr = transcribe_audio(audio_path, meta_path, output_dir=out)
-    return tr["transcript_json_path"]
+    from transcription.transcribe import transcribe_audio
+    return transcribe_audio(audio_path, meta_path, output_dir=out)["transcript_json_path"]
 
 
 def extract_keyframes(video_path: str, out: str) -> str:

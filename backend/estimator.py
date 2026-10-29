@@ -15,33 +15,15 @@ Feedback loop
    record_metrics().
 3. estimate_pipeline() consults load_calibration(), which medians recent FRESH
    runs (completed, non-zero call count) to re-fit: segs_per_min,
-   transcription_realtime, sec_per_call, sec_per_embed_batch, and the
-   screenshot-selection Pass-2 ratio.
+   transcription_realtime, sec_per_call and sec_per_embed_batch.
 4. `python -m backend.estimator --recalibrate` prints the fitted constants plus
    prediction-vs-actual error so drift is visible.
 
-Model (mirrors chunking/chunk.py + notes/outline_generator.py)
----------------------------------------------------------------
+Model (mirrors chunking/chunk.py + lean/)
+-----------------------------------------
   segments      = ceil(duration_min * segs_per_min)
   spc           = adaptive_segments_per_chunk(segments)
   chunks        = ceil(segments / spc)
-  chapters      = min(tier_cap(chunks), max(3, round(duration_min/8)))
-                  # tier_cap mirrors notes/outline_generator.py prompt tiers:
-                  # ≤12 chunks → 4, 13-25 → 6, 26-45 → 9, 46+ → 14
-  selection     = round(selection_ratio * chapters)  # screenshot-selection Pass-2
-  calls         = chunks + 1 + 2*chapters + selection + embed_batches
-                  # 1 outline + chapters visual + chapters artifacts
-  time_sec      = download_sec
-                  + transcription_realtime * duration_sec
-                  + calls * sec_per_call
-                  + embed_batches * sec_per_embed_batch
-                  + overhead_sec
-
-Call mix validated against the P1.8 baseline run (8.43 min, 88 segments, 6
-chunks, 3 chapters): 6 + 1 + 3 + 2 + 3 + 2 = 17 observed vs 17 predicted.
-
-Lean pipeline (NORAI_PIPELINE=lean, lean/)
-------------------------------------------
   chapters      = target of lean.structure.chapter_count_range(duration_min, chunks)
   calls         = transcription slices + 1 structure + chapters
                   # 17-min lecture: 1 + 1 + 4 = 6 counted (embeddings bypass the counter)
@@ -49,9 +31,10 @@ Lean pipeline (NORAI_PIPELINE=lean, lean/)
                   # chapter calls run in parallel, so time scales with rounds
   time_sec      = download_sec + transcription_realtime * duration_sec
                   + rounds * sec_per_call + embed_batches * sec_per_embed_batch
-                  + lean_overhead_sec
-Calibration fits each pipeline from its own runs (entries without a
-"pipeline" key are legacy).
+                  + overhead_sec
+
+Only entries tagged "pipeline": "lean" calibrate; older entries (no key) came
+from the retired legacy chain, whose call mix and timing were different.
 """
 
 from __future__ import annotations
@@ -67,7 +50,6 @@ from config import (
     DEFAULT_SEGS_PER_MIN,
     MAX_FREE_DURATION_MIN,
     NORAI_AUDIO_CHUNK_MINUTES,
-    pipeline_mode,
 )
 from chunking.chunk import adaptive_segments_per_chunk
 from lean.chapters import MAX_WORKERS as LEAN_CHAPTER_WORKERS
@@ -77,10 +59,9 @@ from lean.structure import chapter_count_range
 DEFAULT_TRANSCRIPTION_REALTIME = 0.05  # parallel Gemini 3.1 Flash-Lite API (~35-50s for 15-70 min audio)
 DEFAULT_SEC_PER_CALL = 9.0             # RPM spacing (5s @12rpm) + latency
 DEFAULT_SEC_PER_EMBED_BATCH = 3.0      # one batchEmbedContents call
-DEFAULT_SELECTION_RATIO = 0.7          # Pass-2 screenshot-selection calls / chapter
 DEFAULT_DOWNLOAD_SEC = 30.0            # YouTube download + audio extraction
-DEFAULT_OVERHEAD_SEC = 90.0            # frame/scene/mapping/build/cleanup
-DEFAULT_LEAN_OVERHEAD_SEC = 20.0       # lean: frames/scenes overlap transcription
+DEFAULT_OVERHEAD_SEC = 20.0            # chunking/cleanup (frames/scenes overlap transcription)
+PIPELINE = "lean"                      # metrics entries this estimator calibrates on
 MIN_CALIBRATION_SAMPLES = 5            # below this, keep defaults
 
 FREE_TRIAL_MIN = MAX_FREE_DURATION_MIN
@@ -92,17 +73,16 @@ def _median(values):
 
 
 def lean_rounds(chapters: int) -> int:
-    """Sequential LLM rounds in a lean run: the structure call, then the
-    chapter calls in waves of LEAN_CHAPTER_WORKERS."""
+    """Sequential LLM rounds in a run: the structure call, then the chapter
+    calls in waves of LEAN_CHAPTER_WORKERS."""
     return 1 + math.ceil(chapters / LEAN_CHAPTER_WORKERS) if chapters else 1
 
 
-def load_calibration(metrics_path=None, pipeline: str = "legacy") -> dict:
+def load_calibration(metrics_path=None) -> dict:
     """Median-fit heuristics from the metrics file's recent fresh runs.
 
     A "fresh" run is completed with > 0 LLM calls (cache-only re-runs would
-    report ~0 calls and skew the timing/call fits). Only runs of `pipeline`
-    are used. Returns a dict of fitted values, with None entries meaning
+    report ~0 calls and skew the timing/call fits). Only lean runs are used. Returns a dict of fitted values, with None entries meaning
     "not enough data — keep default".
     """
     metrics_path = Path(metrics_path or METRICS_FILE)
@@ -123,14 +103,13 @@ def load_calibration(metrics_path=None, pipeline: str = "legacy") -> dict:
     fresh = [
         e for e in entries
         if e.get("completed") and (e.get("llm_calls") or 0) > 0
-        and e.get("pipeline", "legacy") == pipeline
+        and e.get("pipeline") == PIPELINE
     ]
     n_fresh = len(fresh)
-    lean = pipeline == "lean"
 
     def sequential_calls(e):
-        # Lean chapter calls overlap; time scales with rounds, not calls.
-        return lean_rounds(e.get("num_chapters") or 0) if lean else e["llm_calls"]
+        # Chapter calls overlap; time scales with rounds, not calls.
+        return lean_rounds(e.get("num_chapters") or 0)
 
     segs_per_min = _median(
         e["num_segments"] / (e["duration_sec"] / 60.0)
@@ -166,23 +145,12 @@ def load_calibration(metrics_path=None, pipeline: str = "legacy") -> dict:
         if e.get("embed_batches")
         and (e.get("stage_seconds") or {}).get("pipeline")
     )
-    # Back out Pass-2 selection calls from the recorded mix (legacy only).
-    selection_ratio = None if lean else _median(
-        (
-            e["llm_calls"] - e["num_chunks"] - 1 - 2 * e["num_chapters"]
-            - e.get("embed_batches", 0)
-        ) / e["num_chapters"]
-        for e in fresh
-        if e.get("num_chunks") and e.get("num_chapters") and e["num_chapters"] > 0
-    )
-
     return {
         "n_fresh_runs": n_fresh,
         "segs_per_min": segs_per_min,
         "transcription_realtime": transcription_realtime,
         "sec_per_call": sec_per_call,
         "sec_per_embed_batch": sec_per_embed_batch,
-        "selection_ratio": selection_ratio,
     }
 
 
@@ -192,17 +160,14 @@ def estimate_pipeline(
     segments: int | None = None,
     metrics_path=None,
     calibration: dict | None = None,
-    pipeline: str | None = None,
 ) -> dict:
     """Estimate calls + time for a lecture of `duration_min` minutes.
 
     Uses calibrated heuristics when enough real runs exist, else defaults.
     `segments` overrides the segment estimate (used by the orchestrator once
-    the real transcript count is known). `pipeline` defaults to the
-    configured NORAI_PIPELINE.
+    the real transcript count is known).
     """
-    pipeline = pipeline or pipeline_mode()
-    cal = calibration if calibration is not None else load_calibration(metrics_path, pipeline)
+    cal = calibration if calibration is not None else load_calibration(metrics_path)
     n_runs = cal.get("n_fresh_runs", 0)
     enough = n_runs >= MIN_CALIBRATION_SAMPLES
 
@@ -213,7 +178,6 @@ def estimate_pipeline(
     transcription_realtime = pick(DEFAULT_TRANSCRIPTION_REALTIME, cal.get("transcription_realtime"))
     sec_per_call = pick(DEFAULT_SEC_PER_CALL, cal.get("sec_per_call"))
     sec_per_embed_batch = pick(DEFAULT_SEC_PER_EMBED_BATCH, cal.get("sec_per_embed_batch"))
-    selection_ratio = pick(DEFAULT_SELECTION_RATIO, cal.get("selection_ratio"))
 
     duration_sec = max(0.0, duration_min * 60.0)
     if segments is None:
@@ -221,48 +185,20 @@ def estimate_pipeline(
     spc = adaptive_segments_per_chunk(max(segments, 0))
     chunks = math.ceil(max(segments, 0) / spc) if spc else 0
     embed_batches = 2  # notes index + screenshot index
-    if pipeline == "lean":
-        chapters = chapter_count_range(duration_min, chunks)[1] if chunks else 0
-        slices = max(1, math.ceil(duration_min / NORAI_AUDIO_CHUNK_MINUTES)) if chunks else 0
-        llm_calls = slices + 1 + chapters if chunks else 0
-        time_sec = (
-            DEFAULT_DOWNLOAD_SEC
-            + transcription_realtime * duration_sec
-            + lean_rounds(chapters) * sec_per_call
-            + embed_batches * sec_per_embed_batch
-            + DEFAULT_LEAN_OVERHEAD_SEC
-        )
-    elif not chunks:
-        chapters = 0
-    elif chunks <= 6:
-        chapters = min(3, chunks)
-    else:
-        # Mirrors the outline generator's dynamic scaling tiers
-        # (notes/outline_generator.py / notes/outline_prompts.py).
-        if chunks <= 12:
-            tier_cap = 4
-        elif chunks <= 25:
-            tier_cap = 6
-        elif chunks <= 45:
-            tier_cap = 9
-        else:
-            tier_cap = 14
-        chapters = min(tier_cap, max(3, round(duration_min / 8.0) if duration_min >= 20 else math.ceil(chunks / 2.5)))
-    if pipeline != "lean":
-        selection = round(selection_ratio * chapters) if chapters else 0
-        llm_calls = chunks + 1 + 2 * chapters + selection + embed_batches if chunks else 0
-        time_sec = (
-            DEFAULT_DOWNLOAD_SEC
-            + transcription_realtime * duration_sec
-            + llm_calls * sec_per_call
-            + embed_batches * sec_per_embed_batch
-            + DEFAULT_OVERHEAD_SEC
-        )
+    chapters = chapter_count_range(duration_min, chunks)[1] if chunks else 0
+    slices = max(1, math.ceil(duration_min / NORAI_AUDIO_CHUNK_MINUTES)) if chunks else 0
+    llm_calls = slices + 1 + chapters if chunks else 0
+    time_sec = (
+        DEFAULT_DOWNLOAD_SEC
+        + transcription_realtime * duration_sec
+        + lean_rounds(chapters) * sec_per_call
+        + embed_batches * sec_per_embed_batch
+        + DEFAULT_OVERHEAD_SEC
+    )
 
     return {
         "duration_min": round(duration_min, 2),
         "source_type": source_type,
-        "pipeline": pipeline,
         "segments": segments,
         "segments_per_chunk": spc,
         "estimated_chunks": chunks,
@@ -285,21 +221,21 @@ def record_metrics(entry: dict, metrics_path=None) -> None:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
-def recalibrate(metrics_path=None, pipeline: str = "legacy") -> dict:
+def recalibrate(metrics_path=None) -> dict:
     """Fit + report calibration quality. Returns the fitted constants."""
-    cal = load_calibration(metrics_path, pipeline)
-    print(f"Fitted from {cal['n_fresh_runs']} fresh {pipeline} pipeline runs "
+    cal = load_calibration(metrics_path)
+    print(f"Fitted from {cal['n_fresh_runs']} fresh pipeline runs "
           f"(need ≥ {MIN_CALIBRATION_SAMPLES}):")
     for key, value in cal.items():
         if key == "n_fresh_runs":
             continue
         print(f"  {key:24s} {value!r}" if value else f"  {key:24s} (insufficient data)")
     if cal["n_fresh_runs"]:
-        _report_prediction_error(metrics_path, pipeline)
+        _report_prediction_error(metrics_path)
     return cal
 
 
-def _report_prediction_error(metrics_path=None, pipeline: str = "legacy"):
+def _report_prediction_error(metrics_path=None):
     """Re-derive the estimate for each fresh run and compare to actuals."""
     metrics_path = Path(metrics_path or METRICS_FILE)
     if not metrics_path.exists():
@@ -316,14 +252,13 @@ def _report_prediction_error(metrics_path=None, pipeline: str = "legacy"):
                 continue
             if not e.get("completed") or (e.get("llm_calls") or 0) <= 0:
                 continue
-            if e.get("pipeline", "legacy") != pipeline:
+            if e.get("pipeline") != PIPELINE:
                 continue
             est = estimate_pipeline(
                 e["duration_sec"] / 60.0,
                 source_type=e.get("source_type", "youtube"),
                 segments=e.get("num_segments"),
                 metrics_path=metrics_path,
-                pipeline=pipeline,
             )
             err_calls = e["llm_calls"] - est["est_calls"]
             err_time = e["stage_seconds"].get("pipeline", 0) / 60.0 - est["est_time_min"]
@@ -342,8 +277,7 @@ if __name__ == "__main__":
     if "--metrics" in sys.argv:
         i = sys.argv.index("--metrics")
         metrics_arg = sys.argv[i + 1]
-    pipeline_arg = sys.argv[sys.argv.index("--pipeline") + 1] if "--pipeline" in sys.argv else "legacy"
     if "--recalibrate" in sys.argv:
-        recalibrate(metrics_arg, pipeline_arg)
+        recalibrate(metrics_arg)
         sys.exit(0)
-    print("Usage: python -m backend.estimator --recalibrate [--metrics <path>] [--pipeline legacy|lean]")
+    print("Usage: python -m backend.estimator --recalibrate [--metrics <path>]")
