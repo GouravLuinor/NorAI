@@ -15,7 +15,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       <div className="flex min-h-screen items-center justify-center bg-nb">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 rounded-full border-2 border-np border-t-transparent animate-spin" />
-          <span className="font-mono text-11 text-nt3 uppercase tracking-wider">Verifying session...</span>
+          <span className="text-13 text-nt3">Verifying session...</span>
         </div>
       </div>
     )

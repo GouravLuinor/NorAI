@@ -14,8 +14,8 @@ export const DEMO_LECTURES_CONFIG = [
     title: 'Foundations of Neural Networks & Deep Learning',
     category: 'Computer Science & AI',
     chapterCount: 4,
-    duration: '18 mins',
-    summary: 'Perceptrons, backpropagation gradients, loss surfaces, and activation architectures with mathematical derivations.',
+    duration: '18 min',
+    summary: 'How a network reads a handwritten digit: the input layer, hidden layers that build up features, weights, biases and activations, and the linear algebra underneath.',
     badge: 'Deep Learning',
   },
   {
@@ -23,8 +23,8 @@ export const DEMO_LECTURES_CONFIG = [
     title: 'Foundations of Economic Thinking: Incentives & Opportunity Cost',
     category: 'Economics & Market Theory',
     chapterCount: 6,
-    duration: '19 mins',
-    summary: 'Marginal utility, trade-offs, market equilibrium, and price elasticity with visual chapter charts.',
+    duration: '19 min',
+    summary: 'Incentives and opportunity cost, how prices coordinate a market, what price controls and taxes distort, and how wages are set.',
     badge: 'Economics',
   },
   {
@@ -32,8 +32,8 @@ export const DEMO_LECTURES_CONFIG = [
     title: 'The Rise of Open-Weights Models & Local Deployment',
     category: 'Modern AI Engineering',
     chapterCount: 3,
-    duration: '10 mins',
-    summary: 'Open-weights architecture, quantization techniques, local inference benchmarks, and system tradeoffs.',
+    duration: '10 min',
+    summary: 'Why open-weights models took off, how the main players differ, and how they compare on benchmarks, latency and usability.',
     badge: 'AI Systems',
   },
 ] as const

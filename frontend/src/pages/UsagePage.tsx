@@ -132,7 +132,7 @@ export function UsagePage() {
 
   if (!user) {
     return (
-      <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
+      <div id="main" className="min-h-screen bg-nb flex flex-col items-center justify-center px-6 py-16">
         <div className="max-w-md w-full text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-npb border border-npbr text-npt font-mono text-11 font-medium mb-6">
             <BarChart3 size={12} className="text-np" />
@@ -155,7 +155,7 @@ export function UsagePage() {
 
   if (error) {
     return (
-      <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
+      <div id="main" className="min-h-screen bg-nb flex flex-col items-center justify-center px-6 py-16">
         <p className="text-13 text-nr mb-4">{friendlyError(error)}</p>
         <Button variant="outline" className="px-4 py-2 rounded-md text-12 bg-transparent border-bdr2" onClick={() => navigate('/workspace')}>
           <ArrowLeft size={14} /> Back to workspace
@@ -166,7 +166,7 @@ export function UsagePage() {
 
   if (!data) {
     return (
-      <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
+      <div id="main" className="min-h-screen bg-nb flex flex-col items-center justify-center px-6 py-16">
         <div className="w-full max-w-md space-y-3" aria-busy="true" aria-label="Loading usage">
           <SkeletonCard lines={2} />
           <SkeletonCard lines={4} />
@@ -179,7 +179,7 @@ export function UsagePage() {
   const totalTokens = (data.totals.input_tokens || 0) + (data.totals.output_tokens || 0)
 
   return (
-    <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center py-12 px-6">
+    <div id="main" className="min-h-screen bg-nb flex flex-col items-center py-12 px-6">
       <div className="w-full max-w-4xl flex flex-col gap-8 relative z-10">
         <button
           onClick={() => navigate('/workspace')}

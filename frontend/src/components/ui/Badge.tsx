@@ -21,7 +21,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`px-2 py-0.5 rounded text-2xs font-semibold uppercase ${toneClass[tone]} ${className}`
+      className={`px-2 py-0.5 rounded text-12 font-bold ${toneClass[tone]} ${className}`
         .replace(/\s+/g, ' ')
         .trim()}
     >

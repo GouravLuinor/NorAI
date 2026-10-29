@@ -144,11 +144,11 @@ export function QuizPanel() {
             <div className="grid grid-cols-3 gap-4 w-full max-w-md mb-8">
               <div className="bg-nb border border-bdr2 rounded-xl p-4 flex flex-col items-center gap-1.5 shadow-ev1">
                 <div className="text-lg font-bold font-mono text-ng">{percentage}%</div>
-                <div className="text-2xs text-nt3 uppercase tracking-wider font-semibold">Accuracy</div>
+                <div className="text-12 text-nt3 font-bold">Accuracy</div>
               </div>
               <div className="bg-nb border border-bdr2 rounded-xl p-4 flex flex-col items-center gap-1.5 shadow-ev1">
                 <div className="text-lg font-bold font-mono text-nt">{timeStr}</div>
-                <div className="text-2xs text-nt3 uppercase tracking-wider font-semibold">Time</div>
+                <div className="text-12 text-nt3 font-bold">Time</div>
               </div>
               <div className="bg-nb border border-bdr2 rounded-xl p-4 flex flex-col items-center gap-1.5 shadow-ev1">
                 <div className="text-lg font-bold font-mono text-nbl">{confidenceLabel}</div>
@@ -162,7 +162,7 @@ export function QuizPanel() {
                 {evaluation.per_question_feedback.map((fb) => (
                   <div key={fb.question_number} className="bg-nb border border-bdr2 rounded-lg p-4 shadow-ev1">
                     <div className="flex items-start gap-2">
-                      <div className="w-5 h-5 rounded-sm bg-npf flex items-center justify-center text-2xs font-bold text-npfg shrink-0 mt-0.5">
+                      <div className="w-5 h-5 rounded-[4px] bg-brass flex items-center justify-center text-12 font-bold text-[#16181A] shrink-0 mt-0.5">
                         {fb.question_number}
                       </div>
                       <p className="text-xs text-nt2 leading-relaxed">{fb.remark}</p>
@@ -174,7 +174,7 @@ export function QuizPanel() {
 
             {/* Nora overall summary */}
             <div className="flex items-start gap-3 w-full max-w-md pt-6 border-t border-bdr mb-8">
-              <div className="w-7 h-7 rounded-sm bg-npf flex items-center justify-center text-xs font-bold text-npfg shrink-0 mt-0.5 shadow-ev1">
+              <div className="w-7 h-7 rounded-[4px] bg-brass flex items-center justify-center text-13 font-bold text-[#16181A] shrink-0 mt-0.5">
                 N
               </div>
               <p className="text-sm text-nt2 leading-relaxed">{evaluation.overall_insights}</p>
@@ -291,7 +291,7 @@ export function QuizPanel() {
         </div>
 
         <div className="flex items-center gap-2 mb-4">
-          <span className="px-2 py-0.5 rounded text-2xs font-semibold uppercase bg-nblb text-nbl">{q.type}</span>
+          <span className="px-2 py-0.5 rounded text-12 font-bold bg-nblb text-nbl">{q.type}</span>
           <Badge tone="default">{q.difficulty || 'Medium'}</Badge>
         </div>
 
@@ -357,7 +357,7 @@ export function QuizPanel() {
             )}
             {isAnswered && (
               <p role="status" className="text-2xs text-nt3 italic">
-                ✓ Answer recorded — feedback will appear when you finish the quiz.
+                Answer saved. You'll see how you did when you finish the quiz.
               </p>
             )}
           </div>
@@ -366,7 +366,7 @@ export function QuizPanel() {
         {showFeedback && isAutoGraded && (
           <div role="status" className={`mt-5 p-4 rounded-lg border ${isCorrect ? 'bg-ngb border-ngbr' : 'bg-nrb border-nrbr'}`}>
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-sm bg-npf flex items-center justify-center text-2xs font-bold text-npfg shrink-0 mt-0.5">N</div>
+              <div className="w-5 h-5 rounded-[4px] bg-brass flex items-center justify-center text-12 font-bold text-[#16181A] shrink-0 mt-0.5">N</div>
               <div className="text-sm text-nt2">
                 {isCorrect ? `Correct! ${q.explanation}` : `Incorrect. The correct answer is ${q.answer}. ${q.explanation}`}
               </div>

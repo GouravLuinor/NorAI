@@ -85,3 +85,8 @@ opencode-guide/
 
 # Local embedding model files (tutor/local_embedding.py)
 .models/
+
+# impeccable scratch (review captures, temp briefs)
+.impeccable/tmp/
+.impeccable/review/
+.impeccable/questions/

@@ -50,7 +50,7 @@ export function PersonaModal({ open, onClose }: PersonaModalProps) {
 
       <div className="px-5 py-4 space-y-5">
         <div>
-          <label htmlFor="persona-input" className="text-2xs font-semibold uppercase tracking-wider text-nt3">
+          <label htmlFor="persona-input" className="text-12 font-bold text-nt3">
             Persona instructions
           </label>
           <textarea

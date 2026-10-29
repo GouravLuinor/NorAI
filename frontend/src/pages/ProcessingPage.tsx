@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Check, ArrowRight, RotateCcw, AlertTriangle, Clock, Info, Bell, BellRing } from 'lucide-react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { Wordmark } from '../components/brand/Wordmark'
+import { FOCUS_RING } from '../components/ui/shared'
 import { Button } from '../components/ui/Button'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useRateLimitStore } from '../stores/useRateLimitStore'
@@ -25,8 +26,6 @@ const STAGES: StageInfo[] = [
   { label: 'Indexing for tutor', key: 'tutor_index' },
   { label: 'Cleaning up', key: 'cleanup' },
 ]
-
-const RAIL_X = 'calc(0.75rem + 1.5rem + 0.625rem + 0.4375rem)'
 
 function formatCountdown(totalSeconds: number): string {
   if (totalSeconds <= 0) return '00h 00m 00s'
@@ -53,7 +52,6 @@ const notifyOptedIn = () => {
 export function ProcessingPage() {
   const { taskId } = useParams<{ taskId: string }>()
   const navigate = useNavigate()
-  const reduceMotion = useReducedMotion()
   const [activeStage, setActiveStage] = useState<string | null>(null)
   const [completedStages, setCompletedStages] = useState<Set<string>>(new Set())
   const [progress, setProgress] = useState(0)
@@ -249,105 +247,77 @@ export function ProcessingPage() {
     }
   }, [taskId])
 
-  const activeIdx = activeStage ? STAGES.findIndex(s => s.key === activeStage) : -1
-  const inkHeight = activeIdx >= 0 ? `${((activeIdx + 1) / STAGES.length) * 100}%` : `${Math.min(progress, 100)}%`
 
   return (
-    <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center py-8 px-4 overflow-y-auto">
-      <div className="w-full max-w-md relative z-10">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <div className="w-10 h-10 rounded-md bg-npf flex items-center justify-center text-lg font-semibold text-npfg shadow-ev2 fold-marks relative">
-              N
-            </div>
-            <span className="font-display text-2xl font-semibold text-nt tracking-tight">
-              NorAI
-            </span>
-          </div>
-          <p className="text-sm text-nt2 font-serif italic">{message}</p>
-          <div className="flex items-center justify-center gap-2 mt-2">
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                finished ? 'bg-ng' : errored ? 'bg-nr' : 'bg-np animate-pulse'
-              }`}
-            />
-            <span className="spec-label">
-              {finished ? 'Complete' : errored ? 'Aborted' : 'Processing'}
-            </span>
-          </div>
+    <div id="main" className="min-h-screen bg-nb flex flex-col items-center px-4 pb-16 overflow-y-auto">
+      <div className="w-full max-w-lg">
+        <div className="py-4 mb-8">
+          <Wordmark size="md" />
         </div>
 
-        {/* Progress bar — dashed draft-line → solid ink */}
-        <div className="w-full mb-6">
-          <div className="h-1.5 bg-transparent border-t border-dashed border-nt4 relative overflow-hidden">
-            <div
-              className="absolute left-0 top-0 bottom-0 border-t-2 border-np transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div className="flex justify-between mt-1.5">
-            <span className="spec-label">Progress</span>
-            <span className="spec-label text-np tabular-nums">{Math.round(progress)}%</span>
-          </div>
-        </div>
+        <h1 className="font-serif font-semibold text-32 leading-tight text-nt">
+          {finished ? 'Your lecture is ready' : errored ? 'Processing stopped' : 'Making your notes'}
+        </h1>
+        <p className="mt-2 text-16 text-nt2" aria-live="polite">{message}</p>
 
-        {/* Stage schematic */}
-        <div className="relative">
-          {/* Draft rail (dashed, full height) */}
+        {/* Progress */}
+        <div className="mt-7 mb-7">
           <div
-            className="absolute top-1 bottom-1 w-px border-l border-dashed border-nt4"
-            style={{ left: RAIL_X }}
-          />
-          {/* Ink rail — self-draws down to the active stage */}
-          <motion.div
-            className="absolute top-1 w-[2px] bg-np"
-            style={{ left: `calc(${RAIL_X} - 0.5px)` }}
-            initial={{ height: 0 }}
-            animate={{ height: inkHeight }}
-            transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: 'easeOut' }}
-          />
-          <div className="space-y-0.5">
-            {STAGES.map((stage, idx) => {
-              const isActive = activeStage === stage.key
-              const isComplete = completedStages.has(stage.key) && !isActive
-
-              return (
-                <div
-                  key={stage.key}
-                  className={`relative flex items-center gap-2.5 px-3 py-1.5 rounded-md text-xs transition ${
-                    isActive
-                      ? 'bg-npb text-nt'
-                      : isComplete
-                        ? 'text-nt2'
-                        : 'text-nt4'
-                  }`}
-                >
-                  <span className="spec-label w-6 text-right shrink-0">
-                    {String(idx + 1).padStart(2, '0')}
-                  </span>
-                  <div className="w-[14px] shrink-0 flex items-center justify-center relative z-10">
-                    {isActive ? (
-                      <div className="w-2 h-2 bg-np animate-pulse rounded-xs" />
-                    ) : isComplete ? (
-                      <Check size={12} strokeWidth={1.5} className="text-ng shrink-0" />
-                    ) : (
-                      <div className="w-1.5 h-1.5 rounded-full border border-nt4 shrink-0" />
-                    )}
-                  </div>
-                  <span className="leading-relaxed">{stage.label}</span>
-                </div>
-              )
-            })}
+            className="h-2 rounded-full bg-ns3 overflow-hidden"
+            role="progressbar"
+            aria-valuenow={Math.round(progress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Processing progress"
+          >
+            <div
+              className={`h-full rounded-full ${errored ? 'bg-nr' : finished ? 'bg-ng' : 'bg-np'}`}
+              style={{ width: `${Math.min(progress, 100)}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-2 text-14">
+            <span className="text-nt3">{finished ? 'Complete' : errored ? 'Stopped' : 'In progress'}</span>
+            <span className="font-mono font-semibold text-nt">{Math.round(progress)}%</span>
           </div>
         </div>
+
+        {/* Stages */}
+        <ol className="border-y border-bdr divide-y divide-bdr">
+          {STAGES.map((stage, idx) => {
+            const isActive = activeStage === stage.key && !finished
+            const isComplete = finished || (completedStages.has(stage.key) && !isActive)
+            return (
+              <li
+                key={stage.key}
+                aria-current={isActive ? 'step' : undefined}
+                className={`flex items-center gap-3 px-2 py-2.5 text-15 ${
+                  isActive ? 'bg-brass-soft text-nt font-bold' : isComplete ? 'text-nt2' : 'text-nt3'
+                }`}
+              >
+                <span className="font-mono text-13 w-6 text-right shrink-0 text-nt3">
+                  {String(idx + 1).padStart(2, '0')}
+                </span>
+                <span className="w-4 shrink-0 flex items-center justify-center">
+                  {isActive ? (
+                    <span className="w-2.5 h-2.5 bg-brass rounded-[2px]" />
+                  ) : isComplete ? (
+                    <Check size={16} strokeWidth={2} className="text-ng" aria-label="Done" />
+                  ) : (
+                    <span className="w-2 h-2 rounded-full border-[1.5px] border-nt4" />
+                  )}
+                </span>
+                <span className="leading-snug">{stage.label}</span>
+              </li>
+            )
+          })}
+        </ol>
 
         {!finished && !errored && (
-          <p className="mt-6 flex items-start gap-2 text-11 text-nt3 leading-relaxed">
-            <Info size={12} strokeWidth={1.5} className="mt-0.5 shrink-0" aria-hidden="true" />
+          <p className="mt-6 flex items-start gap-2 text-15 text-nt2 leading-relaxed">
+            <Info size={16} strokeWidth={1.75} className="mt-1 shrink-0 text-nt3" aria-hidden="true" />
             <span>
               This usually takes a few minutes. You can close this tab: processing continues on our side and the
-              lecture appears under Your lectures when it's ready.
+              lecture appears in your library when it's ready.
             </span>
           </p>
         )}
@@ -356,9 +326,9 @@ export function ProcessingPage() {
             type="button"
             onClick={() => void enableNotify()}
             disabled={notify}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-bdr2 bg-ns px-3 py-1.5 text-12 text-nt2 hover:bg-ns2 hover:text-nt disabled:cursor-default disabled:hover:bg-ns cursor-pointer transition-colors"
+            className={`mt-4 inline-flex items-center gap-2 rounded-md border border-bdr2 bg-ns px-3.5 h-10 text-14 font-bold text-nt2 hover:bg-ns2 hover:text-nt disabled:cursor-default disabled:hover:bg-ns cursor-pointer transition-colors ${FOCUS_RING}`}
           >
-            {notify ? <BellRing size={13} aria-hidden="true" className="text-np" /> : <Bell size={13} aria-hidden="true" />}
+            {notify ? <BellRing size={16} strokeWidth={1.75} aria-hidden="true" className="text-np" /> : <Bell size={16} strokeWidth={1.75} aria-hidden="true" />}
             {notify ? "We'll notify you when it's ready" : "Notify me when it's ready"}
           </button>
         )}
@@ -368,50 +338,50 @@ export function ProcessingPage() {
           <Button
             variant="primary"
             onClick={() => navigate(`/workspace/${taskId}`)}
-            className="w-full mt-8 gap-2 py-3 rounded-md text-13 fold-marks relative"
+            className="w-full mt-8 gap-2 h-12 rounded-md text-16 font-bold"
           >
-            Go to Workspace
-            <ArrowRight size={15} strokeWidth={1.5} />
+            Open your notes
+            <ArrowRight size={17} strokeWidth={2} />
           </Button>
         )}
 
         {/* Errored runs: daily-limit countdown, or a way back to start again */}
         {errored && isRpdLimited && (
-          <div className="flex flex-col gap-3 mt-8 p-4 rounded-lg bg-nab border border-nabr text-nat" role="status">
-            <div className="flex items-center gap-2 font-semibold text-13">
+          <div className="flex flex-col gap-3 mt-8 p-5 rounded-md bg-nab border border-nabr text-nat" role="status">
+            <div className="flex items-center gap-2 font-bold text-16">
               <AlertTriangle size={16} aria-hidden="true" />
               <span>Paused for today</span>
             </div>
-            <p className="text-12 text-nt2 leading-relaxed">
+            <p className="text-15 text-nt2 leading-relaxed">
               Our AI provider's daily limit was reached, so this lecture stopped before it finished. It didn't use
               any of your lecture-minutes. Start it again once processing reopens.
             </p>
-            <div className="flex items-center gap-2 bg-ns border border-nabr px-3 py-1.5 rounded-md font-mono text-11">
+            <div className="flex items-center gap-2 bg-ns border border-nabr px-3 h-10 rounded-md text-14 text-nt">
               <Clock size={13} aria-hidden="true" />
               <span>Reopens in</span>
-              <span className="font-bold tabular-nums">{formatCountdown(remainingSeconds)}</span>
+              <span className="font-mono font-semibold">{formatCountdown(remainingSeconds)}</span>
             </div>
             <Button
               variant="primary"
               onClick={() => navigate('/app')}
-              className="w-full py-2.5 mt-1 rounded-md text-12"
+              className="w-full h-11 mt-1 rounded-md text-15 font-bold"
             >
-              Back to my lectures
+              Back to my library
             </Button>
           </div>
         )}
 
         {errored && !isRpdLimited && (
           <div className="flex flex-col gap-2 mt-8">
-            <p className="text-12 text-nt2 text-center leading-relaxed mb-1">
+            <p className="text-15 text-nt2 leading-relaxed mb-1">
               Failed runs don't use any of your lecture-minutes.
             </p>
             <Button
               variant="primary"
               onClick={() => navigate('/app')}
-              className="w-full gap-2 py-3 rounded-md text-13 fold-marks relative"
+              className="w-full gap-2 h-12 rounded-md text-16 font-bold"
             >
-              <RotateCcw size={14} strokeWidth={1.5} />
+              <RotateCcw size={16} strokeWidth={1.75} />
               Try again
             </Button>
           </div>

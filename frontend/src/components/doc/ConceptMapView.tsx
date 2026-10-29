@@ -346,7 +346,7 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
           >
             <div className="flex items-start justify-between">
               <div className="space-y-1">
-                <Badge tone="ns" className="text-3xs uppercase tracking-wider font-mono">
+                <Badge tone="ns" className="text-12">
                   {selectedNode.category || 'Concept'}
                 </Badge>
                 <h3 className="text-sm font-semibold text-nt leading-tight">{selectedNode.label}</h3>

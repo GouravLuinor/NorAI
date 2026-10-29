@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { VideoPlayer } from './VideoPlayer'
+import { VideoPlayer, VideoToggle } from './VideoPlayer'
 import { useVideoStore } from '../../stores/useVideoStore'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { apiFetch } from '../../lib/http'
@@ -45,10 +45,10 @@ describe('VideoPlayer', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('shows a floating button for completed YouTube sources and toggles the dock', async () => {
+  it('shows the toolbar toggle for completed YouTube sources and toggles the dock', async () => {
     stubSource({ source_type: 'youtube', source_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', status: 'completed' })
     const user = userEvent.setup()
-    render(<VideoPlayer />)
+    render(<><VideoToggle /><VideoPlayer /></>)
     await waitFor(() => expect(screen.getByRole('button', { name: /watch video/i })).toBeInTheDocument())
 
     const button = screen.getByRole('button', { name: /watch video/i })
@@ -67,7 +67,7 @@ describe('VideoPlayer', () => {
 
   it('reopens the dock when a seek is requested', async () => {
     stubSource({ source_type: 'youtube', source_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', status: 'completed' })
-    render(<VideoPlayer />)
+    render(<><VideoToggle /><VideoPlayer /></>)
     await waitFor(() => expect(screen.getByRole('button', { name: /watch video/i })).toBeInTheDocument())
     expect(useVideoStore.getState().open).toBe(false)
 

@@ -3,14 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#F6F2E7" />
+    <meta name="theme-color" content="#FBFBF8" />
     <!-- Paint the page colour before the CSS bundle arrives (no white flash). -->
-    <style>html{background:#F6F2E7}html[data-theme="dark"]{background:#0B1E3A}</style>
+    <style>html{background:#FBFBF8}html[data-theme="dark"]{background:#131614}</style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Space+Grotesk:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap"
       rel="stylesheet"
     />
     <!--seo:head-->
@@ -21,17 +24,18 @@
     <meta property="og:image" content="__SITE_URL__/og.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="NorAI study notes beside the AI tutor answering a question from the lecture" />
+    <meta property="og:image:alt" content="NorAI: turn lecture videos into exam-ready notes. A demo lecture's chapters shown as shelf-marked ranges." />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="preload" as="image" href="/landing/notes-and-tutor.webp" type="image/webp" media="(min-width: 768px)" fetchpriority="high" />
     <script>
       (function () {
         try {
           var t = localStorage.getItem('norai-theme');
+          if (!t && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) t = 'dark';
           if (t === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
             var m = document.querySelector('meta[name="theme-color"]');
-            if (m) m.setAttribute('content', '#0B1E3A');
+            if (m) m.setAttribute('content', '#131614');
           }
         } catch (e) {}
       })();

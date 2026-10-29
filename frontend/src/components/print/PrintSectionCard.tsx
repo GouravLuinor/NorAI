@@ -33,7 +33,7 @@ export function PrintSectionCard({
         <div className="flex gap-2.5 bg-nblb border border-nblbr rounded-lg p-3 mb-4">
           <Lightbulb size={14} strokeWidth={1.5} className="text-nbl mt-0.5 shrink-0" />
           <div>
-            <div className="text-3xs font-semibold text-nt3 uppercase tracking-wider mb-1">{heading}</div>
+            <div className="text-12 font-bold text-nt3 mb-1">{heading}</div>
             <div className="text-xs text-nt2 leading-relaxed">{children}</div>
           </div>
         </div>

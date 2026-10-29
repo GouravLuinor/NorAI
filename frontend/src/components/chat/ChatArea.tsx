@@ -75,23 +75,23 @@ export function ChatArea() {
         aria-relevant="additions"
       >
         {isLoadingHistory && messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full gap-2 text-xs text-nt3" role="status">
+          <div className="flex items-center justify-center h-full gap-2 text-14 text-nt3" role="status">
             <span className="h-3.5 w-3.5 rounded-full border-2 border-ns3 border-t-np animate-spin" />
             Loading conversation…
           </div>
         ) : isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="w-12 h-12 rounded-sm bg-npf flex items-center justify-center mb-4 shadow-ev2 fold-marks relative">
-              <span className="text-lg font-semibold text-npfg">N</span>
+            <div aria-hidden="true" className="w-10 h-10 rounded-[4px] bg-brass text-[#16181A] flex items-center justify-center mb-4 text-18 font-bold">
+              N
             </div>
-            <h2 className="text-sm font-medium text-nt mb-1">What can I help with?</h2>
-            <p className="text-xs text-nt3 max-w-[200px]">
-              Ask me anything about your lectures — I'll pull answers straight from your notes.
+            <h2 className="text-16 font-bold text-nt mb-1.5">Ask Nora about this lecture</h2>
+            <p className="text-14 text-nt3 max-w-[260px] leading-relaxed">
+              Answers come from what the lecturer said, with the moment they said it.
             </p>
           </div>
         ) : (
           <>
-            <div className="text-3xs text-nt3 text-center flex items-center gap-2">
+            <div className="text-12 text-nt3 text-center flex items-center gap-2">
               <span className="flex-1 h-px bg-bdr" />
               Today
               <span className="flex-1 h-px bg-bdr" />
@@ -121,8 +121,8 @@ export function ChatArea() {
             )}
 
             {isSendingHere && !streamingText && (
-              <div className="flex gap-2 items-start">
-                <div className="w-5 h-5 rounded-sm bg-npf flex items-center justify-center text-3xs font-medium text-npfg shrink-0 mt-0.5 shadow-ev1">
+              <div className="flex gap-2.5 items-start">
+                <div aria-hidden="true" className="w-7 h-7 rounded-[4px] bg-brass text-[#16181A] flex items-center justify-center text-13 font-bold shrink-0">
                   N
                 </div>
                 <ShimmerLoader />

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Bookmark, Clock, Lightbulb, Code, List, FileText, Play } from 'lucide-react'
+import { Lightbulb, Play } from 'lucide-react'
 import { ChapterScreenshots } from './ChapterScreenshots'
 import React from 'react'
 import { useLectureStore } from '../../stores/useLectureStore'
@@ -8,7 +8,8 @@ import { formatTimestamp } from '../../lib/video'
 import { apiFetchRaw } from '../../lib/http'
 import { headingToId } from '../../lib/markdown'
 import { Markdown } from '../ui/Markdown'
-import { Card, CardHeader } from '../ui/Card'
+import { Card } from '../ui/Card'
+import { ShelfMark } from '../ui/ShelfMark'
 import { FOCUS_RING } from '../ui/shared'
 import { CopyButton } from '../ui/CopyButton'
 import { PartialContentBadge } from '../ui/PartialContentBadge'
@@ -97,88 +98,33 @@ function getCardType(heading: string, body: string): CardType {
   return 'prose'
 }
 
-// ── Card Wrappers ────────────────────────────────────────────────────────────
+// ── Section bodies ───────────────────────────────────────────────────────────
+// Sections read as plain text under their heading. Only callouts and code get
+// a container, because they are different objects, not more of the same.
 
-function DefinitionCard({ heading, action, children }: { heading: string; action?: React.ReactNode; children: React.ReactNode }) {
+function CalloutBody({ children }: { children: React.ReactNode }) {
   return (
-    <Card className="p-4 mb-4">
-      <CardHeader action={action} icon={<Bookmark size={13} strokeWidth={1.5} className="text-np" />}>
-        {heading}
-      </CardHeader>
-      {children}
-    </Card>
-  )
-}
-
-function TableCard({ heading, action, children }: { heading: string; action?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <Card className="p-5 mb-5">
-      <CardHeader action={action} icon={<Clock size={13} strokeWidth={1.5} className="text-ng" />}>
-        {heading}
-      </CardHeader>
-      {children}
-    </Card>
-  )
-}
-
-function CalloutCard({ heading, action, children }: { heading: string; action?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div className="note-callout flex gap-2.5 p-3 mb-4">
-      <Lightbulb size={14} strokeWidth={1.5} className="text-np mt-0.5 shrink-0" />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <div className="note-label">{heading}</div>
-          {action && <div>{action}</div>}
-        </div>
-        <div className="text-xs text-nt2 leading-relaxed">{children}</div>
-      </div>
+    <div className="note-callout flex gap-3 p-4 mt-2">
+      <Lightbulb size={16} strokeWidth={1.75} className="text-np mt-1 shrink-0" />
+      <div className="flex-1 min-w-0">{children}</div>
     </div>
   )
 }
 
-function ListCard({ heading, action, children }: { heading: string; action?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div className="mb-5">
-      <CardHeader action={action} icon={<List size={13} strokeWidth={1.5} className="text-np" />}>
-        {heading}
-      </CardHeader>
-      <div className="pl-1.5 space-y-2.5">{children}</div>
-    </div>
-  )
-}
-
-function ProseSection({ heading, action, children }: { heading: string; action?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <Card className="p-5 mb-5">
-      <CardHeader action={action} icon={<FileText size={13} strokeWidth={1.5} className="text-nt3" />}>
-        {heading}
-      </CardHeader>
-      {children}
-    </Card>
-  )
-}
-
-function CodeCard({ heading, action, children, lang }: { heading: string; action?: React.ReactNode; children: React.ReactNode; lang?: string }) {
+function CodeBody({ children, lang }: { children: React.ReactNode; lang?: string }) {
   const preRef = useRef<HTMLPreElement>(null)
   return (
-    <div className="mb-6">
-      {heading && (
-        <CardHeader action={action} icon={<Code size={13} strokeWidth={1.5} className="text-nbl" />}>
-          {heading}
-        </CardHeader>
+    <Card surface="nb" className="overflow-hidden mt-2">
+      {lang && (
+        <div className="flex justify-between items-center bg-ns px-4 py-2 border-b border-bdr font-mono text-12 text-nt3">
+          <span>{lang}</span>
+          <CopyButton getValue={() => preRef.current?.textContent ?? ''} />
+        </div>
       )}
-      <Card surface="nb" className="overflow-hidden">
-        {lang && (
-          <div className="flex justify-between items-center bg-ns px-4 py-2 border-b border-bdr font-mono text-2xs text-nt3">
-            <span>{lang}</span>
-            <CopyButton getValue={() => preRef.current?.textContent ?? ''} />
-          </div>
-        )}
-        <pre ref={preRef} className="p-4 m-0 overflow-x-auto font-mono text-13 text-nt2 leading-relaxed">
-          {children}
-        </pre>
-      </Card>
-    </div>
+      <pre ref={preRef} className="p-4 m-0 overflow-x-auto font-mono text-14 text-nt2 leading-relaxed">
+        {children}
+      </pre>
+    </Card>
   )
 }
 
@@ -284,25 +230,34 @@ export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId
     return <NotesSkeleton />
   }
 
+  const sectionCount = sections.filter((sec) => sec.heading && sec.body).length
+  let sectionNo = 0
+
   return (
-    <div className="flex-1 overflow-y-auto doc-content px-8 py-7 pb-15 scroll-smooth">
+    <div className="flex-1 overflow-y-auto doc-content px-5 sm:px-10 lg:px-14 py-8 pb-16 scroll-smooth">
       {title && (
-        <div className="flex items-center gap-3 mb-6">
-          <h1 className="font-serif text-hero font-medium text-nt tracking-tight leading-snug">
+        <header className="mb-8 max-w-[44rem]">
+          <h1 className="font-serif text-28 sm:text-hero font-semibold text-nt tracking-tight leading-[1.15] text-balance">
             {title}
           </h1>
-          {showSeekChip && chapterTime?.start_sec != null && (
-            <button
-              type="button"
-              title={`Jump the video to ${formatTimestamp(chapterTime.start_sec)}`}
-              onClick={() => seekToChapter(chapterId as number)}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded-sm bg-ns2 border border-bdr text-2xs text-nt3 hover:text-nt hover:border-nt4 transition cursor-pointer shrink-0 ${FOCUS_RING}`}
-            >
-              <Play size={10} strokeWidth={1.5} className="text-np" />
-              Watch · {formatTimestamp(chapterTime.start_sec)}
-            </button>
-          )}
-        </div>
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-13 text-nt3">
+            <span className="font-mono">
+              {chapterId != null && <>Chapter {chapterId}</>}
+              {chapterTime?.start_sec != null && <> · {formatTimestamp(chapterTime.start_sec)}</>}
+              {sectionCount > 0 && <> · {sectionCount} {sectionCount === 1 ? 'section' : 'sections'}</>}
+            </span>
+            {showSeekChip && chapterTime?.start_sec != null && (
+              <button
+                type="button"
+                onClick={() => seekToChapter(chapterId as number)}
+                className={`inline-flex items-center gap-1.5 px-2.5 h-7 rounded-md border border-bdr2 text-13 font-bold text-np hover:bg-npb transition cursor-pointer active:translate-y-[1px] ${FOCUS_RING}`}
+              >
+                <Play size={13} strokeWidth={1.75} />
+                Watch from {formatTimestamp(chapterTime.start_sec)}
+              </button>
+            )}
+          </div>
+        </header>
       )}
 
       {partiallyGenerated && <PartialContentBadge className="mb-6" />}
@@ -319,73 +274,56 @@ export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId
 
         if (!heading) {
           return (
-            <div key={idx} id={sectionId} className="text-center text-nt3 text-13 py-12">
+            <div key={idx} id={sectionId} className="text-nt3 py-12 max-w-[44rem]">
               {innerContent}
             </div>
           )
         }
 
+        sectionNo += 1
+        const mark = chapterId != null ? `${chapterId}.${sectionNo}` : String(sectionNo)
         const sectionSec = !videoEmbeddable
           ? null
           : startSec ?? (chapterId != null ? sectionStart(chapterId, idx) : null)
-        const seekAction = sectionSec != null ? (
-          <button
-            type="button"
-            title={`Jump video to ${formatTimestamp(sectionSec)}`}
-            aria-label={`Play ${heading} at ${formatTimestamp(sectionSec)}`}
-            onClick={() => requestSeek(sectionSec)}
-            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-ns2 border border-bdr text-3xs font-medium text-nt3 hover:text-np hover:border-np/40 transition cursor-pointer ${FOCUS_RING}`}
-          >
-            <Play size={9} strokeWidth={1.5} className="text-np" />
-            {formatTimestamp(sectionSec)}
-          </button>
-        ) : undefined
 
+        // The shelf mark carries the number, so "1. Title" drops its prefix.
+        // All-caps headings (some generated notes) set smaller and tracked.
+        const displayHeading = heading.replace(/^\s*\d+(?:\.\d+)*[.)]\s+/, '')
+        const isCaps = /[A-Z]/.test(displayHeading) && displayHeading === displayHeading.toUpperCase()
         const cardType = explicitType || getCardType(heading, body)
+        let content: React.ReactNode = innerContent
+        if (cardType === 'callout') content = <CalloutBody>{innerContent}</CalloutBody>
+        else if (cardType === 'code') content = <CodeBody lang={body.match(/```(\w+)/)?.[1]}>{innerContent}</CodeBody>
 
-        switch (cardType) {
-          case 'definition':
-            return (
-              <div key={idx} id={sectionId}>
-                <DefinitionCard heading={heading} action={seekAction}>{innerContent}</DefinitionCard>
-              </div>
-            )
-          case 'table':
-            return (
-              <div key={idx} id={sectionId}>
-                <TableCard heading={heading} action={seekAction}>{innerContent}</TableCard>
-              </div>
-            )
-          case 'callout':
-            return (
-              <div key={idx} id={sectionId}>
-                <CalloutCard heading={heading} action={seekAction}>{innerContent}</CalloutCard>
-              </div>
-            )
-          case 'list':
-            return (
-              <div key={idx} id={sectionId}>
-                <ListCard heading={heading} action={seekAction}>{innerContent}</ListCard>
-              </div>
-            )
-          case 'code': {
-            const langMatch = body.match(/```(\w+)/)
-            return (
-              <div key={idx} id={sectionId}>
-                <CodeCard heading={heading} action={seekAction} lang={langMatch?.[1]}>{innerContent}</CodeCard>
-              </div>
-            )
-          }
-          default:
-            return (
-              <div key={idx} id={sectionId}>
-                <ProseSection heading={heading} action={seekAction}>{innerContent}</ProseSection>
-              </div>
-            )
-        }
+        return (
+          <section
+            key={idx}
+            id={sectionId}
+            className="grid grid-cols-[52px_1fr] sm:grid-cols-[72px_1fr] gap-x-3 sm:gap-x-5 mt-9 first-of-type:mt-0 scroll-mt-6"
+          >
+            <div className="pt-0.5">
+              <ShelfMark
+                top={mark}
+                time={sectionSec != null ? formatTimestamp(sectionSec) : undefined}
+                className="w-full py-2"
+                label={sectionSec != null ? `Play ${heading} from ${formatTimestamp(sectionSec)}` : undefined}
+                title={sectionSec != null ? `Play the video from ${formatTimestamp(sectionSec)}` : undefined}
+                onClick={sectionSec != null ? () => requestSeek(sectionSec) : undefined}
+              />
+            </div>
+            <div className="min-w-0">
+              <h2 className={`font-bold text-np leading-snug mb-2 max-w-[60ch] ${isCaps ? 'text-15 tracking-[0.03em]' : 'text-17'}`}>
+                {displayHeading}
+              </h2>
+              {content}
+            </div>
+          </section>
+        )
       })}
 
-      <ChapterScreenshots chapterId={chapterId} startExpanded={screenshotsExpanded} />
+      <div className="mt-10">
+        <ChapterScreenshots chapterId={chapterId} startExpanded={screenshotsExpanded} />
+      </div>
     </div>
   )
 }

@@ -174,18 +174,18 @@ export function AssessmentView() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center px-4 h-[40px] border-b border-bdr bg-ns shrink-0 gap-4">
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="text-sm font-semibold text-nt tracking-tight">Ch {String(activeChapterId).padStart(2, '0')} — Assessment</div>
-          <div className="text-11 text-nt3 tabular-nums">{questions.length} question{questions.length === 1 ? '' : 's'}{difficulty !== 'All' ? ` · ${difficulty}` : ''}</div>
+      <div className="flex flex-wrap items-center px-4 py-2 min-h-12 border-b border-bdr bg-ns shrink-0 gap-x-4 gap-y-2">
+        <div className="flex-1 flex flex-col justify-center min-w-[8rem]">
+          <div className="text-15 font-bold text-nt whitespace-nowrap">Chapter {activeChapterId} quiz</div>
+          <div className="text-13 text-nt3">{questions.length} question{questions.length === 1 ? '' : 's'}{difficulty !== 'All' ? ` · ${difficulty}` : ''}</div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <SegmentedControl<'questions' | 'history'>
-            containerClass="flex items-center gap-1 p-0.5 rounded-md bg-ns2 border border-bdr2"
-            itemClass="px-2.5 py-1 rounded-sm text-2xs font-medium transition"
-            activeClass="bg-np text-npfg shadow-sm"
-            inactiveClass="text-nt3 hover:text-nt2"
+            containerClass="flex items-center gap-1 p-1 rounded-md bg-ns2"
+            itemClass="px-2.5 h-7 rounded-[4px] text-13 font-bold whitespace-nowrap transition-colors cursor-pointer"
+            activeClass="bg-ns text-nt shadow-ev1"
+            inactiveClass="text-nt3 hover:text-nt"
             value={viewMode}
             onChange={(v) => setViewMode(v)}
             options={[
@@ -197,7 +197,7 @@ export function AssessmentView() {
                 value: 'history',
                 label: (
                   <span className="flex items-center gap-1">
-                    <History size={12} />
+                    <History size={14} strokeWidth={1.75} />
                     <span>History ({attempts.length})</span>
                   </span>
                 ),
@@ -208,24 +208,24 @@ export function AssessmentView() {
           {viewMode === 'questions' && (
             <>
               <SegmentedControl<QuizDifficulty | 'All'>
-                containerClass="flex items-center gap-1 p-0.5 rounded-md bg-ns2 border border-bdr2"
-                itemClass="px-2 py-1 rounded-sm text-2xs font-medium transition"
-                activeClass="bg-np text-npfg shadow-sm"
-                inactiveClass="text-nt3 hover:text-nt2"
+                containerClass="flex items-center gap-1 p-1 rounded-md bg-ns2"
+                itemClass="px-2 h-7 rounded-[4px] text-13 font-bold whitespace-nowrap transition-colors cursor-pointer"
+                activeClass="bg-ns text-z-quiz shadow-ev1"
+                inactiveClass="text-nt3 hover:text-nt"
                 value={difficulty}
                 onChange={(v) => resetFilter(v)}
                 options={DIFFICULTY_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
               />
 
-              <Button onClick={() => setShowAnswers(!showAnswers)} variant="outline" className="gap-1.5 px-3 py-1.5 rounded-sm text-2xs">
-                {showAnswers ? <EyeOff size={13} strokeWidth={1.5} /> : <Eye size={13} strokeWidth={1.5} />}
-                {showAnswers ? 'Hide Key' : 'Reveal Key'}
+              <Button onClick={() => setShowAnswers(!showAnswers)} variant="outline" className="gap-1.5 px-3 h-9 rounded-md text-13 font-bold whitespace-nowrap border-bdr2">
+                {showAnswers ? <EyeOff size={15} strokeWidth={1.75} /> : <Eye size={15} strokeWidth={1.75} />}
+                {showAnswers ? 'Hide answers' : 'Show answers'}
               </Button>
             </>
           )}
 
-          <Button variant="primarySoft" onClick={handleStartQuiz} className="gap-1.5 px-3 py-1.5 rounded-sm text-2xs">
-            <Play size={13} strokeWidth={1.5} /> Start Quiz
+          <Button variant="primarySoft" onClick={handleStartQuiz} className="gap-1.5 px-3.5 h-9 rounded-md text-14 font-bold whitespace-nowrap">
+            <Play size={15} strokeWidth={1.75} /> Start quiz
           </Button>
         </div>
       </div>
@@ -234,10 +234,10 @@ export function AssessmentView() {
       <div className="flex-1 overflow-y-auto px-8 py-6 pb-20 space-y-7 scroll-smooth doc-content">
         {viewMode === 'history' ? (
           <div className="space-y-4 max-w-2xl mx-auto">
-            <h3 className="text-sm font-semibold text-nt mb-3">Quiz Attempts History</h3>
+            <h3 className="text-17 font-bold text-nt mb-3">Your attempts</h3>
             {attempts.length === 0 ? (
-              <div className="p-8 text-center bg-ns border border-bdr2 rounded-xl text-nt3 text-sm">
-                No quiz attempts recorded for this chapter yet.
+              <div className="p-8 text-center bg-ns border border-bdr2 rounded-md text-nt3 text-15">
+                No attempts yet. Start the quiz and your score lands here.
               </div>
             ) : (
               attempts.map((att) => {

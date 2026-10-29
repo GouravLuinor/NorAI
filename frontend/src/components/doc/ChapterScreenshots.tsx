@@ -58,7 +58,7 @@ export function ChapterScreenshots({
       <button
         onClick={toggleOpen}
         aria-expanded={open}
-        className={`flex items-center gap-2 text-3xs font-semibold text-nt3 uppercase tracking-wider hover:text-nt transition ${FOCUS_RING}`}
+        className={`flex items-center gap-2 text-12 font-bold text-nt3 hover:text-nt transition ${FOCUS_RING}`}
       >
         <ImageIcon size={13} strokeWidth={1.5} />
         Important Visuals ({screenshots.length})
@@ -102,7 +102,7 @@ export function ChapterScreenshots({
                   </div>
                 </button>
                 <div className="p-3 text-xs text-nt2 leading-relaxed">
-                  <span className="text-2xs font-semibold text-nt3 uppercase tracking-wider block mb-1">
+                  <span className="text-12 font-bold text-nt3 block mb-1">
                     {shot.section}
                   </span>
                   {shot.reason}

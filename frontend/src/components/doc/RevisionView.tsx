@@ -112,7 +112,7 @@ function TipsCard({ heading, children }: { heading: string; children: React.Reac
     <div className="flex gap-2.5 bg-nab border border-nabr rounded-lg p-3 mb-4">
       <Lightbulb size={14} strokeWidth={1.5} className="text-na mt-0.5 shrink-0" />
       <div>
-        <div className="text-3xs font-semibold text-na uppercase tracking-wider mb-1">{heading}</div>
+        <div className="text-12 font-bold text-na mb-1">{heading}</div>
         <div className="text-xs text-nt2 leading-relaxed">{children}</div>
       </div>
     </div>
@@ -124,7 +124,7 @@ function MistakeCard({ heading, children }: { heading: string; children: React.R
     <div className="flex gap-2.5 bg-nrb border border-nrbr rounded-lg p-3 mb-4">
       <AlertTriangle size={14} strokeWidth={1.5} className="text-nr mt-0.5 shrink-0" />
       <div>
-        <div className="text-3xs font-semibold text-nr uppercase tracking-wider mb-1">{heading}</div>
+        <div className="text-12 font-bold text-nr mb-1">{heading}</div>
         <div className="text-xs text-nt2 leading-relaxed">{children}</div>
       </div>
     </div>
@@ -136,7 +136,7 @@ function SummaryCard({ heading, children }: { heading: string; children: React.R
     <div className="flex gap-2.5 bg-ngb border border-ngbr rounded-lg p-3 mb-4">
       <div className="w-2 h-2 rounded-full bg-ng mt-2 shrink-0" />
       <div>
-        <div className="text-3xs font-semibold text-ng uppercase tracking-wider mb-1">{heading}</div>
+        <div className="text-12 font-bold text-ng mb-1">{heading}</div>
         <div className="text-xs text-nt2 leading-relaxed">{children}</div>
       </div>
     </div>

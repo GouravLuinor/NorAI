@@ -5,7 +5,7 @@ interface SkeletonCardProps {
 
 export function SkeletonCard({ className = '', lines = 3 }: SkeletonCardProps) {
   return (
-    <div className={`bg-ns border border-bdr2 rounded-lg p-5 fold-marks relative shadow-ev1 animate-pulse ${className}`}>
+    <div className={`bg-ns border border-bdr2 rounded-lg p-5 relative shadow-ev1 animate-pulse ${className}`}>
       <div className="flex items-center gap-2 mb-3">
         <div className="w-4 h-4 rounded bg-ns3" />
         <div className="h-4 bg-ns3 rounded w-1/3" />

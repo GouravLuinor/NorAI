@@ -5,6 +5,8 @@ export interface SegmentedOption<T extends string> {
   value: T
   label: ReactNode
   prefix?: ReactNode
+  /** Overrides the shared activeClass for this option (study-mode zones). */
+  activeClass?: string
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -59,7 +61,7 @@ export function SegmentedControl<T extends string>({
           type="button"
           onClick={() => onChange(opt.value)}
           aria-pressed={value === opt.value}
-          className={`${itemClass} ${FOCUS_RING} active:translate-y-[1px] ${value === opt.value ? activeClass : inactiveClass}`
+          className={`${itemClass} ${FOCUS_RING} active:translate-y-[1px] ${value === opt.value ? (opt.activeClass ?? activeClass) : inactiveClass}`
             .replace(/\s+/g, ' ')
             .trim()}
         >

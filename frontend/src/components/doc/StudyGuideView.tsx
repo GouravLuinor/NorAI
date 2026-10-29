@@ -59,7 +59,7 @@ export function StudyGuideView() {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
           <BookMarked size={15} strokeWidth={1.5} className="text-np" />
-          <span className="text-3xs font-semibold text-nt3 uppercase tracking-wider">Study Guide</span>
+          <span className="text-12 font-bold text-nt3">Study Guide</span>
         </div>
         <h1 className="font-serif text-hero font-medium text-nt tracking-tight leading-snug">
           {title || 'Study Guide'}

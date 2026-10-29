@@ -1,6 +1,6 @@
 import type { HTMLAttributes, ReactNode } from 'react'
 
-// Blueprint surface: hairline ink border + hard offset shadow. Geometry
+// Sheet surface: hairline ink border, soft low shadow. Geometry
 // (padding/margin) and accents (e.g. `border-l-2 border-l-np`) stay at the
 // call site via props so migration is strictly token-preserving.
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
@@ -17,7 +17,7 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`${surface === 'nb' ? 'bg-nb' : 'bg-ns'} border border-bdr2 rounded-lg shadow-ev1 ${accent} ${className}`
+      className={`${surface === 'nb' ? 'bg-nb' : 'bg-ns'} border border-bdr rounded-md ${accent} ${className}`
         .replace(/\s+/g, ' ')
         .trim()}
       {...rest}
@@ -27,7 +27,7 @@ export function Card({
   )
 }
 
-// Section label row used atop cards: mono-ink ALL-CAPS eyebrow + icon.
+// Section heading row used atop cards: bold sentence-case label + icon.
 // `tone` sets the label color; icons inherit currentColor unless they carry
 // their own className.
 export type CardTone = 'np' | 'nbl' | 'ng' | 'na' | 'nb' | 'nr' | 'nt3' | 'default'
@@ -58,7 +58,7 @@ export function CardHeader({
 }) {
   return (
     <div
-      className={`flex items-center justify-between gap-1.5 text-3xs font-semibold ${toneClass[tone]} uppercase tracking-wider mb-2 ${className}`
+      className={`flex items-center justify-between gap-2 text-14 font-bold ${toneClass[tone]} mb-2 ${className}`
         .replace(/\s+/g, ' ')
         .trim()}
     >
@@ -66,7 +66,7 @@ export function CardHeader({
         {icon}
         <span className="truncate">{children}</span>
       </div>
-      {action && <div className="shrink-0 normal-case font-normal">{action}</div>}
+      {action && <div className="shrink-0 font-normal">{action}</div>}
     </div>
   )
 }

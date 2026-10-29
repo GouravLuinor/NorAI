@@ -23,7 +23,7 @@ export class AppErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-nb bg-blueprint-grid noise text-nt flex items-center justify-center px-6">
+        <div className="min-h-screen bg-nb text-nt flex items-center justify-center px-6">
           <div className="max-w-md w-full border border-nrbr p-6 rounded-lg bg-nrb text-nr">
             <h1 className="text-lg font-semibold mb-2">Something went wrong</h1>
             <p className="text-xs text-nt3 mb-4">

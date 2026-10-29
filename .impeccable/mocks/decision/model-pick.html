@@ -1,0 +1,67 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1440px;height:900px;overflow:hidden;background:#fff;color:#111;font-family:'Figtree',sans-serif;display:grid;grid-template-columns:250px 1fr 380px}
+nav{border-right:2px solid #111;padding:22px 18px;display:flex;flex-direction:column;gap:20px}
+.brand{font-weight:800;font-size:24px;letter-spacing:-.02em}
+.brand span{background:linear-gradient(transparent 55%,#FFF35C 55%)}
+.k{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.ch{font-size:14px;line-height:1.35;padding:8px 10px;border-radius:2px}
+.ch.on{background:#FFF35C;font-weight:600}
+.ch i{font-style:normal;font-variant-numeric:tabular-nums;color:#555;margin-right:6px}
+.card{margin-top:auto;border:2px solid #111;border-radius:4px;padding:14px;background:repeating-linear-gradient(#fff 0 25px,#BFE3FF 25px 26px);box-shadow:4px 4px 0 #8CF07B}
+.card b{font-size:28px}
+main{display:flex;flex-direction:column}
+.tabs{display:flex;gap:8px;padding:14px 40px;border-bottom:2px solid #111}
+.tab{padding:7px 16px;border:2px solid #111;border-radius:999px;font-weight:600;font-size:14px}
+.t1{background:#FFF35C}.t2{background:#fff}.t3{background:#fff}.t4{background:#fff}
+.doc{padding:36px 64px}
+h1{font:600 36px/1.12 'Source Serif 4',serif;max-width:700px}
+.meta{margin-top:10px;font-size:13px;color:#555;font-variant-numeric:tabular-nums}
+h2{font-size:15px;font-weight:800;margin-top:30px;display:flex;gap:10px;align-items:baseline}
+h2 small{font-weight:600;font-size:12px;border:1.5px solid #111;border-radius:999px;padding:1px 8px}
+p{font:400 18px/1.65 'Source Serif 4',serif;margin-top:8px;max-width:700px}
+.hl{background:linear-gradient(100deg,transparent 0 1%,#7FD3FF 2% 97%,transparent 98%);padding:0 2px}
+.hy{background:linear-gradient(100deg,transparent 0 1%,#FFF35C 2% 97%,transparent 98%)}
+aside{border-left:2px solid #111;padding:22px;display:flex;flex-direction:column;gap:16px;background:#F3FBFF}
+.who{display:flex;gap:10px;align-items:center;font-weight:800;font-size:16px}
+.av{width:30px;height:30px;border-radius:50%;background:#7FD3FF;border:2px solid #111;display:grid;place-items:center}
+.q{align-self:flex-end;background:#fff;border:2px solid #111;border-radius:12px 12px 2px 12px;padding:12px 14px;font-size:15px;max-width:280px}
+.a{font-size:15px;line-height:1.6}
+.ts{background:#7FD3FF;border-radius:3px;padding:0 5px;font-weight:600;font-variant-numeric:tabular-nums}
+.ask{margin-top:auto;background:#fff;border:2px solid #111;border-radius:10px;padding:14px;font-size:15px;color:#666;display:flex;justify-content:space-between}
+.ask b{background:#111;color:#fff;border-radius:6px;padding:2px 12px}
+</style></head><body>
+<nav>
+  <div class="brand"><span>NorAI</span></div>
+  <div><div class="k">Lecture</div><p style="font:600 15px/1.35 Figtree;margin-top:6px">Foundations of Neural Networks &amp; Deep Learning</p></div>
+  <div style="display:flex;flex-direction:column;gap:4px"><div class="k">Chapters</div>
+    <div class="ch on"><i>0:04</i>Foundations of Neural Network Architecture</div>
+    <div class="ch"><i>5:04</i>Hierarchical Feature Learning</div>
+    <div class="ch"><i>10:07</i>Weights, Biases, and Activation</div>
+    <div class="ch"><i>15:17</i>Parameterization and Linear Algebra</div>
+  </div>
+  <div class="card"><div class="k">Due today</div><b>12</b> cards<br>~4 min of review</div>
+</nav>
+<main>
+  <div class="tabs"><span class="tab t1">Study notes</span><span class="tab t2">Revision</span><span class="tab t3">Quiz</span><span class="tab t4">Flashcards</span><span class="tab">Mind map</span></div>
+  <div class="doc">
+    <h1>Foundations of Neural Network Architecture</h1>
+    <div class="meta">Chapter 1 · 0:04–5:04</div>
+    <h2>The challenge of image recognition <small>0:04</small></h2>
+    <p>Recognising handwritten digits is the "hello world" of neural networks. <span class="hy">People read a 3 in any handwriting; a hand-written program cannot</span>, because the pixels of the same digit vary too much between writers.</p>
+    <h2>The input layer <small>1:52</small></h2>
+    <p><span class="hl">A 28 × 28 grayscale image gives the input layer 784 neurons, one per pixel.</span> Each holds a number between 0 for black and 1 for white: its activation.</p>
+    <h2>Layers at a glance <small>3:28</small></h2>
+    <p>Input 784 · two hidden layers of 16, chosen by experiment · output 10, one per digit.</p>
+  </div>
+</main>
+<aside>
+  <div class="who"><span class="av">N</span>Nora</div>
+  <div class="q">Why does the input layer have exactly 784 neurons?</div>
+  <div class="a">Because the network reads a 28 × 28 pixel image and each neuron holds one pixel's brightness: 28 × 28 = 784. I highlighted the line in your notes <span class="ts">1:52</span>.</div>
+  <div class="ask">Ask about this lecture… <b>Ask</b></div>
+</aside>
+</body></html>

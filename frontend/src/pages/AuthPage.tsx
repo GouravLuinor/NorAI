@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Mail, Lock, User as UserIcon, ArrowRight, Brain, BookOpen, Clock } from 'lucide-react'
+import { Mail, Lock, User as UserIcon, ArrowRight, ArrowLeft } from 'lucide-react'
+import { Wordmark } from '../components/brand/Wordmark'
 import { useAuthStore } from '../stores/useAuthStore'
 import { supabase } from '../lib/supabaseClient'
 import { friendlyError } from '../lib/errorCopy'
@@ -108,100 +108,62 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-nb text-nt font-sans selection:bg-npb selection:text-npt flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Blueprint grid background */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none opacity-40 z-0"
-        style={{
-          backgroundImage: `linear-gradient(to right, var(--color-grid) 1px, transparent 1px), linear-gradient(to bottom, var(--color-grid) 1px, transparent 1px)`,
-          backgroundSize: '32px 32px',
-        }}
-      />
-
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="text-center mb-6">
-          <Link to="/" className="inline-flex items-center gap-2 mb-4 group">
-            <span className="font-serif font-black text-28 tracking-tight text-nt group-hover:text-np transition-colors">
-              Nor<span className="text-np">AI</span>
-            </span>
+    <div id="main" className="min-h-screen bg-nb text-nt font-sans flex flex-col justify-center py-12 px-4 sm:px-6">
+      <div className="mx-auto w-full max-w-md">
+        <div className="mb-7">
+          <Link to="/" className={`inline-flex mb-8 rounded-sm ${FOCUS_RING}`} aria-label="NorAI home">
+            <Wordmark size="md" />
           </Link>
-          <h1 className="text-24 font-bold font-serif text-nt">
-            {mode === 'login' ? 'Sign in to your account' : mode === 'signup' ? 'Create your free account' : 'Reset your password'}
+          <h1 className="font-serif font-semibold text-32 leading-tight text-nt">
+            {mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create your free account' : 'Reset your password'}
           </h1>
-          <p className="text-13 text-nt2 mt-1">
+          <p className="text-16 text-nt2 mt-2 leading-relaxed">
             {mode === 'login'
-              ? 'Your lectures, notes, quizzes and tutor are waiting.'
+              ? 'Your lectures, notes, quizzes and tutor are where you left them.'
               : mode === 'signup'
-                ? `Free: ${FREE_MINUTES} lecture-minutes a month, every feature included. No card.`
-                : "Enter your account email and we'll send you a link to choose a new password"}
+                ? `${FREE_MINUTES} lecture-minutes a month, every feature included. No card.`
+                : "Enter your account email and we'll send you a link to choose a new password."}
           </p>
         </div>
 
-        {/* Feature Highlights on Signup */}
-        {mode === 'signup' && (
-          <div className="mb-6 p-4 rounded-lg bg-ns border border-bdr grid grid-cols-3 gap-2 text-center">
-            <div className="flex flex-col items-center gap-1">
-              <Clock size={16} className="text-np" />
-              <span className="font-mono text-10 uppercase text-nt font-bold">{FREE_MINUTES} min free</span>
-              <span className="text-10 text-nt3">Every month</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <Brain size={16} className="text-np" />
-              <span className="font-mono text-10 uppercase text-nt font-bold">AI Tutor</span>
-              <span className="text-10 text-nt3">Lecture-Grounded</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <BookOpen size={16} className="text-np" />
-              <span className="font-mono text-10 uppercase text-nt font-bold">Full Notes</span>
-              <span className="text-10 text-nt3">Flashcards & Quiz</span>
-            </div>
-          </div>
-        )}
-
         {/* Form Container */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-          className="bg-nb border border-bdr rounded-lg p-6 sm:p-8 shadow-bp"
-        >
+        <div className="bg-ns border border-bdr rounded-lg p-6 sm:p-7 shadow-ev1">
           {/* Segmented Control */}
           {mode !== 'forgot' && (
-          <div className="grid grid-cols-2 p-1 bg-ns2 rounded mb-6 border border-bdr font-display text-11 uppercase font-semibold">
+          <div className="grid grid-cols-2 p-1 bg-ns2 rounded-md mb-6 text-14 font-bold">
             <button
               type="button"
               onClick={() => { setMode('login'); setError(''); setInfo('') }}
-              className={`py-2 rounded transition-all cursor-pointer ${FOCUS_RING} ${
+              className={`h-9 rounded-[4px] transition-colors cursor-pointer ${FOCUS_RING} ${
                 mode === 'login'
-                  ? 'bg-ns text-np shadow-xs'
+                  ? 'bg-ns text-np shadow-ev1'
                   : 'text-nt3 hover:text-nt'
               }`}
             >
-              Sign In
+              Sign in
             </button>
             <button
               type="button"
               onClick={() => { setMode('signup'); setError(''); setInfo('') }}
-              className={`py-2 rounded transition-all cursor-pointer ${FOCUS_RING} ${
+              className={`h-9 rounded-[4px] transition-colors cursor-pointer ${FOCUS_RING} ${
                 mode === 'signup'
-                  ? 'bg-ns text-np shadow-xs'
+                  ? 'bg-ns text-np shadow-ev1'
                   : 'text-nt3 hover:text-nt'
               }`}
             >
-              Create Account
+              Create account
             </button>
           </div>
           )}
 
           {/* Messages */}
           {error && (
-            <div className="mb-4 p-3 rounded bg-nrb border border-nrbr text-nrt text-12" role="alert">
+            <div className="mb-4 p-3 rounded-md bg-nrb border border-nrbr text-nrt text-14" role="alert">
               {error}
             </div>
           )}
           {info && (
-            <div className="mb-4 p-3 rounded bg-npb border border-npbr text-npt text-12" role="status">
+            <div className="mb-4 p-3 rounded-md bg-npb border border-npbr text-npt text-14" role="status">
               {info}
             </div>
           )}
@@ -210,11 +172,11 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
               <div>
-                <label htmlFor="auth-name" className="block text-10 font-medium font-mono uppercase text-nt3 mb-1">
-                  Full Name
+                <label htmlFor="auth-name" className="block text-14 font-bold text-nt2 mb-1.5">
+                  Name
                 </label>
                 <div className="relative">
-                  <UserIcon size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-nt3" />
+                  <UserIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nt3" />
                   <input
                     id="auth-name"
                     type="text"
@@ -222,18 +184,18 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Alex Morgan"
-                    className={`w-full pl-9 pr-3 py-2.5 text-13 bg-ns border border-bdr rounded focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
+                    className={`w-full pl-10 pr-3 h-11 text-15 bg-ns border border-bdr2 rounded-md placeholder:text-nt4 focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label htmlFor="auth-email-input" className="block text-10 font-medium font-mono uppercase text-nt3 mb-1">
-                Email Address
+              <label htmlFor="auth-email-input" className="block text-14 font-bold text-nt2 mb-1.5">
+                Email
               </label>
               <div className="relative">
-                <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-nt3" />
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nt3" />
                 <input
                   id="auth-email-input"
                   type="email"
@@ -242,29 +204,29 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="alex@university.edu"
-                  className={`w-full pl-9 pr-3 py-2.5 text-13 bg-ns border border-bdr rounded focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
+                  className={`w-full pl-10 pr-3 h-11 text-15 bg-ns border border-bdr2 rounded-md placeholder:text-nt4 focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
                 />
               </div>
             </div>
 
             {mode !== 'forgot' && (
             <div>
-              <div className="flex items-baseline justify-between mb-1">
-                <label htmlFor="auth-password-input" className="block text-10 font-medium font-mono uppercase text-nt3">
+              <div className="flex items-baseline justify-between mb-1.5">
+                <label htmlFor="auth-password-input" className="block text-14 font-bold text-nt2">
                   Password
                 </label>
                 {mode === 'login' && (
                   <button
                     type="button"
                     onClick={() => { setMode('forgot'); setError(''); setInfo('') }}
-                    className={`text-11 text-np hover:underline cursor-pointer rounded ${FOCUS_RING}`}
+                    className={`text-14 font-bold text-np hover:underline cursor-pointer rounded ${FOCUS_RING}`}
                   >
                     Forgot password?
                   </button>
                 )}
               </div>
               <div className="relative">
-                <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-nt3" />
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nt3" />
                 <input
                   id="auth-password-input"
                   type="password"
@@ -275,11 +237,11 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   aria-describedby={mode === 'signup' ? 'auth-password-hint' : undefined}
-                  className={`w-full pl-9 pr-3 py-2.5 text-13 bg-ns border border-bdr rounded focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
+                  className={`w-full pl-10 pr-3 h-11 text-15 bg-ns border border-bdr2 rounded-md placeholder:text-nt4 focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
                 />
               </div>
               {mode === 'signup' && (
-                <p id="auth-password-hint" className="mt-1 text-11 text-nt3">
+                <p id="auth-password-hint" className="mt-1.5 text-13 text-nt3">
                   At least {MIN_PASSWORD_LENGTH} characters.
                 </p>
               )}
@@ -289,7 +251,7 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-np hover:bg-nph text-npfg font-display text-12 font-semibold uppercase tracking-wider rounded shadow-bp flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer active:translate-y-[1px]"
+              className="w-full h-12 px-4 bg-npf hover:bg-npfh text-npfg text-16 font-bold rounded-md flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer active:translate-y-[1px]"
             >
               {loading ? (
                 <span>{mode === 'forgot' ? 'Sending…' : mode === 'signup' ? 'Creating account…' : 'Signing in…'}</span>
@@ -307,9 +269,9 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
               <button
                 type="button"
                 onClick={() => { setMode('login'); setError(''); setInfo('') }}
-                className={`text-12 text-np hover:underline cursor-pointer rounded ${FOCUS_RING}`}
+                className={`inline-flex items-center gap-1.5 text-14 font-bold text-np hover:underline cursor-pointer rounded ${FOCUS_RING}`}
               >
-                ← Back to sign in
+                <ArrowLeft size={15} aria-hidden="true" /> Back to sign in
               </button>
             </div>
           ) : (
@@ -319,8 +281,8 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-bdr"></div>
             </div>
-            <span className="relative px-3 bg-nb text-10 font-medium font-mono uppercase text-nt3">
-              OR CONTINUE WITH
+            <span className="relative px-3 bg-ns text-14 text-nt3">
+              or
             </span>
           </div>
 
@@ -328,7 +290,7 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
           <button
             onClick={handleGoogleAuth}
             disabled={loading}
-            className={`w-full py-2.5 px-4 bg-ns border border-bdr hover:bg-ns2 text-nt font-display text-11 font-medium uppercase tracking-wider rounded flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none active:translate-y-[1px] ${FOCUS_RING}`}
+            className={`w-full h-11 px-4 bg-ns border border-bdr2 hover:bg-ns2 text-nt text-15 font-bold rounded-md flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none active:translate-y-[1px] ${FOCUS_RING}`}
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
               <path
@@ -352,12 +314,12 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
           </button>
           </>
           )}
-        </motion.div>
+        </div>
 
         {/* Back Link */}
         <div className="text-center mt-6">
-          <Link to="/" className="text-11 font-mono text-nt3 hover:text-nt transition-colors">
-            ← Return to NorAI Homepage
+          <Link to="/" className={`inline-flex items-center gap-1.5 text-14 text-nt3 hover:text-nt transition-colors rounded-sm ${FOCUS_RING}`}>
+            <ArrowLeft size={15} aria-hidden="true" /> Back to the NorAI home page
           </Link>
         </div>
       </div>

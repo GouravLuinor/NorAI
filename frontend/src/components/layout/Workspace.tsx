@@ -12,7 +12,7 @@ import { useParams } from 'react-router-dom'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { FOCUS_RING } from '../ui/shared'
 
-const SIDEBAR_MIN = 160
+const SIDEBAR_MIN = 220
 const SIDEBAR_MAX = 400
 const AI_MIN_TUTOR = 330
 const AI_MIN_QUIZ_CARDS = 400
@@ -29,9 +29,9 @@ export function Workspace() {
   const loadChapters = useChapterStore((s) => s.loadChapters)
   const aiMode = useQuizStore((s) => s.aiMode)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
-  const [sidebarWidth, setSidebarWidth] = useState(220)
-  const [aiPanelWidth, setAiPanelWidth] = useState(360)
-  const [tutorAiWidth, setTutorAiWidth] = useState(360)
+  const [sidebarWidth, setSidebarWidth] = useState(268)
+  const [aiPanelWidth, setAiPanelWidth] = useState(380)
+  const [tutorAiWidth, setTutorAiWidth] = useState(380)
   const [isDragging, setIsDragging] = useState(false)
 
   // Responsive state
@@ -250,7 +250,7 @@ export function Workspace() {
                 mobileTab === 'ai' ? 'bg-ns3 text-nt shadow-ev1' : 'text-nt3 hover:text-nt2'
               }`}
             >
-              <Bot size={13} strokeWidth={1.5} /> AI Tutor
+              <Bot size={13} strokeWidth={1.5} /> Nora
             </button>
           </div>
 
@@ -275,7 +275,7 @@ export function Workspace() {
             ariaLabel="Navigation menu"
             onClose={() => setSidebarDrawerOpenMobile(false)}
             overlayClassName="flex items-stretch justify-start bg-black/50 backdrop-blur-xs"
-            panelClassName="relative w-72 max-w-[80vw] h-full bg-nb z-10 shadow-ev3 border-r border-bdr2"
+            panelClassName="relative w-72 max-w-[85vw] h-full z-10 shadow-ev3"
           >
             <Sidebar forceExpanded onToggleCollapse={() => setSidebarDrawerOpenMobile(false)} />
           </Dialog>
@@ -292,7 +292,7 @@ export function Workspace() {
       <div
         id="main"
         ref={workspaceRef}
-        className="workspace grid h-screen bg-nb text-nt text-xs font-sans rounded-xl border border-bdr2 overflow-hidden shadow-ev3 relative bg-blueprint-grid fold-marks"
+        className="workspace grid h-screen bg-nb text-nt text-xs font-sans overflow-hidden relative"
         style={{ gridTemplateColumns: sidebarCollapsed ? '48px 1fr' : `${sidebarWidth}px 1fr` }}
       >
         {sidebarCollapsed && (
@@ -316,7 +316,7 @@ export function Workspace() {
             onClick={() => setAiDrawerOpenTablet((prev) => !prev)}
             className={`fixed right-4 bottom-16 z-40 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-npf text-npfg shadow-ev2 font-medium hover:bg-npfh transition cursor-pointer ${FOCUS_RING}`}
           >
-            <Bot size={15} strokeWidth={1.5} /> {aiDrawerOpenTablet ? 'Close Tutor' : 'Ask Nora'}
+            <Bot size={15} strokeWidth={1.5} /> {aiDrawerOpenTablet ? 'Close' : 'Ask Nora'}
           </button>
         </div>
 
@@ -329,7 +329,7 @@ export function Workspace() {
             panelClassName="relative w-[380px] max-w-[90vw] h-full bg-ns border-l border-bdr2 shadow-ev3 flex flex-col"
           >
             <div className="flex items-center justify-between px-3 py-2 border-b border-bdr bg-ns2">
-              <span className="font-display font-medium text-xs text-nt">Nora AI Tutor</span>
+              <span className="font-bold text-14 text-nt">Ask Nora</span>
               <IconButton
                 label="Close tutor panel"
                 onClick={() => setAiDrawerOpenTablet(false)}
@@ -358,7 +358,7 @@ export function Workspace() {
     <div
       id="main"
       ref={workspaceRef}
-      className="workspace grid h-screen bg-nb text-nt text-xs font-sans rounded-xl border border-bdr2 overflow-hidden shadow-ev3 relative bg-blueprint-grid fold-marks"
+      className="workspace grid h-screen bg-nb text-nt text-xs font-sans overflow-hidden relative"
       style={{
         gridTemplateColumns: gridColumns,
         transition: isDragging ? 'none' : 'grid-template-columns 240ms cubic-bezier(0.4,0,0.2,1)',
@@ -418,7 +418,8 @@ export function Workspace() {
       <IconButton
         label="Keyboard shortcuts"
         onClick={() => setShortcutsOpen(true)}
-        className="absolute bottom-4 left-4 z-50 w-7 h-7 rounded-sm bg-ns2 border border-bdr2 shadow-ev2 hover:bg-ns3 active:translate-y-[1px] active:shadow-none"
+        className="absolute bottom-3 z-40 w-8 h-8 rounded-md bg-ns border border-bdr2 text-nt3 shadow-ev1 hover:text-nt active:translate-y-[1px]"
+        style={{ left: (sidebarCollapsed ? 48 : sidebarWidth) + 12 }}
       >
         <HelpCircle size={13} strokeWidth={1.5} />
       </IconButton>

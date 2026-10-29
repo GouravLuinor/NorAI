@@ -4,9 +4,10 @@ import { useThreadStore } from '../../stores/useThreadStore'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { useToastStore } from '../../stores/useToastStore'
-import { PanelLeftClose, Trash2, Play, Sparkles, LogOut } from 'lucide-react'
+import { PanelLeftClose, Trash2, Plus, LogOut } from 'lucide-react'
 import { ThemeToggle } from '../ui/ThemeToggle'
-import { Button } from '../ui/Button'
+import { ShelfMark } from '../ui/ShelfMark'
+import { Wordmark } from '../brand/Wordmark'
 import { IconButton } from '../ui/IconButton'
 import { FOCUS_RING } from '../ui/shared'
 import { useVideoStore } from '../../stores/useVideoStore'
@@ -124,47 +125,35 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
   }, [deleteThread, addToast])
 
   return (
-    <div className="bg-ns border-r border-bdr relative overflow-hidden flex flex-col h-full">
+    <nav aria-label="Lecture navigation" className="rail relative overflow-hidden flex flex-col h-full">
       {/* Expanded — use w-full to prevent overlap when sidebar is narrow */}
       <div
         inert={sidebarCollapsed}
-        className={`w-full flex flex-col h-full transition-opacity duration-240 ${
+        className={`w-full flex flex-col h-full overflow-y-auto transition-opacity duration-240 ${
           sidebarCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
         {/* Header */}
-        <div className="p-4 pb-3">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="px-4 pt-4 pb-2">
+          <div className="flex items-center gap-2 mb-5">
             <button
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 hover:opacity-85 transition-opacity cursor-pointer text-left"
-              title="Return to NorAI Home"
+              className={`flex items-center rounded-sm cursor-pointer text-left ${FOCUS_RING}`}
+              title="NorAI home"
             >
-              <div className="w-6 h-6 rounded-sm bg-npf flex items-center justify-center text-11 font-medium text-npfg shadow-ev1 tracking-tight fold-marks relative">
-                N
-              </div>
-              <span className="font-display text-13 font-medium text-nt tracking-tight">NorAI</span>
+              <Wordmark size="md" />
             </button>
             <IconButton
               label="Collapse sidebar"
               onClick={handleCollapse}
-              className="ml-auto w-5 h-5 rounded-sm"
+              className="ml-auto w-7 h-7 rounded-sm"
             >
-              <PanelLeftClose size={12} strokeWidth={1.5} />
+              <PanelLeftClose size={15} strokeWidth={1.75} />
             </IconButton>
           </div>
 
-          <div className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-md bg-ns2 mb-3.5 text-2xs text-nt2 border border-bdr">
-            <div className="w-1 h-1 rounded-full bg-np" />
-            Now studying{' '}
-            <strong className="text-nt font-medium">
-              Ch {String(activeChapterId).padStart(2, '0')} ·{' '}
-              {chapters.find((c) => c.id === activeChapterId)?.title}
-            </strong>
-          </div>
-
           {/* ── Lecture selector ──────────────────────────────── */}
-          <div className="mb-3">
+          <div className="mb-5">
             <div className="spec-label mb-1.5">Lecture</div>
             <Select
               ariaLabel="Select lecture"
@@ -180,51 +169,50 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
               }
             />
           </div>
-          {/* ──────────────────────────────────────────────────── */}
 
-          {/* Chapter list */}
-          <div className="spec-label mb-1.5">Chapters</div>
+          {/* Chapters: call ranges. The shelf mark walks the video there. */}
+          <div className="spec-label mb-2">Chapters</div>
           {chaptersLoading ? (
-            <div className="space-y-1.5" aria-hidden="true">
+            <div className="space-y-2" aria-hidden="true">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="h-5 rounded-md bg-ns2 animate-pulse" style={{ width: `${88 - i * 9}%` }} />
+                <div key={i} className="h-10 rounded-md bg-ns2 animate-pulse" style={{ width: `${92 - i * 8}%` }} />
               ))}
             </div>
           ) : chapters.length === 0 ? (
-            <p className="text-11 text-nt4 px-1.5 py-2">No chapters yet — finish processing this lecture first.</p>
+            <p className="text-13 text-nt3 py-2">No chapters yet. They appear when the lecture finishes processing.</p>
           ) : (
-            <ul className="space-y-0.5">
+            <ul className="space-y-1">
             {chapters.map((ch) => {
               const chTime = videoMap?.chapters.find((c) => c.chapter_id === ch.id)
               const showSeek = videoEmbeddable && chTime?.start_sec != null
+              const isCurrent = activeChapterId === ch.id
+              const num = String(ch.id).padStart(2, '0')
               return (
-                <li key={ch.id} className="group relative">
+                <li
+                  key={ch.id}
+                  data-current={isCurrent ? 'true' : undefined}
+                  className="rail-range grid grid-cols-[auto_1fr] items-start gap-2.5 px-2 py-2 rounded-md transition-colors"
+                >
+                  <ShelfMark
+                    top={`CH ${num}`}
+                    time={chTime?.start_sec != null ? formatTimestamp(chTime.start_sec) : undefined}
+                    className="min-w-[52px]"
+                    label={showSeek
+                      ? `Chapter ${ch.id}: play the video from ${formatTimestamp(chTime.start_sec)}`
+                      : `Open chapter ${ch.id}`}
+                    onClick={() => {
+                      setChapter(ch.id)
+                      if (showSeek) seekToChapter(ch.id)
+                    }}
+                  />
                   <button
                     type="button"
                     onClick={() => setChapter(ch.id)}
-                    aria-current={activeChapterId === ch.id ? 'true' : undefined}
-                    className={`w-full flex items-center gap-2 px-1.5 py-1.5 rounded-md text-left text-11 transition ${FOCUS_RING} ${
-                      activeChapterId === ch.id
-                        ? 'bg-npb text-nt font-medium'
-                        : 'text-nt3 hover:bg-ns2 hover:text-nt2'
-                    }`}
+                    aria-current={isCurrent ? 'true' : undefined}
+                    className={`text-left text-14 leading-snug pt-0.5 rounded-sm cursor-pointer ${isCurrent ? 'font-bold' : ''} ${FOCUS_RING}`}
                   >
-                    <span className="text-3xs font-medium w-3.5 text-nt4">
-                      {String(ch.id).padStart(2, '0')}
-                    </span>
-                    <span className="truncate">{ch.title}</span>
+                    {ch.title}
                   </button>
-                  {showSeek && (
-                    <button
-                      type="button"
-                      title={`Jump the video to ${formatTimestamp(chTime.start_sec)}`}
-                      aria-label={`Play chapter ${ch.id} in the lecture video`}
-                      onClick={() => seekToChapter(ch.id)}
-                      className={`absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-ns3 border border-bdr text-3xs text-nt3 hover:text-nt hover:border-nt4 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition cursor-pointer ${FOCUS_RING}`}
-                    >
-                      <Play size={9} strokeWidth={1.5} /> {formatTimestamp(chTime.start_sec)}
-                    </button>
-                  )}
                 </li>
               )
             })}
@@ -232,14 +220,21 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
           )}
         </div>
 
-        <div className="h-px bg-bdr mx-3.5" />
-
-        {/* Thread list */}
-        <div className="flex-1 overflow-hidden px-3.5 py-3.5">
-          <div className="spec-label mb-1.5">Threads</div>
+        {/* Threads */}
+        <div className="px-4 py-3 mt-2 border-t border-bdr">
+          <div className="flex items-center mb-1.5">
+            <div className="spec-label">Conversations</div>
+            <button
+              type="button"
+              onClick={handleCreateThread}
+              className={`ml-auto flex items-center gap-1 text-12 font-bold text-np hover:underline rounded-sm cursor-pointer ${FOCUS_RING}`}
+            >
+              <Plus size={13} strokeWidth={2} /> New
+            </button>
+          </div>
           {threads.length === 0 && (
-            <p className="text-11 text-nt4 px-1.5 py-2">
-              No conversations yet — ask the tutor something to start one.
+            <p className="text-13 text-nt3 py-1.5">
+              Ask Nora a question to start one.
             </p>
           )}
           {threads.map((t) => (
@@ -251,113 +246,105 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
                 type="button"
                 onClick={() => handleThreadClick(t)}
                 aria-current={threadId === t ? 'true' : undefined}
-                className={`flex items-center gap-2 px-1.5 py-1.5 rounded-md text-left text-11 transition truncate ${FOCUS_RING} ${
+                className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-left text-13 transition truncate ${FOCUS_RING} ${
                   threadId === t
-                    ? 'text-nt bg-ns3'
-                    : 'text-nt3 hover:bg-ns2 hover:text-nt2'
+                    ? 'text-nt bg-ns3 font-bold'
+                    : 'text-nt2 hover:bg-ns2'
                 }`}
               >
-                <span
-                  className={`w-1 h-1 rounded-full shrink-0 ${
-                    threadId === t ? 'bg-np' : 'bg-nt4'
-                  }`}
-                />
                 <span className="truncate flex-1">{labels[t] || getThreadLabel(t)}</span>
               </button>
               <IconButton
-                label={`Delete thread ${labels[t] || getThreadLabel(t)}`}
+                label={`Delete conversation ${labels[t] || getThreadLabel(t)}`}
                 variant="bare"
                 onClick={() => handleDeleteThread(t)}
-                className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 p-0.5 rounded hover:bg-ns4"
+                className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 p-1 rounded-sm hover:bg-ns2"
               >
-                <Trash2 size={10} strokeWidth={1.5} className="text-nt4 hover:text-nr" />
+                <Trash2 size={13} strokeWidth={1.75} className="text-nt3 hover:text-nr" />
               </IconButton>
             </div>
           ))}
         </div>
 
-        <div className="h-px bg-bdr mx-3.5" />
+        <div className="mt-auto" />
 
-        {/* User Quota Badge or Guest Demo Notice */}
-        <div className="px-3.5 py-2">
+        {/* Account: minutes left, or the demo notice for guests */}
+        <div className="px-4 pt-3 pb-2">
           {!user ? (
-            <div className="p-2.5 rounded-lg bg-npb/40 border border-npbr text-11 font-sans">
-              <div className="flex items-center gap-1.5 mb-1 text-np font-semibold text-10 uppercase tracking-wider">
-                <Sparkles size={12} />
-                <span>Demo Workspace</span>
-              </div>
-              <p className="text-2xs text-nt3 mb-2.5 leading-relaxed font-sans">
-                You are previewing with read-only guest access.
+            <div className="p-3 rounded-md bg-ns3">
+              <p className="text-14 font-bold text-nt">This is a demo lecture</p>
+              <p className="text-13 text-nt3 mt-1 mb-3 leading-snug">
+                Make a free account to turn your own lectures into notes, quizzes and a tutor.
               </p>
               <button
                 onClick={() => openAuthModal('signup')}
-                className="w-full py-1.5 px-2 rounded bg-np hover:bg-nph text-npfg font-display text-10 uppercase tracking-wider font-semibold shadow-bp transition-colors cursor-pointer text-center"
+                className={`w-full py-2 px-3 rounded-md bg-npf hover:bg-npfh text-npfg text-14 font-bold transition-colors cursor-pointer active:translate-y-[1px] ${FOCUS_RING}`}
               >
-                Sign Up to Unlock AI Tutor
+                Create free account
               </button>
             </div>
           ) : (
-            <div className="p-2 rounded-lg bg-ns2 border border-bdr text-11 font-sans">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-semibold text-nt text-10 uppercase tracking-wider">
-                  {planLabel(quota?.plan_tier)}
+            <div className="p-3 rounded-md bg-ns3">
+              <div className="flex items-baseline justify-between mb-2">
+                <span className="text-13 font-bold text-nt">
+                  {planLabel(quota?.plan_tier)} plan
                 </span>
                 {quota && quota.plan_tier !== 'free' && (
                   <button
                     onClick={() => navigate('/billing')}
-                    className="text-10 text-np font-medium hover:underline cursor-pointer"
+                    className={`text-12 text-np font-bold hover:underline rounded-sm cursor-pointer ${FOCUS_RING}`}
                   >
                     Manage
                   </button>
                 )}
               </div>
               <div
-                className="w-full bg-ns4 h-1.5 rounded-full overflow-hidden mb-1"
+                className="w-full bg-ns4 h-1.5 rounded-full overflow-hidden mb-1.5"
                 role="progressbar"
                 aria-valuenow={quotaUsed(quota)}
                 aria-valuemin={0}
                 aria-valuemax={Math.max(1, quota?.monthly_minutes_quota ?? DEFAULT_TRIAL_QUOTA_MINUTES)}
-                aria-label="Monthly lecture minutes used"
+                aria-label="Lecture minutes used"
               >
                 <div
                   className="bg-np h-full rounded-full transition-all duration-200"
                   style={{ width: quotaPct(quota) }}
                 />
               </div>
-              <div className="text-10 text-nt3 flex justify-between tabular-nums">
+              <div className="text-12 text-nt3 flex justify-between font-mono">
                 <span>
-                  Used: {quota?.used_minutes_this_month ?? 0} / {quota?.monthly_minutes_quota ?? DEFAULT_TRIAL_QUOTA_MINUTES} mins
+                  {quota?.used_minutes_this_month ?? 0} / {quota?.monthly_minutes_quota ?? DEFAULT_TRIAL_QUOTA_MINUTES} min
                 </span>
                 {quota?.resets_at && (
-                  <span className="text-nt4">{quotaResetLabel(quota.resets_at)}</span>
+                  <span className="font-sans">{quotaResetLabel(quota.resets_at)}</span>
                 )}
               </div>
-              <div className="mt-2 flex justify-between text-10">
+              <div className="mt-3 flex gap-4 text-13">
                 <button
                   onClick={() => navigate('/courses')}
-                  className="text-np font-medium hover:underline cursor-pointer"
+                  className={`text-nt font-bold hover:underline rounded-sm cursor-pointer ${FOCUS_RING}`}
                 >
                   Courses
                 </button>
                 <button
                   onClick={() => navigate('/usage')}
-                  className="text-np font-medium hover:underline cursor-pointer"
+                  className={`text-nt font-bold hover:underline rounded-sm cursor-pointer ${FOCUS_RING}`}
                 >
                   Usage
                 </button>
               </div>
 
-              <div className="mt-2.5 pt-2 border-t border-bdr flex items-center justify-between text-10">
-                <span className="truncate max-w-[125px] font-mono text-nt3" title={user.email}>{user.email}</span>
+              <div className="mt-3 pt-2.5 border-t border-bdr flex items-center justify-between gap-2 text-12">
+                <span className="truncate text-nt3" title={user.email}>{user.email}</span>
                 <button
                   onClick={async () => {
                     await logout()
                     navigate('/')
                   }}
-                  className={`text-nt3 hover:text-nr flex items-center gap-1 font-medium transition-colors cursor-pointer ${FOCUS_RING}`}
+                  className={`shrink-0 text-nt3 hover:text-nr flex items-center gap-1 font-bold transition-colors rounded-sm cursor-pointer ${FOCUS_RING}`}
                   title="Sign out of NorAI"
                 >
-                  <LogOut size={11} />
+                  <LogOut size={13} strokeWidth={1.75} />
                   <span>Sign out</span>
                 </button>
               </div>
@@ -366,21 +353,9 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
         </div>
 
         {/* Theme toggle */}
-        <div className="px-3.5 pb-1.5">
+        <div className="px-4 pb-4 pt-1">
           <ThemeToggle />
         </div>
-
-        {/* New thread */}
-        <div className="p-4 pt-2">
-        <Button
-          variant="outline"
-          onClick={handleCreateThread}
-          className="w-full py-1.5 rounded-md text-11 gap-1.5 bg-transparent border-bdr2 hover:border-nt4 hover:shadow-ev1 active:translate-y-[1px] active:shadow-none"
-        >
-          <span className="text-xs">+</span> New thread
-        </Button>
-        </div>
-
       </div>
 
       {/* Collapsed rail bottom actions (P4.3 accessibility) */}
@@ -394,10 +369,10 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
             }}
             className="w-8 h-8 rounded-sm text-nt3 hover:text-nr hover:bg-ns2"
           >
-            <LogOut size={14} strokeWidth={1.5} />
+            <LogOut size={15} strokeWidth={1.75} />
           </IconButton>
         </div>
       )}
-    </div>
+    </nav>
   )
 }

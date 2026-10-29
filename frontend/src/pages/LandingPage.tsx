@@ -8,35 +8,44 @@ import { FaqList } from '../components/marketing/FaqList'
 import { FREE_MINUTES, HOME_FAQ } from '../content/faq'
 import { PAGE_META } from '../content/pages'
 import { usePageMeta } from '../lib/usePageMeta'
+import { Wordmark } from '../components/brand/Wordmark'
+import { ShelfMark } from '../components/ui/ShelfMark'
 
 interface LandingPageProps {
   onStartWorkspace: () => void
 }
 
-/** What one processed lecture contains — a ruled list, not a card grid. */
+/** What one processed lecture contains. Each output wears its zone colour,
+ *  the same one it has in the workspace. */
 const OUTPUTS = [
   {
     name: 'Study notes',
+    zone: 'bg-z-notes',
     body: 'Chapter-wise notes in the order your professor taught, with formulas typeset properly and the slides that mattered pulled out of the video.',
   },
   {
     name: 'Revision sheet',
+    zone: 'bg-z-revision',
     body: 'The night-before version: key takeaways and definitions per chapter, short enough to read on the bus.',
   },
   {
     name: 'Quiz',
-    body: 'MCQ and true/false questions at three difficulty levels, each linked back to the notes so you can see why an answer is right.',
+    zone: 'bg-z-quiz',
+    body: 'Multiple-choice and true/false questions at three levels, each linked back to the notes so you can see why an answer is right.',
   },
   {
     name: 'Flashcards',
-    body: 'A deck for every lecture. Rate each card and spaced-repetition scheduling brings back the ones you keep missing.',
+    zone: 'bg-z-cards',
+    body: 'A deck for every lecture. Rate each card and spaced repetition brings back the ones you keep missing.',
   },
   {
     name: 'Tutor',
-    body: 'Ask doubts in plain words. Nora answers only from your lecture and tells you which part of the video it is quoting.',
+    zone: 'bg-brass',
+    body: 'Ask in plain words. Nora answers only from your lecture and shows the moment in the video it is quoting.',
   },
   {
     name: 'Mind map',
+    zone: 'bg-brass',
     body: 'Each chapter as a concept tree, for when you need to see how the topics connect before an exam.',
   },
 ] as const
@@ -48,7 +57,7 @@ const STEPS = [
   },
   {
     title: 'Check the estimate, then let it run',
-    body: 'You see how many minutes it will use before anything starts. Close the tab if you like; it keeps working.',
+    body: 'You see how many minutes it will use before anything starts. Close the tab if you like; it keeps working and can notify you.',
   },
   {
     title: 'Study from it',
@@ -56,15 +65,25 @@ const STEPS = [
   },
 ] as const
 
-/** The red margin rule of a ruled notebook; content sits to its right on md+. */
-function Margin({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return (
-    <div className={`relative mx-auto w-full max-w-6xl px-4 sm:px-6 md:pl-28 ${className}`}>
-      <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-[4.5rem] hidden w-px bg-np/35 md:block" />
-      {children}
-    </div>
-  )
+/** The primary demo lecture's real chapter ranges (from its video map). */
+const DEMO_RANGES = [
+  { ch: '01', at: '0:04', title: 'Foundations of Neural Network Architecture' },
+  { ch: '02', at: '5:04', title: 'Hierarchical Feature Learning and Abstraction' },
+  { ch: '03', at: '10:07', title: 'Weights, Biases, and Activation' },
+  { ch: '04', at: '15:17', title: 'Parameterization and Linear Algebra' },
+] as const
+
+const DEMO_CODES: Record<string, string> = {
+  'Computer Science & AI': 'CS',
+  'Economics & Market Theory': 'ECON',
+  'Modern AI Engineering': 'AI',
 }
+
+function Container({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <div className={`mx-auto w-full max-w-6xl px-4 sm:px-6 ${className}`}>{children}</div>
+}
+
+const PRIMARY_BTN = `inline-flex items-center justify-center gap-2 rounded-md bg-npf px-6 h-12 text-16 font-bold text-npfg hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`
 
 export function LandingPage({ onStartWorkspace }: LandingPageProps) {
   const navigate = useNavigate()
@@ -84,21 +103,23 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
   const navLinks = (
     <>
       <a href="#how-it-works" className={`hover:text-nt transition-colors ${LINK_RING}`} onClick={() => setMenuOpen(false)}>How it works</a>
-      <a href="#demo" className={`hover:text-nt transition-colors ${LINK_RING}`} onClick={() => setMenuOpen(false)}>Demo</a>
+      <a href="#demo" className={`hover:text-nt transition-colors ${LINK_RING}`} onClick={() => setMenuOpen(false)}>Demo lectures</a>
       <Link to="/pricing" className={`hover:text-nt transition-colors ${LINK_RING}`}>It's free</Link>
       <a href="#faq" className={`hover:text-nt transition-colors ${LINK_RING}`} onClick={() => setMenuOpen(false)}>FAQ</a>
     </>
   )
 
+  const demoHref = `/workspace/${PRIMARY_DEMO_LECTURE_ID}`
+
   return (
-    <div id="main" className="min-h-screen bg-nb text-nt font-sans selection:bg-npb selection:text-npt overflow-x-hidden">
-      <header className="sticky top-0 z-40 border-b border-bdr bg-nb/92 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 py-3">
-          <Link to="/" className={`font-serif text-22 tracking-tight text-nt ${LINK_RING}`} aria-label="NorAI home">
-            Nor<span className="text-np">AI</span>
+    <div id="main" className="min-h-screen bg-nb text-nt font-sans overflow-x-hidden">
+      <header className="sticky top-0 z-40 border-b border-bdr bg-nb/95 backdrop-blur-sm">
+        <Container className="flex items-center justify-between gap-4 py-3">
+          <Link to="/" className={`rounded-sm ${LINK_RING}`} aria-label="NorAI home">
+            <Wordmark size="md" />
           </Link>
 
-          <nav aria-label="Main" className="hidden md:flex items-center gap-7 text-13 text-nt2">
+          <nav aria-label="Main" className="hidden md:flex items-center gap-7 text-15 text-nt2">
             {navLinks}
           </nav>
 
@@ -107,25 +128,25 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
               <>
                 <button
                   onClick={() => void signOut()}
-                  className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-13 text-nt2 hover:text-nrt cursor-pointer ${FOCUS_RING} rounded-md`}
+                  className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-15 text-nt2 hover:text-nrt cursor-pointer ${FOCUS_RING} rounded-md`}
                 >
-                  <LogOut size={14} aria-hidden="true" /> Sign out
+                  <LogOut size={15} aria-hidden="true" /> Sign out
                 </button>
                 <button
                   onClick={onStartWorkspace}
-                  className={`inline-flex items-center gap-1.5 rounded-md bg-npf px-4 py-2 text-13 font-medium text-npfg hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
+                  className={`inline-flex items-center gap-1.5 rounded-md bg-npf px-4 h-10 text-15 font-bold text-npfg hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
                 >
-                  Open workspace <ArrowRight size={14} aria-hidden="true" />
+                  Open your library <ArrowRight size={15} aria-hidden="true" />
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" className={`hidden sm:inline-block px-2.5 py-1.5 text-13 text-nt2 hover:text-nt ${LINK_RING}`}>
+                <Link to="/login" className={`hidden sm:inline-block px-2.5 py-1.5 text-15 text-nt2 hover:text-nt ${LINK_RING}`}>
                   Log in
                 </Link>
                 <Link
                   to="/signup"
-                  className={`inline-flex items-center rounded-md bg-npf px-4 py-2 text-13 font-medium text-npfg hover:bg-npfh active:translate-y-px transition-colors ${FOCUS_RING}`}
+                  className={`inline-flex items-center rounded-md bg-npf px-4 h-10 text-15 font-bold text-npfg hover:bg-npfh active:translate-y-px transition-colors ${FOCUS_RING}`}
                 >
                   Start free
                 </Link>
@@ -138,16 +159,16 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
               aria-expanded={menuOpen}
               aria-controls="mobile-nav"
             >
-              {menuOpen ? <X size={18} /> : <Menu size={18} />}
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
-        </div>
+        </Container>
         {menuOpen && (
-          <nav id="mobile-nav" aria-label="Main" className="md:hidden flex flex-col gap-4 border-t border-bdr bg-ns px-4 py-5 text-15 text-nt2">
+          <nav id="mobile-nav" aria-label="Main" className="md:hidden flex flex-col gap-4 border-t border-bdr bg-ns px-4 py-5 text-16 text-nt2">
             {navLinks}
             {user ? (
               <button onClick={() => void signOut()} className="flex items-center gap-2 text-left text-nt2 hover:text-nrt cursor-pointer">
-                <LogOut size={14} aria-hidden="true" /> Sign out
+                <LogOut size={15} aria-hidden="true" /> Sign out
               </button>
             ) : (
               <Link to="/login" className="hover:text-nt">Log in</Link>
@@ -156,46 +177,74 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
         )}
       </header>
 
-      {/* Hero — on faint notebook ruling */}
-      <section className="relative pt-12 sm:pt-20 pb-20 sm:pb-28 notebook-ruling">
-        <Margin>
-          <h1 className="max-w-4xl font-serif text-[clamp(2.5rem,6.2vw,4.75rem)] leading-[1.02] tracking-[-0.025em] text-balance">
-            Turn lecture videos into <em className="text-np">exam-ready</em> notes.
-          </h1>
-          <p className="mt-6 max-w-2xl text-17 leading-relaxed text-nt2">
-            Paste a YouTube link or upload your class recording. NorAI writes chapter-wise study notes, a revision
-            sheet, a quiz and flashcards, and gives you a tutor that answers only from that lecture.
-          </p>
-          <div className="mt-9 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
-            <button
-              onClick={start}
-              className={`inline-flex items-center justify-center gap-2 rounded-md bg-npf px-6 py-3.5 text-15 font-medium text-npfg shadow-bp hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
-            >
-              {user ? 'Open your workspace' : 'Start free: no card needed'}
-              <ArrowRight size={16} aria-hidden="true" />
-            </button>
-            <Link
-              to={`/workspace/${PRIMARY_DEMO_LECTURE_ID}`}
-              className={`inline-flex items-center justify-center gap-1.5 px-1 py-2 text-15 text-nt underline decoration-np/50 decoration-2 underline-offset-[6px] hover:decoration-np ${LINK_RING}`}
-            >
-              See a finished lecture first
-            </Link>
+      {/* Hero: the promise, and a stack sign for a real lecture */}
+      <section className="pt-12 sm:pt-20 pb-16 sm:pb-24">
+        <Container className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-16">
+          <div>
+            <h1 className="max-w-3xl font-serif font-semibold text-[clamp(2.5rem,5.6vw,4.25rem)] leading-[1.04] tracking-[-0.02em] text-balance">
+              Turn lecture videos into <span className="whitespace-nowrap">exam-ready</span> notes.
+            </h1>
+            <p className="mt-6 max-w-[38rem] text-18 leading-relaxed text-nt2">
+              Paste a YouTube link or upload your class recording. NorAI writes chapter-wise study notes, a revision
+              sheet, a quiz and flashcards, and gives you a tutor that answers only from that lecture, down to the
+              minute it was said.
+            </p>
+            <div className="mt-9 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+              <button onClick={start} className={PRIMARY_BTN}>
+                {user ? 'Open your library' : 'Start free: no card needed'}
+                <ArrowRight size={17} aria-hidden="true" />
+              </button>
+              <Link
+                to={demoHref}
+                className={`inline-flex items-center justify-center gap-1.5 px-1 py-2 text-16 font-bold text-np underline decoration-2 underline-offset-[6px] decoration-np/30 hover:decoration-np ${LINK_RING}`}
+              >
+                See a finished lecture first
+              </Link>
+            </div>
+            <p className="mt-5 text-14 text-nt3">
+              Free for every student: {FREE_MINUTES} lecture-minutes a month, every feature included.
+            </p>
           </div>
-          <p className="mt-5 text-13 text-nt3">
-            Free for every student: {FREE_MINUTES} lecture-minutes a month, every feature included.
-          </p>
-        </Margin>
 
-        {/* The real product, with one red-pencil annotation drawn on */}
-        <div className="relative mx-auto mt-14 sm:mt-20 max-w-6xl px-4 sm:px-6">
-          <figure className="relative">
-            <div className="overflow-hidden rounded-lg border border-bdr2 bg-ns shadow-[0_24px_60px_-28px_rgba(36,31,26,0.35)]">
+          {/* Stack sign: the demo lecture's chapters as call ranges */}
+          <Link
+            to={demoHref}
+            aria-label="Open the demo lecture: Foundations of Neural Networks and Deep Learning"
+            className={`rail group block rounded-lg p-5 sm:p-6 ${FOCUS_RING}`}
+          >
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="spec-label">Demo lecture</span>
+              <span className="font-mono text-13 text-nt3">18 min · 4 chapters</span>
+            </div>
+            <p className="mt-2 text-20 font-bold leading-snug">Foundations of Neural Networks &amp; Deep Learning</p>
+            <ul className="mt-5 space-y-1.5" aria-hidden="true">
+              {DEMO_RANGES.map((r, i) => (
+                <li
+                  key={r.ch}
+                  data-current={i === 0 ? 'true' : undefined}
+                  className="rail-range grid grid-cols-[auto_1fr] items-center gap-3 rounded-md px-2.5 py-2"
+                >
+                  <ShelfMark top={`CH ${r.ch}`} time={r.at} className="min-w-[56px]" />
+                  <span className={`text-15 leading-snug ${i === 0 ? 'font-bold' : ''}`}>{r.title}</span>
+                </li>
+              ))}
+            </ul>
+            <span className="mt-5 inline-flex items-center gap-1.5 text-15 font-bold text-np group-hover:underline underline-offset-4">
+              Open this lecture <ArrowRight size={16} aria-hidden="true" />
+            </span>
+          </Link>
+        </Container>
+
+        {/* The real product */}
+        <Container className="mt-16 sm:mt-20">
+          <figure>
+            <div className="overflow-hidden rounded-lg border border-bdr2 bg-ns shadow-ev3">
               {/* Phones get the tutor panel alone so its text stays readable. */}
               <picture>
                 <source media="(max-width: 767px)" srcSet="/landing/tutor-mobile.webp" width={722} height={960} />
                 <img
                   src="/landing/notes-and-tutor.webp"
-                  alt="NorAI workspace: chapter notes on neural networks beside the tutor answering why the input layer has 784 neurons, quoting the lecture slide."
+                  alt="NorAI workspace: chapter notes on neural networks, each section carrying its timestamp, beside Nora answering a question from the lecture with its sources."
                   width={1600}
                   height={936}
                   fetchPriority="high"
@@ -204,59 +253,44 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
                 />
               </picture>
             </div>
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 1600 936"
-              preserveAspectRatio="none"
-              className="pointer-events-none absolute inset-0 hidden h-full w-full md:block"
-            >
-              <path
-                className="pencil-draw"
-                pathLength={1}
-                d="M1116 454 C 1300 442, 1592 448, 1594 515 C 1596 582, 1380 588, 1182 585 C 1096 583, 1092 530, 1104 490 C 1110 470, 1132 459, 1170 455"
-                fill="none"
-                stroke="var(--color-np)"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-            </svg>
-            <figcaption className="mt-4 text-13 text-nt2 md:absolute md:-bottom-3 md:right-10 md:mt-0 md:max-w-xs md:translate-y-full md:text-right">
-              <span className="font-serif italic text-15 text-npt">
-                Answered from the lecture itself, down to the slide it came from.
-              </span>
+            <figcaption className="mt-4 text-15 text-nt2 max-w-2xl">
+              Every chapter, section and answer carries a shelf mark. Press one and the video plays from that moment.
             </figcaption>
           </figure>
-        </div>
+        </Container>
       </section>
 
       {/* What one lecture becomes */}
       <section aria-labelledby="outputs-heading" className="border-t border-bdr py-20 sm:py-28">
-        <Margin>
-          <h2 id="outputs-heading" className="max-w-3xl font-serif text-36 sm:text-44 leading-tight tracking-tight text-balance">
-            One lecture in. Six ways to study it out.
+        <Container>
+          <h2 id="outputs-heading" className="max-w-3xl font-serif font-semibold text-36 sm:text-44 leading-tight tracking-tight text-balance">
+            One lecture in. Six ways to study it.
           </h2>
           <dl className="mt-12 divide-y divide-bdr border-y border-bdr">
             {OUTPUTS.map((o) => (
-              <div key={o.name} className="grid gap-1 py-5 sm:grid-cols-[13rem_1fr] sm:gap-8">
-                <dt className="font-serif text-22 text-nt">{o.name}</dt>
-                <dd className="max-w-prose text-15 leading-relaxed text-nt2">{o.body}</dd>
+              <div key={o.name} className="grid gap-1.5 py-5 sm:grid-cols-[14rem_1fr] sm:gap-8">
+                <dt className="flex items-center gap-3 text-18 font-bold text-nt">
+                  <span aria-hidden="true" className={`w-3 h-3 rounded-[2px] ${o.zone}`} />
+                  {o.name}
+                </dt>
+                <dd className="max-w-[62ch] text-16 leading-relaxed text-nt2">{o.body}</dd>
               </div>
             ))}
           </dl>
-        </Margin>
+        </Container>
       </section>
 
       {/* Quiz proof */}
       <section aria-labelledby="quiz-heading" className="bg-ns border-y border-bdr py-20 sm:py-28">
-        <Margin className="grid items-center gap-12 lg:grid-cols-[1fr_1.15fr]">
+        <Container className="grid items-center gap-12 lg:grid-cols-[1fr_1.15fr]">
           <div>
-            <h2 id="quiz-heading" className="font-serif text-36 leading-tight tracking-tight text-balance">
+            <h2 id="quiz-heading" className="font-serif font-semibold text-36 leading-tight tracking-tight text-balance">
               Find the gaps before the exam does.
             </h2>
-            <p className="mt-5 max-w-md text-15 leading-relaxed text-nt2">
+            <p className="mt-5 max-w-md text-16 leading-relaxed text-nt2">
               Every lecture comes with its own question bank, written from what was actually taught. Get one wrong and
-              “Explain” shows you the exact part of the notes it came from. Your attempts are saved, so you can retake
-              only the ones you missed.
+              “Explain” shows the part of the notes it came from. Your attempts are saved, so you can retake only the
+              ones you missed.
             </p>
           </div>
           <img
@@ -266,78 +300,78 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
             height={716}
             loading="lazy"
             decoding="async"
-            className="w-full rounded-lg border border-bdr2 shadow-[0_18px_40px_-24px_rgba(36,31,26,0.35)]"
+            className="w-full rounded-lg border border-bdr2 shadow-ev2"
           />
-        </Margin>
+        </Container>
       </section>
 
-      {/* Demo lectures — a table of contents, not cards */}
+      {/* Demo lectures: a catalogue, each with its call number */}
       <section id="demo" aria-labelledby="demo-heading" className="py-20 sm:py-28">
-        <Margin>
-          <h2 id="demo-heading" className="max-w-2xl font-serif text-36 sm:text-44 leading-tight tracking-tight text-balance">
+        <Container>
+          <h2 id="demo-heading" className="max-w-2xl font-serif font-semibold text-36 sm:text-44 leading-tight tracking-tight text-balance">
             Open a lecture we already processed.
           </h2>
-          <p className="mt-4 max-w-xl text-15 text-nt2">No account needed. Read the notes, take the quiz, flip the cards.</p>
+          <p className="mt-4 max-w-xl text-16 text-nt2">No account needed. Read the notes, take the quiz, flip the cards.</p>
           <ol className="mt-10 border-t border-bdr2">
             {DEMO_LECTURES_CONFIG.map((demo) => (
               <li key={demo.id} className="border-b border-bdr2">
                 <Link
                   to={`/workspace/${demo.id}`}
-                  className={`group grid gap-2 py-6 sm:grid-cols-[1fr_auto] sm:items-baseline sm:gap-8 ${LINK_RING}`}
+                  className={`group grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6 gap-y-2 py-6 sm:grid-cols-[auto_1fr_auto] sm:items-center ${LINK_RING}`}
                 >
+                  <ShelfMark
+                    top={DEMO_CODES[demo.category] ?? 'LEC'}
+                    time={demo.duration}
+                    className="min-w-[64px] self-start sm:self-center"
+                  />
                   <span>
-                    <span className="block font-serif text-22 sm:text-24 text-nt group-hover:text-npt transition-colors">
+                    <span className="block text-20 sm:text-22 font-bold text-nt group-hover:text-np transition-colors">
                       {demo.title}
                     </span>
-                    <span className="mt-1 block max-w-2xl text-14 text-nt2">{demo.summary}</span>
+                    <span className="mt-1 block max-w-[62ch] text-15 text-nt2">{demo.summary}</span>
                   </span>
-                  <span className="flex items-center gap-3 text-13 text-nt3 tabular-nums sm:whitespace-nowrap">
-                    {demo.category} · {demo.duration} · {demo.chapterCount} chapters
-                    <ArrowUpRight size={16} aria-hidden="true" className="shrink-0 text-np transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  <span className="col-start-2 sm:col-start-auto flex items-center gap-2 text-14 text-nt3 sm:whitespace-nowrap">
+                    {demo.chapterCount} chapters
+                    <ArrowUpRight size={17} aria-hidden="true" className="shrink-0 text-np" />
                   </span>
                 </Link>
               </li>
             ))}
           </ol>
-        </Margin>
+        </Container>
       </section>
 
       {/* How it works */}
       <section id="how-it-works" aria-labelledby="how-heading" className="bg-ns border-y border-bdr py-20 sm:py-28">
-        <Margin>
-          <h2 id="how-heading" className="font-serif text-36 sm:text-44 leading-tight tracking-tight">
+        <Container>
+          <h2 id="how-heading" className="font-serif font-semibold text-36 sm:text-44 leading-tight tracking-tight">
             How it works
           </h2>
           <ol className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
             {STEPS.map((s, i) => (
               <li key={s.title} className="border-t-2 border-nt pt-5">
-                <h3 className="font-serif text-20 leading-snug text-nt">
-                  <span className="mr-2 text-np">{i + 1}.</span>
-                  {s.title}
-                </h3>
-                <p className="mt-3 text-14 leading-relaxed text-nt2">{s.body}</p>
+                <span className="font-mono text-15 font-semibold text-np">{String(i + 1).padStart(2, '0')}</span>
+                <h3 className="mt-2 text-20 font-bold leading-snug text-nt">{s.title}</h3>
+                <p className="mt-3 text-15 leading-relaxed text-nt2">{s.body}</p>
               </li>
             ))}
           </ol>
-        </Margin>
+        </Container>
       </section>
 
-      {/* Free — what the allowance covers */}
+      {/* Free: what the allowance covers */}
       <section id="pricing" aria-labelledby="pricing-heading" className="py-20 sm:py-28">
-        <Margin className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+        <Container className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
           <div>
-            <h2 id="pricing-heading" className="max-w-xl font-serif text-36 sm:text-44 leading-tight tracking-tight text-balance">
+            <h2 id="pricing-heading" className="max-w-xl font-serif font-semibold text-36 sm:text-44 leading-tight tracking-tight text-balance">
               Free. All of it.
             </h2>
-            <p className="mt-5 max-w-md text-15 leading-relaxed text-nt2">
+            <p className="mt-5 max-w-md text-16 leading-relaxed text-nt2">
               Every account gets {FREE_MINUTES} lecture-minutes every 30 days, with nothing held back for a paid tier.
               Everything you process stays in your library, and studying it again never uses minutes.
             </p>
-            <button
-              onClick={start}
-              className={`mt-8 inline-flex items-center justify-center gap-2 rounded-md bg-npf px-6 py-3 text-15 font-medium text-npfg hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
-            >
-              {user ? 'Open your workspace' : 'Create a free account'} <ArrowRight size={16} aria-hidden="true" />
+            <button onClick={start} className={`mt-8 ${PRIMARY_BTN}`}>
+              {user ? 'Open your library' : 'Create a free account'} <ArrowRight size={17} aria-hidden="true" />
             </button>
           </div>
           <dl className="divide-y divide-bdr border-y border-bdr self-start">
@@ -347,47 +381,44 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
               ['No card', 'Sign up with an email. Nothing to cancel, nothing that renews.'],
               ['Yours to keep', 'Re-reading notes, retaking quizzes and asking the tutor never use minutes.'],
             ].map(([term, body]) => (
-              <div key={term} className="grid gap-1 py-4 sm:grid-cols-[9.5rem_1fr] sm:gap-6">
-                <dt className="font-serif text-20 text-nt">{term}</dt>
-                <dd className="text-14 leading-relaxed text-nt2">{body}</dd>
+              <div key={term} className="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
+                <dt className="text-17 font-bold text-nt">{term}</dt>
+                <dd className="text-15 leading-relaxed text-nt2">{body}</dd>
               </div>
             ))}
           </dl>
-        </Margin>
+        </Container>
       </section>
 
-      {/* FAQ — answer-first, also mirrored in index.html JSON-LD */}
+      {/* FAQ: answer-first, mirrored in the FAQPage JSON-LD */}
       <section id="faq" aria-labelledby="faq-heading" className="border-t border-bdr py-20 sm:py-28">
-        <Margin>
-          <h2 id="faq-heading" className="font-serif text-36 sm:text-44 leading-tight tracking-tight">
+        <Container>
+          <h2 id="faq-heading" className="font-serif font-semibold text-36 sm:text-44 leading-tight tracking-tight">
             Questions students ask
           </h2>
           <div className="mt-10 max-w-3xl">
             <FaqList items={HOME_FAQ} />
           </div>
-        </Margin>
+        </Container>
       </section>
 
-      {/* Closing */}
-      <section className="bg-nt text-nb py-20 sm:py-24">
-        <Margin className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-          <p className="max-w-2xl font-serif text-36 sm:text-44 leading-tight tracking-tight text-balance">
+      {/* Closing, on the green of the stacks */}
+      <section className="rail py-20 sm:py-24">
+        <Container className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+          <p className="max-w-2xl font-serif font-semibold text-36 sm:text-44 leading-tight tracking-tight text-balance">
             Your next lecture, already revised.
           </p>
-          <button
-            onClick={start}
-            className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-npf px-6 py-3.5 text-15 font-medium text-npfg hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
-          >
-            {user ? 'Open your workspace' : 'Start free'} <ArrowRight size={16} aria-hidden="true" />
+          <button onClick={start} className={`shrink-0 ${PRIMARY_BTN}`}>
+            {user ? 'Open your library' : 'Start free'} <ArrowRight size={17} aria-hidden="true" />
           </button>
-        </Margin>
+        </Container>
       </section>
 
-      <footer className="border-t border-bdr bg-nb py-10 text-13 text-nt3">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            <span className="font-serif text-17 text-nt">Nor<span className="text-np">AI</span></span>
-            <span className="ml-3">Study notes and a tutor from your lectures. © 2026</span>
+      <footer className="border-t border-bdr bg-nb py-10 text-14 text-nt3">
+        <Container className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <Wordmark size="sm" />
+            <span>Study notes and a tutor from your lectures. © 2026</span>
           </p>
           <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2">
             <Link to="/pricing" className={`hover:text-nt ${LINK_RING}`}>Free plan</Link>
@@ -395,7 +426,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
             <Link to="/signup" className={`hover:text-nt ${LINK_RING}`}>Sign up</Link>
             <Link to="/login" className={`hover:text-nt ${LINK_RING}`}>Log in</Link>
           </nav>
-        </div>
+        </Container>
       </footer>
     </div>
   )

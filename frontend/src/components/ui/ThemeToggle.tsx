@@ -4,18 +4,26 @@ import { Sun, Moon } from 'lucide-react'
 const STORAGE_KEY = 'norai-theme'
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<'dark' | 'light'>(
-    () => (localStorage.getItem(STORAGE_KEY) as 'dark' | 'light') || 'light'
-  )
+  // No saved choice: follow the OS, so a student studying at night with a
+  // dark system theme isn't greeted by a white page.
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY) as 'dark' | 'light' | null
+    if (saved) return saved
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  })
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem(STORAGE_KEY, theme)
     const meta = document.querySelector('meta[name="theme-color"]')
-    if (meta) meta.setAttribute('content', theme === 'dark' ? '#0B1E3A' : '#F6F2E7')
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#131614' : '#FBFBF8')
   }, [theme])
 
-  const toggle = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
+  // Saved only on an explicit toggle, so the OS default keeps following the OS.
+  const toggle = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    try { localStorage.setItem(STORAGE_KEY, next) } catch { /* private mode */ }
+    setTheme(next)
+  }
 
   return (
     <button

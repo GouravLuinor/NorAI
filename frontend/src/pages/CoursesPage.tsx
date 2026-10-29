@@ -100,7 +100,7 @@ export function CoursesPage() {
 
   if (!user) {
     return (
-      <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
+      <div id="main" className="min-h-screen bg-nb flex flex-col items-center justify-center px-6 py-16">
         <div className="max-w-md w-full text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-npb border border-npbr text-npt font-mono text-11 font-medium mb-6">
             <BookOpen size={12} className="text-np" />
@@ -122,7 +122,7 @@ export function CoursesPage() {
   }
 
   return (
-    <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center py-12 px-6">
+    <div id="main" className="min-h-screen bg-nb flex flex-col items-center py-12 px-6">
       <div className="w-full max-w-3xl flex flex-col gap-6 relative z-10">
         <button
           onClick={() => navigate('/workspace')}

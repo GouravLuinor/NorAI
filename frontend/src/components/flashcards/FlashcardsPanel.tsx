@@ -241,9 +241,9 @@ export function FlashcardsPanel() {
           >
             {/* Front */}
             <div aria-hidden={flipped || undefined} className="absolute inset-0 bg-ns border border-bdr2 rounded-xl p-5 flex flex-col items-center justify-center backface-hidden">
-              <span className="text-2xs font-semibold text-nt3 uppercase tracking-wider mb-4">Front</span>
+              <span className="text-12 font-bold text-nt3 mb-4">Front</span>
               <span
-                className={`mb-3 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                className={`mb-3 text-12 font-bold px-2 py-0.5 rounded-full border ${
                   isCardDue(cardKey ? schedule[cardKey] : undefined)
                     ? 'bg-na/10 text-na border-na/25'
                     : 'bg-ns2 text-nt3 border-bdr2'
@@ -263,7 +263,7 @@ export function FlashcardsPanel() {
               </p>
               {card?.explanation && (
                 <div className="flex items-start gap-2 mt-4 p-3 bg-nb border border-bdr2 rounded-md w-full max-w-[85%]">
-                  <div className="w-5 h-5 rounded-sm bg-npf flex items-center justify-center text-3xs font-bold text-npfg shrink-0">
+                  <div className="w-5 h-5 rounded-[4px] bg-brass flex items-center justify-center text-12 font-bold text-[#16181A] shrink-0">
                     N
                   </div>
                   <p className="text-11 text-nt2 break-words leading-relaxed">
@@ -328,19 +328,19 @@ export function FlashcardsPanel() {
       <div className="flex justify-around items-center px-4 py-2 border-t border-bdr bg-ns2 shrink-0">
         <div className="text-center">
           <div className="text-base font-mono font-semibold text-nt">{reviewed}</div>
-          <div className="text-3xs text-nt3 uppercase tracking-wider">Reviewed</div>
+          <div className="text-12 text-nt3">Reviewed</div>
         </div>
         <div className="text-center">
           <div className="text-base font-mono font-semibold text-ng">{gotIt}</div>
-          <div className="text-3xs text-nt3 uppercase tracking-wider">Got it</div>
+          <div className="text-12 text-nt3">Got it</div>
         </div>
         <div className="text-center">
           <div className="text-base font-mono font-semibold text-na">{almost}</div>
-          <div className="text-3xs text-nt3 uppercase tracking-wider">Almost</div>
+          <div className="text-12 text-nt3">Almost</div>
         </div>
         <div className="text-center">
           <div className="text-base font-mono font-semibold text-nt3">{left}</div>
-          <div className="text-3xs text-nt3 uppercase tracking-wider">Left</div>
+          <div className="text-12 text-nt3">Left</div>
         </div>
       </div>
     </div>

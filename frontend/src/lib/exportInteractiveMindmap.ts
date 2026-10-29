@@ -46,10 +46,10 @@ function buildHtml(maps: ConceptMapResponse[], lectureId: string): string {
 <title>${escapeHtml(lectureTitle)} — Interactive Mind Map</title>
 <style>
   :root {
-    --nb: #0B1E3A; --ns: #112948; --ns2: #173352; --ns3: #1F4063; --ns4: #274C74;
-    --nt: #E9F1FA; --nt2: #B8C9DE; --nt3: #98AFCB;
-    --np: #E85D2F; --npfg: #FFFFFF;
-    --bdr: rgba(233,241,250,0.12); --bdr2: rgba(233,241,250,0.22);
+    --nb: #131614; --ns: #1A1E1C; --ns2: #212624; --ns3: #2A302D; --ns4: #363D39;
+    --nt: #E6E8E3; --nt2: #C4C9C4; --nt3: #A3AAA5;
+    --np: #2C7A5E; --npfg: #FFFFFF;
+    --bdr: rgba(230,232,227,0.12); --bdr2: rgba(230,232,227,0.20);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }

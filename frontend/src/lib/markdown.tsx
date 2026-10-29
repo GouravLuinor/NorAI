@@ -77,12 +77,25 @@ interface MarkdownComponentsOptions {
   // Deep headings (h3–h6) get generated `id`s for anchor linking. Only doc
   // views opt in; revision/print reuse the same base styles without them.
   headingIds?: boolean
+  // Reading pane (study notes): Literata at reading size, a 68ch measure.
+  reading?: boolean
 }
 
 // Single source of truth for the shared ReactMarkdown `components` object.
 export function createMarkdownComponents(options: MarkdownComponentsOptions = {}): Components {
   const isChat = options.chat === true
   const withHeadingIds = options.headingIds === true
+  const reading = options.reading === true
+  const pClass = isChat
+    ? 'mb-1.5 last:mb-0'
+    : reading
+      ? 'font-serif text-17 text-nt leading-[1.65] mb-3 last:mb-0 max-w-[68ch]'
+      : 'text-15 text-nt2 leading-relaxed mb-2 last:mb-0 max-w-[72ch]'
+  const liClass = isChat
+    ? 'relative pl-4 leading-relaxed'
+    : reading
+      ? 'relative pl-5 font-serif text-17 text-nt leading-[1.6] max-w-[66ch]'
+      : 'relative pl-5 text-15 text-nt2 leading-relaxed max-w-[70ch]'
 
   // De-dupe generated heading ids within a single render (repeated heading
   // text, e.g. "Introduction"/"Conclusion", must not share a DOM id).
@@ -96,35 +109,35 @@ export function createMarkdownComponents(options: MarkdownComponentsOptions = {}
 
   return {
     p: ({ children }) => (
-      <p className={isChat ? 'mb-1.5 last:mb-0' : 'text-13 text-nt2 leading-relaxed mb-2 last:mb-0'}>
+      <p className={pClass}>
         {children}
       </p>
     ),
-    strong: ({ children }) => <strong className="text-nt font-medium">{children}</strong>,
+    strong: ({ children }) => <strong className="text-nt font-semibold">{children}</strong>,
     ul: ({ children }) => (
       <ul className={isChat ? 'list-none pl-0 space-y-1 mt-1' : 'list-none pl-0 space-y-2'}>
         {children}
       </ul>
     ),
     li: ({ children }) => (
-      <li className={isChat ? 'relative pl-4 text-xs text-nt2 leading-relaxed' : 'relative pl-5 text-13 text-nt2 leading-relaxed'}>
-        <span className={`absolute left-0 top-2 rounded-full bg-ns3 border border-bdr2 ${isChat ? 'w-1 h-1' : 'w-1.5 h-1.5'}`} />
+      <li className={liClass}>
+        <span className={`absolute left-0 rounded-[1px] bg-np ${isChat ? 'top-2 w-1 h-1' : reading ? 'top-[0.7em] w-1.5 h-1.5' : 'top-[0.6em] w-1.5 h-1.5'}`} />
         {children}
       </li>
     ),
     code: ({ children, className }) => {
       if (!className) {
         return (
-          <code className={isChat ? 'font-mono text-2xs bg-ns2 px-1 py-0.5 rounded text-nt border border-bdr' : 'font-mono text-2xs bg-ns2 px-1.5 py-0.5 rounded text-nt border border-bdr'}>
+          <code className={isChat ? 'font-mono text-[0.9em] bg-ns2 px-1 py-0.5 rounded text-nt border border-bdr' : 'font-mono text-[0.85em] bg-ns2 px-1.5 py-0.5 rounded text-nt border border-bdr'}>
             {children}
           </code>
         )
       }
       return <code className={className}>{children}</code>
     },
-    table: ({ children }) => <table className="w-full text-xs text-nt2">{children}</table>,
+    table: ({ children }) => <table className="w-full text-14 text-nt2 tabular-nums">{children}</table>,
     thead: ({ children }) => (
-      <thead className="text-2xs font-semibold text-nt uppercase tracking-wider border-b border-bdr2">
+      <thead className="text-13 font-bold text-nt border-b border-bdr2">
         {children}
       </thead>
     ),
@@ -159,23 +172,23 @@ export function createMarkdownComponents(options: MarkdownComponentsOptions = {}
     ...(withHeadingIds
       ? {
           h3: ({ children }: { children?: React.ReactNode }) => (
-            <h3 id={uniqueHeadingId(extractText(children))} className="text-sm font-medium text-nt mt-5 mb-2">{children}</h3>
+            <h3 id={uniqueHeadingId(extractText(children))} className="text-16 font-bold text-nt mt-5 mb-2">{children}</h3>
           ),
           h4: ({ children }: { children?: React.ReactNode }) => (
-            <h4 id={uniqueHeadingId(extractText(children))} className="text-13 font-medium text-nt mt-4 mb-2">{children}</h4>
+            <h4 id={uniqueHeadingId(extractText(children))} className="text-15 font-bold text-nt mt-4 mb-2">{children}</h4>
           ),
           h5: ({ children }: { children?: React.ReactNode }) => (
-            <h5 id={uniqueHeadingId(extractText(children))} className="text-xs font-medium text-nt mt-4 mb-2">{children}</h5>
+            <h5 id={uniqueHeadingId(extractText(children))} className="text-14 font-bold text-nt mt-4 mb-2">{children}</h5>
           ),
           h6: ({ children }: { children?: React.ReactNode }) => (
-            <h6 id={uniqueHeadingId(extractText(children))} className="text-11 font-medium text-nt mt-4 mb-2">{children}</h6>
+            <h6 id={uniqueHeadingId(extractText(children))} className="text-13 font-bold text-nt mt-4 mb-2">{children}</h6>
           ),
         }
       : {}),
   }
 }
 
-export const docMarkdownComponents = createMarkdownComponents({ headingIds: true })
+export const docMarkdownComponents = createMarkdownComponents({ headingIds: true, reading: true })
 export const revisionMarkdownComponents = createMarkdownComponents()
 export const printMarkdownComponents = createMarkdownComponents()
 export const chatMarkdownComponents = createMarkdownComponents({ chat: true })

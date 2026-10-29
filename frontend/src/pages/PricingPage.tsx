@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Lock, RotateCcw, Smartphone } from 'lucide-react
 import { useAuthStore } from '../stores/useAuthStore'
 import { useToastStore } from '../stores/useToastStore'
 import { PlanSheet } from '../components/billing/PlanSheet'
+import { Wordmark } from '../components/brand/Wordmark'
 import { FaqList } from '../components/marketing/FaqList'
 import { FREE_FAQ, FREE_MINUTES, PRICING_FAQ } from '../content/faq'
 import { PAGE_META } from '../content/pages'
@@ -63,21 +64,28 @@ export function PricingPage() {
   // backend reports payments_enabled.
   if (!payments_enabled) {
     return (
-      <div id="main" className="min-h-screen bg-nb text-nt font-sans selection:bg-npb selection:text-npt">
+      <div id="main" className="min-h-screen bg-nb text-nt font-sans">
+        <header className="border-b border-bdr">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 py-3 flex items-center justify-between">
+            <Link to="/" className={`rounded-sm ${LINK_RING}`} aria-label="NorAI home">
+              <Wordmark size="md" />
+            </Link>
+            <Link to="/" className={`inline-flex items-center gap-1.5 text-15 text-nt2 hover:text-nt ${LINK_RING}`}>
+              <ArrowLeft size={15} aria-hidden="true" /> Home
+            </Link>
+          </div>
+        </header>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10 sm:py-14">
-          <Link to="/" className={`inline-flex items-center gap-1.5 text-13 text-nt3 hover:text-nt ${LINK_RING}`}>
-            <ArrowLeft size={14} aria-hidden="true" /> NorAI home
-          </Link>
 
-          <header className="mt-10">
-            <h1 className="font-serif text-44 sm:text-[3.5rem] leading-[1.05] tracking-tight text-balance">
+          <div>
+            <h1 className="font-serif font-semibold text-44 sm:text-[3.5rem] leading-[1.05] tracking-tight text-balance">
               NorAI is free.
             </h1>
-            <p className="mt-5 max-w-xl text-17 leading-relaxed text-nt2">
+            <p className="mt-5 max-w-xl text-18 leading-relaxed text-nt2">
               Every account gets {FREE_MINUTES} lecture-minutes every 30 days, with every feature included. There is
               no paid tier holding anything back, and no card to enter.
             </p>
-          </header>
+          </div>
 
           <dl className="mt-12 divide-y divide-bdr border-y border-bdr">
             {[
@@ -88,8 +96,8 @@ export function PricingPage() {
               ['Mind map and PDF export', 'For seeing the whole chapter at once, or studying offline.'],
             ].map(([term, body]) => (
               <div key={term} className="grid gap-1 py-5 sm:grid-cols-[14rem_1fr] sm:gap-8">
-                <dt className="font-serif text-20 text-nt">{term}</dt>
-                <dd className="text-15 leading-relaxed text-nt2">{body}</dd>
+                <dt className="text-17 font-bold text-nt">{term}</dt>
+                <dd className="text-16 leading-relaxed text-nt2">{body}</dd>
               </div>
             ))}
           </dl>
@@ -97,19 +105,19 @@ export function PricingPage() {
           <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-4">
             <button
               onClick={() => navigate(signedIn ? '/app' : '/signup')}
-              className={`inline-flex items-center justify-center gap-2 rounded-md bg-npf px-6 py-3 text-15 font-medium text-npfg hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
+              className={`inline-flex items-center justify-center gap-2 rounded-md bg-npf px-6 h-12 text-16 font-bold text-npfg hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
             >
-              {signedIn ? 'Open your workspace' : 'Create a free account'} <ArrowRight size={16} aria-hidden="true" />
+              {signedIn ? 'Open your library' : 'Create a free account'} <ArrowRight size={17} aria-hidden="true" />
             </button>
             {signedIn && quota && (
-              <p className="text-13 text-nt3 tabular-nums">
-                You have {quota.remaining_minutes} of {quota.monthly_minutes_quota} minutes left.
+              <p className="text-15 text-nt2">
+                You have <span className="font-mono font-semibold text-nt">{quota.remaining_minutes}</span> of {quota.monthly_minutes_quota} minutes left.
               </p>
             )}
           </div>
 
           <section aria-labelledby="free-faq" className="mt-20">
-            <h2 id="free-faq" className="font-serif text-28 tracking-tight">Questions about the free plan</h2>
+            <h2 id="free-faq" className="font-serif font-semibold text-28 tracking-tight">Questions about the free plan</h2>
             <div className="mt-5">
               <FaqList items={FREE_FAQ} />
             </div>
@@ -127,7 +135,7 @@ export function PricingPage() {
         </Link>
 
         <header className="mt-8 max-w-2xl">
-          <p className="font-mono text-11 uppercase tracking-wider text-npt">Pricing · in rupees</p>
+          <p className="text-13 text-npt">Pricing · in rupees</p>
           <h1 className="mt-2 font-serif text-36 sm:text-44 leading-tight tracking-tight text-balance">
             Pay for the lecture hours you study. Nothing renews.
           </h1>

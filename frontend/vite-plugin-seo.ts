@@ -66,7 +66,7 @@ function structuredData(site: string) {
       '@type': 'Organization',
       name: NAME,
       url: `${site}/`,
-      logo: `${site}/favicon.svg`,
+      logo: `${site}/icon-512.png`,
     },
     {
       '@context': 'https://schema.org',

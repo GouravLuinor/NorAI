@@ -294,6 +294,8 @@ mimetypes.add_type("image/jpeg", ".jpeg")
 # middleware + /assets StaticFiles mount + catch-all route.
 
 SPA_DIST_DIR = Path(os.environ.get("NORAI_SPA_DIST", "frontend/dist")).resolve()
+# Not in every platform's mime table; browsers want the right type for the PWA manifest.
+mimetypes.add_type("application/manifest+json", ".webmanifest")
 
 
 def _spa_index() -> Optional[Path]:

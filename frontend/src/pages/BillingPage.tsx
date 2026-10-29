@@ -144,7 +144,7 @@ export function BillingPage() {
 
         <header className="grid gap-6 md:grid-cols-[1fr_minmax(0,22rem)] md:items-end">
           <div>
-            <p className="font-mono text-11 uppercase tracking-wider text-npt">Plan &amp; billing</p>
+            <p className="text-13 text-npt">Plan &amp; billing</p>
             <h1 className="mt-2 font-serif text-36 tracking-tight">
               {data.plan.name} plan
             </h1>
@@ -223,7 +223,7 @@ export function BillingPage() {
           ) : (
             <div className="overflow-x-auto rounded-lg border border-bdr bg-ns">
               <table className="w-full text-left text-12">
-                <thead className="border-b border-bdr text-11 uppercase tracking-wider text-nt3 font-mono">
+                <thead className="border-b border-bdr text-13 text-nt3">
                   <tr>
                     <th scope="col" className="px-4 py-2.5 font-medium">Date</th>
                     <th scope="col" className="px-4 py-2.5 font-medium">Pass</th>
@@ -244,9 +244,9 @@ export function BillingPage() {
                           <span className="block text-11 text-nt3">{formatInr(p.refunded_inr)} refunded</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 uppercase text-11 text-nt2">{p.method ?? '—'}</td>
+                      <td className="px-4 py-3 text-13 text-nt2">{p.method ?? '—'}</td>
                       <td className="px-4 py-3">
-                        <span className={`inline-block rounded border px-1.5 py-0.5 font-mono text-3xs uppercase tracking-wider ${STATUS_COPY[p.status].cls}`}>
+                        <span className={`inline-block rounded border px-1.5 py-0.5 text-12 ${STATUS_COPY[p.status].cls}`}>
                           {STATUS_COPY[p.status].label}
                         </span>
                         {p.status === 'failed' && p.failure_reason && (

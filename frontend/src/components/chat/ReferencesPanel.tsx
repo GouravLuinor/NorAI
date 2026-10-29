@@ -1,9 +1,18 @@
 import { memo, useState } from 'react'
 import type { Reference } from '../../types'
-import { Bookmark, ChevronUp, FileText, Image, Play } from 'lucide-react'
+import { ChevronUp } from 'lucide-react'
+import { ShelfMark } from '../ui/ShelfMark'
 import { FOCUS_RING } from '../ui/shared'
 import { useVideoStore } from '../../stores/useVideoStore'
 import { formatTimestamp } from '../../lib/video'
+
+/** "Chapter > 2. The input layer" -> "The input layer": the shelf mark
+ *  already says which chapter it is. */
+function sourceLabel(ref: Reference): string {
+  const raw = ref.title || ref.section || ''
+  const leaf = raw.split('>').pop()?.trim() || raw
+  return leaf.replace(/^\s*\d+(?:\.\d+)*[.)]\s+/, '')
+}
 
 interface ReferencesPanelProps {
   references: Reference[]
@@ -12,84 +21,76 @@ interface ReferencesPanelProps {
 }
 
 export const ReferencesPanel = memo(function ReferencesPanel({ references, onReferenceClick, onScreenshotClick }: ReferencesPanelProps) {
-  const [collapsed, setCollapsed] = useState(true)
+  const [collapsed, setCollapsed] = useState(false)
   // P6.3: exact-moment chunk seek with chapter fallback.
   const videoEmbeddable = useVideoStore((s) => s.embeddable)
   const chunkStart = useVideoStore((s) => s.chunkStart)
   const chapterStart = useVideoStore((s) => s.chapterStart)
   const requestSeek = useVideoStore((s) => s.requestSeek)
 
+  if (references.length === 0) return null
+
   return (
-    <div
-      className={`border-t border-bdr px-3.5 py-2.5 shrink-0 transition-all duration-240 ${
-        collapsed ? 'max-h-[34px] overflow-hidden' : 'max-h-[300px]'
-      }`}
-    >
+    <div className="border-t border-bdr px-4 py-2.5 shrink-0">
       {/* Header toggle */}
       <button
         type="button"
-        className={`w-full flex items-center justify-between mb-2 cursor-pointer ${FOCUS_RING}`}
+        className={`w-full flex items-center justify-between py-1 rounded-sm cursor-pointer ${FOCUS_RING}`}
         onClick={() => setCollapsed(!collapsed)}
         aria-expanded={!collapsed}
       >
-        <div className="flex items-center gap-1 text-2xs font-medium text-nt3">
-          <Bookmark size={12} strokeWidth={1.5} />
-          References
-          <span className="text-3xs bg-ns3 px-1.5 py-0.5 rounded-sm text-nt2 tabular-nums">
-            {references.length}
-          </span>
-        </div>
+        <span className="text-13 font-bold text-nt2">
+          Sources from this lecture <span className="font-mono text-nt3">{references.length}</span>
+        </span>
         <ChevronUp
-          size={11}
-          strokeWidth={1.5}
+          size={15}
+          strokeWidth={1.75}
           className={`text-nt3 transition-transform ${collapsed ? 'rotate-180' : ''}`}
         />
       </button>
 
-      {/* Reference rows — note rows scroll, screenshot rows open lightbox */}
-      <div inert={collapsed} className="space-y-0.5 max-h-[240px] overflow-y-auto">
-        {references.map((ref, index) => {
-          const isScreenshot = ref.type === 'screenshot'
-          const seekSec = videoEmbeddable && !isScreenshot
-            ? (ref.startSec ?? chunkStart(ref.chunkId, ref.chapterId) ?? chapterStart(ref.chapterId))
-            : null
-          return (
-            <div key={`${ref.type}-${ref.id}-${index}`} className="group flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => {
-                  if (isScreenshot) {
-                    onScreenshotClick?.(ref)
-                  } else {
-                    onReferenceClick?.(ref)
-                  }
-                }}
-                className={`flex-1 flex items-center gap-2 px-1.5 py-1.5 rounded-md cursor-pointer hover:bg-ns3 transition text-left ${FOCUS_RING}`}
-              >
-                {isScreenshot ? (
-                  <Image size={12} strokeWidth={1.5} className="text-nt3 shrink-0" />
+      {/* Each source carries its shelf mark: press it to play that moment */}
+      {!collapsed && (
+        <ul className="mt-1.5 space-y-1 max-h-[180px] overflow-y-auto">
+          {references.map((ref, index) => {
+            const isScreenshot = ref.type === 'screenshot'
+            const seekSec = videoEmbeddable && !isScreenshot
+              ? (ref.startSec ?? chunkStart(ref.chunkId, ref.chapterId) ?? chapterStart(ref.chapterId))
+              : null
+            const top = ref.chapterId != null ? `CH ${String(ref.chapterId).padStart(2, '0')}` : undefined
+            return (
+              <li key={`${ref.type}-${ref.id}-${index}`} className="flex items-center gap-2">
+                {seekSec != null ? (
+                  <ShelfMark
+                    inline
+                    top={top}
+                    time={formatTimestamp(seekSec)}
+                    label={`Play ${sourceLabel(ref)} from ${formatTimestamp(seekSec)}`}
+                    onClick={() => requestSeek(seekSec)}
+                    className="shrink-0 py-0.5"
+                  />
                 ) : (
-                  <FileText size={12} strokeWidth={1.5} className="text-nt3 shrink-0" />
+                  <ShelfMark inline top={top ?? (isScreenshot ? 'IMG' : 'NOTE')} className="shrink-0 py-0.5" />
                 )}
-                <span className="text-2xs text-nt2 flex-1 truncate">{ref.title}</span>
-                <span className="text-3xs text-nt3 shrink-0">{ref.section}</span>
-              </button>
-              {seekSec != null && (
                 <button
                   type="button"
-                  title={`Jump the video to ${formatTimestamp(seekSec)}`}
-                  aria-label={`Play ${ref.section} in the lecture video`}
-                  onClick={() => requestSeek(seekSec)}
-                  className={`flex items-center gap-1 px-1.5 py-1 rounded-sm bg-ns3 border border-bdr text-3xs text-nt3 hover:text-nt hover:border-nt4 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition cursor-pointer shrink-0 ${FOCUS_RING}`}
+                  onClick={() => {
+                    if (isScreenshot) {
+                      onScreenshotClick?.(ref)
+                    } else {
+                      onReferenceClick?.(ref)
+                    }
+                  }}
+                  className={`flex-1 min-w-0 text-left text-13 text-nt2 hover:text-nt hover:underline truncate first-letter:uppercase rounded-sm cursor-pointer ${FOCUS_RING}`}
+                  title={isScreenshot ? 'Open the slide' : 'Show this section in the notes'}
                 >
-                  <Play size={9} strokeWidth={1.5} />
-                  {formatTimestamp(seekSec)}
+                  {sourceLabel(ref)}
                 </button>
-              )}
-            </div>
-          )
-        })}
-      </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </div>
   )
 })

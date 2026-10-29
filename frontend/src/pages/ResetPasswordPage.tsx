@@ -5,6 +5,7 @@ import { useAuthStore } from '../stores/useAuthStore'
 import { useToastStore } from '../stores/useToastStore'
 import { supabase } from '../lib/supabaseClient'
 import { friendlyError } from '../lib/errorCopy'
+import { Wordmark } from '../components/brand/Wordmark'
 import { FOCUS_RING } from '../components/ui/shared'
 import { MIN_PASSWORD_LENGTH } from './AuthPage'
 
@@ -47,19 +48,19 @@ export function ResetPasswordPage() {
     }
   }
 
-  const inputClass = `w-full pl-9 pr-3 py-2.5 text-13 bg-ns border border-bdr rounded focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`
+  const inputClass = `w-full pl-10 pr-3 h-11 text-15 bg-ns border border-bdr2 rounded-md placeholder:text-nt4 focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`
 
   return (
     <div id="main" className="min-h-screen bg-nb text-nt font-sans flex flex-col justify-center py-12 px-4">
       <div className="mx-auto w-full max-w-md">
-        <div className="text-center mb-6">
-          <Link to="/" className="inline-block mb-4 font-serif font-black text-28 tracking-tight text-nt">
-            Nor<span className="text-np">AI</span>
+        <div className="mb-7">
+          <Link to="/" className={`inline-flex mb-8 rounded-sm ${FOCUS_RING}`} aria-label="NorAI home">
+            <Wordmark size="md" />
           </Link>
-          <h1 className="text-24 font-bold font-serif text-nt">Choose a new password</h1>
+          <h1 className="font-serif font-semibold text-32 leading-tight text-nt">Choose a new password</h1>
         </div>
 
-        <div className="bg-nb border border-bdr rounded-lg p-6 sm:p-8 shadow-bp">
+        <div className="bg-ns border border-bdr rounded-lg p-6 sm:p-7 shadow-ev1">
           {isLoadingSession ? (
             <div className="flex items-center justify-center gap-2 text-12 text-nt3 py-6" role="status">
               <span className="h-3.5 w-3.5 rounded-full border-2 border-ns3 border-t-np animate-spin" />
@@ -85,11 +86,11 @@ export function ResetPasswordPage() {
                 </div>
               )}
               <div>
-                <label htmlFor="new-password" className="block text-10 font-medium font-mono uppercase text-nt3 mb-1">
+                <label htmlFor="new-password" className="block text-14 font-bold text-nt2 mb-1.5">
                   New password
                 </label>
                 <div className="relative">
-                  <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-nt3" />
+                  <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nt3" />
                   <input
                     id="new-password"
                     type="password"
@@ -104,11 +105,11 @@ export function ResetPasswordPage() {
                 <p className="mt-1 text-11 text-nt3">At least {MIN_PASSWORD_LENGTH} characters.</p>
               </div>
               <div>
-                <label htmlFor="confirm-password" className="block text-10 font-medium font-mono uppercase text-nt3 mb-1">
+                <label htmlFor="confirm-password" className="block text-14 font-bold text-nt2 mb-1.5">
                   Confirm password
                 </label>
                 <div className="relative">
-                  <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-nt3" />
+                  <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nt3" />
                   <input
                     id="confirm-password"
                     type="password"
@@ -123,7 +124,7 @@ export function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 bg-np hover:bg-nph text-npfg font-display text-12 font-semibold uppercase tracking-wider rounded shadow-bp flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                className="w-full h-12 px-4 bg-npf hover:bg-npfh text-npfg text-16 font-bold rounded-md flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
               >
                 {loading ? 'Saving…' : 'Update password'}
               </button>

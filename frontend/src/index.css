@@ -14,113 +14,107 @@ html, body, #root {
   scroll-margin-top: 5rem;
 }
 
-/* Landing: faint ruled-notebook lines behind the hero (uses the grid token so
-   dark mode gets its own ruling colour). */
-.notebook-ruling {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 31px,
-    var(--color-grid) 31px,
-    var(--color-grid) 32px
-  );
-}
-
-/* Landing: the one authored motion — a red-pencil loop drawn onto the hero
-   capture. Paths set pathLength="1". Visible immediately with reduced motion. */
-.pencil-draw {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: pencil-draw 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
-}
-@keyframes pencil-draw {
-  to { stroke-dashoffset: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pencil-draw { animation: none; stroke-dashoffset: 0; }
-}
-
 @theme {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'Fira Code', monospace;
-  --font-display: 'Space Grotesk', 'Inter', -apple-system, sans-serif;
-  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  /* The Stacks: Atkinson Hyperlegible for UI, its Mono for shelf marks and
+     figures, Literata for headings and reading. font-display is the UI face
+     at heavier weight (kept as an alias so old call sites stay valid). */
+  --font-sans: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'Atkinson Hyperlegible Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-display: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Literata', Georgia, 'Times New Roman', serif;
 
-  /* Surfaces — Drafting Vellum (light, DEFAULT) */
-  --color-nb: #F6F2E7;
-  --color-ns: #FBF8F1;
-  --color-ns2: #EFE9DA;
-  --color-ns3: #E7E0CD;
-  --color-ns4: #DDD5C0;
+  /* Surfaces: spine-label white ground, pure white sheets */
+  --color-nb: #FBFBF8;
+  --color-ns: #FFFFFF;
+  --color-ns2: #F2F3EF;
+  --color-ns3: #E6E8E2;
+  --color-ns4: #D9DCD4;
 
-  /* Text — ink */
-  --color-nt: #241F1A;
-  --color-nt2: #5C524A;
-  --color-nt3: #6A5F53;
-  --color-nt4: #6D6155;
+  /* Text: near-black ink */
+  --color-nt: #16181A;
+  --color-nt2: #3F4447;
+  --color-nt3: #5D6266;
+  --color-nt4: #6C7074;
 
-  /* Accent — Red Pencil (light) */
-  --color-np: #C2410C;
-  --color-nph: #D1552E;
+  /* Primary: library green */
+  --color-np: #1F4D3F;
+  --color-nph: #2A6352;
   --color-npfg: #FFFFFF;
-  --color-npf: #C2410C;
-  --color-npfh: #A9361C;
-  --color-npb: rgba(194, 65, 12, 0.10);
-  --color-npbr: rgba(194, 65, 12, 0.22);
-  /* Accent border (light) — same red pencil as the fill; dark overrides to a
-     desaturated tone to kill chromatic vibration (UI_UX_AUDIT_REPORT §6.3). */
-  --color-npbd: #C2410C;
+  --color-npf: #1F4D3F;
+  --color-npfh: #163A2F;
+  --color-npb: rgba(31, 77, 63, 0.08);
+  --color-npbr: rgba(31, 77, 63, 0.22);
+  --color-npbd: #1F4D3F;
 
-  /* Status dots — pinned per DESIGN.md (light) */
-  --color-na: #B87C14;
-  --color-nab: rgba(184, 124, 20, 0.08);
-  --color-nabr: rgba(184, 124, 20, 0.18);
+  /* Brass: marks the current item (fills and rules; text uses brass-ink) */
+  --color-brass: #C8932E;
+  --color-brass-soft: #F6EBD2;
+  --color-brass-ink: #8A5F12;
 
-  --color-ng: #208840;
-  --color-ngb: rgba(32, 136, 64, 0.08);
-  --color-ngbr: rgba(32, 136, 64, 0.18);
+  /* The rail: green stack signage that carries navigation */
+  --color-rail: #1F4D3F;
+  --color-rail-deep: #163A2F;
+  --color-rail-ink: #EAF1EC;
+  --color-rail-mute: #A9C4B6;
+  --color-rail-brass: #E7B04A;
+  --color-rail-line: rgba(234, 241, 236, 0.16);
 
-  --color-nr: #B83030;
-  --color-nrb: rgba(184, 48, 48, 0.08);
-  --color-nrbr: rgba(184, 48, 48, 0.18);
+  /* Zones: one colour per study mode */
+  --color-z-notes: #1F4D3F;
+  --color-z-revision: #2F6FB2;
+  --color-z-quiz: #B8432F;
+  --color-z-cards: #6B4FA0;
+  --color-z-map: #8A5F12;
 
-  --color-nbl: #2B6CB0;
-  --color-nblb: rgba(43, 108, 176, 0.08);
-  --color-nblbr: rgba(43, 108, 176, 0.18);
+  /* Status */
+  --color-na: #A3680F;
+  --color-nab: rgba(163, 104, 15, 0.08);
+  --color-nabr: rgba(163, 104, 15, 0.20);
 
-  /* Accent TEXT tokens (light): slightly deeper so colored text clears 4.5:1
-     on tinted backgrounds and the vellum surfaces. */
-  --color-npt: #B93B0C;
-  --color-ngt: #1B7238;
-  --color-nat: #8A5A0A;
-  --color-nrt: #B0272C;
-  --color-nblt: #1F5FA8;
+  --color-ng: #1F7A45;
+  --color-ngb: rgba(31, 122, 69, 0.08);
+  --color-ngbr: rgba(31, 122, 69, 0.20);
 
-  --color-npu: #7820BC;
-  --color-npub: rgba(120, 32, 188, 0.08);
-  --color-npubr: rgba(120, 32, 188, 0.18);
+  --color-nr: #B3261E;
+  --color-nrb: rgba(179, 38, 30, 0.07);
+  --color-nrbr: rgba(179, 38, 30, 0.20);
 
-  /* Borders — hairline ink */
-  --color-bdr: rgba(36, 31, 26, 0.14);
-  --color-bdr2: rgba(36, 31, 26, 0.22);
+  --color-nbl: #2F6FB2;
+  --color-nblb: rgba(47, 111, 178, 0.08);
+  --color-nblbr: rgba(47, 111, 178, 0.20);
 
-  /* Blueprint grid line — light: ink @5%, dark overrides to luminous cyan */
-  --color-grid: rgba(36, 31, 26, 0.05);
+  --color-npt: #1F4D3F;
+  --color-ngt: #1B6B3C;
+  --color-nat: #8A5F12;
+  --color-nrt: #A8241C;
+  --color-nblt: #285F99;
 
-  /* Radii (replaces dead --radius) */
+  --color-npu: #6B4FA0;
+  --color-npub: rgba(107, 79, 160, 0.08);
+  --color-npubr: rgba(107, 79, 160, 0.20);
+
+  /* Borders: hairline ink */
+  --color-bdr: rgba(22, 24, 26, 0.12);
+  --color-bdr2: rgba(22, 24, 26, 0.20);
+
+  /* Legacy token (old grid paper); kept so stray references resolve */
+  --color-grid: transparent;
+
   --radius-md: 0.375rem;
 
-  /* Elevation — shadow-as-border base + hard-offset blueprint shadows */
-  --shadow-ev1: 0 0 0 1px rgba(36,31,26,0.14), 0 1px 2px rgba(36,31,26,0.05);
-  --shadow-bp: 3px 3px 0 0 rgba(36, 31, 26, 0.18);
-  --shadow-ev2: var(--shadow-bp);
-  --shadow-ev3: var(--shadow-bp);
+  /* Elevation: soft and low. No hard offsets. */
+  --shadow-ev1: 0 0 0 1px rgba(22, 24, 26, 0.10), 0 1px 2px rgba(22, 24, 26, 0.04);
+  --shadow-ev2: 0 1px 2px rgba(22, 24, 26, 0.06), 0 4px 12px rgba(22, 24, 26, 0.06);
+  --shadow-ev3: 0 2px 4px rgba(22, 24, 26, 0.06), 0 12px 32px rgba(22, 24, 26, 0.12);
+  --shadow-bp: var(--shadow-ev2);
 
   /* Type ramp (replaces arbitrary text-[9px]…text-[13.5px]) */
-  --text-3xs: 0.5625rem;
-  --text-2xs: 0.625rem;
-  --text-10: 0.625rem;
-  --text-11: 0.6875rem;
+  /* Legibility floor: nothing in the app sets below 12px. The small steps
+     are kept as names so older call sites resolve, but they land at 12/13. */
+  --text-3xs: 0.75rem;
+  --text-2xs: 0.75rem;
+  --text-10: 0.75rem;
+  --text-11: 0.8125rem;
   --text-12: 0.75rem;
   --text-13: 0.8125rem;
   --text-14: 0.875rem;
@@ -135,13 +129,37 @@ html, body, #root {
   --text-32: 2rem;
   --text-36: 2.25rem;
   --text-44: 2.75rem;
-  /* Reading-pane display size (doc H1s, Newsreader) */
-  --text-hero: 1.625rem;
+  /* Reading-pane display size (doc H1s, Literata) */
+  --text-hero: 2.125rem;
 }
 
 :root {
   color-scheme: light;
   --ds-focus-ring: 0 0 0 2px var(--color-nb), 0 0 0 4px var(--color-np);
+  accent-color: var(--color-np);
+  caret-color: var(--color-np);
+}
+
+body {
+  background: var(--color-nb);
+  color: var(--color-nt);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-brass-soft);
+  color: var(--color-nt);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-np);
+  outline-offset: 2px;
+}
+
+html {
+  scrollbar-color: var(--color-ns4) transparent;
 }
 
 /* Subtle custom scrollbar for all scrollable areas */
@@ -157,7 +175,7 @@ html, body, #root {
   transition: background 0.2s ease;
 }
 .overflow-y-auto:hover::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--color-np) 30%, transparent);
+  background: var(--color-ns4);
 }
 
 @keyframes shimmer {
@@ -170,13 +188,13 @@ html, body, #root {
 }
 
 @keyframes scrollpulse {
-  0% { background: var(--color-npb); box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-np) 40%, transparent); }
+  0% { background: var(--color-brass-soft); box-shadow: 0 0 0 2px var(--color-brass); }
   100% { background: transparent; box-shadow: 0 0 0 0 transparent; }
 }
 
 .scroll-highlight {
   animation: scrollpulse 1.5s cubic-bezier(0.4,0,0.2,1) forwards;
-  border-radius: 10px;
+  border-radius: 4px;
 }
 
 .perspective-1000 {
@@ -202,98 +220,131 @@ html, body, #root {
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Architect's Sketchbook textures ─────────────────────────────── */
+/* ── The Stacks ─────────────────────────────────────────────────── */
 
-/* Blueprint grid — 8px-snapped, subliminal (light: ink 5%, dark: luminous cyan 8%) */
-.bg-blueprint-grid {
-  background-image:
-    linear-gradient(to right, var(--color-grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--color-grid) 1px, transparent 1px);
-  background-size: 8px 8px;
-  background-position: -1px -1px;
-}
-
-/* Paper grain overlay (~6%) */
-.noise {
-  position: relative;
-}
-.noise::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.06;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* Fold-marks / crosshair registration ticks on panel corners */
-.fold-marks {
-  position: relative;
-}
-.fold-marks::before,
-.fold-marks::after {
-  content: "";
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  pointer-events: none;
-  opacity: 0.55;
-}
-.fold-marks::before {
-  top: 4px;
-  left: 4px;
-  border-top: 1px solid var(--color-nt3);
-  border-left: 1px solid var(--color-nt3);
-}
-.fold-marks::after {
-  bottom: 4px;
-  right: 4px;
-  border-bottom: 1px solid var(--color-nt3);
-  border-right: 1px solid var(--color-nt3);
-}
-
-/* Spec label — mono ALL-CAPS, red-pencil */
+/* Sign label: the small heading on a stack sign (rail groups, panel heads). */
 .spec-label {
-  font-family: var(--font-mono);
-  font-size: var(--text-2xs);
-  font-weight: 500;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: var(--text-12);
+  font-weight: 700;
+  letter-spacing: 0.02em;
   color: var(--color-nt3);
 }
 
-/* Red-pencil annotation callout — NOTE: */
-.note-callout {
-  border-left: 2px solid var(--color-npbd);
-  background: var(--color-npb);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-}
-.note-callout > .note-label {
-  font-family: var(--font-mono);
-  font-size: var(--text-2xs);
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--color-npt);
-}
-
-/* Dimension marker — ←—[48px]—→ */
-.dimension-marker {
+/* Shelf mark: a stacked call-number label. Every chapter, section, citation
+   and timestamp carries one; pressing it walks the video there. */
+.shelf-mark {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 1px;
   font-family: var(--font-mono);
-  font-size: var(--text-2xs);
-  letter-spacing: 0.1em;
-  color: var(--color-nt3);
+  font-size: var(--text-12);
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  color: var(--color-nt);
+  background: var(--color-ns);
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  padding: 3px 6px;
+  box-shadow: 0 1px 0 currentColor;
+  transition: transform var(--dur-fast) var(--ease-out-expo), box-shadow var(--dur-fast) var(--ease-out-expo);
 }
-.dimension-marker::before {
-  content: "←—";
+.shelf-mark > .shelf-mark-top { color: var(--color-np); }
+.shelf-mark-inline {
+  flex-direction: row;
+  gap: 4px;
+  font-size: var(--text-11);
+  padding: 0 5px;
+  vertical-align: 1px;
   color: var(--color-np);
+  box-shadow: none;
 }
-.dimension-marker::after {
-  content: "—→";
+button.shelf-mark { cursor: pointer; }
+button.shelf-mark:hover { background: var(--color-brass-soft); }
+button.shelf-mark:active { transform: translateY(1px); box-shadow: 0 0 0 currentColor; }
+.shelf-mark[aria-current="true"] {
+  background: var(--color-brass);
+  border-color: var(--color-brass);
+  color: var(--color-nt);
+  box-shadow: none;
+}
+.shelf-mark[aria-current="true"] > .shelf-mark-top { color: var(--color-nt); }
+
+/* The rail: the green stack-signage column. Tokens are remapped inside it so
+   every primitive (Select, buttons, the theme toggle) reads as signage
+   without a rail-specific variant. */
+.rail {
+  --color-nb: var(--color-rail);
+  --color-ns: var(--color-rail);
+  --color-ns2: color-mix(in srgb, var(--color-rail) 88%, #FFFFFF);
+  --color-ns3: var(--color-rail-deep);
+  --color-ns4: color-mix(in srgb, var(--color-rail) 76%, #FFFFFF);
+  --color-nt: var(--color-rail-ink);
+  --color-nt2: var(--color-rail-ink);
+  --color-nt3: var(--color-rail-mute);
+  --color-nt4: var(--color-rail-mute);
+  --color-np: var(--color-rail-brass);
+  --color-nph: #F0C068;
+  --color-npt: var(--color-rail-brass);
+  --color-npf: var(--color-rail-brass);
+  --color-npfh: #F0C068;
+  --color-npfg: #16181A;
+  --color-npb: rgba(231, 176, 74, 0.14);
+  --color-npbr: rgba(231, 176, 74, 0.34);
+  --color-nr: #F4A196;
+  --color-nrt: #F4A196;
+  --color-bdr: var(--color-rail-line);
+  --color-bdr2: color-mix(in srgb, var(--color-rail-ink) 28%, transparent);
+  --ds-focus-ring: 0 0 0 2px var(--color-rail), 0 0 0 4px var(--color-rail-brass);
+  --mark-bg: var(--color-rail-ink);
+  --mark-fg: var(--color-rail);
+  background: var(--color-rail);
+  color: var(--color-rail-ink);
+  scrollbar-color: var(--color-ns4) transparent;
+}
+.rail :focus-visible { outline-color: var(--color-rail-brass); }
+.rail ::selection { background: var(--color-rail-brass); color: #16181A; }
+
+/* A chapter on the rail: a call range. The current one hangs on a white
+   sign with a brass label. */
+.rail-range { color: var(--color-rail-ink); }
+.rail-range:hover { background: var(--color-ns2); }
+.rail-range[data-current="true"] {
+  background: #FBFBF8;
+  color: #16181A;
+}
+[data-theme="dark"] .rail-range[data-current="true"] { background: #DCE6E0; }
+.rail-range .shelf-mark { background: transparent; color: var(--color-rail-ink); box-shadow: none; }
+.rail-range .shelf-mark > .shelf-mark-top { color: inherit; }
+.rail-range button.shelf-mark:hover { background: var(--color-npb); }
+.rail-range[data-current="true"] .shelf-mark,
+.rail-range[data-current="true"] button.shelf-mark:hover {
+  background: var(--color-brass);
+  border-color: var(--color-brass);
+  color: #16181A;
+}
+
+/* Cited passage in the notes: brass underline, used once per seek. */
+.cited {
+  background: var(--color-brass-soft);
+  box-shadow: inset 0 -2px 0 var(--color-brass);
+}
+
+/* Lecture-note callout: a bordered panel, not a coloured stripe. */
+.note-callout {
+  border: 1px solid var(--color-bdr2);
+  background: var(--color-ns2);
+  border-radius: var(--radius-md);
+}
+.note-callout > .note-label,
+.note-callout .note-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-12);
+  font-weight: 700;
   color: var(--color-np);
 }
 
@@ -364,72 +415,82 @@ html, body, #root {
   animation: slide-in 0.2s ease-out;
 }
 
-/* Dark theme override — Blueprint at Night (luminous Prussian) */
+/* Dark theme: the library after hours. A desk lamp on a dark reading room:
+   warm-neutral charcoal ground, signage green deepened, brass brightened. */
 [data-theme="dark"] {
-  --color-nb: #0B1E3A;
-  --color-ns: #112948;
-  --color-ns2: #173352;
-  --color-ns3: #1F4063;
-  --color-ns4: #274C74;
+  --color-nb: #131614;
+  --color-ns: #1A1E1C;
+  --color-ns2: #212624;
+  --color-ns3: #2A302D;
+  --color-ns4: #363D39;
 
-  --color-nt: #E9F1FA;
-  --color-nt2: #B8C9DE;
-  --color-nt3: #B4C8E2;
-  --color-nt4: #C2D4EA;
+  --color-nt: #E6E8E3;
+  --color-nt2: #C4C9C4;
+  --color-nt3: #A3AAA5;
+  --color-nt4: #9AA19C;
 
-  --color-np: #E85D2F;
-  --color-nph: #FF6B38;
+  --color-np: #8FD1B0;
+  --color-nph: #A6DDC1;
   --color-npfg: #FFFFFF;
-  --color-npf: #C84926;
-  --color-npfh: #B93A1D;
-  --color-npb: rgba(232, 93, 47, 0.20);
-  --color-npbr: rgba(232, 93, 47, 0.38);
-  /* Desaturated accent border (dark): kills red/blue chromatic vibration on
-     callout and card accents per UI_UX_AUDIT_REPORT §6.3. */
-  --color-npbd: #D96B43;
+  --color-npf: #2C7A5E;
+  --color-npfh: #24684F;
+  --color-npb: rgba(143, 209, 176, 0.10);
+  --color-npbr: rgba(143, 209, 176, 0.26);
+  --color-npbd: #8FD1B0;
 
-  --color-na: #FFB020;
-  --color-nab: rgba(255, 176, 32, 0.14);
-  --color-nabr: rgba(255, 176, 32, 0.32);
+  --color-brass: #E7B04A;
+  --color-brass-soft: rgba(231, 176, 74, 0.18);
+  --color-brass-ink: #E7B04A;
 
-  --color-ng: #3FA657;
-  --color-ngb: rgba(63, 166, 87, 0.14);
-  --color-ngbr: rgba(63, 166, 87, 0.34);
+  --color-rail: #0F2A22;
+  --color-rail-deep: #0A1F19;
+  --color-rail-ink: #E6EEE9;
+  --color-rail-mute: #A9C4B6;
+  --color-rail-brass: #E7B04A;
+  --color-rail-line: rgba(230, 238, 233, 0.12);
 
-  --color-nr: #F2555A;
-  --color-nrb: rgba(242, 85, 90, 0.14);
-  --color-nrbr: rgba(242, 85, 90, 0.32);
+  --color-z-notes: #8FD1B0;
+  --color-z-revision: #6FA8E6;
+  --color-z-quiz: #E58A75;
+  --color-z-cards: #B49BE0;
+  --color-z-map: #E7B04A;
 
-  --color-nbl: #2F7FE0;
-  --color-nblb: rgba(47, 127, 224, 0.14);
-  --color-nblbr: rgba(47, 127, 224, 0.34);
+  --color-na: #E7B04A;
+  --color-nab: rgba(231, 176, 74, 0.14);
+  --color-nabr: rgba(231, 176, 74, 0.32);
 
-  /* Accent TEXT tokens (dark): brighter so colored text clears 4.5:1 on the
-     tinted backgrounds and the blue-ink surfaces. */
-  --color-npt: #FF7A4A;
-  --color-ngt: #54C270;
-  --color-nat: #FFB020;
-  --color-nrt: #FF7076;
-  --color-nblt: #5FA3F0;
+  --color-ng: #5CC48A;
+  --color-ngb: rgba(92, 196, 138, 0.14);
+  --color-ngbr: rgba(92, 196, 138, 0.32);
 
-  /* Accent FILL tokens (dark): deeper solid fills so white-on-fill clears 4.5. */
-  --color-ngfill: #27793F;
-  --color-nrfill: #C23A40;
+  --color-nr: #F07A6E;
+  --color-nrb: rgba(240, 122, 110, 0.14);
+  --color-nrbr: rgba(240, 122, 110, 0.32);
 
-  --color-npu: #9A5CC0;
-  --color-npub: rgba(154, 92, 192, 0.14);
-  --color-npubr: rgba(154, 92, 192, 0.34);
+  --color-nbl: #6FA8E6;
+  --color-nblb: rgba(111, 168, 230, 0.14);
+  --color-nblbr: rgba(111, 168, 230, 0.32);
 
-  --color-bdr: rgba(233, 241, 250, 0.12);
-  --color-bdr2: rgba(233, 241, 250, 0.20);
+  --color-npt: #8FD1B0;
+  --color-ngt: #6ACF96;
+  --color-nat: #E7B04A;
+  --color-nrt: #F48A80;
+  --color-nblt: #84B6EC;
 
-  --color-grid: rgba(140, 200, 255, 0.08);
+  --color-ngfill: #1F7A45;
+  --color-nrfill: #B3261E;
 
-  /* Hard-offset shadows on the dark canvas — LIGHT edges (lit cut), not black */
-  --shadow-ev1: 0 0 0 1px rgba(233,241,250,0.10), 0 1px 3px rgba(5, 14, 28, 0.55);
-  --shadow-bp: 3px 3px 0 0 rgba(150, 200, 255, 0.10);
-  --shadow-ev2: var(--shadow-bp);
-  --shadow-ev3: var(--shadow-bp);
+  --color-npu: #B49BE0;
+  --color-npub: rgba(180, 155, 224, 0.14);
+  --color-npubr: rgba(180, 155, 224, 0.32);
+
+  --color-bdr: rgba(230, 232, 227, 0.12);
+  --color-bdr2: rgba(230, 232, 227, 0.20);
+
+  --shadow-ev1: 0 0 0 1px rgba(230, 232, 227, 0.10), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-ev2: 0 0 0 1px rgba(230, 232, 227, 0.08), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-ev3: 0 0 0 1px rgba(230, 232, 227, 0.10), 0 12px 32px rgba(0, 0, 0, 0.5);
+  --shadow-bp: var(--shadow-ev2);
 }
 
 [data-theme="dark"] {
@@ -437,10 +498,13 @@ html, body, #root {
   --ds-focus-ring: 0 0 0 2px var(--color-nb), 0 0 0 4px var(--color-np);
 }
 
+[data-theme="dark"] .shelf-mark[aria-current="true"] { color: #16181A; }
+[data-theme="dark"] .shelf-mark[aria-current="true"] > .shelf-mark-top { color: #16181A; }
+
 /* Code blocks in the reading pane sit on a darker surface than the narrative
    cards so they read as distinct objects (UI_UX_AUDIT_REPORT §6.3). */
 [data-theme="dark"] .doc-content pre {
-  background: #071426;
+  background: #0E1110;
   border: 1px solid var(--color-bdr2);
   border-radius: var(--radius-md);
 }

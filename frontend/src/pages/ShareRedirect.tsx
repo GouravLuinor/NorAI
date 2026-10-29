@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Share2 } from 'lucide-react'
+import { Wordmark } from '../components/brand/Wordmark'
 import { Button } from '../components/ui/Button'
 import { apiGet } from '../lib/http'
 import type { ResolvedShare } from '../types'
@@ -37,25 +37,24 @@ export function ShareRedirect() {
   }, [slug, navigate])
 
   return (
-    <div id="main" className="min-h-screen bg-nb bg-blueprint-grid noise flex flex-col items-center justify-center px-6 py-16">
-      <div className="max-w-md w-full text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-npb border border-npbr text-npt font-mono text-11 font-medium mb-6">
-          <Share2 size={12} className="text-np" />
-          <span>SHARED LECTURE</span>
+    <div id="main" className="min-h-screen bg-nb flex flex-col items-center justify-center px-6 py-16">
+      <div className="max-w-md w-full">
+        <div className="mb-10">
+          <Wordmark size="md" />
         </div>
         {state === 'resolving' ? (
           <>
-            <h1 className="text-24 font-bold font-serif text-nt tracking-tight mb-3">Opening shared lecture…</h1>
-            <p className="text-13 text-nt2">Resolving the share link.</p>
+            <h1 className="text-28 font-semibold font-serif text-nt leading-tight mb-2">Opening a shared lecture…</h1>
+            <p className="text-16 text-nt2" role="status">Someone shared their notes with you. One moment.</p>
           </>
         ) : (
           <>
-            <h1 className="text-24 font-bold font-serif text-nt tracking-tight mb-3">Share link not found</h1>
-            <p className="text-13 text-nt2 mb-6">
+            <h1 className="text-28 font-semibold font-serif text-nt leading-tight mb-2">This share link doesn't work</h1>
+            <p className="text-16 text-nt2 leading-relaxed mb-6">
               This link may have been revoked, expired, or mistyped. Ask the owner for a fresh link.
             </p>
-            <Button variant="outline" className="px-4 py-2 rounded-md text-12 bg-transparent border-bdr2" onClick={() => navigate('/')}>
-              Back to home
+            <Button className="px-5 h-11 rounded-md text-15 font-bold" onClick={() => navigate('/')}>
+              Go to NorAI
             </Button>
           </>
         )}

@@ -55,11 +55,11 @@ export function PlanSheet({ plans, paymentsEnabled, currentPlanId, busyPlanId, o
                 {plan.name}
               </h3>
               {isCurrent ? (
-                <span className="font-mono text-3xs uppercase tracking-wider text-ngt bg-ngb border border-ngbr px-1.5 py-0.5 rounded">
+                <span className="text-12 text-ngt bg-ngb border border-ngbr px-1.5 py-0.5 rounded">
                   Current
                 </span>
               ) : isEmph && !highlightId ? (
-                <span className="font-mono text-3xs uppercase tracking-wider text-npt">Best value</span>
+                <span className="text-12 text-npt">Best value</span>
               ) : null}
             </div>
             <p className="text-12 text-nt2 mt-1 min-h-[2.5em]">{plan.tagline}</p>
@@ -91,7 +91,7 @@ export function PlanSheet({ plans, paymentsEnabled, currentPlanId, busyPlanId, o
                 disabled
                   ? 'bg-ns2 text-nt3 border border-bdr cursor-not-allowed'
                   : isEmph || (plan.purchasable && isCurrent)
-                    ? 'bg-npf hover:bg-npfh text-npfg shadow-bp active:translate-y-px cursor-pointer'
+                    ? 'bg-npf hover:bg-npfh text-npfg shadow-ev1 active:translate-y-px cursor-pointer'
                     : 'bg-ns hover:bg-ns2 border border-bdr2 text-nt active:translate-y-px cursor-pointer'
               }`}
             >

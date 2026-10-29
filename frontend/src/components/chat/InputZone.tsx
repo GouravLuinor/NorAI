@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
-import { ArrowUp } from 'lucide-react'
-import { IconButton } from '../ui/IconButton'
+import { Button } from '../ui/Button'
 
 interface InputZoneProps {
   onSend: (text: string) => void
@@ -38,14 +37,14 @@ export function InputZone({ onSend, disabled = false }: InputZoneProps) {
   }
 
   return (
-    <div className="px-3 py-2.5 border-t border-bdr shrink-0">
-      <div className="flex items-end gap-2 bg-ns2 border border-bdr2 rounded-lg px-2.5 py-2 focus-within:shadow-[0_0_0_1px_var(--color-np)] transition">
+    <div className="px-4 pt-2.5 pb-3 border-t border-bdr shrink-0">
+      <div className="flex items-end gap-2 bg-ns border-[1.5px] border-nt rounded-md pl-3 pr-1.5 py-1.5 focus-within:border-np transition-colors">
         <textarea
           ref={textareaRef}
           name="chat-message"
-          aria-label="Chat message"
-          className="flex-1 bg-transparent border-none outline-none text-11 text-nt font-sans resize-none leading-relaxed min-h-[18px] max-h-[60px] placeholder:text-nt3 disabled:opacity-60"
-          placeholder={disabled ? 'Nora is thinking…' : 'Ask Nora anything…'}
+          aria-label="Ask Nora about this lecture"
+          className="flex-1 bg-transparent border-none outline-none text-15 text-nt font-sans resize-none leading-snug py-1.5 min-h-[22px] max-h-[120px] placeholder:text-nt4 disabled:opacity-60"
+          placeholder={disabled ? 'Nora is answering…' : 'Ask about this lecture…'}
           rows={1}
           value={value}
           disabled={disabled}
@@ -55,18 +54,16 @@ export function InputZone({ onSend, disabled = false }: InputZoneProps) {
           }}
           onKeyDown={handleKeyDown}
         />
-        <IconButton
-          label="Send message"
-          variant="primary"
+        <Button
           onClick={handleSend}
           disabled={disabled || !value.trim()}
-          className="w-7 h-7 rounded-sm"
+          className="h-8 px-3.5 rounded-[4px] text-14 font-bold shrink-0"
         >
-          <ArrowUp size={13} strokeWidth={1.5} />
-        </IconButton>
+          Ask
+        </Button>
       </div>
-      <div className="text-3xs text-nt4 text-center mt-1.5">
-        ⌃ Enter to send
+      <div className="text-12 text-nt4 mt-1.5">
+        Enter to ask · Shift+Enter for a new line
       </div>
     </div>
   )

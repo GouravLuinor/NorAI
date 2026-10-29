@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { X, Mail, Lock, User as UserIcon, ArrowRight } from 'lucide-react'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { FREE_MINUTES } from '../../content/faq'
@@ -87,27 +86,22 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
 
   return (
     <Dialog ariaLabel={tab === 'login' ? 'Sign in to NorAI' : 'Create your NorAI account'} onClose={closeAuthModal}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className="relative w-full max-w-md overflow-hidden rounded-lg bg-nb border border-bdr p-6 shadow-bp"
-      >
+      <div className="relative w-full max-w-md overflow-hidden rounded-lg bg-ns border border-bdr p-6 sm:p-7 shadow-ev3">
         {/* Close button */}
         <button
           onClick={closeAuthModal}
           aria-label="Close sign-in dialog"
-          className={`absolute top-4 right-4 text-nt3 hover:text-nt p-1 rounded transition-colors ${FOCUS_RING}`}
+          className={`absolute top-4 right-4 text-nt3 hover:text-nt hover:bg-ns2 p-1.5 rounded-md transition-colors ${FOCUS_RING}`}
         >
           <X size={18} />
         </button>
 
         {/* Header */}
-        <div className="mb-6 text-center">
-          <h2 className="text-22 font-bold font-serif text-nt">
+        <div className="mb-6 pr-8">
+          <h2 className="text-24 font-semibold font-serif text-nt">
             {tab === 'login' ? 'Welcome back' : 'Create your free account'}
           </h2>
-          <p className="text-12 text-nt2 mt-1 font-sans">
+          <p className="text-15 text-nt2 mt-1.5 leading-relaxed">
             {tab === 'login'
               ? 'Your lectures, notes and tutor threads are waiting.'
               : `Free: ${FREE_MINUTES} lecture-minutes a month, every feature included. No card.`}
@@ -115,39 +109,39 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
         </div>
 
         {/* Segmented Control */}
-        <div className="grid grid-cols-2 p-1 bg-ns2 rounded mb-6 border border-bdr font-display text-11 uppercase font-semibold">
+        <div className="grid grid-cols-2 p-1 bg-ns2 rounded-md mb-6 text-14 font-bold">
           <button
             onClick={() => setTab('login')}
-            className={`py-1.5 rounded transition-all cursor-pointer ${FOCUS_RING} ${
+            className={`h-9 rounded-[4px] transition-colors cursor-pointer ${FOCUS_RING} ${
               tab === 'login'
-                ? 'bg-ns text-np shadow-xs'
+                ? 'bg-ns text-np shadow-ev1'
                 : 'text-nt3 hover:text-nt'
             }`}
           >
-            Log In
+            Sign in
           </button>
           <button
             onClick={() => setTab('signup')}
-            className={`py-1.5 rounded transition-all cursor-pointer ${FOCUS_RING} ${
+            className={`h-9 rounded-[4px] transition-colors cursor-pointer ${FOCUS_RING} ${
               tab === 'signup'
-                ? 'bg-ns text-np shadow-xs'
+                ? 'bg-ns text-np shadow-ev1'
                 : 'text-nt3 hover:text-nt'
             }`}
           >
-            Sign Up
+            Create account
           </button>
         </div>
 
         {/* Error Banner */}
         {error && (
-          <div className="mb-4 p-3 rounded bg-nrb border border-nrbr text-nrt text-12" role="alert">
+          <div className="mb-4 p-3 rounded-md bg-nrb border border-nrbr text-nrt text-14" role="alert">
             {error}
           </div>
         )}
 
         {/* Info Banner */}
         {info && (
-          <div className="mb-4 p-3 rounded bg-npb border border-npbr text-npt text-12" role="status">
+          <div className="mb-4 p-3 rounded-md bg-npb border border-npbr text-npt text-14" role="status">
             {info}
           </div>
         )}
@@ -156,9 +150,9 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {tab === 'signup' && (
             <div>
-              <label htmlFor="auth-fullname" className="block text-10 font-medium font-mono uppercase text-nt3 mb-1">Full Name</label>
+              <label htmlFor="auth-fullname" className="block text-14 font-bold text-nt2 mb-1.5">Name</label>
               <div className="relative">
-                <UserIcon size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-nt3" />
+                <UserIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nt3" />
                 <input
                   id="auth-fullname"
                   type="text"
@@ -166,16 +160,16 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Alex Morgan"
-                  className={`w-full pl-9 pr-3 py-2 text-12 bg-ns border border-bdr rounded focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
+                  className={`w-full pl-10 pr-3 h-11 text-15 bg-ns border border-bdr2 rounded-md placeholder:text-nt4 focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label htmlFor="auth-email" className="block text-10 font-medium font-mono uppercase text-nt3 mb-1">Email Address</label>
+            <label htmlFor="auth-email" className="block text-14 font-bold text-nt2 mb-1.5">Email</label>
             <div className="relative">
-              <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-nt3" />
+              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nt3" />
               <input
                 id="auth-email"
                 type="email"
@@ -184,26 +178,26 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="alex@university.edu"
-                className={`w-full pl-9 pr-3 py-2 text-12 bg-ns border border-bdr rounded focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
+                className={`w-full pl-10 pr-3 h-11 text-15 bg-ns border border-bdr2 rounded-md placeholder:text-nt4 focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
               />
             </div>
           </div>
 
           <div>
-            <div className="flex items-baseline justify-between mb-1">
-              <label htmlFor="auth-password" className="block text-10 font-medium font-mono uppercase text-nt3">Password</label>
+            <div className="flex items-baseline justify-between mb-1.5">
+              <label htmlFor="auth-password" className="block text-14 font-bold text-nt2">Password</label>
               {tab === 'login' && (
                 <button
                   type="button"
                   onClick={() => { closeAuthModal(); navigate('/forgot-password') }}
-                  className={`text-11 text-np hover:underline cursor-pointer rounded ${FOCUS_RING}`}
+                  className={`text-14 font-bold text-np hover:underline cursor-pointer rounded ${FOCUS_RING}`}
                 >
                   Forgot password?
                 </button>
               )}
             </div>
             <div className="relative">
-              <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-nt3" />
+              <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nt3" />
               <input
                 id="auth-password"
                 type="password"
@@ -213,7 +207,7 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className={`w-full pl-9 pr-3 py-2 text-12 bg-ns border border-bdr rounded focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
+                className={`w-full pl-10 pr-3 h-11 text-15 bg-ns border border-bdr2 rounded-md placeholder:text-nt4 focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
               />
             </div>
           </div>
@@ -221,7 +215,7 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider rounded shadow-bp flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer active:translate-y-[1px]"
+            className="w-full h-12 px-4 bg-npf hover:bg-npfh text-npfg text-16 font-bold rounded-md flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer active:translate-y-[1px]"
           >
             {loading ? (
               <span>{tab === 'login' ? 'Signing in…' : 'Creating account…'}</span>
@@ -239,8 +233,8 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-bdr"></div>
           </div>
-          <span className="relative px-3 bg-nb text-10 font-medium font-mono uppercase text-nt3">
-            OR CONTINUE WITH
+          <span className="relative px-3 bg-ns text-14 text-nt3">
+            or
           </span>
         </div>
 
@@ -249,7 +243,7 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
           <button
             onClick={handleGoogleAuth}
             disabled={loading}
-            className={`w-full py-2.5 px-4 bg-ns border border-bdr hover:bg-ns2 text-nt font-display text-11 font-medium uppercase tracking-wider rounded flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none active:translate-y-[1px] ${FOCUS_RING}`}
+            className={`w-full h-11 px-4 bg-ns border border-bdr2 hover:bg-ns2 text-nt text-15 font-bold rounded-md flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none active:translate-y-[1px] ${FOCUS_RING}`}
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
               <path
@@ -272,7 +266,7 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
             <span>Continue with Google</span>
           </button>
         </div>
-      </motion.div>
+      </div>
     </Dialog>
   )
 }

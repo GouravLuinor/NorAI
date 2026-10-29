@@ -16,25 +16,24 @@ export const MessageBubble = memo(function MessageBubble({ message, onRetry }: M
   const displayContent = isUser ? message.content : stripSources(message.content)
 
   return (
-    <div className={`flex gap-2 items-start ${isUser ? 'flex-row-reverse' : ''}`}>
-      <div
-        className={`w-5 h-5 rounded-full flex items-center justify-center text-3xs font-medium text-npfg shrink-0 mt-0.5 ${
-          isUser
-            ? 'bg-ns3 text-nt2'
-            : 'bg-npf shadow-ev1'
-        }`}
-      >
-        {isUser ? '' : 'N'}
-      </div>
-
-      <div className={`${isUser ? 'items-end' : ''}`}>
+    <div className={`flex gap-2.5 items-start ${isUser ? 'justify-end' : ''}`}>
+      {!isUser && (
         <div
-          className={`text-xs leading-relaxed text-nt2 ${
+          aria-hidden="true"
+          className="w-7 h-7 rounded-[4px] bg-brass text-[#16181A] flex items-center justify-center text-13 font-bold shrink-0"
+        >
+          N
+        </div>
+      )}
+
+      <div className={`min-w-0 ${isUser ? 'flex flex-col items-end max-w-[85%]' : 'flex-1'}`}>
+        <div
+          className={`text-15 leading-relaxed ${
             isUser
-              ? `bg-ns3 border border-bdr2 rounded-xl px-2.5 py-2 text-nt max-w-[85%] ${message.status === 'pending' ? 'opacity-70' : ''}`
+              ? `bg-npb rounded-md px-3.5 py-2.5 text-nt ${message.status === 'pending' ? 'opacity-70' : ''}`
               : isError
-                ? 'bg-nrb border border-nrbr text-nrt rounded-lg px-2.5 py-2 max-w-full'
-                : 'py-0.5 max-w-full'
+                ? 'bg-nrb border border-nrbr text-nrt rounded-md px-3.5 py-2.5'
+                : 'text-nt pt-0.5'
           }`}
         >
           {isUser ? (
@@ -46,9 +45,9 @@ export const MessageBubble = memo(function MessageBubble({ message, onRetry }: M
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="self-start inline-flex items-center gap-1 text-3xs font-semibold uppercase tracking-wide text-nrt hover:underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
+                  className="self-start inline-flex items-center gap-1.5 text-13 font-bold text-nrt hover:underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 rounded"
                 >
-                  <RotateCcw size={11} /> Retry
+                  <RotateCcw size={13} strokeWidth={1.75} /> Try again
                 </button>
               )}
             </div>
@@ -58,7 +57,7 @@ export const MessageBubble = memo(function MessageBubble({ message, onRetry }: M
             </div>
           )}
         </div>
-        <div className={`text-3xs mt-1 ${isUser ? 'text-right' : ''} ${isUser && isError ? 'text-nrt' : 'text-nt4'}`}>
+        <div className={`text-12 mt-1 ${isUser && isError ? 'text-nrt' : 'text-nt4'}`}>
           {isUser && isError ? 'Not answered' : message.timestamp}
         </div>
       </div>

@@ -7,8 +7,8 @@ import { FOCUS_RING } from '../ui/shared'
 /**
  * VideoPlayer — P6.3 click-to-video grounding.
  *
- * A floating "Watch video" button (bottom-right of the doc panel) that opens a
- * docked YouTube player on demand. The local copy of the video is transient
+ * The "Video" button in the doc toolbar (DocPanel) opens a docked YouTube
+ * player on demand. The local copy of the video is transient
  * (deleted when the pipeline ends), so the player streams straight from
  * YouTube and only renders for completed, YouTube-sourced lectures. Every seek
  * request (chapter chips, tutor references) flows through useVideoStore, which
@@ -108,17 +108,17 @@ export function VideoPlayer() {
   return (
     <>
       {open && (
-        <div className="absolute bottom-14 right-3 z-50 w-[min(560px,46vw)] max-w-full rounded-md border border-bdr2 bg-ns shadow-ev2 overflow-hidden">
-          <div className="flex items-center gap-2 px-3 h-[30px] border-b border-bdr">
-            <Play size={11} strokeWidth={1.5} className="text-np" />
-            <span className="text-2xs font-medium text-nt2">Lecture video</span>
+        <div className="absolute bottom-3 right-3 z-50 w-[min(560px,46vw)] max-w-full rounded-md border border-bdr2 bg-ns shadow-ev2 overflow-hidden">
+          <div className="flex items-center gap-2 px-3 h-9 border-b border-bdr">
+            <Play size={13} strokeWidth={1.75} className="text-np" />
+            <span className="text-12 font-bold text-nt2">Lecture video</span>
             <button
               type="button"
               onClick={togglePlayer}
               aria-label="Close video"
               className={`ml-auto p-1 text-nt4 hover:text-nt2 rounded-sm cursor-pointer ${FOCUS_RING}`}
             >
-              <X size={12} strokeWidth={1.5} />
+              <X size={14} strokeWidth={1.75} />
             </button>
           </div>
           <div className="aspect-video w-full bg-black">
@@ -133,16 +133,30 @@ export function VideoPlayer() {
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={togglePlayer}
-        aria-label={open ? 'Close video player' : 'Watch video'}
-        aria-expanded={open}
-        className={`absolute bottom-3 right-3 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-11 font-medium shadow-ev2 animate-fade-in cursor-pointer transition bg-np text-ns hover:opacity-90 ${FOCUS_RING}`}
-      >
-        {open ? <X size={13} strokeWidth={1.5} /> : <Play size={13} strokeWidth={1.5} />}
-        {open ? 'Close' : 'Watch video'}
-      </button>
     </>
+  )
+}
+
+/** The doc-toolbar trigger for the player. Renders only for lectures the
+ *  player can show (completed, YouTube-sourced). */
+export function VideoToggle() {
+  const activeLectureId = useLectureStore((s) => s.activeLectureId)
+  const embeddable = useVideoStore((s) => s.embeddable)
+  const open = useVideoStore((s) => s.open)
+  const togglePlayer = useVideoStore((s) => s.togglePlayer)
+  if (!activeLectureId || activeLectureId === 'default' || !embeddable) return null
+  return (
+    <button
+      type="button"
+      onClick={togglePlayer}
+      aria-label={open ? 'Close video player' : 'Watch video'}
+      aria-expanded={open}
+      className={`flex items-center gap-1.5 px-2.5 h-8 rounded-md text-13 font-bold cursor-pointer transition active:translate-y-[1px] ${
+        open ? 'bg-npf text-npfg hover:bg-npfh' : 'border border-bdr2 text-nt2 hover:bg-ns2 hover:text-nt'
+      } ${FOCUS_RING}`}
+    >
+      {open ? <X size={14} strokeWidth={1.75} /> : <Play size={14} strokeWidth={1.75} />}
+      Video
+    </button>
   )
 }
