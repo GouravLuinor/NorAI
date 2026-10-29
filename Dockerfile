@@ -57,7 +57,7 @@ RUN set -eux; \
     mkdir -p /root/.config/yt-dlp/plugins; \
     curl -fsSL -o /tmp/bgutil-ytdlp-pot-provider-rs.zip \
       "https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs/releases/download/${BGUTIL_POT_VERSION}/bgutil-ytdlp-pot-provider-rs.zip" \
-      && unzip -o /tmp/bgutil-ytdlp-pot-provider-rs.zip -d /root/.config/yt-dlp/plugins/bgutil-ytdlp-pot-provider \
+      && python -m zipfile -e /tmp/bgutil-ytdlp-pot-provider-rs.zip /root/.config/yt-dlp/plugins/bgutil-ytdlp-pot-provider \
       && rm -f /tmp/bgutil-ytdlp-pot-provider-rs.zip || \
     echo "WARN: POT provider download failed — continuing without it"
 

@@ -72,7 +72,12 @@ def rollover_if_needed(sub: Subscription, now: Optional[datetime] = None) -> boo
     return False
 
 
-async def _max_lecture_minutes(user_id: str) -> int:
+def _free_limits() -> tuple[int, int]:
+    free = get_plan("free")
+    return free.max_lecture_min, free.minutes
+
+
+async def _plan_limits(user_id: str) -> tuple[int, int]:
     async with async_sessionmaker(
         bind=create_async_engine(DATABASE_URL, poolclass=NullPool, **_ENGINE_KWARGS),
         class_=AsyncSession,
@@ -82,21 +87,23 @@ async def _max_lecture_minutes(user_id: str) -> int:
             await session.execute(select(Subscription).where(Subscription.user_id == user_id))
         ).scalar_one_or_none()
         if sub is None:
-            return get_plan("free").max_lecture_min
+            return _free_limits()
         rollover_if_needed(sub)
-        return get_plan(sub.plan_tier).max_lecture_min
+        remaining = max(0, (sub.monthly_minutes_quota or 0) - (sub.used_minutes_this_month or 0))
+        return get_plan(sub.plan_tier).max_lecture_min, remaining
 
 
-def max_lecture_minutes(user_id: Optional[str]) -> int:
-    """Longest lecture (minutes) the user's plan accepts. Sync, for the
-    pipeline worker thread; falls back to the Free limit on any error."""
+def plan_limits(user_id: Optional[str]) -> tuple[int, int]:
+    """(longest lecture the plan accepts, quota minutes left), in minutes.
+    Sync, for the pipeline worker thread; falls back to the Free limits on
+    any error."""
     if not user_id:
-        return get_plan("free").max_lecture_min
+        return _free_limits()
     try:
-        return asyncio.run(_max_lecture_minutes(user_id))
+        return asyncio.run(_plan_limits(user_id))
     except Exception:
-        logger.exception("usage: plan lookup failed for %s — using Free limit", user_id)
-        return get_plan("free").max_lecture_min
+        logger.exception("usage: plan lookup failed for %s — using Free limits", user_id)
+        return _free_limits()
 
 
 def meter_minutes(duration_sec: Optional[float]) -> int:

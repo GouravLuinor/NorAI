@@ -447,6 +447,24 @@ MAX_UPLOAD_BYTES = int(os.environ.get("NORAI_MAX_UPLOAD_BYTES", str(2 * 1024**3)
 UPLOAD_CHUNK_BYTES = 1024 * 1024  # 1 MB
 
 
+_PROBE_TTL_SEC = 600
+_probe_cache: dict[str, tuple[float, dict]] = {}
+
+
+async def _probe_youtube(url: str) -> dict | None:
+    """probe_video_metadata off the event loop (it blocks for seconds), cached
+    so /process reuses the probe /estimate just made for the same URL."""
+    hit = _probe_cache.get(url)
+    if hit and time.monotonic() - hit[0] < _PROBE_TTL_SEC:
+        return hit[1]
+    probed = await asyncio.to_thread(probe_video_metadata, url)
+    if probed and not probed.get("estimated"):
+        if len(_probe_cache) >= 512:
+            _probe_cache.clear()
+        _probe_cache[url] = (time.monotonic(), probed)
+    return probed
+
+
 async def _with_plan_fit(est: dict, duration_min: float, user: Optional[User], db: AsyncSession) -> dict:
     """Add the caller's plan limits so the UI can warn before /process rejects."""
     sub = None
@@ -496,8 +514,8 @@ async def estimate_cost(
     if source_type == "youtube":
         if not url or not is_youtube_url(url):
             raise HTTPException(status_code=400, detail="Invalid YouTube URL")
-        probed = probe_video_metadata(url)
-        if not probed:
+        probed = await _probe_youtube(url)
+        if not probed or probed.get("estimated"):
             return {"available": False, "reason": "Could not probe duration"}
         duration_min = probed["duration_sec"] / 60.0
         est = estimate_pipeline(duration_min, source_type="youtube")
@@ -560,8 +578,10 @@ async def start_processing(
     # ── Pre-download quota + free-trial enforcement (P2.2) ─────────────────
     probed_sec = None
     if source_type == "youtube" and url:
-        probed = probe_video_metadata(url)
-        if probed:
+        probed = await _probe_youtube(url)
+        # An "estimated" probe (oEmbed only) carries a placeholder length; the
+        # pipeline enforces the real one after download.
+        if probed and not probed.get("estimated"):
             probed_sec = probed["duration_sec"]
     elif source_type == "upload" and duration and duration > 0:
         probed_sec = duration * 60.0

@@ -19,6 +19,7 @@ from backend.estimator import (  # noqa: E402
     MIN_CALIBRATION_SAMPLES,
 )
 from backend.main import app  # noqa: E402
+import backend.main as main_mod  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 PASSED = 0
@@ -159,6 +160,7 @@ client = TestClient(app)
 
 
 def test_estimate_youtube_success():
+    main_mod._probe_cache.clear()
     with patch("backend.main.probe_video_metadata", return_value={"duration_sec": 506.0, "title": "Networking"}):
         r = client.post("/estimate", data={"source_type": "youtube", "url": "https://youtube.com/watch?v=abc"})
         body = r.json()
@@ -170,11 +172,30 @@ def test_estimate_youtube_success():
 
 
 def test_estimate_youtube_probe_failure_soft():
+    main_mod._probe_cache.clear()
     with patch("backend.main.probe_video_metadata", return_value=None):
         r = client.post("/estimate", data={"source_type": "youtube", "url": "https://youtube.com/watch?v=abc"})
         body = r.json()
     check("probe failure 200", r.status_code == 200)
     check("probe failure available=false", body.get("available") is False)
+
+
+def test_estimate_youtube_placeholder_duration_unavailable():
+    main_mod._probe_cache.clear()
+    # oEmbed-only probe: the 900 s is a placeholder, so no estimate or plan fit.
+    with patch("backend.main.probe_video_metadata",
+               return_value={"duration_sec": 900.0, "title": "T", "estimated": True}):
+        r = client.post("/estimate", data={"source_type": "youtube", "url": "https://youtube.com/watch?v=abc"})
+    check("placeholder probe available=false", r.json().get("available") is False)
+
+
+def test_estimate_youtube_probe_cached():
+    # /process right after /estimate must not probe YouTube a second time.
+    main_mod._probe_cache.clear()
+    with patch("backend.main.probe_video_metadata", return_value={"duration_sec": 506.0, "title": "N"}) as probe:
+        for _ in range(2):
+            client.post("/estimate", data={"source_type": "youtube", "url": "https://youtube.com/watch?v=abc"})
+    check("probe cached", probe.call_count == 1)
 
 
 def test_estimate_invalid_youtube_url_400():
@@ -237,6 +258,8 @@ if __name__ == "__main__":
     test_recalibrate_cli_prints()
     test_estimate_youtube_success()
     test_estimate_youtube_probe_failure_soft()
+    test_estimate_youtube_placeholder_duration_unavailable()
+    test_estimate_youtube_probe_cached()
     test_estimate_invalid_youtube_url_400()
     test_estimate_gdrive_soft_fail()
     test_estimate_upload_with_duration()

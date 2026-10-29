@@ -44,7 +44,10 @@ _RATE_RULES = [
     (re.compile(r"^/quota$"), "poll", "NORAI_RATE_POLL", 120, 60),
     (re.compile(r"^/chat"), "chat", "NORAI_RATE_CHAT", 30, 60),
     (re.compile(r"^/quiz/"), "quiz", "NORAI_RATE_QUIZ", 30, 60),
-    (re.compile(r"^/(process|estimate)\b"), "process", "NORAI_RATE_PROCESS", 10, 3600),
+    # /estimate runs on every URL edit on the upload page: sharing /process's
+    # 10/hour bucket let a few pasted links lock a user out of processing.
+    (re.compile(r"^/estimate\b"), "estimate", "NORAI_RATE_ESTIMATE", 60, 3600),
+    (re.compile(r"^/process\b"), "process", "NORAI_RATE_PROCESS", 10, 3600),
     (re.compile(r"^/threads\b"), "threads", "NORAI_RATE_THREADS", 60, 60),
     (re.compile(r"^/billing/razorpay/"), "payments", "NORAI_RATE_PAYMENTS", 20, 600),
 ]

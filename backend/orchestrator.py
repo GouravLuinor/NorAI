@@ -171,15 +171,27 @@ def run_pipeline(
                 duration_sec = float(meta_data.get("duration", 0))
             _metrics["duration_sec"] = duration_sec
 
-            # Plan-aware cap (Free 45 / Starter 90 / Pro 180 min — backend/plans.py).
-            # Previously the free-trial limit applied to every user, paid or not.
-            from backend.usage import max_lecture_minutes
-            max_duration_sec = max_lecture_minutes(user_id) * 60
-            if (
-                duration_sec > max_duration_sec
-                and os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true"
+            # Plan-aware caps (backend/plans.py), checked on the real duration
+            # before any Gemini call: /process can only check a probed length,
+            # and the probe fails on some videos.
+            from backend.usage import meter_minutes, plan_limits
+            max_lecture_min, remaining_min = plan_limits(user_id)
+            max_duration_sec = max_lecture_min * 60
+            enforce = (
+                os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true"
                 and os.environ.get("NORAI_DEV_ACCESS", "0") != "1"
-            ):
+            )
+            if enforce and meter_minutes(duration_sec) > remaining_min:
+                raise TerminalPipelineError(
+                    f"Lecture needs {meter_minutes(duration_sec)} quota minutes; "
+                    f"{remaining_min} left.",
+                    friendly=(
+                        f"This lecture is {duration_sec / 60:.1f} minutes long, but you have "
+                        f"{remaining_min} lecture minutes left this period. Get more time "
+                        f"or trim the video."
+                    ),
+                )
+            if enforce and duration_sec > max_duration_sec:
                 raise TerminalPipelineError(
                     f"Lecture duration ({duration_sec / 60:.1f} mins) exceeds the plan limit "
                     f"of {max_duration_sec / 60:.0f} minutes.",

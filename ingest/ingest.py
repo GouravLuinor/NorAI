@@ -435,29 +435,14 @@ def probe_video_metadata(url: str) -> dict | None:
     """
     Cheap pre-flight metadata probe for the /estimate endpoint (P1.8).
 
-    Uses YouTube official oEmbed API for instant zero-rate-limit title extraction,
-    then queries yt-dlp with download=False across TV/mobile client strategies.
+    Queries yt-dlp with download=False across the client strategies; if all
+    are blocked, falls back to the oEmbed API for the title alone.
     """
     if not is_youtube_url(url):
         return None
     clean_url = sanitize_youtube_url(url)
 
-    # 1. Fetch title via YouTube oEmbed API (guaranteed zero rate limit / no bot check)
-    oembed_title = None
-    try:
-        import urllib.request
-        import urllib.parse
-        import json as json_mod
-        oembed_url = f"https://www.youtube.com/oembed?url={urllib.parse.quote(clean_url)}&format=json"
-        req = urllib.request.Request(oembed_url, headers={"User-Agent": "NorAI/1.0"})
-        with urllib.request.urlopen(req, timeout=3.5) as resp:
-            if resp.status == 200:
-                data = json_mod.loads(resp.read().decode("utf-8"))
-                oembed_title = data.get("title")
-    except Exception as e:
-        logger.debug(f"oEmbed probe skipped: {e}")
-
-    # 2. Extract exact duration with yt-dlp across client strategies (aligned
+    # 1. Extract exact duration with yt-dlp across client strategies (aligned
     #    with YOUTUBE_FALLBACK_STRATEGIES; POT is used when the server is up).
     cookiefile = _get_youtube_cookiefile()
     pot_url = _pot_server_url()
@@ -479,6 +464,11 @@ def probe_video_metadata(url: str) -> dict | None:
                 "skip_download": True,
                 "noplaylist": True,
                 "socket_timeout": 5,
+                # Only the duration is needed: without this, a client whose
+                # formats are withheld (web without a PO token) raises
+                # "Requested format is not available" and the probe falls
+                # through every strategy (~7 s instead of ~2 s).
+                "ignore_no_formats_error": True,
                 "extractor_args": extractor_args,
             }
             if cookiefile:
@@ -489,11 +479,28 @@ def probe_video_metadata(url: str) -> dict | None:
             if info and info.get("duration") is not None:
                 return {
                     "duration_sec": float(info["duration"]),
-                    "title": info.get("title") or oembed_title,
+                    "title": info.get("title"),
                 }
         except Exception as err:
             logger.debug(f"yt-dlp probe with {clients} failed: {err}")
-    # 3. If oEmbed retrieved title but duration was blocked on datacenter IP:
+    # 2. yt-dlp was blocked (datacenter IP): the oEmbed API still gives the
+    #    title (no rate limit / bot check, but no duration). Only asked now, as
+    #    it costs up to 3.5 s.
+    oembed_title = None
+    try:
+        import urllib.request
+        import urllib.parse
+        import json as json_mod
+        oembed_url = f"https://www.youtube.com/oembed?url={urllib.parse.quote(clean_url)}&format=json"
+        req = urllib.request.Request(oembed_url, headers={"User-Agent": "NorAI/1.0"})
+        with urllib.request.urlopen(req, timeout=3.5) as resp:
+            if resp.status == 200:
+                data = json_mod.loads(resp.read().decode("utf-8"))
+                oembed_title = data.get("title")
+    except Exception as e:
+        logger.debug(f"oEmbed probe skipped: {e}")
+
+    # 3. Title only: a placeholder duration, flagged so nothing trusts it.
     if oembed_title:
         return {
             "duration_sec": 900.0,
