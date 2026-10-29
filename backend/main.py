@@ -152,9 +152,13 @@ def sync_demo_seed_data():
         dst = outputs_dir / lid
         if not src.exists():
             continue
-        # Demo dirs seeded before the tutor index existed only carry a Chroma
-        # store: copy the index in, keeping the dir's tutor threads.
-        if dst.exists() and VectorStore.exists(index_dir(src)) and not VectorStore.exists(index_dir(dst)):
+        # Demo dirs seeded before the current index (a Chroma store, or an
+        # index from another embedding model) get the seed's index copied in,
+        # keeping the dir's tutor threads.
+        if dst.exists() and VectorStore.exists(index_dir(src)) and (
+            not VectorStore.exists(index_dir(dst))
+            or VectorStore.load(index_dir(dst)).model != VectorStore.load(index_dir(src)).model
+        ):
             shutil.copytree(index_dir(src), index_dir(dst), dirs_exist_ok=True)
         if dst.exists() and _demo_seed_complete(dst):
             continue

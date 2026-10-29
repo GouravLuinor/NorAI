@@ -112,6 +112,22 @@ def test_calibration_fits_from_fresh_runs():
     check("calibrated 6 calls", est["est_calls"] == 6)
 
 
+def test_calibration_fits_local_index_time():
+    """Local-embedding runs report tutor_index seconds and no embed batches:
+    the index time is fitted per lecture-minute, not lumped into LLM rounds."""
+    tmp = Path(tempfile.mkdtemp())
+    metrics = tmp / "m.jsonl"
+    for i in range(MIN_CALIBRATION_SAMPLES):
+        record_metrics({
+            "pipeline": "lean", "completed": True, "llm_calls": 6, "num_segments": 123,
+            "duration_sec": 1024.0, "num_chunks": 9, "num_chapters": 4, "embed_batches": 0,
+            "stage_seconds": {"transcription": 40.0, "tutor_index": 34.0, "pipeline": 176.0},
+        }, metrics)
+    cal = load_calibration(metrics)
+    check("index_sec_per_min fit", abs(cal["index_sec_per_min"] - 34.0 / (1024.0 / 60)) < 0.01)
+    check("sec_per_call excludes index time", abs(cal["sec_per_call"] - 24.0) < 0.01)
+
+
 def test_calibration_ignores_legacy_entries():
     """Entries without a "pipeline" key came from the retired legacy chain."""
     check("legacy entries ignored", load_calibration(_fake_metrics_dir(pipeline=None))["n_fresh_runs"] == 0)
@@ -215,6 +231,7 @@ if __name__ == "__main__":
     test_estimate_segments_override()
     test_estimate_no_calibration_uses_defaults()
     test_calibration_fits_from_fresh_runs()
+    test_calibration_fits_local_index_time()
     test_calibration_ignores_legacy_entries()
     test_calibration_ignores_rerun_zero_calls()
     test_recalibrate_cli_prints()

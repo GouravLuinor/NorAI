@@ -61,6 +61,12 @@ RUN set -eux; \
       && rm -f /tmp/bgutil-ytdlp-pot-provider-rs.zip || \
     echo "WARN: POT provider download failed — continuing without it"
 
+# Tutor-index embedding model (~210 MB, revision-pinned in the module). Fetched
+# from a copy of the one module so code changes don't invalidate this layer.
+ENV NORAI_EMBED_MODEL_DIR=/app/.models
+COPY tutor/local_embedding.py /tmp/local_embedding.py
+RUN python /tmp/local_embedding.py --download && rm /tmp/local_embedding.py
+
 COPY . .
 COPY --from=frontend /app/frontend/dist ./frontend/dist
 

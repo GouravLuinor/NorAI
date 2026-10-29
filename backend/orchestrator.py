@@ -221,12 +221,14 @@ def run_pipeline(
         # ── Tutor Index (notes + transcript + screenshots) ────
         _report("tutor_index", "Indexing for tutor…", 96)
         _check_cancel()
+        _t_index = time.perf_counter()
         try:
             from tutor.indexing import build_lecture_index
 
             build_lecture_index(out)
         except Exception as e:
             logger.error(f"Tutor index failed (continuing): {e}")
+        _metrics["stage_seconds"]["tutor_index"] = round(time.perf_counter() - _t_index, 2)
 
         # ── Done ───────────────────────────────────────────────────────────
         _write_metrics(completed=True)

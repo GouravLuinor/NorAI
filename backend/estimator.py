@@ -30,8 +30,9 @@ Model (mirrors chunking/chunk.py + lean/)
   rounds        = 1 + ceil(chapters / lean.chapters.MAX_WORKERS)
                   # chapter calls run in parallel, so time scales with rounds
   time_sec      = download_sec + transcription_realtime * duration_sec
-                  + rounds * sec_per_call + embed_batches * sec_per_embed_batch
-                  + overhead_sec
+                  + rounds * sec_per_call + index_sec + overhead_sec
+  index_sec     = index_sec_per_min * duration_min         (local embedding model)
+                | embed_batches * sec_per_embed_batch      (gemini-embedding-2)
 
 Only entries tagged "pipeline": "lean" calibrate; older entries (no key) came
 from the retired legacy chain, whose call mix and timing were different.
@@ -54,11 +55,13 @@ from config import (
 from chunking.chunk import adaptive_segments_per_chunk
 from lean.chapters import MAX_WORKERS as LEAN_CHAPTER_WORKERS
 from lean.structure import chapter_count_range
+from tutor.retrieval_config import EMBEDDING_MODEL, LOCAL_EMBEDDING_MODEL
 
 # ── Default heuristics (pre-calibration) ──────────────────────────────────────
 DEFAULT_TRANSCRIPTION_REALTIME = 0.05  # parallel Gemini 3.1 Flash-Lite API (~35-50s for 15-70 min audio)
 DEFAULT_SEC_PER_CALL = 9.0             # RPM spacing (5s @12rpm) + latency
 DEFAULT_SEC_PER_EMBED_BATCH = 3.0      # one batchEmbedContents call
+DEFAULT_INDEX_SEC_PER_MIN = 1.6        # local embedding: ~3.6 docs/lecture-min x ~0.45 s/doc, 1 core
 DEFAULT_DOWNLOAD_SEC = 30.0            # YouTube download + audio extraction
 DEFAULT_OVERHEAD_SEC = 20.0            # chunking/cleanup (frames/scenes overlap transcription)
 PIPELINE = "lean"                      # metrics entries this estimator calibrates on
@@ -111,6 +114,9 @@ def load_calibration(metrics_path=None) -> dict:
         # Chapter calls overlap; time scales with rounds, not calls.
         return lean_rounds(e.get("num_chapters") or 0)
 
+    def stage(e, name):
+        return (e.get("stage_seconds") or {}).get(name, 0.0) or 0.0
+
     segs_per_min = _median(
         e["num_segments"] / (e["duration_sec"] / 60.0)
         for e in fresh if e.get("num_segments") and e.get("duration_sec")
@@ -127,7 +133,8 @@ def load_calibration(metrics_path=None) -> dict:
         _median(
             (
                 e["stage_seconds"]["pipeline"]
-                - (e.get("stage_seconds") or {}).get("transcription", 0.0)
+                - stage(e, "transcription")
+                - stage(e, "tutor_index")
                 - DEFAULT_DOWNLOAD_SEC
             ) / sequential_calls(e)
             for e in fresh
@@ -145,12 +152,19 @@ def load_calibration(metrics_path=None) -> dict:
         if e.get("embed_batches")
         and (e.get("stage_seconds") or {}).get("pipeline")
     )
+    # Local index builds report their own stage time (no embed batches).
+    index_sec_per_min = _median(
+        stage(e, "tutor_index") / (e["duration_sec"] / 60.0)
+        for e in fresh
+        if stage(e, "tutor_index") and not e.get("embed_batches") and e.get("duration_sec")
+    )
     return {
         "n_fresh_runs": n_fresh,
         "segs_per_min": segs_per_min,
         "transcription_realtime": transcription_realtime,
         "sec_per_call": sec_per_call,
         "sec_per_embed_batch": sec_per_embed_batch,
+        "index_sec_per_min": index_sec_per_min,
     }
 
 
@@ -178,13 +192,15 @@ def estimate_pipeline(
     transcription_realtime = pick(DEFAULT_TRANSCRIPTION_REALTIME, cal.get("transcription_realtime"))
     sec_per_call = pick(DEFAULT_SEC_PER_CALL, cal.get("sec_per_call"))
     sec_per_embed_batch = pick(DEFAULT_SEC_PER_EMBED_BATCH, cal.get("sec_per_embed_batch"))
+    index_sec_per_min = pick(DEFAULT_INDEX_SEC_PER_MIN, cal.get("index_sec_per_min"))
 
     duration_sec = max(0.0, duration_min * 60.0)
     if segments is None:
         segments = math.ceil(duration_min * segs_per_min) if duration_min else 0
     spc = adaptive_segments_per_chunk(max(segments, 0))
     chunks = math.ceil(max(segments, 0) / spc) if spc else 0
-    embed_batches = 2  # notes index + screenshot index
+    local_index = EMBEDDING_MODEL == LOCAL_EMBEDDING_MODEL
+    embed_batches = 0 if local_index else 2  # notes index + screenshot index
     chapters = chapter_count_range(duration_min, chunks)[1] if chunks else 0
     slices = max(1, math.ceil(duration_min / NORAI_AUDIO_CHUNK_MINUTES)) if chunks else 0
     llm_calls = slices + 1 + chapters if chunks else 0
@@ -192,7 +208,7 @@ def estimate_pipeline(
         DEFAULT_DOWNLOAD_SEC
         + transcription_realtime * duration_sec
         + lean_rounds(chapters) * sec_per_call
-        + embed_batches * sec_per_embed_batch
+        + (index_sec_per_min * duration_min if local_index else embed_batches * sec_per_embed_batch)
         + DEFAULT_OVERHEAD_SEC
     )
 

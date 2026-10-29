@@ -1,0 +1,2159 @@
+{
+  "summary": {
+    "n": 22,
+    "graded": 22,
+    "accuracy_core": 1.0,
+    "accuracy_detail": 1.0,
+    "false_not_covered": 0.0,
+    "oos_abstain": 1.0,
+    "premise_corrected": 1.0,
+    "unsupported_claim": 0.0,
+    "invented_visual": 0.0,
+    "answers_citing": 1.0,
+    "citations_verified": 1.0,
+    "latency_p50_s": 2.21,
+    "calls_per_turn": 1,
+    "input_tokens_per_turn": 2138,
+    "output_tokens_per_turn": 186,
+    "cost_per_turn_usd": 0.000813
+  },
+  "rows": [
+    {
+      "category": "core",
+      "question": "deadlock ka basic definition kya hota hai?",
+      "gold_answer": "A deadlock occurs when two or more processes are waiting for an event to happen, but that event will never occur, leaving the processes in a stuck state.",
+      "quote": "If two and more processes are waiting on happening of some event, but that event doesn't happen, that is called the deadlock.",
+      "quote_ts": 3.0,
+      "question_hi": "deadlock ka basic definition kya hota hai?",
+      "question_en": "What is the fundamental definition of a deadlock?",
+      "answer": "Deadlock ek aisi situation hai jahan do ya usse zyada processes kisi aise event ka wait kar rahe hote hain jo kabhi hone wala nahi hai. Jab ye processes ek-dusre par depend ho kar stuck ho jaate hain aur koi bhi aage nahi badh paata, toh us state ko hum deadlock kehte hain.\n\nIsse samajhne ke liye ek simple example lete hain: maan lijiye aap bank mein account khulwane gaye hain. Bank official kehta hai ki \"pehle minimum amount deposit karo, phir account khulega,\" aur aap kehte hain ki \"pehle account kholo, phir main deposit karunga.\" Kyunki dono ek-dusre ke action ka wait kar rahe hain jo kabhi nahi hoga, toh aap dono deadlock mein phans gaye hain.\n\nKya aap janna chahenge ki computer system mein aisi situation kab officially \"deadlock\" maani jaati hai?\n\n**Sources**\n• 0:00 — Definition of deadlock\n• [N2] Section: Introduction to Deadlock and Examples > Defining Deadlock",
+      "latency_s": 7.69,
+      "calls": 1,
+      "input_tokens": 2159,
+      "output_tokens": 223,
+      "cost_usd": 0.000874,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:41–2:15",
+          "chapter_id": 1,
+          "distance": 0.3594057559967041,
+          "start": 101.0
+        },
+        {
+          "heading_path": "Transcript 0:00–0:30",
+          "chapter_id": 1,
+          "distance": 0.33187925815582275,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Transcript 3:52–4:31",
+          "chapter_id": 2,
+          "distance": 0.43837106227874756,
+          "start": 232.0
+        },
+        {
+          "heading_path": "Transcript 11:53–12:20",
+          "chapter_id": 3,
+          "distance": 0.37972915172576904,
+          "start": 713.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Evaluating the Deadlock State",
+          "chapter_id": 2,
+          "distance": 0.38075482845306396,
+          "start": 257.0
+        },
+        {
+          "heading_path": "Introduction to Deadlock and Examples > Defining Deadlock",
+          "chapter_id": 1,
+          "distance": 0.3161003589630127,
+          "start": 0.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.3119443655014038
+        },
+        {
+          "section": "Resource Allocation Dynamics",
+          "distance": 0.4238550662994385
+        }
+      ],
+      "citations": [
+        {
+          "section": "0:00 — Definition of deadlock",
+          "verified": true,
+          "chunk_id": "tx_0_52b3db2a83",
+          "heading_path": "Transcript 0:00–0:30",
+          "heading": "Transcript 0:00",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 0,
+          "end": 30.0
+        },
+        {
+          "section": "[N2] Section: Introduction to Deadlock and Examples > Defining Deadlock",
+          "verified": true,
+          "chunk_id": "note_6ee9e54470b4c3d4",
+          "heading_path": "Introduction to Deadlock and Examples > Defining Deadlock",
+          "heading": "Defining Deadlock",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": 0.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 0,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately conveys the lecture's definition and core idea of deadlock."
+      }
+    },
+    {
+      "category": "core",
+      "question": "deadlock hone ke liye wo chaar necessary conditions kya hain?",
+      "gold_answer": "The four necessary conditions for a deadlock are mutual exclusion, no preemption, hold and wait, and circular wait.",
+      "quote": "The conditions are mutual exclusion, no preemption, hold and wait, and circular wait.",
+      "quote_ts": 345.0,
+      "question_hi": "deadlock hone ke liye wo chaar necessary conditions kya hain?",
+      "question_en": "What are the four necessary conditions for a deadlock to occur?",
+      "answer": "Deadlock hone ke liye ye chaar conditions ka ek saath hona zaroori hai:\n\n1. **Mutual Exclusion:** Resource ko ek baar mein sirf ek hi process use kar sakta hai (jaise printer).\n2. **No Preemption:** Kisi process se uska resource zabardasti (forcefully) nahi cheena ja sakta; wo tabhi release hoga jab process apna kaam khatam kar le.\n3. **Hold and Wait:** Ek process ne kam se kam ek resource hold kiya hua hai aur wo kisi aur resource ke liye wait kar raha hai jo kisi doosre process ke paas hai.\n4. **Circular Wait:** Processes ka ek aisa chain ya loop banta hai jahan har process apne se agle process ke paas maujood resource ka intezaar kar raha hota hai.\n\nJab ye charon conditions ek saath milti hain, tabhi hum use officially \"deadlock\" keh sakte hain.\n\nKya aap chahenge ki hum inme se kisi ek condition ko ek example ke saath thoda aur detail mein samjhein?\n\n**Sources**\n• 6:27 — Mutual exclusion explanation\n• 11:14 — Circular wait example\n• 11:53 — Four conditions as necessary and sufficient for deadlock",
+      "latency_s": 2.35,
+      "calls": 1,
+      "input_tokens": 2101,
+      "output_tokens": 264,
+      "cost_usd": 0.000921,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 11:53–12:20",
+          "chapter_id": 3,
+          "distance": 0.2560814619064331,
+          "start": 713.0
+        },
+        {
+          "heading_path": "Transcript 5:23–6:32",
+          "chapter_id": 3,
+          "distance": 0.2623661160469055,
+          "start": 323.0
+        },
+        {
+          "heading_path": "Transcript 6:27–7:16",
+          "chapter_id": 3,
+          "distance": 0.27550435066223145,
+          "start": 387.0
+        },
+        {
+          "heading_path": "Transcript 11:14–11:59",
+          "chapter_id": 3,
+          "distance": 0.34739458560943604,
+          "start": 674.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "distance": 0.2897723913192749,
+          "start": 334.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Evaluating the Deadlock State",
+          "chapter_id": 2,
+          "distance": 0.3667066693305969,
+          "start": 257.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Mutual Exclusion and No Preemption",
+          "distance": 0.33185136318206787
+        },
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.4057347774505615
+        }
+      ],
+      "citations": [
+        {
+          "section": "6:27 — Mutual exclusion explanation",
+          "verified": true,
+          "chunk_id": "tx_387_9c4a8a290c",
+          "heading_path": "Transcript 6:27–7:16",
+          "heading": "Transcript 6:27",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 387,
+          "end": 436.0
+        },
+        {
+          "section": "11:14 — Circular wait example",
+          "verified": true,
+          "chunk_id": "tx_674_b0f6d0e9a2",
+          "heading_path": "Transcript 11:14–11:59",
+          "heading": "Transcript 11:14",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 674,
+          "end": 719.0
+        },
+        {
+          "section": "11:53 — Four conditions as necessary and sufficient for deadlock",
+          "verified": true,
+          "chunk_id": "tx_713_7fcf59168b",
+          "heading_path": "Transcript 11:53–12:20",
+          "heading": "Transcript 11:53",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 713,
+          "end": 740.2
+        }
+      ],
+      "grade": {
+        "id": 1,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly names and describes all four necessary conditions for deadlock."
+      }
+    },
+    {
+      "category": "core",
+      "question": "mutual exclusion condition ka resources ke liye kya matlab hai?",
+      "gold_answer": "Mutual exclusion means that resources must be used by processes one at a time, and interleaving of resource usage is not allowed.",
+      "quote": "Mutual exclusion is ki whatever the resources you are using, all the resources must be used by all the processes in a mutual exclusive manner. Means one by one.",
+      "quote_ts": 462.0,
+      "question_hi": "mutual exclusion condition ka resources ke liye kya matlab hai?",
+      "question_en": "What does the mutual exclusion condition imply for resources?",
+      "answer": "Mutual exclusion ka matlab hai ki ek resource ko ek time par sirf ek hi process use kar sakta hai. Agar koi resource (jaise printer) ek process use kar raha hai, toh doosra process usse tab tak access nahi kar sakta jab tak pehla process apna kaam khatam karke use release na kar de.\n\nIska seedha matlab hai ki resources ka \"interleaving\" (ek saath ya beech-beech mein milkar use karna) allowed nahi hota.\n\nKya aap samajhna chahenge ki agar ye condition na ho, toh deadlock kaise avoid ho sakta hai?\n\n**Sources**\n• 6:27 — Mutual exclusion definition\n• 7:28 — Interleaving is not allowed\n• [N1] Section: Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+      "latency_s": 2.25,
+      "calls": 1,
+      "input_tokens": 2074,
+      "output_tokens": 169,
+      "cost_usd": 0.000772,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 7:28–8:05",
+          "chapter_id": 3,
+          "distance": 0.3883424401283264,
+          "start": 448.0
+        },
+        {
+          "heading_path": "Transcript 6:27–7:16",
+          "chapter_id": 3,
+          "distance": 0.43604332208633423,
+          "start": 387.0
+        },
+        {
+          "heading_path": "Transcript 5:23–6:32",
+          "chapter_id": 3,
+          "distance": 0.5979862213134766,
+          "start": 323.0
+        },
+        {
+          "heading_path": "Transcript 9:30–10:09",
+          "chapter_id": 3,
+          "distance": 0.5958147048950195,
+          "start": 570.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "distance": 0.4815870523452759,
+          "start": 406.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Hold and Wait",
+          "chapter_id": 3,
+          "distance": 0.5960109829902649,
+          "start": 530.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Prerequisites for Deadlock",
+          "distance": 0.5131199359893799
+        }
+      ],
+      "citations": [
+        {
+          "section": "6:27 — Mutual exclusion definition",
+          "verified": true,
+          "chunk_id": "tx_387_9c4a8a290c",
+          "heading_path": "Transcript 6:27–7:16",
+          "heading": "Transcript 6:27",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 387,
+          "end": 436.0
+        },
+        {
+          "section": "7:28 — Interleaving is not allowed",
+          "verified": true,
+          "chunk_id": "tx_448_65dcb2f5f3",
+          "heading_path": "Transcript 7:28–8:05",
+          "heading": "Transcript 7:28",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 448,
+          "end": 485.0
+        },
+        {
+          "section": "[N1] Section: Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "verified": true,
+          "chunk_id": "note_2276ae988e1b3eec",
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "heading": "Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 406.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 2,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately explains mutual exclusion and the restriction on interleaving."
+      }
+    },
+    {
+      "category": "core",
+      "question": "no preemption condition deadlock mein kaise contribute karta hai?",
+      "gold_answer": "No preemption means that a process cannot be forced to release a resource it is holding; it must hold the resource until it finishes its execution.",
+      "quote": "Ek process jo hold karke baitha hai, wo hold hi karega jab tak ki wo execute nahi hota, wo preempt nahi hoga, matlab uski switching wahan pe nahi hogi.",
+      "quote_ts": 520.0,
+      "question_hi": "no preemption condition deadlock mein kaise contribute karta hai?",
+      "question_en": "How does the 'no preemption' condition contribute to a deadlock?",
+      "answer": "\"No preemption\" ka matlab hai ki ek baar jab koi resource kisi process ko allocate ho gaya, toh OS use zabardasti (forcibly) wapas nahi le sakta. Process tab tak resource hold karke rakhta hai jab tak woh apna kaam khatam karke khud use release na kar de.\n\nDeadlock mein yeh isliye contribute karta hai kyunki agar koi process kisi resource ke liye wait kar raha hai jo kisi aur process ke paas hai, toh woh resource tab tak free nahi hoga jab tak pehla process apna execution pura na kar le. Kyunki OS beech mein aakar resource chheen nahi sakta (no preemption), isliye dono processes ek dusre ka intezar karte reh jaate hain aur system \"stuck\" ho jata hai.\n\nAgar preemption allow hota, toh OS kisi ek process se resource lekar dusre ko de sakta tha, jisse deadlock break ho jata.\n\nWant to see how this connects to the \"Hold and Wait\" condition?\n\n**Sources**\n• 8:00 — Definition and explanation of no preemption\n• [N1] Section: Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+      "latency_s": 2.24,
+      "calls": 1,
+      "input_tokens": 2075,
+      "output_tokens": 242,
+      "cost_usd": 0.000882,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 7:28–8:05",
+          "chapter_id": 3,
+          "distance": 0.3740391731262207,
+          "start": 448.0
+        },
+        {
+          "heading_path": "Transcript 8:00–8:37",
+          "chapter_id": 3,
+          "distance": 0.4425871968269348,
+          "start": 480.0
+        },
+        {
+          "heading_path": "Transcript 5:23–6:32",
+          "chapter_id": 3,
+          "distance": 0.4272577166557312,
+          "start": 323.0
+        },
+        {
+          "heading_path": "Transcript 11:53–12:20",
+          "chapter_id": 3,
+          "distance": 0.44670921564102173,
+          "start": 713.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "distance": 0.40830284357070923,
+          "start": 406.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "distance": 0.4311501979827881,
+          "start": 334.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Mutual Exclusion and No Preemption",
+          "distance": 0.4685051441192627
+        },
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.5272237658500671
+        }
+      ],
+      "citations": [
+        {
+          "section": "8:00 — Definition and explanation of no preemption",
+          "verified": true,
+          "chunk_id": "tx_480_00698e159e",
+          "heading_path": "Transcript 8:00–8:37",
+          "heading": "Transcript 8:00",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 480,
+          "end": 517.0
+        },
+        {
+          "section": "[N1] Section: Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "verified": true,
+          "chunk_id": "note_2276ae988e1b3eec",
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "heading": "Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 406.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 3,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly explains the role of no preemption in sustaining deadlock."
+      }
+    },
+    {
+      "category": "core",
+      "question": "hold and wait condition kya hota hai?",
+      "gold_answer": "Hold and wait occurs when a process is currently holding at least one resource while simultaneously waiting to acquire additional resources that are currently held by other processes.",
+      "quote": "Hold and wait means P1 is holding one resource that is R1 and waiting for R2. And P2 is holding one resource that is R2 and waiting for R1.",
+      "quote_ts": 536.0,
+      "question_hi": "hold and wait condition kya hota hai?",
+      "question_en": "What is the 'hold and wait' condition?",
+      "answer": "\"Hold and wait\" ka matlab hai ki ek process ne pehle se hi kuch resources pakad rakhe hain (hold), aur wo saath hi saath kisi aur resource ka intezaar (wait) kar raha hai jo filhal kisi aur process ke paas hai.\n\nIs condition ki sabse important baat ye hai ki process apne paas maujood resources ko release nahi karta jab tak ki use wo naye resources na mil jayein jinka wo wait kar raha hai. Agar wo apne resources chhod de, toh deadlock nahi hoga, lekin yahan wo unhe pakad kar hi rakhta hai.\n\nExample ke liye: Agar Process $P_1$ ne Resource $R_1$ hold kiya hai aur wo $R_2$ ke liye request kar raha hai, toh ye \"hold and wait\" hai.\n\nWant to see how this leads to a \"circular wait\" situation?\n\n**Sources**\n• 8:31 — explanation of hold and wait\n• 8:56 — further clarification on holding resources while waiting\n• [N1] Section: Four Necessary Conditions for Deadlock > Hold and Wait",
+      "latency_s": 2.23,
+      "calls": 1,
+      "input_tokens": 2157,
+      "output_tokens": 235,
+      "cost_usd": 0.000892,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 8:56–9:40",
+          "chapter_id": 3,
+          "distance": 0.31648850440979004,
+          "start": 536.0
+        },
+        {
+          "heading_path": "Transcript 8:31–9:03",
+          "chapter_id": 3,
+          "distance": 0.4107733368873596,
+          "start": 511.0
+        },
+        {
+          "heading_path": "Transcript 5:23–6:32",
+          "chapter_id": 3,
+          "distance": 0.5271719694137573,
+          "start": 323.0
+        },
+        {
+          "heading_path": "Transcript 9:30–10:09",
+          "chapter_id": 3,
+          "distance": 0.47034186124801636,
+          "start": 570.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Hold and Wait",
+          "chapter_id": 3,
+          "distance": 0.3045785427093506,
+          "start": 530.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Circular Wait",
+          "chapter_id": 3,
+          "distance": 0.5436210036277771,
+          "start": 580.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Resource Allocation Dynamics",
+          "distance": 0.5473118424415588
+        }
+      ],
+      "citations": [
+        {
+          "section": "8:31 — explanation of hold and wait",
+          "verified": true,
+          "chunk_id": "tx_511_dec2c3c0dd",
+          "heading_path": "Transcript 8:31–9:03",
+          "heading": "Transcript 8:31",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 511,
+          "end": 543.0
+        },
+        {
+          "section": "8:56 — further clarification on holding resources while waiting",
+          "verified": true,
+          "chunk_id": "tx_536_dab222470f",
+          "heading_path": "Transcript 8:56–9:40",
+          "heading": "Transcript 8:56",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 536,
+          "end": 580.0
+        },
+        {
+          "section": "[N1] Section: Four Necessary Conditions for Deadlock > Hold and Wait",
+          "verified": true,
+          "chunk_id": "note_7d01d28b0cea71fa",
+          "heading_path": "Four Necessary Conditions for Deadlock > Hold and Wait",
+          "heading": "Hold and Wait",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 530.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 4,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately defines the hold and wait condition according to the transcript."
+      }
+    },
+    {
+      "category": "core",
+      "question": "deadlock ke context mein circular wait ka kya matlab hai?",
+      "gold_answer": "Circular wait occurs when there is a closed loop of processes where each process is waiting for a resource held by the next process in the chain.",
+      "quote": "Circular wait means this is what a kind of circle, circle, this. This is what a kind of circle. Circle means like there is a loop in this.",
+      "quote_ts": 581.0,
+      "question_hi": "deadlock ke context mein circular wait ka kya matlab hai?",
+      "question_en": "What is meant by a 'circular wait' in the context of deadlocks?",
+      "answer": "Deadlock ke context mein, \"circular wait\" ka matlab ek aisi situation hai jahan processes ke beech resources ke liye ek closed loop ban jata hai. Iska matlab hai ki har process kisi dusre process dwara hold kiye gaye resource ka intezar kar raha hota hai, aur ye chain aakhir mein wapas pehle process par khatam hoti hai.\n\nAsaan shabdon mein, agar P1, P2 ka wait kar raha hai, P2, P3 ka, aur P3 wapas P1 ka, to ye ek \"circle\" ban gaya jahan koi bhi process aage nahi badh sakta kyunki har koi kisi aur ke resource chhodne ka intezar kar raha hai.\n\nLecture ke mutabik, sirf loop hona hi deadlock ki guarantee nahi hai; deadlock tabhi confirm hota hai jab baaki teen conditions (Mutual Exclusion, No Preemption, aur Hold and Wait) bhi saath mein maujood hon.\n\nKya aap chahenge ki hum is circular wait ka ek chhota sa example step-by-step trace karein?\n\n**Sources**\n• 9:30 — Circular wait ka matlab aur loop ki explanation\n• 11:14 — P1, P2, aur P3 ka circular wait example\n• [N1] Section: Four Necessary Conditions for Deadlock > Circular Wait",
+      "latency_s": 28.28,
+      "calls": 1,
+      "input_tokens": 2153,
+      "output_tokens": 281,
+      "cost_usd": 0.00096,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 9:30–10:09",
+          "chapter_id": 3,
+          "distance": 0.25430452823638916,
+          "start": 570.0
+        },
+        {
+          "heading_path": "Transcript 5:23–6:32",
+          "chapter_id": 3,
+          "distance": 0.4397820234298706,
+          "start": 323.0
+        },
+        {
+          "heading_path": "Transcript 9:59–10:42",
+          "chapter_id": 3,
+          "distance": 0.3168128728866577,
+          "start": 599.0
+        },
+        {
+          "heading_path": "Transcript 11:14–11:59",
+          "chapter_id": 3,
+          "distance": 0.3115495443344116,
+          "start": 674.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Circular Wait",
+          "chapter_id": 3,
+          "distance": 0.30317187309265137,
+          "start": 580.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "distance": 0.3993082046508789,
+          "start": 334.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Mutual Exclusion and No Preemption",
+          "distance": 0.45572054386138916
+        },
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.4570070505142212
+        }
+      ],
+      "citations": [
+        {
+          "section": "9:30 — Circular wait ka matlab aur loop ki explanation",
+          "verified": true,
+          "chunk_id": "tx_570_65f36e47ce",
+          "heading_path": "Transcript 9:30–10:09",
+          "heading": "Transcript 9:30",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 570,
+          "end": 609.0
+        },
+        {
+          "section": "11:14 — P1, P2, aur P3 ka circular wait example",
+          "verified": true,
+          "chunk_id": "tx_674_b0f6d0e9a2",
+          "heading_path": "Transcript 11:14–11:59",
+          "heading": "Transcript 11:14",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 674,
+          "end": 719.0
+        },
+        {
+          "section": "[N1] Section: Four Necessary Conditions for Deadlock > Circular Wait",
+          "verified": true,
+          "chunk_id": "note_0359c2840ee0f84f",
+          "heading_path": "Four Necessary Conditions for Deadlock > Circular Wait",
+          "heading": "Circular Wait",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 580.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 5,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Clearly explains circular wait as a closed loop of dependencies."
+      }
+    },
+    {
+      "category": "core",
+      "question": "deadlock ke liye chaaro conditions ka hona kyun zaroori hai?",
+      "gold_answer": "A deadlock only occurs if all four necessary conditions are met simultaneously; if any one of them is absent, a deadlock might not occur.",
+      "quote": "Agar inmein se charon mein se koi bhi condition true nahi hoti, to there will be a chance ki deadlock occur na ho.",
+      "quote_ts": 452.0,
+      "question_hi": "deadlock ke liye chaaro conditions ka hona kyun zaroori hai?",
+      "question_en": "Why is it important for all four conditions to be present for a deadlock?",
+      "answer": "Deadlock tabhi hota hai jab system ek aise state mein phans jaye jahan koi bhi process aage nahi badh sakta aur koi bhi resource release nahi ho sakta. Agar in charon mein se ek bhi condition missing ho, to system mein se deadlock apne aap khatam ho jayega ya kabhi banega hi nahi.\n\nSocho agar \"No Preemption\" na ho (yani hum resource cheen sakein), to hum kisi ek process se resource lekar deadlock tod sakte hain. Isi tarah, agar \"Circular Wait\" na ho, to koi na koi process aisa hoga jo kisi aur ka wait nahi kar raha, aur wo apna kaam khatam karke resource free kar dega, jisse deadlock chain toot jayegi.\n\nIsliye, ye charon conditions milkar hi ek \"permanent\" stuck state banati hain jisse bahar nikalne ka koi raasta nahi bachta.\n\nWant to see how removing one of these conditions actually prevents a deadlock?\n\n**Sources**\n• 11:53 — Inko hum bolte hain necessary and sufficient conditions to become a deadlock situation.\n• [N1] Section: Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+      "latency_s": 2.6,
+      "calls": 1,
+      "input_tokens": 2097,
+      "output_tokens": 248,
+      "cost_usd": 0.000896,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 5:23–6:32",
+          "chapter_id": 3,
+          "distance": 0.27923452854156494,
+          "start": 323.0
+        },
+        {
+          "heading_path": "Transcript 11:53–12:20",
+          "chapter_id": 3,
+          "distance": 0.2581911087036133,
+          "start": 713.0
+        },
+        {
+          "heading_path": "Transcript 1:41–2:15",
+          "chapter_id": 1,
+          "distance": 0.3656715154647827,
+          "start": 101.0
+        },
+        {
+          "heading_path": "Transcript 6:27–7:16",
+          "chapter_id": 3,
+          "distance": 0.3072843551635742,
+          "start": 387.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "distance": 0.30519282817840576,
+          "start": 334.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Evaluating the Deadlock State",
+          "chapter_id": 2,
+          "distance": 0.37074780464172363,
+          "start": 257.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Mutual Exclusion and No Preemption",
+          "distance": 0.3912942409515381
+        },
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.4190831780433655
+        }
+      ],
+      "citations": [
+        {
+          "section": "11:53 — Inko hum bolte hain necessary and sufficient conditions to become a deadlock situation.",
+          "verified": true,
+          "chunk_id": "tx_713_7fcf59168b",
+          "heading_path": "Transcript 11:53–12:20",
+          "heading": "Transcript 11:53",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 713,
+          "end": 740.2
+        },
+        {
+          "section": "[N1] Section: Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "verified": true,
+          "chunk_id": "note_9147b8da72eb11f1",
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "heading": "Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": 334.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 6,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly explains why all four conditions must be present together."
+      }
+    },
+    {
+      "category": "core",
+      "question": "kya agar sirf ek ya do conditions meet ho toh system deadlock mein ja sakta hai?",
+      "gold_answer": "No, all four conditions are necessary for a deadlock to exist, so having only one or two is insufficient to cause a deadlock.",
+      "quote": "Inko hum bolte hain necessary and sufficient conditions to become a deadlock situation. To akeli ek situation nahi, mutual exclusion, no preemption, hold and wait, circular wait agar charon necessary conditions hain, then we can say deadlock occur ho raha hai.",
+      "quote_ts": 713.0,
+      "question_hi": "kya agar sirf ek ya do conditions meet ho toh system deadlock mein ja sakta hai?",
+      "question_en": "Can a system be in a deadlock if only one or two of the necessary conditions are met?",
+      "answer": "Nahi, sirf ek ya do conditions meet hone se system deadlock mein nahi ja sakta.\n\nLecture ke mutabiq, deadlock hone ke liye charon conditions—Mutual Exclusion, No Preemption, Hold and Wait, aur Circular Wait—ka ek saath hona zaroori hai. Ye charon \"necessary and sufficient\" conditions hain, matlab jab tak ye charon conditions ek saath maujood nahi hongi, tab tak hum ye nahi keh sakte ki system deadlock mein hai.\n\nWant to walk through why having just one or two of these conditions isn't enough to cause a deadlock?\n\n**Sources**\n• 11:53 — Inko hum bolte hain necessary and sufficient conditions to become a deadlock situation.\n• [N1] Section: Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+      "latency_s": 1.99,
+      "calls": 1,
+      "input_tokens": 2113,
+      "output_tokens": 169,
+      "cost_usd": 0.000782,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 11:53–12:20",
+          "chapter_id": 3,
+          "distance": 0.336490273475647,
+          "start": 713.0
+        },
+        {
+          "heading_path": "Transcript 1:41–2:15",
+          "chapter_id": 1,
+          "distance": 0.4126741886138916,
+          "start": 101.0
+        },
+        {
+          "heading_path": "Transcript 9:30–10:09",
+          "chapter_id": 3,
+          "distance": 0.43849581480026245,
+          "start": 570.0
+        },
+        {
+          "heading_path": "Transcript 6:27–7:16",
+          "chapter_id": 3,
+          "distance": 0.34676027297973633,
+          "start": 387.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "distance": 0.3014313578605652,
+          "start": 334.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "distance": 0.3435487747192383,
+          "start": 406.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Mutual Exclusion and No Preemption",
+          "distance": 0.4118940234184265
+        },
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.4287661910057068
+        }
+      ],
+      "citations": [
+        {
+          "section": "11:53 — Inko hum bolte hain necessary and sufficient conditions to become a deadlock situation.",
+          "verified": true,
+          "chunk_id": "tx_713_7fcf59168b",
+          "heading_path": "Transcript 11:53–12:20",
+          "heading": "Transcript 11:53",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 713,
+          "end": 740.2
+        },
+        {
+          "section": "[N1] Section: Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "verified": true,
+          "chunk_id": "note_9147b8da72eb11f1",
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "heading": "Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": 334.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 7,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately states that one or two conditions are insufficient for a deadlock."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "lecturer ne real-world bank scenario ka kaunsa example diya hai deadlock samjhane ke liye?",
+      "gold_answer": "The lecturer describes a situation where a customer wants to open an account before depositing money, while the bank requires a deposit before opening the account.",
+      "quote": "Main bank mein gaya and bank personal se bol raha hoon, I want to open an account. But that person is saying, ki first you have to deposit this minimum amount, then we will open the account.",
+      "quote_ts": 19.0,
+      "question_hi": "lecturer ne real-world bank scenario ka kaunsa example diya hai deadlock samjhane ke liye?",
+      "question_en": "What example does the lecturer use to illustrate a deadlock in a real-world bank scenario?",
+      "answer": "Lecture mein deadlock samjhane ke liye bank ka ek simple example diya gaya hai: ek customer bank mein account open karwana chahta hai, lekin bank official kehta hai ki pehle minimum amount deposit karo. Customer kehta hai ki pehle account open karo, tabhi main deposit karunga.\n\nKyuki dono ek-dusre ke action ka wait kar rahe hain aur wo event kabhi nahi hoga, isliye dono stuck ho gaye hain—yahi deadlock ki situation hai.\n\n**Sources**\n• 0:00 — Bank account opening scenario\n• [N1] Section: Introduction to Deadlock and Examples > Defining Deadlock",
+      "latency_s": 1.87,
+      "calls": 1,
+      "input_tokens": 2195,
+      "output_tokens": 132,
+      "cost_usd": 0.000747,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:00–0:30",
+          "chapter_id": 1,
+          "distance": 0.429471492767334,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Transcript 3:14–4:05",
+          "chapter_id": 1,
+          "distance": 0.4503239393234253,
+          "start": 194.0
+        },
+        {
+          "heading_path": "Transcript 1:41–2:15",
+          "chapter_id": 1,
+          "distance": 0.4877755641937256,
+          "start": 101.0
+        },
+        {
+          "heading_path": "Transcript 0:50–1:27",
+          "chapter_id": 1,
+          "distance": 0.46849918365478516,
+          "start": 50.0
+        },
+        {
+          "heading_path": "Introduction to Deadlock and Examples > Defining Deadlock",
+          "chapter_id": 1,
+          "distance": 0.3733067512512207,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "distance": 0.4302349090576172,
+          "start": 334.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.5026353597640991
+        },
+        {
+          "section": "Resource Allocation Dynamics",
+          "distance": 0.5466508865356445
+        }
+      ],
+      "citations": [
+        {
+          "section": "0:00 — Bank account opening scenario",
+          "verified": true,
+          "chunk_id": "tx_0_52b3db2a83",
+          "heading_path": "Transcript 0:00–0:30",
+          "heading": "Transcript 0:00",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 0,
+          "end": 30.0
+        },
+        {
+          "section": "[N1] Section: Introduction to Deadlock and Examples > Defining Deadlock",
+          "verified": true,
+          "chunk_id": "note_6ee9e54470b4c3d4",
+          "heading_path": "Introduction to Deadlock and Examples > Defining Deadlock",
+          "heading": "Defining Deadlock",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": 0.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 8,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately recounts the bank account opening scenario from the lecture."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "deadlock samjhane ke liye vehicles wala kaunsa analogy use kiya gaya hai?",
+      "gold_answer": "The lecturer uses an example of two cars facing each other on a road where neither driver is willing to reverse due to ego, causing both to be stuck.",
+      "quote": "A is saying, ki I am on the right direction, he is moving towards this direction. And at the same time, some B person that is also moving towards A. So let's say ki B is moving wrong side.",
+      "quote_ts": 65.0,
+      "question_hi": "deadlock samjhane ke liye vehicles wala kaunsa analogy use kiya gaya hai?",
+      "question_en": "What analogy involving vehicles is used to explain deadlock?",
+      "answer": "Lecture mein traffic ka example diya gaya hai jahan do gaadiyan (A aur B) ek-dusre ke saamne aati hain. Dono drivers ko lagta hai ki wo sahi raaste par hain aur ego ya zid ki wajah se koi bhi apni gaadi peeche nahi karna chahta. Is wajah se dono wahin stuck ho jaate hain aur aage nahi badh paate, jo deadlock ki situation ko darshata hai.\n\n**Sources**\n• 1:41 — Traffic analogy with cars A and B",
+      "latency_s": 1.94,
+      "calls": 1,
+      "input_tokens": 1982,
+      "output_tokens": 112,
+      "cost_usd": 0.000663,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:41–2:15",
+          "chapter_id": 1,
+          "distance": 0.3910928964614868,
+          "start": 101.0
+        },
+        {
+          "heading_path": "Transcript 5:23–6:32",
+          "chapter_id": 3,
+          "distance": 0.6063588857650757,
+          "start": 323.0
+        },
+        {
+          "heading_path": "Transcript 6:27–7:16",
+          "chapter_id": 3,
+          "distance": 0.5885746479034424,
+          "start": 387.0
+        },
+        {
+          "heading_path": "Transcript 0:00–0:30",
+          "chapter_id": 1,
+          "distance": 0.5691883563995361,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Introduction to Deadlock and Examples > Defining Deadlock",
+          "chapter_id": 1,
+          "distance": 0.5207096338272095,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Introduction to Deadlock and Examples > Traffic Analogy",
+          "chapter_id": 1,
+          "distance": 0.3850046396255493,
+          "start": 58.0
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "1:41 — Traffic analogy with cars A and B",
+          "verified": true,
+          "chunk_id": "tx_101_114e1f8b33",
+          "heading_path": "Transcript 1:41–2:15",
+          "heading": "Transcript 1:41",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 101,
+          "end": 135.0
+        }
+      ],
+      "grade": {
+        "id": 9,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly describes the two-car traffic deadlock analogy."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "mutual exclusion samjhane ke liye kaunsa hardware device example mein liya hai?",
+      "gold_answer": "A printer is used as an example, where only one process should be allowed to print at a time to avoid interleaved output.",
+      "quote": "Like a printer. Jaise agar ek process hai, wo printer ko use kar raha hai, matlab ek process printer ko use karke print kar raha hai kuch, aur usi time pe ek aur process aa gaya.",
+      "quote_ts": 426.0,
+      "question_hi": "mutual exclusion samjhane ke liye kaunsa hardware device example mein liya hai?",
+      "question_en": "What hardware device is used as an example to explain mutual exclusion?",
+      "answer": "Lecture mein mutual exclusion samjhane ke liye **printer** ka example liya gaya hai. \n\nIska matlab ye hai ki agar ek process printer use kar raha hai, toh usi waqt koi dusra process usse access nahi kar sakta—resources ko \"one by one\" hi use kiya ja sakta hai, interleaving allowed nahi hoti.\n\nWant to know why this specific behavior creates a risk for deadlock?\n\n**Sources**\n• 6:27 — Mutual exclusion explanation using printer example\n• [N1] Section: Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+      "latency_s": 2.62,
+      "calls": 1,
+      "input_tokens": 1994,
+      "output_tokens": 123,
+      "cost_usd": 0.000683,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 7:28–8:05",
+          "chapter_id": 3,
+          "distance": 0.5773969888687134,
+          "start": 448.0
+        },
+        {
+          "heading_path": "Transcript 6:27–7:16",
+          "chapter_id": 3,
+          "distance": 0.6095720529556274,
+          "start": 387.0
+        },
+        {
+          "heading_path": "Transcript 5:23–6:32",
+          "chapter_id": 3,
+          "distance": 0.7229706048965454,
+          "start": 323.0
+        },
+        {
+          "heading_path": "Transcript 1:41–2:15",
+          "chapter_id": 1,
+          "distance": 0.7173299789428711,
+          "start": 101.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "distance": 0.6139453053474426,
+          "start": 406.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "distance": 0.7164279222488403,
+          "start": 334.0
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "6:27 — Mutual exclusion explanation using printer example",
+          "verified": true,
+          "chunk_id": "tx_387_9c4a8a290c",
+          "heading_path": "Transcript 6:27–7:16",
+          "heading": "Transcript 6:27",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 387,
+          "end": 436.0
+        },
+        {
+          "section": "[N1] Section: Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "verified": true,
+          "chunk_id": "note_2276ae988e1b3eec",
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "heading": "Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 406.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 10,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly identifies the printer as the example hardware device."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "diagram mein allocated resource ko lecturer kaise represent karte hain?",
+      "gold_answer": "An allocated resource is represented by an arrow pointing from the resource towards the process.",
+      "quote": "This arrow means agar ye arrow towards the process aa raha hai, isko hum bolte hain hold, matlab wo process us resource ko leke baitha hua hai. Means it is allocated.",
+      "quote_ts": 622.0,
+      "question_hi": "diagram mein allocated resource ko lecturer kaise represent karte hain?",
+      "question_en": "How does the lecturer represent an 'allocated' resource in a diagram?",
+      "answer": "Lecturer ke anusar, resource allocation graph mein jab koi process kisi resource ko hold karke baitha hota hai (allocated), toh usse represent karne ke liye arrow resource se process ki taraf draw kiya jata hai.\n\nSimple words mein, agar arrow resource se nikal kar process ki taraf point kar raha hai, toh iska matlab hai ki wo resource us process ko allocate ho chuka hai.\n\nKya aap chahenge ki hum isse request wale arrow se compare karke dekhein?\n\n**Sources**\n• 10:32 — Lecturer explains that an arrow towards a process means the resource is allocated to it.",
+      "latency_s": 1.65,
+      "calls": 1,
+      "input_tokens": 2256,
+      "output_tokens": 129,
+      "cost_usd": 0.000757,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 10:32–11:19",
+          "chapter_id": 3,
+          "distance": 0.4688466191291809,
+          "start": 632.0
+        },
+        {
+          "heading_path": "Transcript 9:59–10:42",
+          "chapter_id": 3,
+          "distance": 0.5421229600906372,
+          "start": 599.0
+        },
+        {
+          "heading_path": "Transcript 3:14–4:05",
+          "chapter_id": 1,
+          "distance": 0.5947136282920837,
+          "start": 194.0
+        },
+        {
+          "heading_path": "Transcript 3:52–4:31",
+          "chapter_id": 2,
+          "distance": 0.5648466348648071,
+          "start": 232.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Resource Allocation Dynamics",
+          "chapter_id": 2,
+          "distance": 0.5433456897735596,
+          "start": 232.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Circular Wait",
+          "chapter_id": 3,
+          "distance": 0.55321204662323,
+          "start": 580.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Circular Wait",
+          "distance": 0.40852564573287964
+        },
+        {
+          "section": "Circular Wait",
+          "distance": 0.5085098147392273
+        }
+      ],
+      "citations": [
+        {
+          "section": "10:32 — Lecturer explains that an arrow towards a process means the resource is allocated to it.",
+          "verified": true,
+          "chunk_id": "tx_632_4668cfe1c9",
+          "heading_path": "Transcript 10:32–11:19",
+          "heading": "Transcript 10:32",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 632,
+          "end": 679.0
+        }
+      ],
+      "grade": {
+        "id": 11,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that allocation is represented by an arrow from resource to process."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "diagram mein resource request ko kaise dikhate hain?",
+      "gold_answer": "A request for a resource is represented by an arrow drawn from the process towards the resource.",
+      "quote": "Request ke liye hum us resource ke towards resource ki taraf hum arrow draw karte hain.",
+      "quote_ts": 645.0,
+      "question_hi": "diagram mein resource request ko kaise dikhate hain?",
+      "question_en": "How does the lecturer represent a 'request' for a resource in a diagram?",
+      "answer": "Resource allocation graph mein request ko dikhane ke liye hum ek arrow draw karte hain jo **process se resource ki taraf** point karta hai.\n\nIska matlab hota hai ki process ko wo specific resource chahiye aur wo uske liye wait kar raha hai. Iske opposite, agar arrow resource se process ki taraf ho, toh uska matlab hota hai ki resource us process ko already allocate (hold) kiya gaya hai.\n\nWant to walk through how this looks in a circular wait scenario?\n\n**Sources**\n• 10:32 — Explanation of request arrows in resource allocation graphs\n• [N1] Section: Four Necessary Conditions for Deadlock > Circular Wait",
+      "latency_s": 1.64,
+      "calls": 1,
+      "input_tokens": 2215,
+      "output_tokens": 135,
+      "cost_usd": 0.000756,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 10:32–11:19",
+          "chapter_id": 3,
+          "distance": 0.3969038724899292,
+          "start": 632.0
+        },
+        {
+          "heading_path": "Transcript 8:56–9:40",
+          "chapter_id": 3,
+          "distance": 0.5342676639556885,
+          "start": 536.0
+        },
+        {
+          "heading_path": "Transcript 11:14–11:59",
+          "chapter_id": 3,
+          "distance": 0.5273387432098389,
+          "start": 674.0
+        },
+        {
+          "heading_path": "Transcript 9:59–10:42",
+          "chapter_id": 3,
+          "distance": 0.5587486028671265,
+          "start": 599.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Circular Wait",
+          "chapter_id": 3,
+          "distance": 0.529287576675415,
+          "start": 580.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Hold and Wait",
+          "chapter_id": 3,
+          "distance": 0.5731691718101501,
+          "start": 530.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Circular Wait",
+          "distance": 0.4412915110588074
+        },
+        {
+          "section": "Resource Allocation Dynamics",
+          "distance": 0.512721598148346
+        }
+      ],
+      "citations": [
+        {
+          "section": "10:32 — Explanation of request arrows in resource allocation graphs",
+          "verified": true,
+          "chunk_id": "tx_632_4668cfe1c9",
+          "heading_path": "Transcript 10:32–11:19",
+          "heading": "Transcript 10:32",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 632,
+          "end": 679.0
+        },
+        {
+          "section": "[N1] Section: Four Necessary Conditions for Deadlock > Circular Wait",
+          "verified": true,
+          "chunk_id": "note_0359c2840ee0f84f",
+          "heading_path": "Four Necessary Conditions for Deadlock > Circular Wait",
+          "heading": "Circular Wait",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 580.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 12,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that a request is shown by an arrow from process to resource."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "lecturer ke explanation ke hisaab se agar process preempt ho jaye toh kya hota hai?",
+      "gold_answer": "The lecturer suggests that preemption involves stopping a process or forcing it to release its resources, which is not allowed in the deadlock conditions discussed.",
+      "quote": "Preemption means aisa na ho ki like one process is holding some resource aur ek dusra process aaya aur humne preempt kar diya pehle wale process ko, ki apne resources ko release kar do.",
+      "quote_ts": 496.0,
+      "question_hi": "lecturer ke explanation ke hisaab se agar process preempt ho jaye toh kya hota hai?",
+      "question_en": "What happens to a process if it is preempted in the context of the lecturer's explanation?",
+      "answer": "Agar process preempt ho jaye, toh iska matlab hai ki usse uska resource forcibly wapas le liya gaya hai. Lecture ke mutabik, deadlock tabhi hota hai jab **\"No Preemption\"** ki condition ho—yani resources ko zabardasti cheena nahi ja sakta.\n\nAgar system mein preemption allowed hota, toh hum kisi process se uska resource wapas le kar deadlock ko tod sakte the. Lekin lecture mein bataya gaya hai ki deadlock ke liye \"No Preemption\" hona zaroori hai, jiska matlab hai ki ek process tab tak resource nahi chhodega jab tak wo apna kaam pura na kar le.\n\nKya aap samajhna chahenge ki \"No Preemption\" aur \"Hold and Wait\" mil kar deadlock ko kaise aur khatarnak bana dete hain?\n\n**Sources**\n• 8:00 — Definition of No Preemption\n• [N1] Section: Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+      "latency_s": 2.28,
+      "calls": 1,
+      "input_tokens": 2017,
+      "output_tokens": 202,
+      "cost_usd": 0.000807,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 2:51–3:19",
+          "chapter_id": 1,
+          "distance": 0.606101393699646,
+          "start": 171.0
+        },
+        {
+          "heading_path": "Transcript 7:07–7:29",
+          "chapter_id": 3,
+          "distance": 0.6302694082260132,
+          "start": 427.0
+        },
+        {
+          "heading_path": "Transcript 2:10–2:55",
+          "chapter_id": 1,
+          "distance": 0.6561751961708069,
+          "start": 130.0
+        },
+        {
+          "heading_path": "Transcript 8:00–8:37",
+          "chapter_id": 3,
+          "distance": 0.5664226412773132,
+          "start": 480.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "distance": 0.687110424041748,
+          "start": 406.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "distance": 0.6593536734580994,
+          "start": 334.0
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "8:00 — Definition of No Preemption",
+          "verified": true,
+          "chunk_id": "tx_480_00698e159e",
+          "heading_path": "Transcript 8:00–8:37",
+          "heading": "Transcript 8:00",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 480,
+          "end": 517.0
+        },
+        {
+          "section": "[N1] Section: Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "verified": true,
+          "chunk_id": "note_2276ae988e1b3eec",
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "heading": "Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 406.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 13,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately conveys how preemption would affect deadlock based on the lecture."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "three-process circular wait example mein P3 kiska wait kar raha hai?",
+      "gold_answer": "P3 is holding resource R3 and is waiting for resource R2.",
+      "quote": "And let's say there is another process P3 which is requesting for R2, requesting for R2 and it is holding R3. Means R3 ko hold kiya hua hai and requesting for R2.",
+      "quote_ts": 663.0,
+      "question_hi": "three-process circular wait example mein P3 kiska wait kar raha hai?",
+      "question_en": "In the three-process circular wait example, what is P3 waiting for?",
+      "answer": "Is example mein, process P3 resource R3 ko hold karke baitha hai aur resource R2 ke liye wait kar raha hai. \n\nBasically, P3 ko apna kaam pura karne ke liye R2 ki zaroorat hai, jo is waqt process P2 ke paas hai.\n\nWant to see how this chain completes the circle back to P1?\n\n**Sources**\n• 11:14 — P3 is holding R3 and requesting for R2.\n• [N1] Section: Four Necessary Conditions for Deadlock > Circular Wait",
+      "latency_s": 1.85,
+      "calls": 1,
+      "input_tokens": 2140,
+      "output_tokens": 118,
+      "cost_usd": 0.000712,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 9:59–10:42",
+          "chapter_id": 3,
+          "distance": 0.36206281185150146,
+          "start": 599.0
+        },
+        {
+          "heading_path": "Transcript 11:14–11:59",
+          "chapter_id": 3,
+          "distance": 0.41437703371047974,
+          "start": 674.0
+        },
+        {
+          "heading_path": "Transcript 9:30–10:09",
+          "chapter_id": 3,
+          "distance": 0.42570459842681885,
+          "start": 570.0
+        },
+        {
+          "heading_path": "Transcript 8:31–9:03",
+          "chapter_id": 3,
+          "distance": 0.4975283741950989,
+          "start": 511.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Circular Wait",
+          "chapter_id": 3,
+          "distance": 0.4247886538505554,
+          "start": 580.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Hold and Wait",
+          "chapter_id": 3,
+          "distance": 0.42321550846099854,
+          "start": 530.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Circular Wait",
+          "distance": 0.3868446946144104
+        }
+      ],
+      "citations": [
+        {
+          "section": "11:14 — P3 is holding R3 and requesting for R2.",
+          "verified": true,
+          "chunk_id": "tx_674_b0f6d0e9a2",
+          "heading_path": "Transcript 11:14–11:59",
+          "heading": "Transcript 11:14",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 674,
+          "end": 719.0
+        },
+        {
+          "section": "[N1] Section: Four Necessary Conditions for Deadlock > Circular Wait",
+          "verified": true,
+          "chunk_id": "note_0359c2840ee0f84f",
+          "heading_path": "Four Necessary Conditions for Deadlock > Circular Wait",
+          "heading": "Circular Wait",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 580.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 14,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that P3 holds R3 while waiting for R2."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "agar deadlock ho jaye toh system usse recover kaise karta hai?",
+      "gold_answer": "The lecture does not provide information on deadlock recovery strategies such as process termination or resource preemption.",
+      "quote": "",
+      "question_hi": "agar deadlock ho jaye toh system usse recover kaise karta hai?",
+      "question_en": "How can a system recover from a deadlock once it has already occurred?",
+      "answer": "The lecture you're referring to focuses on defining what a deadlock is and identifying the four necessary conditions for it to occur (Mutual Exclusion, No Preemption, Hold and Wait, and Circular Wait). It does not cover the specific strategies or algorithms used to recover from a deadlock once it has already happened.\n\nSince the lecture stops at identifying the conditions, would you like to explore what those four conditions actually mean, or are you interested in the general methods used to prevent or recover from deadlocks?\n\n**Sources**\n• 11:53 — Necessary and sufficient conditions for a deadlock to occur\n• [N1] Section: Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+      "latency_s": 1.69,
+      "calls": 1,
+      "input_tokens": 2166,
+      "output_tokens": 142,
+      "cost_usd": 0.000755,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 3:14–4:05",
+          "chapter_id": 1,
+          "distance": 0.43539702892303467,
+          "start": 194.0
+        },
+        {
+          "heading_path": "Transcript 0:00–0:30",
+          "chapter_id": 1,
+          "distance": 0.4548634886741638,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Transcript 11:53–12:20",
+          "chapter_id": 3,
+          "distance": 0.49065661430358887,
+          "start": 713.0
+        },
+        {
+          "heading_path": "Transcript 1:41–2:15",
+          "chapter_id": 1,
+          "distance": 0.41193485260009766,
+          "start": 101.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "distance": 0.44439059495925903,
+          "start": 334.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Evaluating the Deadlock State",
+          "chapter_id": 2,
+          "distance": 0.49349331855773926,
+          "start": 257.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.4767109155654907
+        },
+        {
+          "section": "Resource Allocation Dynamics",
+          "distance": 0.5028079152107239
+        }
+      ],
+      "citations": [
+        {
+          "section": "11:53 — Necessary and sufficient conditions for a deadlock to occur",
+          "verified": true,
+          "chunk_id": "tx_713_7fcf59168b",
+          "heading_path": "Transcript 11:53–12:20",
+          "heading": "Transcript 11:53",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 713,
+          "end": 740.2
+        },
+        {
+          "section": "[N1] Section: Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "verified": true,
+          "chunk_id": "note_9147b8da72eb11f1",
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "heading": "Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": 334.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 15,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately points out that deadlock recovery is not covered in the lecture."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "deadlock aur livelock mein kya difference hota hai?",
+      "gold_answer": "The lecture does not define or discuss the concept of livelock.",
+      "quote": "",
+      "question_hi": "deadlock aur livelock mein kya difference hota hai?",
+      "question_en": "What is the difference between a deadlock and a livelock?",
+      "answer": "The lecture defines a deadlock as a state where two or more processes are stuck because they are waiting for an event that will never happen, such as waiting for a resource held by another process that is also waiting on them.\n\nHowever, the lecture does not cover \"livelock.\" In general terms, while a deadlock involves processes being completely stuck (blocked) and unable to proceed, a livelock occurs when processes are actively changing their states in response to each other but still fail to make any real progress.\n\nWould you like to walk through the four necessary conditions that must be met for a deadlock to officially occur?\n\n**Sources**\n• 0:00 — Definition of deadlock\n• 5:23 — Example of processes waiting on resources held by each other\n• 6:27 — Four necessary conditions for deadlock",
+      "latency_s": 1.88,
+      "calls": 1,
+      "input_tokens": 2176,
+      "output_tokens": 171,
+      "cost_usd": 0.000801,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:41–2:15",
+          "chapter_id": 1,
+          "distance": 0.4667437672615051,
+          "start": 101.0
+        },
+        {
+          "heading_path": "Transcript 0:00–0:30",
+          "chapter_id": 1,
+          "distance": 0.41500866413116455,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Transcript 5:23–6:32",
+          "chapter_id": 3,
+          "distance": 0.49984192848205566,
+          "start": 323.0
+        },
+        {
+          "heading_path": "Transcript 6:27–7:16",
+          "chapter_id": 3,
+          "distance": 0.503498911857605,
+          "start": 387.0
+        },
+        {
+          "heading_path": "Introduction to Deadlock and Examples > Defining Deadlock",
+          "chapter_id": 1,
+          "distance": 0.43614816665649414,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Evaluating the Deadlock State",
+          "chapter_id": 2,
+          "distance": 0.4877987504005432,
+          "start": 257.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.4415435194969177
+        },
+        {
+          "section": "Resource Allocation Dynamics",
+          "distance": 0.47215789556503296
+        }
+      ],
+      "citations": [
+        {
+          "section": "0:00 — Definition of deadlock",
+          "verified": true,
+          "chunk_id": "tx_0_52b3db2a83",
+          "heading_path": "Transcript 0:00–0:30",
+          "heading": "Transcript 0:00",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 0,
+          "end": 30.0
+        },
+        {
+          "section": "5:23 — Example of processes waiting on resources held by each other",
+          "verified": true,
+          "chunk_id": "tx_323_aef7d709df",
+          "heading_path": "Transcript 5:23–6:32",
+          "heading": "Transcript 5:23",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 323,
+          "end": 392.8
+        },
+        {
+          "section": "6:27 — Four necessary conditions for deadlock",
+          "verified": true,
+          "chunk_id": "tx_387_9c4a8a290c",
+          "heading_path": "Transcript 6:27–7:16",
+          "heading": "Transcript 6:27",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 387,
+          "end": 436.0
+        }
+      ],
+      "grade": {
+        "id": 16,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly indicates that livelock is not discussed in the lecture."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "kya deadlock avoid karne ke liye Banker's Algorithm jaise specific algorithms hote hain?",
+      "gold_answer": "The lecture does not mention any specific deadlock avoidance algorithms.",
+      "quote": "",
+      "question_hi": "kya deadlock avoid karne ke liye Banker's Algorithm jaise specific algorithms hote hain?",
+      "question_en": "Are there specific algorithms, like the Banker's Algorithm, used to avoid deadlocks?",
+      "answer": "Haan, bilkul! Deadlock ko handle karne ke liye specific algorithms hote hain, aur Banker's Algorithm unmein se ek bahut famous example hai jo deadlock avoidance ke liye use kiya jata hai.\n\nLecture mein humne abhi sirf deadlock ki basic definition aur uske liye zaroori 4 conditions (Mutual Exclusion, No Preemption, Hold and Wait, aur Circular Wait) ke baare mein samjha hai. Banker's algorithm ka kaam ye check karna hota hai ki kya system \"safe state\" mein hai, taaki deadlock ki situation kabhi aaye hi na.\n\nKya aap chahte hain ki hum pehle in 4 necessary conditions ko thoda aur detail mein samjhein, ya seedha ye dekhein ki ye conditions milkar deadlock kaise banati hain?\n\n**Sources**\n• 5:23 — deadlock situation involving P1, P2, R1, and R2\n• 6:27 — the four necessary conditions for deadlock",
+      "latency_s": 1.91,
+      "calls": 1,
+      "input_tokens": 2082,
+      "output_tokens": 200,
+      "cost_usd": 0.000821,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:41–2:15",
+          "chapter_id": 1,
+          "distance": 0.5356385111808777,
+          "start": 101.0
+        },
+        {
+          "heading_path": "Transcript 5:23–6:32",
+          "chapter_id": 3,
+          "distance": 0.5397144556045532,
+          "start": 323.0
+        },
+        {
+          "heading_path": "Transcript 6:27–7:16",
+          "chapter_id": 3,
+          "distance": 0.5356137156486511,
+          "start": 387.0
+        },
+        {
+          "heading_path": "Transcript 0:00–0:30",
+          "chapter_id": 1,
+          "distance": 0.5187743902206421,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Introduction to Deadlock and Examples > Defining Deadlock",
+          "chapter_id": 1,
+          "distance": 0.4914916753768921,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Introduction to Deadlock and Examples > Technical Deadlock: Semaphore Synchronization",
+          "chapter_id": 1,
+          "distance": 0.5789188146591187,
+          "start": 123.0
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "5:23 — deadlock situation involving P1, P2, R1, and R2",
+          "verified": true,
+          "chunk_id": "tx_323_aef7d709df",
+          "heading_path": "Transcript 5:23–6:32",
+          "heading": "Transcript 5:23",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 323,
+          "end": 392.8
+        },
+        {
+          "section": "6:27 — the four necessary conditions for deadlock",
+          "verified": true,
+          "chunk_id": "tx_387_9c4a8a290c",
+          "heading_path": "Transcript 6:27–7:16",
+          "heading": "Transcript 6:27",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 387,
+          "end": 436.0
+        }
+      ],
+      "grade": {
+        "id": 17,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Clearly implies the lecture only introduces definitions and conditions, not Banker's algorithm."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "operating systems real-time mein deadlock kaise detect karte hain?",
+      "gold_answer": "The lecture does not explain the mechanisms or algorithms used by operating systems to detect existing deadlocks.",
+      "quote": "",
+      "question_hi": "operating systems real-time mein deadlock kaise detect karte hain?",
+      "question_en": "How do operating systems detect deadlocks in real-time?",
+      "answer": "The lecture doesn't cover the specific algorithms or mechanisms used to detect deadlocks in real-time systems. It focuses on defining what a deadlock is—a state where processes are stuck waiting for events that will never occur—and identifying the four necessary conditions (Mutual Exclusion, No Preemption, Hold and Wait, and Circular Wait) that must all be present for a deadlock to exist.\n\nIn general, operating systems typically handle this by either preventing the conditions from occurring in the first place, or by periodically running algorithms to check for cycles in a \"Resource Allocation Graph.\"\n\nSince the lecture emphasizes that a deadlock is only confirmed when all four of those specific conditions are met, would you like to walk through what one of those conditions, like \"Hold and Wait,\" actually means in a system?\n\n**Sources**\n• 0:00 — Definition of deadlock\n• 6:27 — The four necessary conditions for deadlock\n• [N1] Section: Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+      "latency_s": 1.69,
+      "calls": 1,
+      "input_tokens": 2148,
+      "output_tokens": 209,
+      "cost_usd": 0.000851,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 6:27–7:16",
+          "chapter_id": 3,
+          "distance": 0.5130200386047363,
+          "start": 387.0
+        },
+        {
+          "heading_path": "Transcript 0:00–0:30",
+          "chapter_id": 1,
+          "distance": 0.5060477256774902,
+          "start": 0.0
+        },
+        {
+          "heading_path": "Transcript 1:41–2:15",
+          "chapter_id": 1,
+          "distance": 0.5213981866836548,
+          "start": 101.0
+        },
+        {
+          "heading_path": "Transcript 0:50–1:27",
+          "chapter_id": 1,
+          "distance": 0.5272576808929443,
+          "start": 50.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "distance": 0.47810542583465576,
+          "start": 334.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Evaluating the Deadlock State",
+          "chapter_id": 2,
+          "distance": 0.49998462200164795,
+          "start": 257.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.4904022812843323
+        },
+        {
+          "section": "Mutual Exclusion and No Preemption",
+          "distance": 0.5024458169937134
+        }
+      ],
+      "citations": [
+        {
+          "section": "0:00 — Definition of deadlock",
+          "verified": true,
+          "chunk_id": "tx_0_52b3db2a83",
+          "heading_path": "Transcript 0:00–0:30",
+          "heading": "Transcript 0:00",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 0,
+          "end": 30.0
+        },
+        {
+          "section": "6:27 — The four necessary conditions for deadlock",
+          "verified": true,
+          "chunk_id": "tx_387_9c4a8a290c",
+          "heading_path": "Transcript 6:27–7:16",
+          "heading": "Transcript 6:27",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 387,
+          "end": 436.0
+        },
+        {
+          "section": "[N1] Section: Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "verified": true,
+          "chunk_id": "note_9147b8da72eb11f1",
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "heading": "Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": 334.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 18,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that real-time detection mechanisms are not covered in the lecture."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "kya ye sach hai ki jab do processes resources ka wait kar rahe hote hain toh deadlock pakka hoga?",
+      "gold_answer": "No, a deadlock is not guaranteed just because processes are waiting; all four necessary conditions, including circular wait, must be met.",
+      "quote": "Agar inmein se charon mein se koi bhi condition true nahi hoti, to there will be a chance ki deadlock occur na ho.",
+      "quote_ts": 452.0,
+      "question_hi": "kya ye sach hai ki jab do processes resources ka wait kar rahe hote hain toh deadlock pakka hoga?",
+      "question_en": "Is it true that a deadlock is guaranteed to occur whenever two processes are waiting for resources?",
+      "answer": "Nahi, ye sach nahi hai. Sirf do processes ka resources ke liye wait karna deadlock ki guarantee nahi deta.\n\nDeadlock tabhi hota hai jab **charon** necessary conditions (Mutual Exclusion, No Preemption, Hold and Wait, aur Circular Wait) ek saath true hoti hain. Agar inmein se ek bhi condition missing hai, toh deadlock nahi hoga. Sirf wait karna toh normal system operation ka hissa ho sakta hai, lekin deadlock tab banta hai jab wo wait kabhi khatam na ho sake kyunki har process kisi dusre process ke resource ka intezar kar raha ho.\n\nKya aap dekhna chahenge ki in charon conditions mein se agar ek bhi hata dein toh deadlock kaise ruk jata hai?\n\n**Sources**\n• 7:28 — lecture explains that all four conditions must be true for a deadlock to occur\n• 9:30 — lecturer emphasizes that deadlock occurs only when all four conditions are met",
+      "latency_s": 49.59,
+      "calls": 1,
+      "input_tokens": 2376,
+      "output_tokens": 194,
+      "cost_usd": 0.000885,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 9:30–10:09",
+          "chapter_id": 3,
+          "distance": 0.3226749897003174,
+          "start": 570.0
+        },
+        {
+          "heading_path": "Transcript 3:14–4:05",
+          "chapter_id": 1,
+          "distance": 0.3192911148071289,
+          "start": 194.0
+        },
+        {
+          "heading_path": "Transcript 7:28–8:05",
+          "chapter_id": 3,
+          "distance": 0.34934258460998535,
+          "start": 448.0
+        },
+        {
+          "heading_path": "Transcript 8:31–9:03",
+          "chapter_id": 3,
+          "distance": 0.4419330954551697,
+          "start": 511.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Resource Allocation Dynamics",
+          "chapter_id": 2,
+          "distance": 0.3090771436691284,
+          "start": 232.0
+        },
+        {
+          "heading_path": "Introduction to Deadlock and Examples > Technical Deadlock: Semaphore Synchronization",
+          "chapter_id": 1,
+          "distance": 0.3182024359703064,
+          "start": 123.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.368169903755188
+        },
+        {
+          "section": "Resource Allocation Dynamics",
+          "distance": 0.36839044094085693
+        }
+      ],
+      "citations": [
+        {
+          "section": "7:28 — lecture explains that all four conditions must be true for a deadlock to occur",
+          "verified": true,
+          "chunk_id": "tx_448_65dcb2f5f3",
+          "heading_path": "Transcript 7:28–8:05",
+          "heading": "Transcript 7:28",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 448,
+          "end": 485.0
+        },
+        {
+          "section": "9:30 — lecturer emphasizes that deadlock occurs only when all four conditions are met",
+          "verified": true,
+          "chunk_id": "tx_570_65f36e47ce",
+          "heading_path": "Transcript 9:30–10:09",
+          "heading": "Transcript 9:30",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 570,
+          "end": 609.0
+        }
+      ],
+      "grade": {
+        "id": 19,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly rejects the false premise by stating all four conditions are required."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "kya lecturer kehte hain ki interleaving resource usage deadlock ke liye zaroori hai?",
+      "gold_answer": "No, the lecturer states that interleaving is not allowed and that resources must be used in a mutual exclusive manner for a deadlock to occur.",
+      "quote": "Means one by one. Interleaving is not allowed. Interleaving is not allowed.",
+      "quote_ts": 472.0,
+      "question_hi": "kya lecturer kehte hain ki interleaving resource usage deadlock ke liye zaroori hai?",
+      "question_en": "Does the lecturer claim that interleaving resource usage is a requirement for a deadlock?",
+      "answer": "Nahi, bilkul ulta hai. Lecture mein saaf kaha gaya hai ki deadlock ke liye \"interleaving is not allowed.\"\n\nMutual exclusion condition ka matlab hi yahi hai ki resources ko ek-ek karke (mutually exclusive manner mein) use kiya jana chahiye, aur wahan interleaving allowed nahi hoti. Agar interleaving allowed hoti, toh shayad processes resources share kar paate aur deadlock ki situation hi nahi banti.\n\nKya aap chahte hain ki hum in charon conditions (Mutual Exclusion, No Preemption, Hold and Wait, Circular Wait) ko ek example ke saath samjhein?\n\n**Sources**\n• 7:28 — explanation of mutual exclusion and why interleaving is not allowed\n• [N1] Section: Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+      "latency_s": 6.89,
+      "calls": 1,
+      "input_tokens": 2257,
+      "output_tokens": 170,
+      "cost_usd": 0.000819,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 7:28–8:05",
+          "chapter_id": 3,
+          "distance": 0.41995954513549805,
+          "start": 448.0
+        },
+        {
+          "heading_path": "Transcript 3:52–4:31",
+          "chapter_id": 2,
+          "distance": 0.4677553176879883,
+          "start": 232.0
+        },
+        {
+          "heading_path": "Transcript 1:41–2:15",
+          "chapter_id": 1,
+          "distance": 0.5109685659408569,
+          "start": 101.0
+        },
+        {
+          "heading_path": "Transcript 5:23–6:32",
+          "chapter_id": 3,
+          "distance": 0.5137909054756165,
+          "start": 323.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "distance": 0.44833093881607056,
+          "start": 406.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Resource Allocation Dynamics",
+          "chapter_id": 2,
+          "distance": 0.44046008586883545,
+          "start": 232.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Resource Allocation Dynamics",
+          "distance": 0.5201128721237183
+        },
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.521795928478241
+        }
+      ],
+      "citations": [
+        {
+          "section": "7:28 — explanation of mutual exclusion and why interleaving is not allowed",
+          "verified": true,
+          "chunk_id": "tx_448_65dcb2f5f3",
+          "heading_path": "Transcript 7:28–8:05",
+          "heading": "Transcript 7:28",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 448,
+          "end": 485.0
+        },
+        {
+          "section": "[N1] Section: Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "verified": true,
+          "chunk_id": "note_2276ae988e1b3eec",
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "heading": "Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 406.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 20,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly corrects the premise by stating that interleaving is explicitly not allowed."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "kya agar no preemption condition violate ho jaye toh deadlock ho sakta hai?",
+      "gold_answer": "No, the lecturer identifies 'no preemption' as one of the four necessary conditions; if preemption were allowed, the deadlock could potentially be broken.",
+      "quote": "Agar inmein se charon mein se koi bhi condition true nahi hoti, to there will be a chance ki deadlock occur na ho.",
+      "quote_ts": 452.0,
+      "question_hi": "kya agar no preemption condition violate ho jaye toh deadlock ho sakta hai?",
+      "question_en": "Is it possible for a deadlock to occur if the 'no preemption' condition is violated?",
+      "answer": "Nahi, agar \"no preemption\" condition violate ho jaye (yani hum resources ko preempt kar sakein), toh deadlock nahi hoga.\n\nDeadlock hone ke liye charo conditions—Mutual Exclusion, No Preemption, Hold and Wait, aur Circular Wait—ka ek saath hona zaroori hai. Agar inmein se ek bhi condition fail ho jati hai, toh deadlock ki situation create nahi ho payegi. \"No preemption\" ka matlab hai ki ek process se resource zabardasti nahi cheena ja sakta; agar hum resource cheen sakein (preempt kar sakein), toh deadlock ko break kiya ja sakta hai.\n\nWant to see how preempting a resource would resolve a deadlock in a simple scenario?\n\n**Sources**\n• 7:28 — Explanation that if any of the four conditions are not true, deadlock will not occur.\n• 8:00 — Definition of \"no preemption\" and why it is a necessary condition.\n• 11:53 — Confirmation that all four conditions must be present for a deadlock to occur.",
+      "latency_s": 2.18,
+      "calls": 1,
+      "input_tokens": 2098,
+      "output_tokens": 222,
+      "cost_usd": 0.000857,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 7:28–8:05",
+          "chapter_id": 3,
+          "distance": 0.30564987659454346,
+          "start": 448.0
+        },
+        {
+          "heading_path": "Transcript 11:53–12:20",
+          "chapter_id": 3,
+          "distance": 0.3779258728027344,
+          "start": 713.0
+        },
+        {
+          "heading_path": "Transcript 6:27–7:16",
+          "chapter_id": 3,
+          "distance": 0.40154004096984863,
+          "start": 387.0
+        },
+        {
+          "heading_path": "Transcript 8:00–8:37",
+          "chapter_id": 3,
+          "distance": 0.42060816287994385,
+          "start": 480.0
+        },
+        {
+          "heading_path": "Four Necessary Conditions for Deadlock > Mutual Exclusion and No Preemption",
+          "chapter_id": 3,
+          "distance": 0.34074246883392334,
+          "start": 406.0
+        },
+        {
+          "heading_path": "Resource Allocation and Deadlock Scenarios > Prerequisites for Deadlock",
+          "chapter_id": 2,
+          "distance": 0.38169920444488525,
+          "start": 334.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Mutual Exclusion and No Preemption",
+          "distance": 0.4401968717575073
+        },
+        {
+          "section": "Defining Deadlock",
+          "distance": 0.49138712882995605
+        }
+      ],
+      "citations": [
+        {
+          "section": "7:28 — Explanation that if any of the four conditions are not true, deadlock will not occur.",
+          "verified": true,
+          "chunk_id": "tx_448_65dcb2f5f3",
+          "heading_path": "Transcript 7:28–8:05",
+          "heading": "Transcript 7:28",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 448,
+          "end": 485.0
+        },
+        {
+          "section": "8:00 — Definition of \"no preemption\" and why it is a necessary condition.",
+          "verified": true,
+          "chunk_id": "tx_480_00698e159e",
+          "heading_path": "Transcript 8:00–8:37",
+          "heading": "Transcript 8:00",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 480,
+          "end": 517.0
+        },
+        {
+          "section": "11:53 — Confirmation that all four conditions must be present for a deadlock to occur.",
+          "verified": true,
+          "chunk_id": "tx_713_7fcf59168b",
+          "heading_path": "Transcript 11:53–12:20",
+          "heading": "Transcript 11:53",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 713,
+          "end": 740.2
+        }
+      ],
+      "grade": {
+        "id": 21,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly rejects the premise, explaining that allowing preemption prevents deadlock."
+      }
+    }
+  ]
+}

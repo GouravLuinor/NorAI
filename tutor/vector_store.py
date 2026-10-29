@@ -9,7 +9,11 @@ costs a lot: Chroma 0.6 preallocated a 3.1 MB HNSW file per collection
 
 Layout (one directory per lecture, written atomically):
     <dir>/vectors.npy   float16 [n, dims], L2-normalised
-    <dir>/docs.json     {"dims", "ids", "docs", "metas"} aligned with the rows
+    <dir>/docs.json     {"model", "dims", "ids", "docs", "metas"} aligned with the rows
+
+"model" is the embedding model the vectors came from; queries must be embedded
+with the same one (tutor/retriever.py). Files without it predate the key and
+are Gemini (LEGACY_INDEX_MODEL).
 
 Every doc's metadata carries a "kind" ("notes" | "transcript" | "screenshot")
 so the three logical collections share one file and one load.
@@ -25,7 +29,7 @@ from typing import Callable, Optional
 
 import numpy as np
 
-from tutor.retrieval_config import EMBEDDING_DIMS
+from tutor.retrieval_config import EMBEDDING_DIMS, LEGACY_INDEX_MODEL
 
 INDEX_DIRNAME = "index"
 _VECTORS = "vectors.npy"
@@ -54,9 +58,10 @@ def _normalise(m: np.ndarray) -> np.ndarray:
 
 
 class VectorStore:
-    def __init__(self, root: str | Path, dims: int = EMBEDDING_DIMS) -> None:
+    def __init__(self, root: str | Path, dims: int = EMBEDDING_DIMS, model: str | None = None) -> None:
         self.root = Path(root)
         self.dims = dims
+        self.model = model
         self.ids: list[str] = []
         self.docs: list[str] = []
         self.metas: list[dict] = []
@@ -73,7 +78,8 @@ class VectorStore:
     def load(cls, root: str | Path) -> "VectorStore":
         root = Path(root)
         meta = json.loads((root / _DOCS).read_text(encoding="utf-8"))
-        store = cls(root, dims=meta.get("dims", EMBEDDING_DIMS))
+        store = cls(root, dims=meta.get("dims", EMBEDDING_DIMS),
+                    model=meta.get("model", LEGACY_INDEX_MODEL))
         store.ids = meta["ids"]
         store.docs = meta["docs"]
         store.metas = meta["metas"]
@@ -94,8 +100,8 @@ class VectorStore:
         with open(tmp_vec, "wb") as fh:
             np.save(fh, self.vectors.astype(np.float16))
         tmp_docs.write_text(
-            json.dumps({"dims": self.dims, "ids": self.ids, "docs": self.docs, "metas": self.metas},
-                       ensure_ascii=False),
+            json.dumps({"model": self.model, "dims": self.dims, "ids": self.ids,
+                        "docs": self.docs, "metas": self.metas}, ensure_ascii=False),
             encoding="utf-8",
         )
         os.replace(tmp_vec, self.root / _VECTORS)

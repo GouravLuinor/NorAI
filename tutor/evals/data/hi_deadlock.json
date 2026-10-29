@@ -1,0 +1,185 @@
+{
+  "lecture_dir": "outputs/hinglish-deadlock",
+  "questions": [
+    {
+      "category": "core",
+      "question": "What is the fundamental definition of a deadlock?",
+      "gold_answer": "A deadlock occurs when two or more processes are waiting for an event to happen, but that event will never occur, leaving the processes in a stuck state.",
+      "quote": "If two and more processes are waiting on happening of some event, but that event doesn't happen, that is called the deadlock.",
+      "quote_ts": 3.0,
+      "question_hi": "deadlock ka basic definition kya hota hai?"
+    },
+    {
+      "category": "core",
+      "question": "What are the four necessary conditions for a deadlock to occur?",
+      "gold_answer": "The four necessary conditions for a deadlock are mutual exclusion, no preemption, hold and wait, and circular wait.",
+      "quote": "The conditions are mutual exclusion, no preemption, hold and wait, and circular wait.",
+      "quote_ts": 345.0,
+      "question_hi": "deadlock hone ke liye wo chaar necessary conditions kya hain?"
+    },
+    {
+      "category": "core",
+      "question": "What does the mutual exclusion condition imply for resources?",
+      "gold_answer": "Mutual exclusion means that resources must be used by processes one at a time, and interleaving of resource usage is not allowed.",
+      "quote": "Mutual exclusion is ki whatever the resources you are using, all the resources must be used by all the processes in a mutual exclusive manner. Means one by one.",
+      "quote_ts": 462.0,
+      "question_hi": "mutual exclusion condition ka resources ke liye kya matlab hai?"
+    },
+    {
+      "category": "core",
+      "question": "How does the 'no preemption' condition contribute to a deadlock?",
+      "gold_answer": "No preemption means that a process cannot be forced to release a resource it is holding; it must hold the resource until it finishes its execution.",
+      "quote": "Ek process jo hold karke baitha hai, wo hold hi karega jab tak ki wo execute nahi hota, wo preempt nahi hoga, matlab uski switching wahan pe nahi hogi.",
+      "quote_ts": 520.0,
+      "question_hi": "no preemption condition deadlock mein kaise contribute karta hai?"
+    },
+    {
+      "category": "core",
+      "question": "What is the 'hold and wait' condition?",
+      "gold_answer": "Hold and wait occurs when a process is currently holding at least one resource while simultaneously waiting to acquire additional resources that are currently held by other processes.",
+      "quote": "Hold and wait means P1 is holding one resource that is R1 and waiting for R2. And P2 is holding one resource that is R2 and waiting for R1.",
+      "quote_ts": 536.0,
+      "question_hi": "hold and wait condition kya hota hai?"
+    },
+    {
+      "category": "core",
+      "question": "What is meant by a 'circular wait' in the context of deadlocks?",
+      "gold_answer": "Circular wait occurs when there is a closed loop of processes where each process is waiting for a resource held by the next process in the chain.",
+      "quote": "Circular wait means this is what a kind of circle, circle, this. This is what a kind of circle. Circle means like there is a loop in this.",
+      "quote_ts": 581.0,
+      "question_hi": "deadlock ke context mein circular wait ka kya matlab hai?"
+    },
+    {
+      "category": "core",
+      "question": "Why is it important for all four conditions to be present for a deadlock?",
+      "gold_answer": "A deadlock only occurs if all four necessary conditions are met simultaneously; if any one of them is absent, a deadlock might not occur.",
+      "quote": "Agar inmein se charon mein se koi bhi condition true nahi hoti, to there will be a chance ki deadlock occur na ho.",
+      "quote_ts": 452.0,
+      "question_hi": "deadlock ke liye chaaro conditions ka hona kyun zaroori hai?"
+    },
+    {
+      "category": "core",
+      "question": "Can a system be in a deadlock if only one or two of the necessary conditions are met?",
+      "gold_answer": "No, all four conditions are necessary for a deadlock to exist, so having only one or two is insufficient to cause a deadlock.",
+      "quote": "Inko hum bolte hain necessary and sufficient conditions to become a deadlock situation. To akeli ek situation nahi, mutual exclusion, no preemption, hold and wait, circular wait agar charon necessary conditions hain, then we can say deadlock occur ho raha hai.",
+      "quote_ts": 713.0,
+      "question_hi": "kya agar sirf ek ya do conditions meet ho toh system deadlock mein ja sakta hai?"
+    },
+    {
+      "category": "detail",
+      "question": "What example does the lecturer use to illustrate a deadlock in a real-world bank scenario?",
+      "gold_answer": "The lecturer describes a situation where a customer wants to open an account before depositing money, while the bank requires a deposit before opening the account.",
+      "quote": "Main bank mein gaya and bank personal se bol raha hoon, I want to open an account. But that person is saying, ki first you have to deposit this minimum amount, then we will open the account.",
+      "quote_ts": 19.0,
+      "question_hi": "lecturer ne real-world bank scenario ka kaunsa example diya hai deadlock samjhane ke liye?"
+    },
+    {
+      "category": "detail",
+      "question": "What analogy involving vehicles is used to explain deadlock?",
+      "gold_answer": "The lecturer uses an example of two cars facing each other on a road where neither driver is willing to reverse due to ego, causing both to be stuck.",
+      "quote": "A is saying, ki I am on the right direction, he is moving towards this direction. And at the same time, some B person that is also moving towards A. So let's say ki B is moving wrong side.",
+      "quote_ts": 65.0,
+      "question_hi": "deadlock samjhane ke liye vehicles wala kaunsa analogy use kiya gaya hai?"
+    },
+    {
+      "category": "detail",
+      "question": "What hardware device is used as an example to explain mutual exclusion?",
+      "gold_answer": "A printer is used as an example, where only one process should be allowed to print at a time to avoid interleaved output.",
+      "quote": "Like a printer. Jaise agar ek process hai, wo printer ko use kar raha hai, matlab ek process printer ko use karke print kar raha hai kuch, aur usi time pe ek aur process aa gaya.",
+      "quote_ts": 426.0,
+      "question_hi": "mutual exclusion samjhane ke liye kaunsa hardware device example mein liya hai?"
+    },
+    {
+      "category": "detail",
+      "question": "How does the lecturer represent an 'allocated' resource in a diagram?",
+      "gold_answer": "An allocated resource is represented by an arrow pointing from the resource towards the process.",
+      "quote": "This arrow means agar ye arrow towards the process aa raha hai, isko hum bolte hain hold, matlab wo process us resource ko leke baitha hua hai. Means it is allocated.",
+      "quote_ts": 622.0,
+      "question_hi": "diagram mein allocated resource ko lecturer kaise represent karte hain?"
+    },
+    {
+      "category": "detail",
+      "question": "How does the lecturer represent a 'request' for a resource in a diagram?",
+      "gold_answer": "A request for a resource is represented by an arrow drawn from the process towards the resource.",
+      "quote": "Request ke liye hum us resource ke towards resource ki taraf hum arrow draw karte hain.",
+      "quote_ts": 645.0,
+      "question_hi": "diagram mein resource request ko kaise dikhate hain?"
+    },
+    {
+      "category": "detail",
+      "question": "What happens to a process if it is preempted in the context of the lecturer's explanation?",
+      "gold_answer": "The lecturer suggests that preemption involves stopping a process or forcing it to release its resources, which is not allowed in the deadlock conditions discussed.",
+      "quote": "Preemption means aisa na ho ki like one process is holding some resource aur ek dusra process aaya aur humne preempt kar diya pehle wale process ko, ki apne resources ko release kar do.",
+      "quote_ts": 496.0,
+      "question_hi": "lecturer ke explanation ke hisaab se agar process preempt ho jaye toh kya hota hai?"
+    },
+    {
+      "category": "detail",
+      "question": "In the three-process circular wait example, what is P3 waiting for?",
+      "gold_answer": "P3 is holding resource R3 and is waiting for resource R2.",
+      "quote": "And let's say there is another process P3 which is requesting for R2, requesting for R2 and it is holding R3. Means R3 ko hold kiya hua hai and requesting for R2.",
+      "quote_ts": 663.0,
+      "question_hi": "three-process circular wait example mein P3 kiska wait kar raha hai?"
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How can a system recover from a deadlock once it has already occurred?",
+      "gold_answer": "The lecture does not provide information on deadlock recovery strategies such as process termination or resource preemption.",
+      "quote": "",
+      "question_hi": "agar deadlock ho jaye toh system usse recover kaise karta hai?"
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What is the difference between a deadlock and a livelock?",
+      "gold_answer": "The lecture does not define or discuss the concept of livelock.",
+      "quote": "",
+      "question_hi": "deadlock aur livelock mein kya difference hota hai?"
+    },
+    {
+      "category": "out_of_scope",
+      "question": "Are there specific algorithms, like the Banker's Algorithm, used to avoid deadlocks?",
+      "gold_answer": "The lecture does not mention any specific deadlock avoidance algorithms.",
+      "quote": "",
+      "question_hi": "kya deadlock avoid karne ke liye Banker's Algorithm jaise specific algorithms hote hain?"
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How do operating systems detect deadlocks in real-time?",
+      "gold_answer": "The lecture does not explain the mechanisms or algorithms used by operating systems to detect existing deadlocks.",
+      "quote": "",
+      "question_hi": "operating systems real-time mein deadlock kaise detect karte hain?"
+    },
+    {
+      "category": "false_premise",
+      "question": "Is it true that a deadlock is guaranteed to occur whenever two processes are waiting for resources?",
+      "gold_answer": "No, a deadlock is not guaranteed just because processes are waiting; all four necessary conditions, including circular wait, must be met.",
+      "quote": "Agar inmein se charon mein se koi bhi condition true nahi hoti, to there will be a chance ki deadlock occur na ho.",
+      "quote_ts": 452.0,
+      "question_hi": "kya ye sach hai ki jab do processes resources ka wait kar rahe hote hain toh deadlock pakka hoga?"
+    },
+    {
+      "category": "false_premise",
+      "question": "Does the lecturer claim that interleaving resource usage is a requirement for a deadlock?",
+      "gold_answer": "No, the lecturer states that interleaving is not allowed and that resources must be used in a mutual exclusive manner for a deadlock to occur.",
+      "quote": "Means one by one. Interleaving is not allowed. Interleaving is not allowed.",
+      "quote_ts": 472.0,
+      "question_hi": "kya lecturer kehte hain ki interleaving resource usage deadlock ke liye zaroori hai?"
+    },
+    {
+      "category": "false_premise",
+      "question": "Is it possible for a deadlock to occur if the 'no preemption' condition is violated?",
+      "gold_answer": "No, the lecturer identifies 'no preemption' as one of the four necessary conditions; if preemption were allowed, the deadlock could potentially be broken.",
+      "quote": "Agar inmein se charon mein se koi bhi condition true nahi hoti, to there will be a chance ki deadlock occur na ho.",
+      "quote_ts": 452.0,
+      "question_hi": "kya agar no preemption condition violate ho jaye toh deadlock ho sakta hai?"
+    }
+  ],
+  "dropped_unverified": [
+    {
+      "category": "detail",
+      "question": "What specific technical synchronization primitives are mentioned as an example of deadlock?",
+      "gold_answer": "The lecturer mentions two semaphores, S1 and S2, being requested by two processes, P1 and P2, in a conflicting order.",
+      "quote": "Jaise do semaphores hain, S1 and S2. Ek process hai, us process ko do semaphore chahiye, S1 and S2. And there is one more process, P2, usko chahiye S2 and S1."
+    }
+  ]
+}

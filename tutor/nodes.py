@@ -24,7 +24,6 @@ from langchain_core.runnables import RunnableConfig
 from config import TUTOR_CONTEXT_CACHE
 from tutor.config import TEMPERATURE
 from .prompts import build_system_prompt, build_context_block, build_image_context_block
-from .retrieval_config import CONFIDENCE_THRESHOLD
 
 logger = logging.getLogger(__name__)
 
@@ -207,10 +206,8 @@ async def generate_answer_node(state: dict, config: RunnableConfig, output_dir: 
     system_prompt = build_system_prompt(lecture_title, mode=study_mode)
     
     # Phase 5: check if all retrieved chunks are weak matches
-    low_confidence = bool(retrieved_chunks) and all(
-        c.get("distance") is None or c["distance"] > CONFIDENCE_THRESHOLD
-        for c in retrieved_chunks
-    )
+    # `relevant` = distance within the index model's confidence threshold.
+    low_confidence = bool(retrieved_chunks) and not any(c.get("relevant") for c in retrieved_chunks)
     # P3.7: retrieval_status ∈ {"ok","empty","error"} — "error" tells the model
     # retrieval infra failed (don't fabricate lecture content); "empty" and
     # "ok" keep the existing no-context / low-confidence notes.

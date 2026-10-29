@@ -27,6 +27,7 @@ transcripts/
 uploads/
 chroma_db/
 .tmp/
+.models/
 *.sqlite
 *.sqlite3
 *.db

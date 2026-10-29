@@ -6,136 +6,156 @@
       "question": "What is the primary goal of the series regarding how students should perceive calculus?",
       "gold_answer": "The goal is for students to understand the core ideas of calculus so deeply that they feel as though they could have invented the subject themselves.",
       "quote": "And my goal is for you to come away feeling like you could have invented calculus yourself.",
-      "quote_ts": 52.95
+      "quote_ts": 52.95,
+      "question_hi": "is series ka main goal kya hai ki students calculus ko kaise dekhein?"
     },
     {
       "category": "core",
       "question": "How does the lecture propose one can find the area of a circle using calculus-like thinking?",
       "gold_answer": "You can approximate the area by slicing the circle into many thin concentric rings, treating each as a rectangle, and summing their areas as the thickness of the rings approaches zero.",
       "quote": "Let's take one of those rings, which has some inner radius R that's between zero and three. If we can find a nice expression for the area of each ring like this one, and if we have a nice way to add them all up, it might lead us to an understanding of the full circle's area.",
-      "quote_ts": 150.35
+      "quote_ts": 150.35,
+      "question_hi": "lecture ke hisab se calculus jaisa soch ke circle ka area kaise nikal sakte hain?"
     },
     {
       "category": "core",
       "question": "When approximating the area of a circle with rings, what does the sum of the areas of the rectangles represent?",
       "gold_answer": "As the thickness of the rings becomes smaller, the sum of the areas of the rectangles approaches the area under the graph of the function 2 pi R.",
       "quote": "Adding all of those numbers could be seen in a different, pretty clever way as adding the areas of many thin rectangles sitting underneath a graph. The graph of the function 2 pi R, in this case.",
-      "quote_ts": 438.15
+      "quote_ts": 438.15,
+      "question_hi": "jab hum rings se circle ka area approximate karte hain, toh rectangles ke areas ka sum kya represent karta hai?"
     },
     {
       "category": "core",
       "question": "What is the relationship between the area under a graph and the derivative of that area function?",
       "gold_answer": "The derivative of the function that represents the area under a graph is equal to the height of the graph at that point.",
       "quote": "Any function defined as the area under some graph has this property, that DA divided by DX, a slight nudge to the output of A divided by a slight nudge to the input that caused it. Is about equal to the height of the graph at that point.",
-      "quote_ts": 766.15
+      "quote_ts": 766.15,
+      "question_hi": "graph ke niche ka area aur us area function ke derivative mein kya relation hota hai?"
     },
     {
       "category": "core",
       "question": "What is the Fundamental Theorem of Calculus?",
       "gold_answer": "It is the principle that integrals and derivatives are inverses of each other, specifically that the derivative of an area function returns the original function defining the graph.",
       "quote": "And this back and forth between integrals and derivatives, where the derivative of a function for the area under a graph. Gives you back the function defining the graph itself, is called the fundamental theorem of calculus.",
-      "quote_ts": 850.15
+      "quote_ts": 850.15,
+      "question_hi": "Fundamental Theorem of Calculus kya hota hai?"
     },
     {
       "category": "core",
       "question": "How does the lecturer define a derivative in the context of this introductory lesson?",
       "gold_answer": "A derivative is loosely defined as a measure of how sensitive a function's output is to small changes in its input.",
       "quote": "But loosely speaking, it's a measure of how sensitive a function is to small changes in its input.",
-      "quote_ts": 806.15
+      "quote_ts": 806.15,
+      "question_hi": "is introductory lesson mein lecturer ne derivative ko kaise define kiya hai?"
     },
     {
       "category": "detail",
       "question": "What specific radius does the lecturer use as an example to explain the area of a circle?",
       "gold_answer": "The lecturer uses a circle with a radius of three to demonstrate the concept.",
       "quote": "Just you and a circle. Let's say with radius three.",
-      "quote_ts": 122.15
+      "quote_ts": 122.15,
+      "question_hi": "circle ka area samjhane ke liye lecturer ne kaunsa specific radius example mein liya hai?"
     },
     {
       "category": "detail",
       "question": "What notation does the lecturer introduce for the tiny thickness of the rings?",
       "gold_answer": "The lecturer uses the notation DR to represent a tiny difference in the radius.",
       "quote": "In the spirit of using what will come to be standard calculus notation, let's call that thickness DR for a tiny difference in the radius from one ring to the next.",
-      "quote_ts": 196.25
+      "quote_ts": 196.25,
+      "question_hi": "rings ki choti si thickness ke liye lecturer ne kaunsa notation introduce kiya hai?"
     },
     {
       "category": "detail",
       "question": "What value does the lecturer suggest as a concrete example for the thickness DR?",
       "gold_answer": "The lecturer suggests using 0.1 as a concrete example for the thickness DR.",
       "quote": "Maybe you think of it as something like 0.1.",
-      "quote_ts": 207.55
+      "quote_ts": 207.55,
+      "question_hi": "DR ki thickness ke liye lecturer ne concrete example ke taur pe kya value suggest ki hai?"
     },
     {
       "category": "detail",
       "question": "What is the slope of the line representing the circumference function 2 pi R?",
       "gold_answer": "The slope of the line is 2 pi.",
       "quote": "A nice way to think about this setup is to draw the graph of 2 pi R, which is a straight line that has a slope 2 pi.",
-      "quote_ts": 313.15
+      "quote_ts": 313.15,
+      "question_hi": "circumference function 2 pi R ko represent karne wali line ka slope kya hai?"
     },
     {
       "category": "detail",
       "question": "What example does the lecturer mention regarding calculating distance traveled?",
       "gold_answer": "The lecturer mentions calculating the distance a car has traveled based on its velocity at each point in time.",
       "quote": "Things like figuring out how far a car has traveled based on its velocity at each point in time.",
-      "quote_ts": 478.15
+      "quote_ts": 478.15,
+      "question_hi": "distance travel calculate karne ke liye lecturer ne kaunsa example diya hai?"
     },
     {
       "category": "detail",
       "question": "What specific curve does the lecturer use as an example of a more complex area problem?",
       "gold_answer": "The lecturer uses the parabola defined by the function X squared.",
       "quote": "But imagine instead something like a parabola, the graph of X squared.",
-      "quote_ts": 548.15
+      "quote_ts": 548.15,
+      "question_hi": "complex area problem ke liye lecturer ne kaunsa specific curve example mein use kiya hai?"
     },
     {
       "category": "detail",
       "question": "How long will the series of videos be, according to the introduction?",
       "gold_answer": "The series consists of videos published once per day for 10 days.",
       "quote": "This is the first video in a series on the essence of calculus, and I'll be publishing the following videos once per day for the next 10 days.",
-      "quote_ts": 16.58
+      "quote_ts": 16.58,
+      "question_hi": "intro ke hisab se ye video series kitni lambi hogi?"
     },
     {
       "category": "detail",
       "question": "What does the lecturer call the tiny difference in area when nudging X by DX?",
       "gold_answer": "The lecturer calls this tiny difference in area DA.",
       "quote": "Represented with this sliver that I'm going to call DA for a tiny difference in area.",
-      "quote_ts": 656.15
+      "quote_ts": 656.15,
+      "question_hi": "jab X ko DX se nudge karte hain toh area mein jo chota sa difference aata hai, usse lecturer kya bolte hain?"
     },
     {
       "category": "out_of_scope",
       "question": "How do you calculate the volume of a sphere using calculus?",
       "gold_answer": "The lecture does not provide information on calculating the volume of a sphere.",
-      "quote": ""
+      "quote": "",
+      "question_hi": "calculus use karke sphere ka volume kaise calculate karte hain?"
     },
     {
       "category": "out_of_scope",
       "question": "What is the history of the notation used for integrals?",
       "gold_answer": "The lecture does not discuss the historical origins of mathematical notation.",
-      "quote": ""
+      "quote": "",
+      "question_hi": "integrals ke liye jo notation use hota hai uska history kya hai?"
     },
     {
       "category": "out_of_scope",
       "question": "How does the chain rule work for complex trigonometric functions?",
       "gold_answer": "The lecture mentions the chain rule as a topic to be covered but does not explain how to apply it to trigonometric functions.",
-      "quote": ""
+      "quote": "",
+      "question_hi": "complex trigonometric functions ke liye chain rule kaise kaam karta hai?"
     },
     {
       "category": "out_of_scope",
       "question": "What are the career prospects for someone who studies calculus?",
       "gold_answer": "The lecture does not provide information regarding career paths for students of calculus.",
-      "quote": ""
+      "quote": "",
+      "question_hi": "jo log calculus padhte hain unke liye career prospects kya hote hain?"
     },
     {
       "category": "false_premise",
       "question": "Why does the lecturer claim that the area of a circle is impossible to determine without calculus?",
       "gold_answer": "The lecturer does not claim it is impossible; rather, they use the known formula for the area of a circle to show how calculus can explain why that formula is true.",
       "quote": "Maybe you know that this is pi times its radius squared. But why? Is there a nice way to think about where this formula comes from?",
-      "quote_ts": 97.75
+      "quote_ts": 97.75,
+      "question_hi": "lecturer aisa kyun bol rahe hain ki calculus ke bina circle ka area nikalna impossible hai?"
     },
     {
       "category": "false_premise",
       "question": "Since the lecture proves that the area of a circle is exactly equal to the sum of the rectangles with a thickness of 0.1, why do we need smaller values?",
       "gold_answer": "The lecture explains that the sum using a thickness of 0.1 is only an approximation, and that smaller values are needed to improve accuracy.",
       "quote": "And even though that's not perfect, for smaller and smaller choices of DR, this is actually going to be a better and better approximation for that area.",
-      "quote_ts": 218.35
+      "quote_ts": 218.35,
+      "question_hi": "jab lecture mein prove ho gaya ki 0.1 thickness wale rectangles ke sum se circle ka area nikal jata hai, toh humein aur choti values ki kya zaroorat hai?"
     }
   ],
   "dropped_unverified": [

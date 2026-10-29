@@ -69,7 +69,11 @@ def _mock_retrieve(chunks):
 
 
 def test_retrieve_ok_tags_strong_and_weak():
-    original = _mock_retrieve(_chunks(0.2, 0.6))
+    # The retriever marks relevance with the index model's threshold; the
+    # node only reads the flag.
+    chunks = _chunks(0.2, 0.6)
+    chunks[0]["relevant"], chunks[1]["relevant"] = True, False
+    original = _mock_retrieve(chunks)
     import tutor.nodes_retrieval as nr
     try:
         out = retrieve_node(

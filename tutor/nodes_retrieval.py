@@ -44,7 +44,7 @@ from typing import Any
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from .retriever import IndexNotBuiltError, retrieve, retrieve_images
-from .retrieval_config import TOP_K, TOP_K_IMAGES, CONFIDENCE_THRESHOLD
+from .retrieval_config import TOP_K, TOP_K_IMAGES
 logger = logging.getLogger(__name__)
 
 # How many recent messages to include as context for the rewrite prompt.
@@ -301,7 +301,7 @@ def retrieve_node(state: dict, config: RunnableConfig, output_dir=None) -> dict:
       - retrieval_status ∈ {"ok", "empty", "error"} drives the note the answer
         node injects (see prompts.build_context_block).
       - Each chunk is tagged "strong"/"weak" by whether its distance beats
-        CONFIDENCE_THRESHOLD, so downstream code and the UI can tell well-
+        the index model's confidence threshold, so downstream code and the UI can tell well-
         grounded chunks from loose matches.
     """
     question = state.get("search_query") or state.get("user_question", "")
@@ -314,11 +314,9 @@ def retrieve_node(state: dict, config: RunnableConfig, output_dir=None) -> dict:
         chunks = retrieve(query=question, chapter_id=chapter_id, k=TOP_K, output_dir=output_dir)
         logger.debug(f"retrieve_node: {len(chunks)} chunks for query {question!r}")
         for c in chunks:
-            # BM25-only hits carry distance=None (no cosine score).
-            dist = c.get("distance")
-            c["confidence_tag"] = (
-                "strong" if dist is not None and dist <= CONFIDENCE_THRESHOLD else "weak"
-            )
+            # `relevant` applies the index model's threshold; BM25-only hits
+            # (distance=None) are never relevant.
+            c["confidence_tag"] = "strong" if c.get("relevant") else "weak"
         return {"retrieved_chunks": chunks, "retrieval_status": "ok" if chunks else "empty"}
     except IndexNotBuiltError as exc:
         # Fail gracefully: answer without context rather than crashing the graph.

@@ -180,7 +180,7 @@ def test_build_index_and_retrieve_transcript_detail():
         assert emb.calls == calls, "metadata backfill embeds nothing"
 
         original = retriever._embed_query
-        retriever._embed_query = _vec
+        retriever._embed_query = lambda q, model=None: _vec(q)
         try:
             hits = retriever.retrieve("how many LeetCode problems has Sahil solved", output_dir=str(root))
             kinds = [h["kind"] for h in hits]
@@ -198,6 +198,49 @@ def test_build_index_and_retrieve_transcript_detail():
                 "unrelated screenshots are gated out"
         finally:
             retriever._embed_query = original
+
+
+def test_index_records_model_and_rebuilds_on_change():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "lec"
+        _make_lecture(root)
+        a, b = FakeEmbed(), FakeEmbed()
+        a.model, b.model = "model-a", "model-b"
+        build_lecture_index(root, embed=a)
+        store = VectorStore.load(index_dir(root))
+        assert store.model == "model-a", store.model
+        n = len(store)
+        build_lecture_index(root, embed=a)
+        assert VectorStore.load(index_dir(root)).model == "model-a"
+        calls_b = b.calls
+        build_lecture_index(root, embed=b)
+        store = VectorStore.load(index_dir(root))
+        assert store.model == "model-b" and len(store) == n, (store.model, len(store))
+        assert b.calls > calls_b, "a model change re-embeds every doc"
+
+
+def test_legacy_index_without_model_is_gemini():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        store = VectorStore(root, model="x")
+        store.save()
+        meta = json.loads((root / "docs.json").read_text())
+        del meta["model"]
+        (root / "docs.json").write_text(json.dumps(meta))
+        from tutor.retrieval_config import GEMINI_EMBEDDING_MODEL
+        assert VectorStore.load(root).model == GEMINI_EMBEDDING_MODEL
+
+
+def test_relevance_threshold_follows_index_model():
+    from tutor.retrieval_config import (GEMINI_EMBEDDING_MODEL, LOCAL_EMBEDDING_MODEL,
+                                        confidence_threshold, image_max_distance)
+    assert confidence_threshold(GEMINI_EMBEDDING_MODEL) == 0.35
+    assert confidence_threshold(LOCAL_EMBEDDING_MODEL) > 0.35
+    assert image_max_distance(LOCAL_EMBEDDING_MODEL) > image_max_distance(GEMINI_EMBEDDING_MODEL)
+    c = retriever._chunk_from_doc("id", "t", {"kind": "transcript"}, 0.5,
+                                  confidence_threshold(LOCAL_EMBEDDING_MODEL))
+    assert c["relevant"] is True
+    assert retriever._chunk_from_doc("id", "t", {}, 0.5)["relevant"] is False
 
 
 def test_missing_index_with_no_artifacts_raises():
@@ -223,15 +266,16 @@ def test_query_embedding_shared_between_lookups():
                 calls.append(texts)
                 return [_vec(t) for t in texts]
 
-        real = emb_mod.GeminiEmbeddingFunction
-        emb_mod.GeminiEmbeddingFunction = _E
+        real = emb_mod.get_embedder
+        emb_mod.get_embedder = lambda role, model=None: _E(role)
         try:
             retriever._qcache.clear()
-            retriever._embed_query("same question")
-            retriever._embed_query("same question")
+            retriever._embed_query("same question", "m1")
+            retriever._embed_query("same question", "m1")
+            retriever._embed_query("same question", "m2")
         finally:
-            emb_mod.GeminiEmbeddingFunction = real
-        assert len(calls) == 1
+            emb_mod.get_embedder = real
+        assert len(calls) == 2, "one embedding per (model, question)"
     finally:
         retriever._qcache.clear()
         retriever._qcache.update(original)

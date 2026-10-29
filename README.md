@@ -136,7 +136,8 @@ to the DB and **polled** by the frontend (no SSE).
 ## 🔄 Processing Pipeline
 
 A 17-minute lecture takes **9 Gemini calls (~$0.03)** and about 2.5 minutes:
-1 transcription, 1 structure, 4 chapter, and 3 embedding calls.
+1 transcription, 1 structure, 4 chapter, and 3 embedding calls. The tutor index
+is now embedded on the box (EmbeddingGemma 300M), so new lectures make 6.
 
 | # | Stage | What happens |
 |---|---|---|
@@ -146,7 +147,7 @@ A 17-minute lecture takes **9 Gemini calls (~$0.03)** and about 2.5 minutes:
 | 3 | **Chunking** | Adaptive chunking groups transcript segments into chunks (no LLM) |
 | 4 | **Structure** | **One call** over the chunk-tagged transcript → lecture title + contiguous chapter ranges (≈ 1 chapter / 4 min) |
 | 5 | **Chapters** | **One multimodal call per chapter** (3 in parallel): the chapter's transcript + up to 12 of its keyframes → study notes (each section with its start time), revision, quiz/flashcards, and per-frame OCR + screenshot picks |
-| 6 | **Tutor Index** | Embeds ~45 s transcript windows, note sections, and screenshot captions + OCR (content-hashed ids, so re-indexing unchanged content embeds nothing) |
+| 6 | **Tutor Index** | Embeds ~45 s transcript windows, note sections, and screenshot captions + OCR on the box with EmbeddingGemma 300M (4-bit ONNX, multilingual; ~1.5 CPU-s per lecture minute). Ids are content-hashed, so re-indexing unchanged content embeds nothing |
 | — | **Cleanup** | Deletes transient dirs (video, audio, raw frames) on success, failure, or cancel |
 
 Chapter results are **hash-of-inputs cached**, so re-running a lecture
@@ -287,7 +288,7 @@ rather than during every pipeline run.
 | **Documents** | React Markdown, KaTeX | Markdown and math rendering |
 | **Backend** | FastAPI, Uvicorn | APIs, webhooks, quota, pipeline integration |
 | **Job Queue** | DB-backed (SQLAlchemy) | Durable pipeline scheduling (P4) |
-| **AI** | Google Gemini (`gemini-3.1-flash-lite`, `gemini-embedding-2`) | Transcription, multimodal notes, tutor, embeddings |
+| **AI** | Google Gemini (`gemini-3.1-flash-lite`); EmbeddingGemma 300M via ONNX Runtime (`gemini-embedding-2` optional) | Transcription, multimodal notes, tutor; embeddings |
 | **AI Workflows** | LangGraph | Stateful tutor flows |
 | **Speech** | Gemini (Faster-Whisper optional, local) | Lecture transcription |
 | **Vector Store** | NumPy matrix + BM25 | Hybrid (RRF-fused) retrieval |

@@ -6,157 +6,180 @@
       "question": "What is the primary purpose of the decision stack framework?",
       "gold_answer": "The decision stack provides a six-layer framework that helps engineers read a cloud brief, identify the bottleneck, choose appropriate services, and explain architectural trade-offs.",
       "quote": "It shows you how to read a cloud brief, find the real bottleneck and the problem, choose the right AWS services and explain the trade-offs like an actual cloud engineer.",
-      "quote_ts": 99.8
+      "quote_ts": 99.8,
+      "question_hi": "decision stack framework ka main purpose kya hota hai?"
     },
     {
       "category": "core",
       "question": "Why does the lecturer advise against using a single EC2 instance for a viral startup?",
       "gold_answer": "A single instance cannot scale to handle large traffic spikes, and it is inefficient because it incurs costs even when idle.",
       "quote": "Their servers run 24 hours a day, seven days a week and they're paying for it, whether it's handling 10,000 user signups or sitting completely idle with no users at 3 a.m.",
-      "quote_ts": 658.7
+      "quote_ts": 658.7,
+      "question_hi": "viral startup ke liye single EC2 instance use karne se mana kyun kiya hai?"
     },
     {
       "category": "core",
       "question": "What is the main advantage of using Lambda for the viral startup scenario?",
       "gold_answer": "Lambda scales automatically based on demand and incurs no costs when the application is not being used.",
       "quote": "When nobody's using the application, Lambda isn't running and you're paying absolutely nothing. And when a hundred thousand users show up at once, Lambda doesn't struggle or slow down.",
-      "quote_ts": 697.54
+      "quote_ts": 697.54,
+      "question_hi": "viral startup scenario mein Lambda use karne ka main advantage kya hai?"
     },
     {
       "category": "core",
       "question": "Why is an auto-scaling group necessary for the e-commerce company?",
       "gold_answer": "An auto-scaling group automatically adds or removes EC2 instances based on traffic demand, preventing site crashes during spikes.",
       "quote": "The auto-scaling group is what adds more Easter instances when the demand increases. Together, the ALB distributes traffic and the auto-scaling group changes the amount of capacity behind it.",
-      "quote_ts": 1816.6
+      "quote_ts": 1816.6,
+      "question_hi": "e-commerce company ke liye auto-scaling group kyun zaroori hai?"
     },
     {
       "category": "core",
       "question": "What is the purpose of RAG in the AI-powered enterprise scenario?",
       "gold_answer": "RAG provides the AI model with company-specific context, such as internal frameworks and policies, allowing it to produce more accurate and useful outputs.",
       "quote": "So the AI isn't just looking at a contract with general knowledge, it's looking at that contract plus the company specific framework, plus their routing rules, plus their review deadlines.",
-      "quote_ts": 3654.26
+      "quote_ts": 3654.26,
+      "question_hi": "AI-powered enterprise scenario mein RAG ka kya kaam hai?"
     },
     {
       "category": "core",
       "question": "Why is it important to use Infrastructure as Code instead of the AWS console?",
       "gold_answer": "Infrastructure as Code ensures that environments are identical, repeatable, and version-controlled, avoiding the errors associated with manual configuration.",
       "quote": "Every environment comes out identical because they've all built from the same source. And because it's a file, you can track every single change, it's version control, right?",
-      "quote_ts": 4190.26
+      "quote_ts": 4190.26,
+      "question_hi": "AWS console ke badle Infrastructure as Code use karna kyun important hai?"
     },
     {
       "category": "core",
       "question": "How does the lecturer define the 'traffic' layer in the decision stack?",
       "gold_answer": "The traffic layer covers the entire journey of data from the user opening the application to how different services communicate behind the scenes.",
       "quote": "This covers every journey that data takes from a user opening the application and content appearing on a screen to how your services talk to each other behind the scenes.",
-      "quote_ts": 132.08
+      "quote_ts": 132.08,
+      "question_hi": "lecturer ne decision stack mein 'traffic' layer ko kaise define kiya hai?"
     },
     {
       "category": "core",
       "question": "What is the significance of the 'least privilege' principle in security?",
       "gold_answer": "It ensures that every service only has the specific permissions required for its job, which limits the potential damage if a service is compromised.",
       "quote": "Every single permission has to be scoped exactly what the service needs for a specific job, nothing more and nothing less. This is the same least privileged principle that we apply in the first scenario.",
-      "quote_ts": 2701.94
+      "quote_ts": 2701.94,
+      "question_hi": "security mein 'least privilege' principle ka kya significance hai?"
     },
     {
       "category": "detail",
       "question": "What is the maximum execution time for an AWS Lambda function?",
       "gold_answer": "Lambda functions have a hard limit of 15 minutes per execution.",
       "quote": "Lambda has a hard limit on how long each function can run. 15 minutes maximum.",
-      "quote_ts": 1971.9
+      "quote_ts": 1971.9,
+      "question_hi": "AWS Lambda function ka maximum execution time kitna hota hai?"
     },
     {
       "category": "detail",
       "question": "What is the specific name of the AWS service used for the document processing queue?",
       "gold_answer": "The service used is the Simple Queue Service, or SQS.",
       "quote": "The aid of a service is called SQS, simple queue service.",
-      "quote_ts": 3363.98
+      "quote_ts": 3363.98,
+      "question_hi": "document processing queue ke liye kaunsa specific AWS service use hota hai?"
     },
     {
       "category": "detail",
       "question": "What does the lecturer call the manual process of clicking through the AWS console?",
       "gold_answer": "The lecturer refers to this as 'ClickOps'.",
       "quote": "When you're starting out, you can use the AWS console, I call it ClickOps.",
-      "quote_ts": 4115.26
+      "quote_ts": 4115.26,
+      "question_hi": "AWS console mein manually click karne wale process ko lecturer kya bolte hain?"
     },
     {
       "category": "detail",
       "question": "What is the name of the AWS service used to run containers on Fargate?",
       "gold_answer": "The service is the Elastic Container Service, or ECS.",
       "quote": "We hand that container to ECS, Elastic Container Service, and tell it to run it on Fargate.",
-      "quote_ts": 3508.46
+      "quote_ts": 3508.46,
+      "question_hi": "Fargate pe containers run karne ke liye kaunsa AWS service use hota hai?"
     },
     {
       "category": "detail",
       "question": "What is the purpose of a NAT gateway?",
       "gold_answer": "A NAT gateway allows resources in a private subnet to make outbound calls to the internet while preventing inbound connections.",
       "quote": "Now, worth noting, services in a private subnet can still make outbound calls to the internet if you set something up called a NAT gateway.",
-      "quote_ts": 1873.2
+      "quote_ts": 1873.2,
+      "question_hi": "NAT gateway ka purpose kya hota hai?"
     },
     {
       "category": "detail",
       "question": "What is the specific name of the AWS service used for AI models like Claude?",
       "gold_answer": "The service is Amazon Bedrock.",
       "quote": "The container sends a document to Amazon Bedrock, AWS's service for using AI models like Claude and OpenAI models directly from your own code.",
-      "quote_ts": 3574.66
+      "quote_ts": 3574.66,
+      "question_hi": "Claude jaise AI models ke liye kaunsa specific AWS service use hota hai?"
     },
     {
       "category": "detail",
       "question": "What is the name of the AWS service that tracks infrastructure-level API activity?",
       "gold_answer": "The service is CloudTrail.",
       "quote": "CloudTrail records AWS API activity across the accounts. Things like someone changing a security group role, modifying an auto scaling policy, creating a new database or updating IAM permissions.",
-      "quote_ts": 2904.22
+      "quote_ts": 2904.22,
+      "question_hi": "infrastructure-level API activity track karne ke liye kaunsa AWS service hota hai?"
     },
     {
       "category": "detail",
       "question": "What is the term for the delay experienced when a Lambda function is triggered after being idle?",
       "gold_answer": "This delay is known as a 'cold start'.",
       "quote": "This adds some initialization time, often a few hundred milliseconds because of the cold start. And that is what we call the cold start.",
-      "quote_ts": 876.28
+      "quote_ts": 876.28,
+      "question_hi": "jab Lambda function idle hone ke baad trigger hota hai toh us delay ko kya bolte hain?"
     },
     {
       "category": "out_of_scope",
       "question": "How do I configure a VPN connection between my on-premises data center and AWS?",
       "gold_answer": "The lecture does not cover hybrid cloud networking or VPN configurations.",
-      "quote": ""
+      "quote": "",
+      "question_hi": "on-premises data center aur AWS ke beech VPN connection kaise configure karun?"
     },
     {
       "category": "out_of_scope",
       "question": "What is the best way to migrate a legacy SQL Server database to AWS RDS?",
       "gold_answer": "The lecture discusses choosing database types but does not provide specific migration strategies for legacy SQL Server databases.",
-      "quote": ""
+      "quote": "",
+      "question_hi": "legacy SQL Server database ko AWS RDS pe migrate karne ka best tarika kya hai?"
     },
     {
       "category": "out_of_scope",
       "question": "Can you explain how to set up an AWS Direct Connect connection?",
       "gold_answer": "The lecture focuses on application architecture and does not cover physical network connectivity options like Direct Connect.",
-      "quote": ""
+      "quote": "",
+      "question_hi": "AWS Direct Connect connection kaise setup karte hain, samjha sakte ho?"
     },
     {
       "category": "out_of_scope",
       "question": "What are the steps to implement multi-factor authentication for AWS IAM users?",
       "gold_answer": "The lecture discusses IAM roles and permissions but does not cover user-level authentication settings like MFA.",
-      "quote": ""
+      "quote": "",
+      "question_hi": "AWS IAM users ke liye multi-factor authentication implement karne ke steps kya hain?"
     },
     {
       "category": "false_premise",
       "question": "Since the lecturer states that AWS services should be memorized to pass exams, what is the best way to study them?",
       "gold_answer": "The lecturer actually states that memorizing services is an outdated approach and that understanding when and why to use them is the critical skill.",
       "quote": "That worked five years ago. It doesn't work anymore. And I know that because I have sat on the other side of the hiring table. I've watched person after person rattle off exactly what every AWS service does and then they freeze the second I asked them to actually go and design something",
-      "quote_ts": 12.8
+      "quote_ts": 12.8,
+      "question_hi": "lecturer kehte hain ki exam clear karne ke liye AWS services ratni padengi, toh unhe study karne ka best way kya hai?"
     },
     {
       "category": "false_premise",
       "question": "Why does the lecturer recommend using a single availability zone for all production applications to save money?",
       "gold_answer": "The lecturer explicitly advises against using a single availability zone for production designs, recommending at least two for resilience.",
       "quote": "But for a revenue generating e-commerce application platform losing $50,000 per hour of downtime, keeping everything in one AZ is still not a good production design.",
-      "quote_ts": 2113.14
+      "quote_ts": 2113.14,
+      "question_hi": "lecturer ne paise bachane ke liye saare production applications ke liye single availability zone use karne ki advice kyun di?"
     },
     {
       "category": "false_premise",
       "question": "Since Lambda is the best solution for all compute needs, why would anyone use EC2?",
       "gold_answer": "The lecturer explains that Lambda is not suitable for all workloads, such as those requiring long-running processes or full server control, where EC2 is necessary.",
       "quote": "This company's application is way more complex. It has specific software running on the servers, processes that needs longer to 15 minutes to complete and dependencies that require a full server environment. Lambda wouldn't work it.",
-      "quote_ts": 1981.86
+      "quote_ts": 1981.86,
+      "question_hi": "jab Lambda compute needs ke liye best solution hai, toh koi EC2 kyun use karega?"
     }
   ],
   "dropped_unverified": []

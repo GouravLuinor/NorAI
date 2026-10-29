@@ -35,7 +35,7 @@ chapter building → screenshot selection → chapter artifacts) was deleted on
 - `MODEL_NAME = "gemini-3.1-flash-lite"`, `TEMPERATURE = 0.4`, `GEMINI_API_KEY` from `.env` (required).
 - Pricing: **$0.25 input / $1.50 output / $0.025 cached input** per 1M tokens.
 - Transcription: **`NORAI_TRANSCRIPTION_BACKEND = "gemini"`** with 18-minute parallel chunking (`gemini-3.1-flash-lite`), yielding 9.2x speedup (53s for 71m lecture vs 498s CPU) with 0% server CPU. Optional local fallback via `NORAI_TRANSCRIPTION_BACKEND = "whisper"`. Gemini transcription writes compact `[MM:SS] text` lines (the only format since the JSON mode was removed), which use 60% fewer output tokens than JSON did and land within ~1 s of YouTube's captions. Don't prompt for "seconds": flash-lite answers in minutes.seconds.
-- Embeddings: `gemini-embedding-2` (768 dims) via `tutor/embedding.py` (`tutor/retrieval_config.py`). No `task_type=` arg; instructions go in the prompt.
+- Embeddings (768 dims, `tutor/retrieval_config.py`): new indexes use the local `embeddinggemma-300m-q4` (`tutor/local_embedding.py`, ONNX Runtime, no quota); `NORAI_EMBEDDING_MODEL=gemini-embedding-2` for Gemini (no `task_type=` arg; instructions go in the prompt). Each index records its model; queries use that lecture's model. See "Local embeddings" below.
 - Tutor index: `outputs/<id>/tutor/index/` (`tutor/vector_store.py`, float16 matrix + docs.json). `chromadb` is no longer a dependency.
 - Free-tier ceiling: **15 RPM / 500 RPD**. Calls per lecture went from ~128 to ~35 (legacy) and then to **~6 with lean** for 17 min: transcription slices + 1 structure + 1 per chapter. Transient 15 RPM spikes are silently retried by internal exponential backoff; 500 RPD daily quota exhaustion fast-fails with structured 429 (`limit_type: rpd`, `retry_after_seconds`) and triggers global UI countdown banner to Midnight US Pacific Time.
 - Trial quota: **45 minutes** default free trial processing credit (increased from 15 min).
@@ -59,6 +59,36 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
 
 ## Recent changes
 
+- **Local embeddings (2026-10-29, on `master`).** The tutor index now embeds on the box, so indexing makes no Gemini calls.
+  - **Why:** the free embedding tier is 100 requests/min plus a daily cap, and each index doc is a request. A lecture needs ~3.5 docs per minute of video (the 52-min run had 187), so indexing was the first quota to run out, and it spent ~190 s of that run waiting on 429s. Pooling free keys across accounts breaks Google's terms, so rotating keys isn't the fix.
+  - **What:** `tutor/local_embedding.py` runs EmbeddingGemma 300M (4-bit ONNX, `onnx-community/embeddinggemma-300m-ONNX` at a pinned revision, ~210 MB) through `onnxruntime` + `tokenizers`, with no torch and no fastembed. It uses the model card's prompts: documents `title: none | text: …`, queries `task: search result | query: …`. One ORT thread by default (`NORAI_EMBED_THREADS`). `get_embedder(role, model)` picks local or Gemini. `NORAI_EMBEDDING_MODEL` sets the model for new indexes; the default is local.
+  - **Mixed indexes:** each `docs.json` records `model`. Files without it are legacy Gemini. Queries are embedded with the lecture's index model, so old Gemini indexes keep working with no re-index, and a model change rebuilds the index from scratch. The demo sync (`backend/main.py`) replaces an `outputs/` demo index whose model differs from `seed_data/`. The seed demos are re-indexed locally.
+  - **Thresholds are per model:** the two models' distances are on different scales. Mapped at the same quantile over the eval questions' top-1 hits: confidence 0.35 → **0.65** (local top-1 median 0.40 vs Gemini 0.23; out-of-scope 0.53 vs 0.31), image max 0.30 → **0.55**. The retriever sets `relevant` with the index's threshold. `nodes.py` (low-confidence) and `nodes_retrieval.py` (strong/weak tags) now read that flag instead of comparing distances to the Gemini constant.
+  - **Bug fixed on the way:** the BM25 cache was keyed by `id(store)`, so a re-indexed or evicted store whose id got reused was handed another store's BM25 rows, causing `IndexError` in `_hybrid` or wrong lexical hits. It is now cached on the store object.
+  - **Choosing the model** (scratch benchmark). Metric: transcript-window hit@4 against the gold quote timestamp (±2 s) on 89 questions over dp8, calc17, aws71 and two Hinglish lectures (`hi_deadlock`, `hi_search`, new sets). Every question is asked as written and as a romanized-Hinglish rewrite (`question_hi`). Hybrid = production cosine + BM25 + RRF.
+
+    | Model | EN cosine | EN hybrid | Hinglish cosine | Hinglish hybrid | 187 docs, 1 core | Peak RSS |
+    |---|---|---|---|---|---|---|
+    | gemini-embedding-2 | .91 | .85 | .88 | .87 | API | — |
+    | **embeddinggemma-300m q4 (chosen)** | .81 | .83 | .79 | .79 | 85 s | 643 MB |
+    | embeddinggemma-300m fp32 | .81 | .83 | .82 | .80 | 88 s | 973 MB |
+    | embeddinggemma-300m q8 | .80 | .82 | .80 | .78 | 95 s | 1689 MB |
+    | qwen3-embedding-0.6b q | .81 | .79 | .78 | .79 | 397 s | 1785 MB |
+    | multilingual-e5-small | .72 | .73 | .62 | .70 | 26 s | 1066 MB |
+    | paraphrase-multilingual-MiniLM | .72 | .72 | .55 | .67 | 17 s | 807 MB |
+    | potion-multilingual (static) | .67 | .72 | .62 | .73 | 0.1 s | 1413 MB |
+    | paraphrase-multilingual-mpnet | .57 | .71 | .54 | .70 | 81 s | 1884 MB |
+
+    Side finding: BM25 fusion *hurts* Gemini on English (.91 cosine vs .85 hybrid) and helps the weaker models. It hasn't been re-tuned.
+  - **In production code:** re-indexing all eval lectures took 75 s for the 52-min lecture (187 docs) and 80 s for the 71-min one (203), at a 547 MB peak RSS for the indexing process. The model stays resident in the backend after first use. The estimator now models the local index as CPU time (`index_sec_per_min`, default 1.6 s per lecture-minute, fitted from `stage_seconds.tutor_index`, which the orchestrator now records) instead of embed batches.
+  - **End to end, the gap disappears.** Tutor answer eval (`answer_eval --field question_hi`, judge 3.8-flash) asks the Hinglish rewrite of every question in `hi_deadlock` (22) and `hi_search` (21), on the local index vs the same lecture's Gemini index. The results files are `results/hi_*__hi_{local,gemini}_j38.json`.
+    - Both indexes score 1.0 core and detail accuracy, 1.0 out-of-scope abstention and premise correction, 0 unsupported claims, and 1.0 verified citations.
+    - Local is faster: p50 2.2 s vs 2.6 s, with 1 call per turn vs 2, because the Gemini query embedding is gone.
+    - Caveat: these are short (3-chapter) lectures, where the answer model recovers from a ranking miss. The retrieval gap above is what to watch on long lectures.
+  - **English-only models were worse on both languages** (same retrieval benchmark, hybrid). On English lectures with English questions: bge-small-en .89, all-MiniLM-L6 .87, arctic-embed-m .85, against .93 for EmbeddingGemma. On Hinglish lectures with Hinglish questions: .57–.66 against .74.
+    - They are cheaper: MiniLM-L6 indexes 187 docs in 10 s at 305 MB, bge-small in 21 s at 350 MB.
+    - Only worth it if the box can't spare ~300 MB.
+  - **Trade-off:** Hinglish retrieval is .79 against .87 for Gemini. To get that back, set `NORAI_EMBEDDING_MODEL=gemini-embedding-2` on one *paid* key: ~2 batch calls per lecture, about $0.005 for 52 min. New lectures then index with Gemini, and existing local indexes stay local until they are re-indexed.
 - **Phase 2 — trust + cost (2026-10-27 → 2026-10-28, branch `phase2`, IN PROGRESS).**
   - **▶ RESUME HERE (handoff, 2026-10-29; branch not merged to `master`, not pushed).**
     - **Where things stand:**
@@ -83,11 +113,12 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       2. ~~**Small lean follow-ups**~~ — done 2026-10-29 (see "Follow-ups" below): screenshot dedupe, note refs seek to the section start, streamed tutor output metered correctly.
       3. ~~**Cleanup**~~ — done 2026-10-29 (see "Cleanup" below): keyframe-only decode, legacy chain deleted, seed_data re-indexed, `chromadb` removed, README/TUTORIAL/AGENTS updated.
       4. ~~**Final**~~ — done 2026-10-29: report in `docs/PHASE2_REPORT.md`, `master` fast-forwarded to `phase2` (not pushed). A 52-min lecture then ran end to end through the browser ($0.099, 449 s) and exposed empty `RECITATION` chapter replies that weren't retried; fixed with `gemini_client.generate_nonempty` (see the report's "Long-lecture run").
+      5. ~~**Local embeddings**~~ — done 2026-10-29 (see "Local embeddings" above): no API quota for indexing; Hinglish-capable.
       - Still-open decisions from "Server load": keyframe pruning / JPEG quality (disk), paid Gemini tier + `NORAI_MAX_CONCURRENT_PIPELINES` 2–3 before ~1k users.
     - **How to run things:**
       - **Offline tests:** `scripts/run-tests.sh` (42 suites + pyflakes); estimator: `venv/bin/python backend/test_estimate.py`; frontend: `cd frontend && npx vitest run && npm run lint && npx tsc -b`.
       - **Lean CLI:** `venv/bin/python -m lean.pipeline --source <url> --out outputs/<name>` (full run, ~$0.03 for 17 min), or `--reuse outputs/<id>` (structure + chapters + index only).
-      - **Tutor eval:** `NORAI_EVAL_JUDGE=gemini-3.8-flash venv/bin/python -m tutor.evals.answer_eval --set dp8|calc17|aws71 --label <x> [--lecture-dir outputs/<dir>] [--rejudge|--no-judge]`. Each `--rejudge` is 1 judge call.
+      - **Tutor eval:** `NORAI_EVAL_JUDGE=gemini-3.8-flash venv/bin/python -m tutor.evals.answer_eval --set dp8|calc17|aws71|hi_deadlock|hi_search --label <x> [--field question_hi] [--lecture-dir outputs/<dir>] [--rejudge|--no-judge]`. Each `--rejudge` is 1 judge call.
       - **Notes eval:** `... -m tutor.evals.notes_fidelity outputs/<dir> ...` makes 1 judge call per lecture. It writes `notes_fidelity__<dir>.json`; rename it with a `__j38`/`__j35` suffix to keep the judge visible.
       - **Timestamp check (free, no LLM call):** `venv/bin/yt-dlp --skip-download --write-auto-subs --sub-langs en --sub-format json3 -o "%(id)s" <url>`, then `venv/bin/python -m tutor.evals.timestamp_check <id>.en.json3 outputs/<dir>/transcripts/<id>.json`. Re-run it whenever the transcription prompt changes.
       - **UI smoke test locally:** the Supabase project in `.env` is gone.
@@ -97,7 +128,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
     - **Quotas (free tier, per API key):**
       - gemini-3.8-flash and gemini-3.6-flash: 20 requests a day, 5 a minute.
       - 3.1/3.5 flash-lite: ~500 a day.
-      - gemini-embedding-2: 100 a minute, plus a daily cap.
+      - gemini-embedding-2: 100 a minute, plus a daily cap (no longer used for new indexes; see "Local embeddings").
       - The user swaps keys when a quota runs out, and paid test calls are fine.
     - **Eval artifacts:**
       - `tutor/evals/results/`: `<set>__baseline.json` (3.8-graded), `*_j35.json` (3.5-lite), `*_v2_j38.json` and `*_lean_j38.json`, and `notes_fidelity__<dir>__j35|j38.json`.

@@ -16,6 +16,7 @@ Metrics per category:
 
 Usage:
     venv/bin/python -m tutor.evals.answer_eval --set calc17 --label baseline
+    venv/bin/python -m tutor.evals.answer_eval --set hi_search --field question_hi --label local
 Writes tutor/evals/results/<set>__<label>.json and prints a summary row.
 """
 
@@ -240,6 +241,8 @@ def main() -> None:
     ap.add_argument("--gap", type=float, default=2.0, help="seconds between questions")
     ap.add_argument("--rejudge", action="store_true", help="re-grade an existing result file")
     ap.add_argument("--no-judge", action="store_true", help="only collect answers")
+    ap.add_argument("--field", default="question",
+                    help="question field to ask, e.g. question_hi (romanized Hinglish rewrite)")
     args = ap.parse_args()
 
     qset = json.loads((DATA_DIR / f"{args.set}.json").read_text())
@@ -250,7 +253,11 @@ def main() -> None:
     if args.rejudge:
         rows = json.loads(out_path.read_text())["rows"]
     else:
-        rows = asyncio.run(run_tutor(lecture_dir, qset["questions"], args.gap))
+        questions = qset["questions"]
+        if args.field != "question":
+            questions = [{**q, "question": q[args.field], "question_en": q["question"]}
+                         for q in questions]
+        rows = asyncio.run(run_tutor(lecture_dir, questions, args.gap))
         # Persist answers first: a judge failure (quota) must not lose them.
         out_path.write_text(json.dumps({"summary": None, "rows": rows}, indent=2, ensure_ascii=False))
         if args.no_judge:

@@ -6,7 +6,8 @@ Design:
   • Returns lists of dicts — same shape whether called from a LangGraph node or a test.
   • Does NOT call the LLM. Just retrieval.
   • One query embedding per question: the text and image lookups run in
-    parallel graph branches and share it through _embed_query's cache.
+    parallel graph branches and share it through _embed_query's cache. The
+    query is embedded with the model the lecture's index was built with.
   • If a lecture has no index yet but has its artifacts (lectures processed
     before the index existed), it is built once on first use.
 
@@ -21,7 +22,7 @@ RetrievedChunk schema (P3.2 hybrid, per kind):
         "start", "end": float | None  # seconds (transcript windows only)
         "distance":     float | None, # cosine distance; None if BM25-only
         "chunk_id":     str,
-        "relevant":     bool,     # distance <= CONFIDENCE_THRESHOLD (P3.8)
+        "relevant":     bool,     # distance <= the index model's confidence threshold (P3.8)
     }
 
 RetrievedImage schema:
@@ -39,13 +40,14 @@ from tutor.retrieval_config import (
     ADAPTIVE_SCORE_DROPOFF_RATIO,
     ADAPTIVE_TOP_K_CANDIDATES,
     CONFIDENCE_THRESHOLD,
-    IMAGE_MAX_DISTANCE,
     MIN_RESULTS,
     RRF_K,
     TOP_K,
     TOP_K_IMAGES,
     TOP_K_NOTES,
     TOP_K_TRANSCRIPT,
+    confidence_threshold,
+    image_max_distance,
 )
 from tutor.vector_store import VectorStore, index_dir, load_cached
 
@@ -86,27 +88,28 @@ def _get_store(output_dir: Optional[str] = None) -> VectorStore:
 
 # ── shared query embedding ────────────────────────────────────────────────────
 
-_qcache: dict[str, list[float]] = {}
-_qlocks: dict[str, threading.Lock] = {}
+_qcache: dict[tuple[str | None, str], list[float]] = {}
+_qlocks: dict[tuple[str | None, str], threading.Lock] = {}
 _qguard = threading.Lock()
 _QCACHE_MAX = 512
 
 
-def _embed_query(query: str) -> list[float]:
-    """Embed a query once even when two graph branches ask concurrently."""
+def _embed_query(query: str, model: str | None = None) -> list[float]:
+    """Embed a query once (per model) even when two graph branches ask concurrently."""
+    key = (model, query)
     with _qguard:
-        if query in _qcache:
-            return _qcache[query]
-        lock = _qlocks.setdefault(query, threading.Lock())
+        if key in _qcache:
+            return _qcache[key]
+        lock = _qlocks.setdefault(key, threading.Lock())
     with lock:
         with _qguard:
-            if query in _qcache:
-                return _qcache[query]
-        from tutor.embedding import GeminiEmbeddingFunction
-        vec = list(GeminiEmbeddingFunction(role="query")([query])[0])
+            if key in _qcache:
+                return _qcache[key]
+        from tutor.embedding import get_embedder
+        vec = list(get_embedder("query", model)([query])[0])
         with _qguard:
-            _qcache[query] = vec
-            _qlocks.pop(query, None)
+            _qcache[key] = vec
+            _qlocks.pop(key, None)
             while len(_qcache) > _QCACHE_MAX:
                 _qcache.pop(next(iter(_qcache)))
         return vec
@@ -114,23 +117,23 @@ def _embed_query(query: str) -> list[float]:
 
 # ── BM25 (per store version, per kind) ────────────────────────────────────────
 
-_bm25_cache: dict[tuple[int, str], dict] = {}
 _bm25_guard = threading.Lock()
 
 
 def _get_bm25(store: VectorStore, kind: str) -> dict:
-    key = (id(store), kind)
+    # Cached on the store itself: a re-indexed lecture gets a new store object,
+    # and keying a global dict by id(store) handed a reused id another store's
+    # rows (wrong passages, or IndexError on a smaller index).
     with _bm25_guard:
-        hit = _bm25_cache.get(key)
+        cache = store.__dict__.setdefault("_bm25", {})
+        hit = cache.get(kind)
     if hit is not None:
         return hit
     rows = store.rows(kind)
     docs = [tokenize(store.docs[r]) for r in rows]
     entry = {"rows": rows, "bm25": BM25Okapi(docs) if docs else None}
     with _bm25_guard:
-        if len(_bm25_cache) > 64:
-            _bm25_cache.clear()
-        _bm25_cache[key] = entry
+        cache[kind] = entry
     return entry
 
 
@@ -149,7 +152,8 @@ def _unmap_chapter_id(value) -> Optional[int]:
     return cid if cid >= 0 else None
 
 
-def _chunk_from_doc(doc_id: str, text: str, meta: dict, distance: Optional[float]) -> dict:
+def _chunk_from_doc(doc_id: str, text: str, meta: dict, distance: Optional[float],
+                    threshold: float = CONFIDENCE_THRESHOLD) -> dict:
     """Build a RetrievedChunk dict, computing the P3.8 `relevant` flag."""
     return {
         "kind": meta.get("kind", "notes"),
@@ -162,7 +166,7 @@ def _chunk_from_doc(doc_id: str, text: str, meta: dict, distance: Optional[float
         "end": meta.get("end"),
         "distance": distance,
         "chunk_id": doc_id,
-        "relevant": distance is not None and distance <= CONFIDENCE_THRESHOLD,
+        "relevant": distance is not None and distance <= threshold,
         "context": "",
     }
 
@@ -193,7 +197,7 @@ def _rrf_merge(
 ) -> list[dict]:
     """
     Fuse cosine + BM25 rankings with Reciprocal Rank Fusion, then adaptively trim:
-    1. Drop results above CONFIDENCE_THRESHOLD unless fewer than min_results remain.
+    1. Drop results that aren't `relevant` unless fewer than min_results remain.
     2. P3.2: Dynamically size top-k based on score drop-off curve (elbow cutoff):
        if score drops below `dropoff_ratio` of the top result, truncate after
        at least `min_results`.
@@ -232,12 +236,13 @@ def _hybrid(store: VectorStore, qvec, query: str, kind: str,
     threshold, so "is this covered?" is decided by the answer model reading
     the passages, not by a distance cutoff.
     """
+    threshold = confidence_threshold(store.model)
     by_id: dict = {}
     cosine_ids: list[str] = []
     for row, dist in store.query(qvec, kind=kind, chapter_id=chapter_id, n=candidates):
         _id = store.ids[row]
         cosine_ids.append(_id)
-        by_id[_id] = _chunk_from_doc(_id, store.docs[row], store.metas[row], dist)
+        by_id[_id] = _chunk_from_doc(_id, store.docs[row], store.metas[row], dist, threshold)
 
     bm = _get_bm25(store, kind)
     bm25_ids: list[str] = []
@@ -253,7 +258,7 @@ def _hybrid(store: VectorStore, qvec, query: str, kind: str,
             _id = store.ids[row]
             bm25_ids.append(_id)
             if _id not in by_id:
-                by_id[_id] = _chunk_from_doc(_id, store.docs[row], meta, None)
+                by_id[_id] = _chunk_from_doc(_id, store.docs[row], meta, None, threshold)
 
     fused = reciprocal_rank_fusion_scored([cosine_ids, bm25_ids], k=RRF_K)
     return [by_id[_id] for _id, _ in fused if _id in by_id][:k]
@@ -279,7 +284,7 @@ def retrieve(
     notes-only behaviour (quiz source lookup).
     """
     store = _get_store(output_dir)
-    qvec = _embed_query(query)
+    qvec = _embed_query(query, store.model)
     quota = {"transcript": TOP_K_TRANSCRIPT, "notes": TOP_K_NOTES}
     if len(kinds) == 1:
         quota[kinds[0]] = k
@@ -293,7 +298,8 @@ def retrieve(
             hits = _hybrid(store, qvec, query, kind, chapter_id, n, candidates)
         else:
             hits = [
-                _chunk_from_doc(store.ids[r], store.docs[r], store.metas[r], d)
+                _chunk_from_doc(store.ids[r], store.docs[r], store.metas[r], d,
+                                confidence_threshold(store.model))
                 for r, d in store.query(qvec, kind=kind, chapter_id=chapter_id, n=n)
             ]
         out.extend(hits)
@@ -305,17 +311,20 @@ def retrieve_images(
     chapter_id: Optional[int] = None,
     k: int = TOP_K_IMAGES,
     output_dir: Optional[str] = None,
-    max_distance: float = IMAGE_MAX_DISTANCE,
+    max_distance: Optional[float] = None,
 ) -> list[dict]:
     """
     Screenshots whose caption/OCR is close to the question. Only matches within
-    `max_distance` are returned: an unrelated slide in the prompt invites the
-    model to describe it as if it answered the question.
+    `max_distance` (default: the index model's IMAGE_MAX_DISTANCE_BY_MODEL entry)
+    are returned: an unrelated slide in the prompt invites the model to
+    describe it as if it answered the question.
     """
     store = _get_store(output_dir)
     if not store.count("screenshot"):
         return []
-    qvec = _embed_query(query)
+    if max_distance is None:
+        max_distance = image_max_distance(store.model)
+    qvec = _embed_query(query, store.model)
     images: list[dict] = []
     for row, dist in store.query(qvec, kind="screenshot", chapter_id=chapter_id, n=k):
         if dist > max_distance:

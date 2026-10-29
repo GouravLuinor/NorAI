@@ -1,0 +1,183 @@
+{
+  "lecture_dir": "outputs/hinglish-search",
+  "questions": [
+    {
+      "category": "core",
+      "question": "What is the primary goal of a linear search algorithm?",
+      "gold_answer": "The primary goal of a linear search is to find a specific key within an array and return its index. If the key is not found, the algorithm returns -1.",
+      "quote": "Is key ko humein find karna hai apne array mein aur woh jis bhi index pe present hai array mein, woh index humein return karna hoga. And if that key is not present in that array, toh we will return -1.",
+      "quote_ts": 13.0,
+      "question_hi": "linear search algorithm ka main goal kya hota hai?"
+    },
+    {
+      "category": "core",
+      "question": "What is the time complexity of a linear search?",
+      "gold_answer": "The time complexity of a linear search is O(n), because in the worst case, you have to traverse every element in an array of size n.",
+      "quote": "Kyunki n size ka agar array hai, toh hum poore array ko traverse kar rahe hain, toh uski jo time complexity ho jaayegi, woh ho jaayegi O(n).",
+      "quote_ts": 193.0,
+      "question_hi": "linear search ka time complexity kya hai?"
+    },
+    {
+      "category": "core",
+      "question": "What is the main requirement for an array to be used with binary search?",
+      "gold_answer": "For binary search to work, the elements in the array must be in a sorted order, typically increasing order.",
+      "quote": "Toh binary search implement karne ke liye humare jo elements hain array mein, woh sorted order mein present hone chahiye.",
+      "quote_ts": 304.0,
+      "question_hi": "binary search ke liye array mein kya condition honi chahiye?"
+    },
+    {
+      "category": "core",
+      "question": "What is the time complexity of binary search?",
+      "gold_answer": "The time complexity of binary search is O(log n base 2), which makes it more efficient than linear search.",
+      "quote": "Toh humara jo complexity hai, woh ho jaayega O(log n base 2).",
+      "quote_ts": 772.0,
+      "question_hi": "binary search ka time complexity kya hota hai?"
+    },
+    {
+      "category": "core",
+      "question": "In binary search, how do you determine if the target key is in the first or second half of the current range?",
+      "gold_answer": "You compare the key to the middle element. If the key is smaller than the middle element, it must be in the first half; if it is larger, it must be in the second half.",
+      "quote": "Toh hum 21 se compare karenge 27 ko ki kya woh usse kam hai ya zyada. Toh 27 jo hai yahan pe humare mid element se zyada hai. Toh ye toh pakka hai ki 27 isse pehle present nahi hoga.",
+      "quote_ts": 337.0,
+      "question_hi": "binary search mein kaise pata chalta hai ki target key first half mein hai ya second half mein?"
+    },
+    {
+      "category": "core",
+      "question": "Why is binary search considered better than linear search?",
+      "gold_answer": "Binary search is considered better because it has a lower time complexity, O(log n), compared to linear search's O(n), meaning it takes less time to find an element.",
+      "quote": "Binary search is a better searching algorithm than linear search as it takes less time.",
+      "quote_ts": 794.0,
+      "question_hi": "binary search ko linear search se better kyun maana jaata hai?"
+    },
+    {
+      "category": "detail",
+      "question": "What specific example does the lecturer use to explain the concept of binary search?",
+      "gold_answer": "The lecturer uses the example of searching for a specific roll number in a pile of 50 sorted answer sheets.",
+      "quote": "Binary search samajhne ke liye aap aise visualize kijiye ki aapko ek jo hai aapki teacher jo hai ek pile de jaati hai of checked answer sheets. Theek hai? Aur ye jo sheets hain, these are ordered from roll number 1 to 50.",
+      "quote_ts": 212.0,
+      "question_hi": "binary search samjhane ke liye lecturer ne kaunsa specific example diya?"
+    },
+    {
+      "category": "detail",
+      "question": "What real-world analogy is used to explain searching for a name?",
+      "gold_answer": "The lecturer mentions searching for a name like 'Neha' on Facebook, noting that the system doesn't start from 'A' but starts from the middle because it knows where 'N' falls alphabetically.",
+      "quote": "Ab jab aap Neha ko search karte ho jaake Facebook pe, toh Facebook koi A se thodi na start karega Neha ka n dhundhne ke liye? Nahi, usko pata hai ki n jo hai kahin beech mein aata hai",
+      "quote_ts": 270.0,
+      "question_hi": "naam search karne ke liye kaunsa real-world analogy use kiya gaya hai?"
+    },
+    {
+      "category": "detail",
+      "question": "What is the specific formula used to calculate the middle index in the binary search code?",
+      "gold_answer": "The middle index is calculated by adding the start and end pointers and dividing by two: (s + e) / 2.",
+      "quote": "Toh sabse pehle yahan pe hum mid find karenge, jo ki hoga s + e / 2.",
+      "quote_ts": 566.0,
+      "question_hi": "binary search code mein middle index calculate karne ka formula kya hai?"
+    },
+    {
+      "category": "detail",
+      "question": "What is the loop condition for the binary search function?",
+      "gold_answer": "The loop continues as long as the start pointer is less than or equal to the end pointer.",
+      "quote": "Toh ye jo bhi hum kaam karne waale hain, woh tab tak karenge jab tak s is less than equal to e.",
+      "quote_ts": 560.0,
+      "question_hi": "binary search function ka loop condition kya hota hai?"
+    },
+    {
+      "category": "detail",
+      "question": "What happens if the start pointer exceeds the end pointer in the binary search implementation?",
+      "gold_answer": "If the start pointer becomes greater than the end pointer, it indicates that the element is not present in the array, and the function returns -1.",
+      "quote": "Kyunki agar s pointer jo hai yahan pe e se aage aa jaata hai, toh humein pata chal jaayega ki humara jo element hai woh is array mein present nahi hai. Humein yahan pe -1 return karna hai",
+      "quote_ts": 547.0,
+      "question_hi": "binary search implementation mein agar start pointer end pointer se bada ho jaye toh kya hoga?"
+    },
+    {
+      "category": "detail",
+      "question": "How many iterations does the lecturer suggest it takes to reduce an array of 100 elements to a single element using binary search?",
+      "gold_answer": "The lecturer explains that you keep halving the array: 100 becomes 50, then 25, then 12, then 6, and so on.",
+      "quote": "Pehle 50, phir 25, phir 12, phir 6 and so on.",
+      "quote_ts": 464.0,
+      "question_hi": "100 elements wale array ko single element tak reduce karne mein binary search kitne iterations leta hai?"
+    },
+    {
+      "category": "detail",
+      "question": "What is the return type of the linear search function?",
+      "gold_answer": "The return type of the linear search function is an integer, representing the index of the found element.",
+      "quote": "Ye index return karega jo ki type hoga int.",
+      "quote_ts": 86.0,
+      "question_hi": "linear search function ka return type kya hota hai?"
+    },
+    {
+      "category": "detail",
+      "question": "What happens when you search for an element that is not present in the array during the linear search demonstration?",
+      "gold_answer": "The program outputs -1 when the element is not found.",
+      "quote": "And isko dobaara dekhte hain ki agar main likhti hoon four elements and I search for an element jo ki present nahi hai, toh humein output mil jaata hai -1.",
+      "quote_ts": 168.0,
+      "question_hi": "agar element array mein present nahi hai toh linear search demonstration mein kya hota hai?"
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How do you implement a ternary search algorithm?",
+      "gold_answer": "The lecture does not cover ternary search or its implementation.",
+      "quote": "",
+      "question_hi": "ternary search algorithm kaise implement karte hain?"
+    },
+    {
+      "category": "out_of_scope",
+      "question": "Can you explain how to sort an array using bubble sort?",
+      "gold_answer": "The lecture focuses on searching algorithms and does not explain sorting algorithms like bubble sort.",
+      "quote": "",
+      "question_hi": "bubble sort use karke array ko sort kaise karte hain, zara samjhao?"
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What is the difference between a linked list and an array?",
+      "gold_answer": "The lecture only discusses arrays and does not provide a comparison with linked lists.",
+      "quote": "",
+      "question_hi": "linked list aur array mein kya difference hota hai?"
+    },
+    {
+      "category": "out_of_scope",
+      "question": "How do I optimize the space complexity of these searching algorithms?",
+      "gold_answer": "The lecture discusses time complexity but does not address space complexity optimization.",
+      "quote": "",
+      "question_hi": "in searching algorithms ka space complexity kaise optimize karun?"
+    },
+    {
+      "category": "false_premise",
+      "question": "Why is the time complexity of linear search O(log n)?",
+      "gold_answer": "The time complexity of linear search is actually O(n), not O(log n), because it requires traversing the entire array.",
+      "quote": "Kyunki n size ka agar array hai, toh hum poore array ko traverse kar rahe hain, toh uski jo time complexity ho jaayegi, woh ho jaayegi O(n).",
+      "quote_ts": 193.0,
+      "question_hi": "linear search ka time complexity O(log n) kyun hota hai?"
+    },
+    {
+      "category": "false_premise",
+      "question": "Does binary search work on unsorted arrays?",
+      "gold_answer": "No, binary search requires the array to be sorted in order to function correctly.",
+      "quote": "Toh binary search implement karne ke liye humare jo elements hain array mein, woh sorted order mein present hone chahiye.",
+      "quote_ts": 304.0,
+      "question_hi": "kya binary search unsorted arrays par kaam karta hai?"
+    },
+    {
+      "category": "false_premise",
+      "question": "Is the return value for a missing element in linear search 0?",
+      "gold_answer": "No, the return value for a missing element is -1, not 0.",
+      "quote": "And if that key is not present in that array, toh we will return -1.",
+      "quote_ts": 21.0,
+      "question_hi": "kya linear search mein missing element ke liye return value 0 hota hai?"
+    }
+  ],
+  "dropped_unverified": [
+    {
+      "category": "core",
+      "question": "How does binary search reduce the search space during each iteration?",
+      "gold_answer": "Binary search compares the key with the middle element of the current range. Based on the comparison, it discards half of the remaining array, effectively halving the search space in each step.",
+      "quote": "Toh humara jo searching part hai jahan pe humein search karna hai apni key ke liye, woh kam ho gaya. Pehle woh poora array tha aur ab woh aadha array ho gaya."
+    },
+    {
+      "category": "core",
+      "question": "What happens to the pointers in binary search when the key is not found in the current half?",
+      "gold_answer": "The start or end pointers are updated to narrow the search range. Specifically, the end pointer is set to mid-1 if the key is smaller, or the start pointer is set to mid+1 if the key is larger.",
+      "quote": "Toh hum e ko kar denge mid - 1. Right? Aur jab humein pata chala tha ki humara key mid element se zyada hai, us time humne apne s ko shift kiya tha. Toh hum s ko le aaye the mid + 1 pe."
+    }
+  ]
+}

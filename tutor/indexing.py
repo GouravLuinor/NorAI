@@ -192,13 +192,23 @@ def _screenshot_docs(lecture_dir: Path):
 
 def build_lecture_index(lecture_dir: str | Path, embed=None) -> dict:
     """Sync the lecture's index with its current notes, transcript and
-    screenshots. Returns per-kind (added, removed) counts."""
+    screenshots. Returns per-kind (added, removed) counts.
+
+    An index built with a different embedding model than `embed` is rebuilt
+    from scratch: vectors from two models can't share one space.
+    """
     lecture_dir = Path(lecture_dir)
     if embed is None:
-        from tutor.embedding import GeminiEmbeddingFunction
-        embed = GeminiEmbeddingFunction(role="document")
+        from tutor.embedding import get_embedder
+        embed = get_embedder("document")
+    model = getattr(embed, "model", None)
 
     store = VectorStore.open(index_dir(lecture_dir))
+    if len(store) and store.model != model:
+        logger.info("index: %s was built with %s; re-embedding %d docs with %s",
+                    lecture_dir.name, store.model, len(store), model)
+        store = VectorStore(index_dir(lecture_dir))
+    store.model = model
     report = {}
     for kind, build in (("notes", _note_docs), ("transcript", _transcript_docs),
                         ("screenshot", _screenshot_docs)):
@@ -208,7 +218,7 @@ def build_lecture_index(lecture_dir: str | Path, embed=None) -> dict:
             logger.error("index: building %s docs failed: %s", kind, e)
             continue
         report[kind] = store.sync(kind, ids, docs, metas, embed)
-        store.save()  # keep paid-for embeddings even if a later kind fails
+        store.save()  # keep finished kinds even if a later kind fails
     logger.info("Tutor index %s: %d docs %s", lecture_dir.name, len(store), report)
     return report
 

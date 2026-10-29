@@ -1,0 +1,2028 @@
+{
+  "summary": {
+    "n": 21,
+    "graded": 21,
+    "accuracy_core": 1.0,
+    "accuracy_detail": 1.0,
+    "false_not_covered": 0.0,
+    "oos_abstain": 1.0,
+    "premise_corrected": 1.0,
+    "unsupported_claim": 0.0,
+    "invented_visual": 0.0,
+    "answers_citing": 1.0,
+    "citations_verified": 1.0,
+    "latency_p50_s": 2.16,
+    "calls_per_turn": 1,
+    "input_tokens_per_turn": 2191,
+    "output_tokens_per_turn": 156,
+    "cost_per_turn_usd": 0.000782
+  },
+  "rows": [
+    {
+      "category": "core",
+      "question": "linear search algorithm ka main goal kya hota hai?",
+      "gold_answer": "The primary goal of a linear search is to find a specific key within an array and return its index. If the key is not found, the algorithm returns -1.",
+      "quote": "Is key ko humein find karna hai apne array mein aur woh jis bhi index pe present hai array mein, woh index humein return karna hoga. And if that key is not present in that array, toh we will return -1.",
+      "quote_ts": 13.0,
+      "question_hi": "linear search algorithm ka main goal kya hota hai?",
+      "question_en": "What is the primary goal of a linear search algorithm?",
+      "answer": "Linear search ka main goal kisi array mein ek specific value (jise hum 'key' kehte hain) ko dhundhna hota hai. Yeh algorithm array ke pehle element se shuru karta hai aur har element ko sequentially check karta hai jab tak ya toh key mil na jaye ya phir poora array khatam na ho jaye.\n\nAgar key mil jati hai, toh yeh uska index return karta hai, aur agar nahi milti, toh yeh -1 return karta hai.\n\nKya aap janna chahenge ki yeh process code mein kaise dikhta hai?\n\n**Sources**\n• [N1] Section: Linear Search Implementation and Complexity > Understanding Linear Search\n• [N2] Section: Linear Search Implementation and Complexity > C++ Implementation",
+      "latency_s": 7.24,
+      "calls": 1,
+      "input_tokens": 2229,
+      "output_tokens": 153,
+      "cost_usd": 0.000787,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 4:30–5:01",
+          "chapter_id": 2,
+          "distance": 0.5024378299713135,
+          "start": 270.0
+        },
+        {
+          "heading_path": "Transcript 12:47–13:25",
+          "chapter_id": 3,
+          "distance": 0.5487915277481079,
+          "start": 767.0
+        },
+        {
+          "heading_path": "Transcript 0:56–1:42",
+          "chapter_id": 1,
+          "distance": 0.5088506937026978,
+          "start": 56.0
+        },
+        {
+          "heading_path": "Transcript 7:22–7:58",
+          "chapter_id": 2,
+          "distance": 0.5566214323043823,
+          "start": 442.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > Understanding Linear Search",
+          "chapter_id": 1,
+          "distance": 0.35337090492248535,
+          "start": 9.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > C++ Implementation",
+          "chapter_id": 1,
+          "distance": 0.44051337242126465,
+          "start": 49.0
+        }
+      ],
+      "images": [
+        {
+          "section": "C++ Implementation",
+          "distance": 0.43672364950180054
+        },
+        {
+          "section": "Understanding Linear Search",
+          "distance": 0.528918445110321
+        }
+      ],
+      "citations": [
+        {
+          "section": "[N1] Section: Linear Search Implementation and Complexity > Understanding Linear Search",
+          "verified": true,
+          "chunk_id": "note_4482d8a30136728b",
+          "heading_path": "Linear Search Implementation and Complexity > Understanding Linear Search",
+          "heading": "Understanding Linear Search",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": 9.0,
+          "end": null
+        },
+        {
+          "section": "[N2] Section: Linear Search Implementation and Complexity > C++ Implementation",
+          "verified": true,
+          "chunk_id": "note_83828ed0ef6833e5",
+          "heading_path": "Linear Search Implementation and Complexity > C++ Implementation",
+          "heading": "C++ Implementation",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": 49.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 0,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately explains the main goal of linear search and its return values."
+      }
+    },
+    {
+      "category": "core",
+      "question": "linear search ka time complexity kya hai?",
+      "gold_answer": "The time complexity of a linear search is O(n), because in the worst case, you have to traverse every element in an array of size n.",
+      "quote": "Kyunki n size ka agar array hai, toh hum poore array ko traverse kar rahe hain, toh uski jo time complexity ho jaayegi, woh ho jaayegi O(n).",
+      "quote_ts": 193.0,
+      "question_hi": "linear search ka time complexity kya hai?",
+      "question_en": "What is the time complexity of a linear search?",
+      "answer": "Linear search ki time complexity $O(n)$ hoti hai. Iska matlab ye hai ki agar array ka size $n$ hai, toh worst-case scenario mein humein poore array ko traverse karna padta hai, kyunki element ya toh last position par ho sakta hai ya phir array mein present hi nahi ho sakta.\n\nKya aap samajhna chahenge ki binary search isse fast kyun kaam karta hai?\n\n**Sources**\n• 2:48 — Linear search time complexity explanation\n• [N1] Section: Linear Search Implementation and Complexity > Time Complexity Analysis",
+      "latency_s": 1.93,
+      "calls": 1,
+      "input_tokens": 2051,
+      "output_tokens": 119,
+      "cost_usd": 0.000691,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 12:47–13:25",
+          "chapter_id": 3,
+          "distance": 0.386771559715271,
+          "start": 767.0
+        },
+        {
+          "heading_path": "Transcript 4:30–5:01",
+          "chapter_id": 2,
+          "distance": 0.4063013792037964,
+          "start": 270.0
+        },
+        {
+          "heading_path": "Transcript 2:48–3:29",
+          "chapter_id": 1,
+          "distance": 0.45869016647338867,
+          "start": 168.0
+        },
+        {
+          "heading_path": "Transcript 11:01–11:44",
+          "chapter_id": 3,
+          "distance": 0.4585702419281006,
+          "start": 661.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > Time Complexity Analysis",
+          "chapter_id": 1,
+          "distance": 0.2898362874984741,
+          "start": 185.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+          "chapter_id": 3,
+          "distance": 0.3968844413757324,
+          "start": 782.0
+        }
+      ],
+      "images": [
+        {
+          "section": "C++ Implementation",
+          "distance": 0.4949619770050049
+        }
+      ],
+      "citations": [
+        {
+          "section": "2:48 — Linear search time complexity explanation",
+          "verified": true,
+          "chunk_id": "tx_168_e9cfba19b0",
+          "heading_path": "Transcript 2:48–3:29",
+          "heading": "Transcript 2:48",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 168,
+          "end": 209.0
+        },
+        {
+          "section": "[N1] Section: Linear Search Implementation and Complexity > Time Complexity Analysis",
+          "verified": true,
+          "chunk_id": "note_55e0c8d4a6705c8a",
+          "heading_path": "Linear Search Implementation and Complexity > Time Complexity Analysis",
+          "heading": "Time Complexity Analysis",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": 185.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 1,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately states that the time complexity of linear search is O(n)."
+      }
+    },
+    {
+      "category": "core",
+      "question": "binary search ke liye array mein kya condition honi chahiye?",
+      "gold_answer": "For binary search to work, the elements in the array must be in a sorted order, typically increasing order.",
+      "quote": "Toh binary search implement karne ke liye humare jo elements hain array mein, woh sorted order mein present hone chahiye.",
+      "quote_ts": 304.0,
+      "question_hi": "binary search ke liye array mein kya condition honi chahiye?",
+      "question_en": "What is the main requirement for an array to be used with binary search?",
+      "answer": "Binary search use karne ke liye sabse zaroori condition ye hai ki aapka array **sorted order** mein hona chahiye, yaani saare elements ek increasing sequence mein hone chahiye. \n\nAgar array sorted nahi hoga, toh hum ye decide nahi kar paayenge ki humein agle step mein array ke kaunse hisse (left ya right) mein search karna hai.\n\nKya aap samajhna chahenge ki sorted hone se humara search space kaise kam ho jaata hai?\n\n**Sources**\n• 4:55 — Binary search ke liye elements sorted order mein hone chahiye.\n• [N1] Section: Introduction to Binary Search > Prerequisites and Core Mechanism",
+      "latency_s": 2.79,
+      "calls": 1,
+      "input_tokens": 2299,
+      "output_tokens": 140,
+      "cost_usd": 0.000785,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.31278038024902344,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 3:24–3:57",
+          "chapter_id": 2,
+          "distance": 0.37616389989852905,
+          "start": 204.0
+        },
+        {
+          "heading_path": "Transcript 7:49–8:35",
+          "chapter_id": 3,
+          "distance": 0.38567566871643066,
+          "start": 469.0
+        },
+        {
+          "heading_path": "Transcript 7:22–7:58",
+          "chapter_id": 2,
+          "distance": 0.3344370126724243,
+          "start": 442.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "chapter_id": 2,
+          "distance": 0.3430144190788269,
+          "start": 304.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Intuition and Real-World Analogy",
+          "chapter_id": 2,
+          "distance": 0.4260495901107788,
+          "start": 210.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.41834557056427
+        },
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.43103253841400146
+        }
+      ],
+      "citations": [
+        {
+          "section": "4:55 — Binary search ke liye elements sorted order mein hone chahiye.",
+          "verified": true,
+          "chunk_id": "tx_295_9119ee430a",
+          "heading_path": "Transcript 4:55–5:29",
+          "heading": "Transcript 4:55",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 295,
+          "end": 329.0
+        },
+        {
+          "section": "[N1] Section: Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "verified": true,
+          "chunk_id": "note_3b7c11afb645a2aa",
+          "heading_path": "Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "heading": "Prerequisites and Core Mechanism",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": 304.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 2,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that the array must be sorted."
+      }
+    },
+    {
+      "category": "core",
+      "question": "binary search ka time complexity kya hota hai?",
+      "gold_answer": "The time complexity of binary search is O(log n base 2), which makes it more efficient than linear search.",
+      "quote": "Toh humara jo complexity hai, woh ho jaayega O(log n base 2).",
+      "quote_ts": 772.0,
+      "question_hi": "binary search ka time complexity kya hota hai?",
+      "question_en": "What is the time complexity of binary search?",
+      "answer": "Binary search ki time complexity $O(\\log n)$ hoti hai. Iska matlab ye hai ki har step par hum search space ko aadha (half) kar dete hain, jisse humein poore array ko check karne ki zaroorat nahi padti.\n\nLinear search mein humein har element check karna padta hai ($O(n)$), lekin binary search mein baar-baar array ko divide karne se kaam bahut jaldi ho jaata hai.\n\nKya aap samajhna chahenge ki ye $n/2^k = 1$ wala math kaise kaam karta hai?\n\n**Sources**\n• 11:39 — derivation of binary search complexity\n• 12:47 — final complexity result\n• [N1] Section: Binary Search Implementation and Time Complexity > Deriving Time Complexity",
+      "latency_s": 2.09,
+      "calls": 1,
+      "input_tokens": 2190,
+      "output_tokens": 169,
+      "cost_usd": 0.000801,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 11:01–11:44",
+          "chapter_id": 3,
+          "distance": 0.3199842572212219,
+          "start": 661.0
+        },
+        {
+          "heading_path": "Transcript 12:47–13:25",
+          "chapter_id": 3,
+          "distance": 0.353360116481781,
+          "start": 767.0
+        },
+        {
+          "heading_path": "Transcript 7:22–7:58",
+          "chapter_id": 2,
+          "distance": 0.4183397889137268,
+          "start": 442.0
+        },
+        {
+          "heading_path": "Transcript 11:39–12:19",
+          "chapter_id": 3,
+          "distance": 0.32556796073913574,
+          "start": 699.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Deriving Time Complexity",
+          "chapter_id": 3,
+          "distance": 0.33829188346862793,
+          "start": 692.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+          "chapter_id": 3,
+          "distance": 0.3830301761627197,
+          "start": 782.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Deriving Time Complexity",
+          "distance": 0.45438557863235474
+        },
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.5184423923492432
+        }
+      ],
+      "citations": [
+        {
+          "section": "11:39 — derivation of binary search complexity",
+          "verified": true,
+          "chunk_id": "tx_699_45e1a0dd6e",
+          "heading_path": "Transcript 11:39–12:19",
+          "heading": "Transcript 11:39",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 699,
+          "end": 739.0
+        },
+        {
+          "section": "12:47 — final complexity result",
+          "verified": true,
+          "chunk_id": "tx_767_c9ad084991",
+          "heading_path": "Transcript 12:47–13:25",
+          "heading": "Transcript 12:47",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 767,
+          "end": 805.0
+        },
+        {
+          "section": "[N1] Section: Binary Search Implementation and Time Complexity > Deriving Time Complexity",
+          "verified": true,
+          "chunk_id": "note_f2a59f4a13603a87",
+          "heading_path": "Binary Search Implementation and Time Complexity > Deriving Time Complexity",
+          "heading": "Deriving Time Complexity",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 692.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 3,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately gives O(log n) as the time complexity of binary search."
+      }
+    },
+    {
+      "category": "core",
+      "question": "binary search mein kaise pata chalta hai ki target key first half mein hai ya second half mein?",
+      "gold_answer": "You compare the key to the middle element. If the key is smaller than the middle element, it must be in the first half; if it is larger, it must be in the second half.",
+      "quote": "Toh hum 21 se compare karenge 27 ko ki kya woh usse kam hai ya zyada. Toh 27 jo hai yahan pe humare mid element se zyada hai. Toh ye toh pakka hai ki 27 isse pehle present nahi hoga.",
+      "quote_ts": 337.0,
+      "question_hi": "binary search mein kaise pata chalta hai ki target key first half mein hai ya second half mein?",
+      "question_en": "In binary search, how do you determine if the target key is in the first or second half of the current range?",
+      "answer": "Binary search mein hum array ke middle element (`mid`) ko apne target `key` se compare karte hain. Kyunki array pehle se sorted hota hai, is comparison se humein turant pata chal jaata hai ki key kahan ho sakti hai:\n\n*   Agar `array[mid] > key` hai, toh iska matlab hai ki hamara target `mid` se chota hai. Isliye, woh zaroor `mid` ke pehle waale hisse (first half) mein hi hoga.\n*   Agar `array[mid] < key` hai, toh iska matlab hai ki hamara target `mid` se bada hai, isliye woh `mid` ke baad waale hisse (second half) mein hoga.\n\nIs logic se hum har step par aadhe array ko discard kar dete hain. Kya aap dekhna chahenge ki pointers (`s` aur `e`) ko update karke hum search space ko kaise chota karte hain?\n\n**Sources**\n• 9:33 — mid element aur key ka comparison\n• [N1] Section: Introduction to Binary Search > Prerequisites and Core Mechanism",
+      "latency_s": 1.96,
+      "calls": 1,
+      "input_tokens": 2322,
+      "output_tokens": 239,
+      "cost_usd": 0.000939,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.3803701400756836,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 7:49–8:35",
+          "chapter_id": 3,
+          "distance": 0.4125361442565918,
+          "start": 469.0
+        },
+        {
+          "heading_path": "Transcript 9:33–10:12",
+          "chapter_id": 3,
+          "distance": 0.4651523232460022,
+          "start": 573.0
+        },
+        {
+          "heading_path": "Transcript 7:22–7:58",
+          "chapter_id": 2,
+          "distance": 0.41089391708374023,
+          "start": 442.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "chapter_id": 2,
+          "distance": 0.3305577039718628,
+          "start": 304.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Binary Search Implementation",
+          "chapter_id": 3,
+          "distance": 0.36445748805999756,
+          "start": 484.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.3678356409072876
+        },
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.4455189108848572
+        }
+      ],
+      "citations": [
+        {
+          "section": "9:33 — mid element aur key ka comparison",
+          "verified": true,
+          "chunk_id": "tx_573_12420cafce",
+          "heading_path": "Transcript 9:33–10:12",
+          "heading": "Transcript 9:33",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 573,
+          "end": 612.0
+        },
+        {
+          "section": "[N1] Section: Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "verified": true,
+          "chunk_id": "note_3b7c11afb645a2aa",
+          "heading_path": "Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "heading": "Prerequisites and Core Mechanism",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": 304.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 4,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly explains comparing the key with the middle element to determine the search half."
+      }
+    },
+    {
+      "category": "core",
+      "question": "binary search ko linear search se better kyun maana jaata hai?",
+      "gold_answer": "Binary search is considered better because it has a lower time complexity, O(log n), compared to linear search's O(n), meaning it takes less time to find an element.",
+      "quote": "Binary search is a better searching algorithm than linear search as it takes less time.",
+      "quote_ts": 794.0,
+      "question_hi": "binary search ko linear search se better kyun maana jaata hai?",
+      "question_en": "Why is binary search considered better than linear search?",
+      "answer": "Binary search ko linear search se better isliye maana jaata hai kyunki yeh search process ko bahut fast kar deta hai. Linear search mein hum har element ko ek-ek karke check karte hain, jisse uski time complexity $O(n)$ ho jaati hai, lekin binary search mein hum baar-baar search space ko aadha (half) karte jaate hain, jisse iski complexity $O(\\log n)$ ho jaati hai.\n\nKyunki $O(\\log n)$ value $O(n)$ se kaafi kam hoti hai, isliye binary search kam time mein result de deta hai.\n\nKya aap samajhna chahenge ki yeh \"aadha karne wala\" process kaam kaise karta hai?\n\n**Sources**\n• 4:30 — Facebook search analogy and linear search complexity\n• 4:55 — Binary search introduction and sorted array requirement\n• 12:47 — Binary search complexity derivation and comparison with linear search\n• [N1] Section: Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+      "latency_s": 1.84,
+      "calls": 1,
+      "input_tokens": 2107,
+      "output_tokens": 221,
+      "cost_usd": 0.000858,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 12:47–13:25",
+          "chapter_id": 3,
+          "distance": 0.2832454442977905,
+          "start": 767.0
+        },
+        {
+          "heading_path": "Transcript 4:30–5:01",
+          "chapter_id": 2,
+          "distance": 0.4573535919189453,
+          "start": 270.0
+        },
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.4587286710739136,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 11:01–11:44",
+          "chapter_id": 3,
+          "distance": 0.5006948709487915,
+          "start": 661.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+          "chapter_id": 3,
+          "distance": 0.25679463148117065,
+          "start": 782.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Intuition and Real-World Analogy",
+          "chapter_id": 2,
+          "distance": 0.3714193105697632,
+          "start": 210.0
+        }
+      ],
+      "images": [
+        {
+          "section": "C++ Implementation",
+          "distance": 0.5361345410346985
+        }
+      ],
+      "citations": [
+        {
+          "section": "4:30 — Facebook search analogy and linear search complexity",
+          "verified": true,
+          "chunk_id": "tx_270_d7aada73b8",
+          "heading_path": "Transcript 4:30–5:01",
+          "heading": "Transcript 4:30",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 270,
+          "end": 301.0
+        },
+        {
+          "section": "4:55 — Binary search introduction and sorted array requirement",
+          "verified": true,
+          "chunk_id": "tx_295_9119ee430a",
+          "heading_path": "Transcript 4:55–5:29",
+          "heading": "Transcript 4:55",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 295,
+          "end": 329.0
+        },
+        {
+          "section": "12:47 — Binary search complexity derivation and comparison with linear search",
+          "verified": true,
+          "chunk_id": "tx_767_c9ad084991",
+          "heading_path": "Transcript 12:47–13:25",
+          "heading": "Transcript 12:47",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 767,
+          "end": 805.0
+        },
+        {
+          "section": "[N1] Section: Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+          "verified": true,
+          "chunk_id": "note_2b348bb0fb141269",
+          "heading_path": "Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+          "heading": "Comparison with Linear Search",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 782.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 5,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately explains that binary search is faster due to its lower O(log n) time complexity."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "binary search samjhane ke liye lecturer ne kaunsa specific example diya?",
+      "gold_answer": "The lecturer uses the example of searching for a specific roll number in a pile of 50 sorted answer sheets.",
+      "quote": "Binary search samajhne ke liye aap aise visualize kijiye ki aapko ek jo hai aapki teacher jo hai ek pile de jaati hai of checked answer sheets. Theek hai? Aur ye jo sheets hain, these are ordered from roll number 1 to 50.",
+      "quote_ts": 212.0,
+      "question_hi": "binary search samjhane ke liye lecturer ne kaunsa specific example diya?",
+      "question_en": "What specific example does the lecturer use to explain the concept of binary search?",
+      "answer": "Lecturer ne binary search samjhane ke liye **roll number 1 se 50 tak ki sorted answer sheets** ka example diya hai.\n\nUnhone bataya ki agar aapko apni sheet (jaise roll number 30) dhundhni hai, toh aap 1 se start karke har sheet check nahi karenge. Iske bajaye, aap pile ke beech mein se koi sheet uthayenge aur uske roll number ke hisaab se decide karenge ki aapki sheet uske pehle wale hisse mein hai ya baad wale mein.\n\nKya aap iske peeche ki logic (search space ko aadha karna) samajhna chahenge?\n\n**Sources**\n• 3:24 — Binary search ka example (answer sheets)\n• [N2] Section: Introduction to Binary Search > Intuition and Real-World Analogy",
+      "latency_s": 2.22,
+      "calls": 1,
+      "input_tokens": 2266,
+      "output_tokens": 179,
+      "cost_usd": 0.000835,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 3:24–3:57",
+          "chapter_id": 2,
+          "distance": 0.4148608446121216,
+          "start": 204.0
+        },
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.4464524984359741,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 12:47–13:25",
+          "chapter_id": 3,
+          "distance": 0.5121457576751709,
+          "start": 767.0
+        },
+        {
+          "heading_path": "Transcript 11:01–11:44",
+          "chapter_id": 3,
+          "distance": 0.45391935110092163,
+          "start": 661.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "chapter_id": 2,
+          "distance": 0.49242985248565674,
+          "start": 304.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Intuition and Real-World Analogy",
+          "chapter_id": 2,
+          "distance": 0.4662283658981323,
+          "start": 210.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.5246318578720093
+        },
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.525026798248291
+        }
+      ],
+      "citations": [
+        {
+          "section": "3:24 — Binary search ka example (answer sheets)",
+          "verified": true,
+          "chunk_id": "tx_204_dcdb3b21aa",
+          "heading_path": "Transcript 3:24–3:57",
+          "heading": "Transcript 3:24",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 204,
+          "end": 237.0
+        },
+        {
+          "section": "[N2] Section: Introduction to Binary Search > Intuition and Real-World Analogy",
+          "verified": true,
+          "chunk_id": "note_ca5df7a036773214",
+          "heading_path": "Introduction to Binary Search > Intuition and Real-World Analogy",
+          "heading": "Intuition and Real-World Analogy",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": 210.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 6,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly identifies the roll number 1 to 50 answer sheets example."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "naam search karne ke liye kaunsa real-world analogy use kiya gaya hai?",
+      "gold_answer": "The lecturer mentions searching for a name like 'Neha' on Facebook, noting that the system doesn't start from 'A' but starts from the middle because it knows where 'N' falls alphabetically.",
+      "quote": "Ab jab aap Neha ko search karte ho jaake Facebook pe, toh Facebook koi A se thodi na start karega Neha ka n dhundhne ke liye? Nahi, usko pata hai ki n jo hai kahin beech mein aata hai",
+      "quote_ts": 270.0,
+      "question_hi": "naam search karne ke liye kaunsa real-world analogy use kiya gaya hai?",
+      "question_en": "What real-world analogy is used to explain searching for a name?",
+      "answer": "Lecture mein naam search karne ke liye Facebook ka example diya gaya hai. Lecturer ne bataya ki jab aap Facebook par kisi ka naam search karte hain, toh system 'A' se shuru karke har naam ko check nahi karta, balki woh direct beech mein jump karke search space ko narrow down karta hai.\n\nShould I explain how this \"halving\" process works with an array of numbers?\n\n**Sources**\n• 4:12 — Facebook par naam search karne ka example\n• [N1] Section: Introduction to Binary Search > Intuition and Real-World Analogy",
+      "latency_s": 1.84,
+      "calls": 1,
+      "input_tokens": 2137,
+      "output_tokens": 122,
+      "cost_usd": 0.000717,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 5:53–6:30",
+          "chapter_id": 2,
+          "distance": 0.59564208984375,
+          "start": 353.0
+        },
+        {
+          "heading_path": "Transcript 7:22–7:58",
+          "chapter_id": 2,
+          "distance": 0.579573392868042,
+          "start": 442.0
+        },
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.6073036193847656,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 4:12–4:38",
+          "chapter_id": 2,
+          "distance": 0.5675551295280457,
+          "start": 252.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Intuition and Real-World Analogy",
+          "chapter_id": 2,
+          "distance": 0.6000125408172607,
+          "start": 210.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Search Space Reduction",
+          "chapter_id": 2,
+          "distance": 0.6733728647232056,
+          "start": 362.0
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "4:12 — Facebook par naam search karne ka example",
+          "verified": true,
+          "chunk_id": "tx_252_82e0ba14c9",
+          "heading_path": "Transcript 4:12–4:38",
+          "heading": "Transcript 4:12",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 252,
+          "end": 278.0
+        },
+        {
+          "section": "[N1] Section: Introduction to Binary Search > Intuition and Real-World Analogy",
+          "verified": true,
+          "chunk_id": "note_ca5df7a036773214",
+          "heading_path": "Introduction to Binary Search > Intuition and Real-World Analogy",
+          "heading": "Intuition and Real-World Analogy",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": 210.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 7,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly identifies the Facebook name search analogy."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "binary search code mein middle index calculate karne ka formula kya hai?",
+      "gold_answer": "The middle index is calculated by adding the start and end pointers and dividing by two: (s + e) / 2.",
+      "quote": "Toh sabse pehle yahan pe hum mid find karenge, jo ki hoga s + e / 2.",
+      "quote_ts": 566.0,
+      "question_hi": "binary search code mein middle index calculate karne ka formula kya hai?",
+      "question_en": "What is the specific formula used to calculate the middle index in the binary search code?",
+      "answer": "Binary search mein middle index calculate karne ka formula `mid = (s + e) / 2` hota hai, jahan `s` start pointer hai aur `e` end pointer. Ye formula aapke current search space ka bilkul beech wala index find karne mein madad karta hai.\n\nShould I explain why we update the `s` and `e` pointers based on this `mid` value?\n\n**Sources**\n• 9:07 — Calculation of the mid index\n• [N1] Section: Binary Search Implementation and Time Complexity > Binary Search Implementation",
+      "latency_s": 2.23,
+      "calls": 1,
+      "input_tokens": 2226,
+      "output_tokens": 118,
+      "cost_usd": 0.000734,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 7:49–8:35",
+          "chapter_id": 3,
+          "distance": 0.5243607759475708,
+          "start": 469.0
+        },
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.5671613812446594,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 9:07–9:37",
+          "chapter_id": 3,
+          "distance": 0.5244879126548767,
+          "start": 547.0
+        },
+        {
+          "heading_path": "Transcript 9:33–10:12",
+          "chapter_id": 3,
+          "distance": 0.49418336153030396,
+          "start": 573.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Binary Search Implementation",
+          "chapter_id": 3,
+          "distance": 0.49610650539398193,
+          "start": 484.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "chapter_id": 2,
+          "distance": 0.4947913885116577,
+          "start": 304.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.4399815797805786
+        }
+      ],
+      "citations": [
+        {
+          "section": "9:07 — Calculation of the mid index",
+          "verified": true,
+          "chunk_id": "tx_547_c368d0ebfe",
+          "heading_path": "Transcript 9:07–9:37",
+          "heading": "Transcript 9:07",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 547,
+          "end": 577.0
+        },
+        {
+          "section": "[N1] Section: Binary Search Implementation and Time Complexity > Binary Search Implementation",
+          "verified": true,
+          "chunk_id": "note_2bb1c9efa25acf4b",
+          "heading_path": "Binary Search Implementation and Time Complexity > Binary Search Implementation",
+          "heading": "Binary Search Implementation",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 484.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 8,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately gives the formula (s + e) / 2 for finding the middle index."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "binary search function ka loop condition kya hota hai?",
+      "gold_answer": "The loop continues as long as the start pointer is less than or equal to the end pointer.",
+      "quote": "Toh ye jo bhi hum kaam karne waale hain, woh tab tak karenge jab tak s is less than equal to e.",
+      "quote_ts": 560.0,
+      "question_hi": "binary search function ka loop condition kya hota hai?",
+      "question_en": "What is the loop condition for the binary search function?",
+      "answer": "Binary search mein hum `while` loop ka use karte hain aur iski condition hoti hai `s <= e`. \n\nYahan `s` (start) pointer array ke shuruat mein aur `e` (end) pointer array ke end mein hota hai. Jab tak `s` ki value `e` ke barabar ya usse choti rehti hai, tab tak hum search space ko divide karte rehte hain.\n\nKya aap dekhna chahenge ki jab hum `mid` element ko check karte hain, toh ye pointers kaise update hote hain?\n\n**Sources**\n• 10:31 — explanation of shifting the start pointer\n• [N1] Section: Binary Search Implementation and Time Complexity > Binary Search Implementation",
+      "latency_s": 1.55,
+      "calls": 1,
+      "input_tokens": 2296,
+      "output_tokens": 153,
+      "cost_usd": 0.000803,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 7:22–7:58",
+          "chapter_id": 2,
+          "distance": 0.4930683970451355,
+          "start": 442.0
+        },
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.48545658588409424,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 1:32–2:18",
+          "chapter_id": 1,
+          "distance": 0.5406814813613892,
+          "start": 92.0
+        },
+        {
+          "heading_path": "Transcript 10:31–11:12",
+          "chapter_id": 3,
+          "distance": 0.49766814708709717,
+          "start": 631.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Binary Search Implementation",
+          "chapter_id": 3,
+          "distance": 0.4531353712081909,
+          "start": 484.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > C++ Implementation",
+          "chapter_id": 1,
+          "distance": 0.5358741283416748,
+          "start": 49.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.4802681803703308
+        },
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.5005504488945007
+        }
+      ],
+      "citations": [
+        {
+          "section": "10:31 — explanation of shifting the start pointer",
+          "verified": true,
+          "chunk_id": "tx_631_fd7c795966",
+          "heading_path": "Transcript 10:31–11:12",
+          "heading": "Transcript 10:31",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 631,
+          "end": 672.0
+        },
+        {
+          "section": "[N1] Section: Binary Search Implementation and Time Complexity > Binary Search Implementation",
+          "verified": true,
+          "chunk_id": "note_2bb1c9efa25acf4b",
+          "heading_path": "Binary Search Implementation and Time Complexity > Binary Search Implementation",
+          "heading": "Binary Search Implementation",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 484.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 9,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately identifies the loop condition as s <= e."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "binary search implementation mein agar start pointer end pointer se bada ho jaye toh kya hoga?",
+      "gold_answer": "If the start pointer becomes greater than the end pointer, it indicates that the element is not present in the array, and the function returns -1.",
+      "quote": "Kyunki agar s pointer jo hai yahan pe e se aage aa jaata hai, toh humein pata chal jaayega ki humara jo element hai woh is array mein present nahi hai. Humein yahan pe -1 return karna hai",
+      "quote_ts": 547.0,
+      "question_hi": "binary search implementation mein agar start pointer end pointer se bada ho jaye toh kya hoga?",
+      "question_en": "What happens if the start pointer exceeds the end pointer in the binary search implementation?",
+      "answer": "Agar `start` pointer `end` pointer se bada ho jaata hai, toh iska matlab hai ki humne poore array ko search kar liya hai aur humein hamara target element (key) nahi mila.\n\nIs situation mein loop terminate ho jaata hai aur hum `-1` return karte hain, jo ye indicate karta hai ki element array mein present nahi hai.\n\nKya aap dekhna chahenge ki code mein ye condition kaise handle hoti hai?\n\n**Sources**\n• 8:29 — starting aur ending point define karna aur loop ki condition\n• 9:07 — loop khatam hone par -1 return karna\n• [N1] Section: Binary Search Implementation and Time Complexity > Binary Search Implementation",
+      "latency_s": 1.73,
+      "calls": 1,
+      "input_tokens": 2343,
+      "output_tokens": 151,
+      "cost_usd": 0.000812,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.3594803810119629,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 8:29–9:17",
+          "chapter_id": 3,
+          "distance": 0.44189369678497314,
+          "start": 509.0
+        },
+        {
+          "heading_path": "Transcript 9:33–10:12",
+          "chapter_id": 3,
+          "distance": 0.4661654233932495,
+          "start": 573.0
+        },
+        {
+          "heading_path": "Transcript 9:07–9:37",
+          "chapter_id": 3,
+          "distance": 0.46549129486083984,
+          "start": 547.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Binary Search Implementation",
+          "chapter_id": 3,
+          "distance": 0.3419751524925232,
+          "start": 484.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Intuition and Real-World Analogy",
+          "chapter_id": 2,
+          "distance": 0.46067750453948975,
+          "start": 210.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.3706824779510498
+        },
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.41107577085494995
+        }
+      ],
+      "citations": [
+        {
+          "section": "8:29 — starting aur ending point define karna aur loop ki condition",
+          "verified": true,
+          "chunk_id": "tx_509_8b2f1b1926",
+          "heading_path": "Transcript 8:29–9:17",
+          "heading": "Transcript 8:29",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 509,
+          "end": 557.0
+        },
+        {
+          "section": "9:07 — loop khatam hone par -1 return karna",
+          "verified": true,
+          "chunk_id": "tx_547_c368d0ebfe",
+          "heading_path": "Transcript 9:07–9:37",
+          "heading": "Transcript 9:07",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 547,
+          "end": 577.0
+        },
+        {
+          "section": "[N1] Section: Binary Search Implementation and Time Complexity > Binary Search Implementation",
+          "verified": true,
+          "chunk_id": "note_2bb1c9efa25acf4b",
+          "heading_path": "Binary Search Implementation and Time Complexity > Binary Search Implementation",
+          "heading": "Binary Search Implementation",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 484.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 10,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that -1 is returned when the start pointer exceeds the end pointer."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "100 elements wale array ko single element tak reduce karne mein binary search kitne iterations leta hai?",
+      "gold_answer": "The lecturer explains that you keep halving the array: 100 becomes 50, then 25, then 12, then 6, and so on.",
+      "quote": "Pehle 50, phir 25, phir 12, phir 6 and so on.",
+      "quote_ts": 464.0,
+      "question_hi": "100 elements wale array ko single element tak reduce karne mein binary search kitne iterations leta hai?",
+      "question_en": "How many iterations does the lecturer suggest it takes to reduce an array of 100 elements to a single element using binary search?",
+      "answer": "Binary search mein har iteration ke saath search space aadha (half) ho jaata hai. 100 elements ke liye, yeh process tab tak chalti hai jab tak hum 1 element par nahi pahunch jaate:\n\n100 → 50 → 25 → 12 → 6 → 3 → 1\n\nIs tarah, 100 elements ko reduce karne mein total 6 iterations lagenge. \n\nKya aap dekhna chahenge ki mathematical formula $n/2^k$ ka use karke hum ise kaise calculate kar sakte hain?\n\n**Sources**\n• 7:22 — Explanation of how the search space reduces from n to n/2, n/4, etc.\n• [N1] Section: Introduction to Binary Search > Search Space Reduction",
+      "latency_s": 2.17,
+      "calls": 1,
+      "input_tokens": 2234,
+      "output_tokens": 171,
+      "cost_usd": 0.000815,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 7:22–7:58",
+          "chapter_id": 2,
+          "distance": 0.3976709842681885,
+          "start": 442.0
+        },
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.46591562032699585,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 11:39–12:19",
+          "chapter_id": 3,
+          "distance": 0.419624388217926,
+          "start": 699.0
+        },
+        {
+          "heading_path": "Transcript 7:49–8:35",
+          "chapter_id": 3,
+          "distance": 0.48941946029663086,
+          "start": 469.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Search Space Reduction",
+          "chapter_id": 2,
+          "distance": 0.402085542678833,
+          "start": 362.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Deriving Time Complexity",
+          "chapter_id": 3,
+          "distance": 0.4367557168006897,
+          "start": 692.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Deriving Time Complexity",
+          "distance": 0.45425522327423096
+        }
+      ],
+      "citations": [
+        {
+          "section": "7:22 — Explanation of how the search space reduces from n to n/2, n/4, etc.",
+          "verified": true,
+          "chunk_id": "tx_442_1f2be21880",
+          "heading_path": "Transcript 7:22–7:58",
+          "heading": "Transcript 7:22",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 442,
+          "end": 478.0
+        },
+        {
+          "section": "[N1] Section: Introduction to Binary Search > Search Space Reduction",
+          "verified": true,
+          "chunk_id": "note_6324a6aced0e04f3",
+          "heading_path": "Introduction to Binary Search > Search Space Reduction",
+          "heading": "Search Space Reduction",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": 362.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 11,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately explains how the search space reduces by half until reaching a single element."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "linear search function ka return type kya hota hai?",
+      "gold_answer": "The return type of the linear search function is an integer, representing the index of the found element.",
+      "quote": "Ye index return karega jo ki type hoga int.",
+      "quote_ts": 86.0,
+      "question_hi": "linear search function ka return type kya hota hai?",
+      "question_en": "What is the return type of the linear search function?",
+      "answer": "Linear search function ka return type `int` hota hai. Yeh function index return karta hai agar key mil jaye, aur agar key array mein nahi milti, toh yeh `-1` return karta hai.\n\nShould I explain why we return -1 specifically?\n\n**Sources**\n• 1:32 — function returns the index or -1 if the key is not found\n• [N1] Section: Linear Search Implementation and Complexity > C++ Implementation",
+      "latency_s": 1.88,
+      "calls": 1,
+      "input_tokens": 2228,
+      "output_tokens": 95,
+      "cost_usd": 0.0007,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:56–1:42",
+          "chapter_id": 1,
+          "distance": 0.4051084518432617,
+          "start": 56.0
+        },
+        {
+          "heading_path": "Transcript 4:30–5:01",
+          "chapter_id": 2,
+          "distance": 0.48439979553222656,
+          "start": 270.0
+        },
+        {
+          "heading_path": "Transcript 7:49–8:35",
+          "chapter_id": 3,
+          "distance": 0.5420044660568237,
+          "start": 469.0
+        },
+        {
+          "heading_path": "Transcript 1:32–2:18",
+          "chapter_id": 1,
+          "distance": 0.5797001123428345,
+          "start": 92.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > C++ Implementation",
+          "chapter_id": 1,
+          "distance": 0.43011319637298584,
+          "start": 49.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > Understanding Linear Search",
+          "chapter_id": 1,
+          "distance": 0.41637617349624634,
+          "start": 9.0
+        }
+      ],
+      "images": [
+        {
+          "section": "C++ Implementation",
+          "distance": 0.44539356231689453
+        },
+        {
+          "section": "Understanding Linear Search",
+          "distance": 0.5203937292098999
+        }
+      ],
+      "citations": [
+        {
+          "section": "1:32 — function returns the index or -1 if the key is not found",
+          "verified": true,
+          "chunk_id": "tx_92_b103f3eaaf",
+          "heading_path": "Transcript 1:32–2:18",
+          "heading": "Transcript 1:32",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 92,
+          "end": 138.0
+        },
+        {
+          "section": "[N1] Section: Linear Search Implementation and Complexity > C++ Implementation",
+          "verified": true,
+          "chunk_id": "note_83828ed0ef6833e5",
+          "heading_path": "Linear Search Implementation and Complexity > C++ Implementation",
+          "heading": "C++ Implementation",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": 49.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 12,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately states that the function return type is int."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "agar element array mein present nahi hai toh linear search demonstration mein kya hota hai?",
+      "gold_answer": "The program outputs -1 when the element is not found.",
+      "quote": "And isko dobaara dekhte hain ki agar main likhti hoon four elements and I search for an element jo ki present nahi hai, toh humein output mil jaata hai -1.",
+      "quote_ts": 168.0,
+      "question_hi": "agar element array mein present nahi hai toh linear search demonstration mein kya hota hai?",
+      "question_en": "What happens when you search for an element that is not present in the array during the linear search demonstration?",
+      "answer": "Agar element array mein present nahi hai, toh linear search algorithm poore array ko end tak traverse karta hai. Har element ko check karne ke baad, jab loop khatam ho jaata hai aur key nahi milti, toh algorithm -1 return karta hai, jo ye indicate karta hai ki element array mein nahi hai.\n\nKya aap dekhna chahenge ki iska time complexity par kya asar padta hai?\n\n**Sources**\n• [N1] Section: Linear Search Implementation and Complexity > Understanding Linear Search",
+      "latency_s": 2.14,
+      "calls": 1,
+      "input_tokens": 2211,
+      "output_tokens": 106,
+      "cost_usd": 0.000712,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 5:24–5:56",
+          "chapter_id": 2,
+          "distance": 0.38399404287338257,
+          "start": 324.0
+        },
+        {
+          "heading_path": "Transcript 6:50–7:27",
+          "chapter_id": 2,
+          "distance": 0.3857553005218506,
+          "start": 410.0
+        },
+        {
+          "heading_path": "Transcript 5:53–6:30",
+          "chapter_id": 2,
+          "distance": 0.36485975980758667,
+          "start": 353.0
+        },
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.44031453132629395,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > Understanding Linear Search",
+          "chapter_id": 1,
+          "distance": 0.35520851612091064,
+          "start": 9.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > Time Complexity Analysis",
+          "chapter_id": 1,
+          "distance": 0.3928959369659424,
+          "start": 185.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Understanding Linear Search",
+          "distance": 0.40084612369537354
+        },
+        {
+          "section": "C++ Implementation",
+          "distance": 0.4105152487754822
+        }
+      ],
+      "citations": [
+        {
+          "section": "[N1] Section: Linear Search Implementation and Complexity > Understanding Linear Search",
+          "verified": true,
+          "chunk_id": "note_4482d8a30136728b",
+          "heading_path": "Linear Search Implementation and Complexity > Understanding Linear Search",
+          "heading": "Understanding Linear Search",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": 9.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 13,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that the function returns -1 when the element is not found."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "ternary search algorithm kaise implement karte hain?",
+      "gold_answer": "The lecture does not cover ternary search or its implementation.",
+      "quote": "",
+      "question_hi": "ternary search algorithm kaise implement karte hain?",
+      "question_en": "How do you implement a ternary search algorithm?",
+      "answer": "The lecture you are currently studying focuses specifically on Linear Search and Binary Search, so it does not cover the Ternary Search algorithm.\n\nIn general, while Binary Search divides the search space into two halves by finding one middle element, Ternary Search divides the search space into three parts by using two mid-points. This is typically used in specific scenarios, like finding the maximum or minimum of a unimodal function, rather than just searching for a value in a sorted array.\n\nWould you like to walk through the logic of how we calculate the middle element in Binary Search instead?\n\n**Sources**\n• 3:24 — Introduction to binary search using the example of sorted answer sheets.\n• 4:55 — Prerequisites for binary search (sorted array) and the goal of improving search time.",
+      "latency_s": 2.18,
+      "calls": 1,
+      "input_tokens": 2198,
+      "output_tokens": 164,
+      "cost_usd": 0.000795,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.47075796127319336,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 7:49–8:35",
+          "chapter_id": 3,
+          "distance": 0.4990166425704956,
+          "start": 469.0
+        },
+        {
+          "heading_path": "Transcript 7:22–7:58",
+          "chapter_id": 2,
+          "distance": 0.4918140172958374,
+          "start": 442.0
+        },
+        {
+          "heading_path": "Transcript 3:24–3:57",
+          "chapter_id": 2,
+          "distance": 0.49191105365753174,
+          "start": 204.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "chapter_id": 2,
+          "distance": 0.4760171175003052,
+          "start": 304.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > Understanding Linear Search",
+          "chapter_id": 1,
+          "distance": 0.5589365363121033,
+          "start": 9.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.5462601184844971
+        }
+      ],
+      "citations": [
+        {
+          "section": "3:24 — Introduction to binary search using the example of sorted answer sheets.",
+          "verified": true,
+          "chunk_id": "tx_204_dcdb3b21aa",
+          "heading_path": "Transcript 3:24–3:57",
+          "heading": "Transcript 3:24",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 204,
+          "end": 237.0
+        },
+        {
+          "section": "4:55 — Prerequisites for binary search (sorted array) and the goal of improving search time.",
+          "verified": true,
+          "chunk_id": "tx_295_9119ee430a",
+          "heading_path": "Transcript 4:55–5:29",
+          "heading": "Transcript 4:55",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 295,
+          "end": 329.0
+        }
+      ],
+      "grade": {
+        "id": 14,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Explicitly states that the lecture does not cover ternary search."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "bubble sort use karke array ko sort kaise karte hain, zara samjhao?",
+      "gold_answer": "The lecture focuses on searching algorithms and does not explain sorting algorithms like bubble sort.",
+      "quote": "",
+      "question_hi": "bubble sort use karke array ko sort kaise karte hain, zara samjhao?",
+      "question_en": "Can you explain how to sort an array using bubble sort?",
+      "answer": "The lecture doesn't cover Bubble Sort; it focuses specifically on Linear and Binary Search techniques.\n\nIn general, Bubble Sort works by repeatedly stepping through the list, comparing adjacent elements, and swapping them if they are in the wrong order. This process \"bubbles\" the largest unsorted element to its correct position at the end of the array with each pass.\n\nSince we are currently looking at how to search for elements efficiently, would you like to walk through how Binary Search decides which half of the array to discard?\n\n**Sources**\n• 4:55 — Binary search requires sorted arrays\n• 7:22 — How binary search reduces the search space size",
+      "latency_s": 2.29,
+      "calls": 1,
+      "input_tokens": 2152,
+      "output_tokens": 137,
+      "cost_usd": 0.000743,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.5729449987411499,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 7:22–7:58",
+          "chapter_id": 2,
+          "distance": 0.5907328128814697,
+          "start": 442.0
+        },
+        {
+          "heading_path": "Transcript 7:49–8:35",
+          "chapter_id": 3,
+          "distance": 0.6077347993850708,
+          "start": 469.0
+        },
+        {
+          "heading_path": "Transcript 0:27–1:01",
+          "chapter_id": 1,
+          "distance": 0.5898256897926331,
+          "start": 27.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "chapter_id": 2,
+          "distance": 0.6268283128738403,
+          "start": 304.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Binary Search Implementation",
+          "chapter_id": 3,
+          "distance": 0.6864632368087769,
+          "start": 484.0
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "4:55 — Binary search requires sorted arrays",
+          "verified": true,
+          "chunk_id": "tx_295_9119ee430a",
+          "heading_path": "Transcript 4:55–5:29",
+          "heading": "Transcript 4:55",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 295,
+          "end": 329.0
+        },
+        {
+          "section": "7:22 — How binary search reduces the search space size",
+          "verified": true,
+          "chunk_id": "tx_442_1f2be21880",
+          "heading_path": "Transcript 7:22–7:58",
+          "heading": "Transcript 7:22",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 442,
+          "end": 478.0
+        }
+      ],
+      "grade": {
+        "id": 15,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Explicitly states that the lecture does not cover bubble sort."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "linked list aur array mein kya difference hota hai?",
+      "gold_answer": "The lecture only discusses arrays and does not provide a comparison with linked lists.",
+      "quote": "",
+      "question_hi": "linked list aur array mein kya difference hota hai?",
+      "question_en": "What is the difference between a linked list and an array?",
+      "answer": "The lecture doesn't cover the differences between linked lists and arrays; it focuses specifically on searching techniques (linear and binary search) within arrays.\n\nIn general, an array is a collection of elements stored in contiguous memory locations, which allows for fast, direct access to any element using its index. A linked list, on the other hand, consists of nodes where each node contains data and a pointer (or reference) to the next node, meaning elements are not necessarily stored next to each other in memory.\n\nSince we are focusing on searching, would you like to explore why the structure of an array makes binary search possible while it would be much more difficult in a standard linked list?\n\n**Sources**\n• [N2] Section: Introduction to Binary Search > Prerequisites and Core Mechanism",
+      "latency_s": 2.59,
+      "calls": 1,
+      "input_tokens": 2073,
+      "output_tokens": 159,
+      "cost_usd": 0.000757,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 6:50–7:27",
+          "chapter_id": 2,
+          "distance": 0.5559166669845581,
+          "start": 410.0
+        },
+        {
+          "heading_path": "Transcript 5:53–6:30",
+          "chapter_id": 2,
+          "distance": 0.5412412881851196,
+          "start": 353.0
+        },
+        {
+          "heading_path": "Transcript 5:24–5:56",
+          "chapter_id": 2,
+          "distance": 0.5796326994895935,
+          "start": 324.0
+        },
+        {
+          "heading_path": "Transcript 0:56–1:42",
+          "chapter_id": 1,
+          "distance": 0.563366174697876,
+          "start": 56.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > Time Complexity Analysis",
+          "chapter_id": 1,
+          "distance": 0.6116963624954224,
+          "start": 185.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "chapter_id": 2,
+          "distance": 0.7035002112388611,
+          "start": 304.0
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "[N2] Section: Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "verified": true,
+          "chunk_id": "note_3b7c11afb645a2aa",
+          "heading_path": "Introduction to Binary Search > Prerequisites and Core Mechanism",
+          "heading": "Prerequisites and Core Mechanism",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": 304.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 16,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Explicitly states that the lecture does not cover linked lists."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "in searching algorithms ka space complexity kaise optimize karun?",
+      "gold_answer": "The lecture discusses time complexity but does not address space complexity optimization.",
+      "quote": "",
+      "question_hi": "in searching algorithms ka space complexity kaise optimize karun?",
+      "question_en": "How do I optimize the space complexity of these searching algorithms?",
+      "answer": "The lecture focuses on time complexity—specifically how to reduce the number of operations from $O(n)$ to $O(\\log n)$ using binary search—but it doesn't cover space complexity optimization. In general, both linear and binary search are considered very efficient in terms of space because they typically only require a few extra variables (like pointers for the start, end, and middle indices) regardless of the array size, giving them an $O(1)$ space complexity.\n\nSince you're already thinking about optimization, would you like to walk through the logic of how binary search \"discards\" half the array to achieve that $O(\\log n)$ time complexity?\n\n**Sources**\n• 2:48 — Linear search time complexity\n• 12:47 — Binary search time complexity\n• [N2] Section: Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+      "latency_s": 2.42,
+      "calls": 1,
+      "input_tokens": 1968,
+      "output_tokens": 186,
+      "cost_usd": 0.000771,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 7:49–8:35",
+          "chapter_id": 3,
+          "distance": 0.4863694906234741,
+          "start": 469.0
+        },
+        {
+          "heading_path": "Transcript 12:47–13:25",
+          "chapter_id": 3,
+          "distance": 0.48923933506011963,
+          "start": 767.0
+        },
+        {
+          "heading_path": "Transcript 4:30–5:01",
+          "chapter_id": 2,
+          "distance": 0.47141188383102417,
+          "start": 270.0
+        },
+        {
+          "heading_path": "Transcript 2:48–3:29",
+          "chapter_id": 1,
+          "distance": 0.5164812803268433,
+          "start": 168.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > Time Complexity Analysis",
+          "chapter_id": 1,
+          "distance": 0.4659181833267212,
+          "start": 185.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+          "chapter_id": 3,
+          "distance": 0.5312795042991638,
+          "start": 782.0
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "2:48 — Linear search time complexity",
+          "verified": true,
+          "chunk_id": "tx_168_e9cfba19b0",
+          "heading_path": "Transcript 2:48–3:29",
+          "heading": "Transcript 2:48",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 168,
+          "end": 209.0
+        },
+        {
+          "section": "12:47 — Binary search time complexity",
+          "verified": true,
+          "chunk_id": "tx_767_c9ad084991",
+          "heading_path": "Transcript 12:47–13:25",
+          "heading": "Transcript 12:47",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 767,
+          "end": 805.0
+        },
+        {
+          "section": "[N2] Section: Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+          "verified": true,
+          "chunk_id": "note_2b348bb0fb141269",
+          "heading_path": "Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+          "heading": "Comparison with Linear Search",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": 782.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 17,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Explicitly states that the lecture does not cover space complexity optimization."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "linear search ka time complexity O(log n) kyun hota hai?",
+      "gold_answer": "The time complexity of linear search is actually O(n), not O(log n), because it requires traversing the entire array.",
+      "quote": "Kyunki n size ka agar array hai, toh hum poore array ko traverse kar rahe hain, toh uski jo time complexity ho jaayegi, woh ho jaayegi O(n).",
+      "quote_ts": 193.0,
+      "question_hi": "linear search ka time complexity O(log n) kyun hota hai?",
+      "question_en": "Why is the time complexity of linear search O(log n)?",
+      "answer": "Actually, linear search ka time complexity $O(\\log n)$ nahi, balki $O(n)$ hota hai.\n\nLinear search mein hum array ke har element ko ek-ek karke check karte hain, isliye agar array ka size $n$ hai, toh worst-case mein humein $n$ baar operations karne padte hain. $O(\\log n)$ complexity binary search ki hoti hai, kyunki woh har step mein search space ko aadha (half) kar deta hai.\n\nKya aap dekhna chahenge ki binary search kaise har step mein array ko divide karke $O(\\log n)$ tak pahunchta hai?\n\n**Sources**\n• 2:48 — linear search time complexity is O(n)\n• 12:47 — binary search complexity is O(log n)\n• [N2] Section: Linear Search Implementation and Complexity > Time Complexity Analysis",
+      "latency_s": 2.16,
+      "calls": 1,
+      "input_tokens": 2053,
+      "output_tokens": 190,
+      "cost_usd": 0.000798,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 12:47–13:25",
+          "chapter_id": 3,
+          "distance": 0.3153786063194275,
+          "start": 767.0
+        },
+        {
+          "heading_path": "Transcript 4:30–5:01",
+          "chapter_id": 2,
+          "distance": 0.37963855266571045,
+          "start": 270.0
+        },
+        {
+          "heading_path": "Transcript 2:48–3:29",
+          "chapter_id": 1,
+          "distance": 0.42200368642807007,
+          "start": 168.0
+        },
+        {
+          "heading_path": "Transcript 11:39–12:19",
+          "chapter_id": 3,
+          "distance": 0.4367867708206177,
+          "start": 699.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+          "chapter_id": 3,
+          "distance": 0.3434257507324219,
+          "start": 782.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > Time Complexity Analysis",
+          "chapter_id": 1,
+          "distance": 0.2753647565841675,
+          "start": 185.0
+        }
+      ],
+      "images": [
+        {
+          "section": "C++ Implementation",
+          "distance": 0.505221962928772
+        }
+      ],
+      "citations": [
+        {
+          "section": "2:48 — linear search time complexity is O(n)",
+          "verified": true,
+          "chunk_id": "tx_168_e9cfba19b0",
+          "heading_path": "Transcript 2:48–3:29",
+          "heading": "Transcript 2:48",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 168,
+          "end": 209.0
+        },
+        {
+          "section": "12:47 — binary search complexity is O(log n)",
+          "verified": true,
+          "chunk_id": "tx_767_c9ad084991",
+          "heading_path": "Transcript 12:47–13:25",
+          "heading": "Transcript 12:47",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 767,
+          "end": 805.0
+        },
+        {
+          "section": "[N2] Section: Linear Search Implementation and Complexity > Time Complexity Analysis",
+          "verified": true,
+          "chunk_id": "note_55e0c8d4a6705c8a",
+          "heading_path": "Linear Search Implementation and Complexity > Time Complexity Analysis",
+          "heading": "Time Complexity Analysis",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": 185.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 18,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly rejects the false premise and states that linear search complexity is O(n)."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "kya binary search unsorted arrays par kaam karta hai?",
+      "gold_answer": "No, binary search requires the array to be sorted in order to function correctly.",
+      "quote": "Toh binary search implement karne ke liye humare jo elements hain array mein, woh sorted order mein present hone chahiye.",
+      "quote_ts": 304.0,
+      "question_hi": "kya binary search unsorted arrays par kaam karta hai?",
+      "question_en": "Does binary search work on unsorted arrays?",
+      "answer": "Nahi, binary search unsorted arrays par kaam nahi karta hai. Binary search ko implement karne ke liye yeh zaroori hai ki array ke elements sorted order (increasing ya decreasing) mein hon.\n\nIska karan yeh hai ki binary search \"aadha-aadha\" karke search space ko kam karta hai—agar array sorted nahi hoga, toh humein yeh pata hi nahi chalega ki humara target element middle element ke left mein hai ya right mein.\n\nShould I explain why sorting is necessary for the \"halving\" process to work?\n\n**Sources**\n• 4:55 — binary search implement karne ke liye elements sorted order mein hone chahiye\n• 7:22 — binary search mein search space ko aadha-aadha karne se time kam lagta hai",
+      "latency_s": 2.16,
+      "calls": 1,
+      "input_tokens": 2214,
+      "output_tokens": 163,
+      "cost_usd": 0.000798,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.38580262660980225,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 3:24–3:57",
+          "chapter_id": 2,
+          "distance": 0.41219449043273926,
+          "start": 204.0
+        },
+        {
+          "heading_path": "Transcript 11:01–11:44",
+          "chapter_id": 3,
+          "distance": 0.4609032869338989,
+          "start": 661.0
+        },
+        {
+          "heading_path": "Transcript 7:22–7:58",
+          "chapter_id": 2,
+          "distance": 0.40045636892318726,
+          "start": 442.0
+        },
+        {
+          "heading_path": "Introduction to Binary Search > Intuition and Real-World Analogy",
+          "chapter_id": 2,
+          "distance": 0.4304274320602417,
+          "start": 210.0
+        },
+        {
+          "heading_path": "Binary Search Implementation and Time Complexity > Comparison with Linear Search",
+          "chapter_id": 3,
+          "distance": 0.46539628505706787,
+          "start": 782.0
+        }
+      ],
+      "images": [
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.4778098464012146
+        },
+        {
+          "section": "Binary Search Implementation",
+          "distance": 0.49218517541885376
+        }
+      ],
+      "citations": [
+        {
+          "section": "4:55 — binary search implement karne ke liye elements sorted order mein hone chahiye",
+          "verified": true,
+          "chunk_id": "tx_295_9119ee430a",
+          "heading_path": "Transcript 4:55–5:29",
+          "heading": "Transcript 4:55",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 295,
+          "end": 329.0
+        },
+        {
+          "section": "7:22 — binary search mein search space ko aadha-aadha karne se time kam lagta hai",
+          "verified": true,
+          "chunk_id": "tx_442_1f2be21880",
+          "heading_path": "Transcript 7:22–7:58",
+          "heading": "Transcript 7:22",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 442,
+          "end": 478.0
+        }
+      ],
+      "grade": {
+        "id": 19,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly rejects the false premise by clarifying that binary search requires a sorted array."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "kya linear search mein missing element ke liye return value 0 hota hai?",
+      "gold_answer": "No, the return value for a missing element is -1, not 0.",
+      "quote": "And if that key is not present in that array, toh we will return -1.",
+      "quote_ts": 21.0,
+      "question_hi": "kya linear search mein missing element ke liye return value 0 hota hai?",
+      "question_en": "Is the return value for a missing element in linear search 0?",
+      "answer": "Nahi, linear search mein missing element ke liye return value 0 nahi hota, balki hum -1 return karte hain. \n\nIska karan ye hai ki 0 array ka ek valid index ho sakta hai (agar element pehle position par ho), isliye 0 return karne se confusion ho sakta hai ki element mila hai ya nahi. -1 ka use hum ek \"signal\" ki tarah karte hain ye batane ke liye ki element poore array mein kahin nahi mila.\n\nKya aap dekhna chahenge ki code mein isse kaise handle karte hain?\n\n**Sources**\n• [N1] Section: Linear Search Implementation and Complexity > Understanding Linear Search",
+      "latency_s": 2.03,
+      "calls": 1,
+      "input_tokens": 2213,
+      "output_tokens": 139,
+      "cost_usd": 0.000762,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:56–1:42",
+          "chapter_id": 1,
+          "distance": 0.46689796447753906,
+          "start": 56.0
+        },
+        {
+          "heading_path": "Transcript 4:30–5:01",
+          "chapter_id": 2,
+          "distance": 0.4921872615814209,
+          "start": 270.0
+        },
+        {
+          "heading_path": "Transcript 4:55–5:29",
+          "chapter_id": 2,
+          "distance": 0.5332541465759277,
+          "start": 295.0
+        },
+        {
+          "heading_path": "Transcript 6:50–7:27",
+          "chapter_id": 2,
+          "distance": 0.5429431200027466,
+          "start": 410.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > Understanding Linear Search",
+          "chapter_id": 1,
+          "distance": 0.3940618634223938,
+          "start": 9.0
+        },
+        {
+          "heading_path": "Linear Search Implementation and Complexity > Time Complexity Analysis",
+          "chapter_id": 1,
+          "distance": 0.46966981887817383,
+          "start": 185.0
+        }
+      ],
+      "images": [
+        {
+          "section": "C++ Implementation",
+          "distance": 0.5050939321517944
+        },
+        {
+          "section": "Understanding Linear Search",
+          "distance": 0.5432397127151489
+        }
+      ],
+      "citations": [
+        {
+          "section": "[N1] Section: Linear Search Implementation and Complexity > Understanding Linear Search",
+          "verified": true,
+          "chunk_id": "note_4482d8a30136728b",
+          "heading_path": "Linear Search Implementation and Complexity > Understanding Linear Search",
+          "heading": "Understanding Linear Search",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": 9.0,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 20,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly rejects the false premise and states that -1 is returned for missing elements."
+      }
+    }
+  ]
+}

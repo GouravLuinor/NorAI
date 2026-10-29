@@ -82,3 +82,6 @@ frontend/.tmp/
 opencode-guide/
 # opencode CLI working files
 .opencode/
+
+# Local embedding model files (tutor/local_embedding.py)
+.models/

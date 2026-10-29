@@ -1,5 +1,6 @@
 """
-embedding.py — embedding function for gemini-embedding-2 (tutor index).
+embedding.py — embedding functions for the tutor index: get_embedder() picks
+the local model (tutor/local_embedding.py) or gemini-embedding-2.
 
 gemini-embedding-2 has no task_type= parameter — task instructions go
 directly in the prompt text instead:
@@ -40,7 +41,12 @@ from typing import List
 
 Embeddings = list[list[float]]
 
-from tutor.retrieval_config import EMBEDDING_DIMS, EMBEDDING_MODEL
+from tutor.retrieval_config import (
+    EMBEDDING_DIMS,
+    EMBEDDING_MODEL,
+    GEMINI_EMBEDDING_MODEL,
+    LOCAL_EMBEDDING_MODEL,
+)
 from backend.usage_ledger import record_embed_usage
 from backend.gemini_client import get_client, invoke_with_policy
 
@@ -62,6 +68,18 @@ def snapshot_embed_batches() -> int:
 # Retry attempts for one embed batch (pre-existing local cap, now routed
 # through the shared policy in backend.gemini_client).
 _EMBED_MAX_RETRIES = 5
+
+def get_embedder(role: str = "document", model: str | None = None):
+    """Embedding function for `model` (default: EMBEDDING_MODEL). Both kinds
+    are callables list[str] -> vectors with a `.model` attribute."""
+    model = model or EMBEDDING_MODEL
+    if model == LOCAL_EMBEDDING_MODEL:
+        from tutor.local_embedding import LocalEmbeddingFunction
+        return LocalEmbeddingFunction(role=role)
+    if model == GEMINI_EMBEDDING_MODEL:
+        return GeminiEmbeddingFunction(role=role)
+    raise ValueError(f"unknown embedding model {model!r}")
+
 
 class GeminiEmbeddingFunction:
     """
@@ -104,7 +122,9 @@ class GeminiEmbeddingFunction:
         else:
             self._client = genai.Client(api_key=resolved_key)
         self._types = genai_types
-        self._model = EMBEDDING_MODEL
+        self._model = GEMINI_EMBEDDING_MODEL
+
+    model = GEMINI_EMBEDDING_MODEL
 
     # ── Prompt formatting ─────────────────────────────────────────────────────
 
