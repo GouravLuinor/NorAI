@@ -139,7 +139,8 @@ def verify_citations(answer: str, chunks: list[dict]) -> list[dict]:
         [
           {"section": str, "verified": bool,
            "chunk_id": str|None, "heading_path": str|None, "heading": str|None,
-           "chapter_id": int|None, "start": float|None, "end": float|None},
+           "chapter_id": int|None, "kind": str|None,
+           "start": float|None, "end": float|None},
           ...
         ]
     """
@@ -156,6 +157,7 @@ def verify_citations(answer: str, chunks: list[dict]) -> list[dict]:
                     "heading_path": (match or {}).get("heading_path"),
                     "heading": (match or {}).get("heading"),
                     "chapter_id": (match or {}).get("chapter_id"),
+                    "kind": "transcript" if match else None,
                     "start": t if match else None,
                     "end": (match or {}).get("end"),
                 }
@@ -171,7 +173,8 @@ def verify_citations(answer: str, chunks: list[dict]) -> list[dict]:
                 "heading_path": (match or {}).get("heading_path"),
                 "heading": (match or {}).get("heading"),
                 "chapter_id": (match or {}).get("chapter_id"),
-                "start": None,
+                "kind": (match or {}).get("kind", "notes") if match else None,
+                "start": (match or {}).get("start"),  # lean notes sections only
                 "end": None,
             }
         )

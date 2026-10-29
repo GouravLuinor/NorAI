@@ -9,6 +9,8 @@ export interface Reference {
   chunkId?: string | number
   startSec?: number | null
   endSec?: number | null
+  /** A transcript timestamp citation: clicking it seeks instead of scrolling. */
+  transcript?: boolean
 }
 
 export interface RetrievedChunk {
@@ -39,7 +41,9 @@ export interface VerifiedCitation {
   heading_path?: string | null
   heading?: string | null
   chapter_id?: number | null
-  /** Set when the citation is a verified transcript timestamp (seconds). */
+  /** 'transcript' | 'notes' | 'screenshot'; absent on older stored answers. */
+  kind?: string | null
+  /** Seconds: the cited moment (transcript) or the section's start (lean notes). */
   start?: number | null
   end?: number | null
 }

@@ -90,6 +90,15 @@ def test_verified_citations_drops_unverified():
     assert [c["section"] for c in verified] == ["Core Architecture: The Transformer"]
 
 
+def test_note_citation_carries_section_start():
+    # Lean notes sections know where they start in the video; the reference
+    # seeks there rather than to the chapter start.
+    chunks = [{**_chunk("n1", "DP > The LIS Problem"), "kind": "notes", "start": 64.0}]
+    result = verify_citations("**Sources**\n• The LIS Problem\n", chunks)
+    assert result[0]["verified"] and result[0]["start"] == 64.0 and result[0]["kind"] == "notes"
+    assert verify_citations("**Sources**\n• Core Architecture: The Transformer\n", CHUNKS)[0]["start"] is None
+
+
 def test_fuzzy_leaf_heading_matches():
     # Citation uses the leaf heading only, heading_path is the full breadcrumb.
     ans = "**Sources**\n• The Three Mindsets Toward AI\n"

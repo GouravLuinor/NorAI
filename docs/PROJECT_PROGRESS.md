@@ -69,7 +69,8 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       - **Timestamps:** within ~1 s of YouTube's captions.
       - The details are in the bullets below.
     - **Recent commits (newest first):**
-      - server-load measurements + `scripts/bench_local_stages.py` (see "Server load" below).
+      - lean follow-ups: screenshot dedupe, note-section seek, tutor stream metering (see "Follow-ups" below).
+      - `54fed35` server-load measurements + `scripts/bench_local_stages.py` (see "Server load" below).
       - `9ec342a` / `52fdd08` docs cleanup, handoff, `tutor/evals/timestamp_check.py`.
       - `fb734e7` screenshot references labelled by chapter, plus the smoke-test notes.
       - `1e4782b` 3.8 notes fidelity.
@@ -79,10 +80,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       - `544847d` and older: the lean build and the A/B.
     - **Next, in order:**
       1. ~~**Server load**~~ — done 2026-10-29, see "Server load" below. Open decisions from it: keyframe-only frame decode (6× less CPU), keyframe pruning (disk), paid Gemini tier + `NORAI_MAX_CONCURRENT_PIPELINES` 2–3 before ~1k users.
-      2. **Small lean follow-ups** (listed under "Follow-ups" below):
-         - Dedupe near-identical screenshots in `lean/chapters.select_screenshots`.
-         - Note references should seek to the section's `start_sec`.
-         - Tutor `output_tokens_per_turn` always reads 28, so streamed output is probably under-metered.
+      2. ~~**Small lean follow-ups**~~ — done 2026-10-29 (see "Follow-ups" below): screenshot dedupe, note refs seek to the section start, streamed tutor output metered correctly.
       3. **Cleanup:**
          - Remove `chromadb` from requirements once `seed_data` is re-indexed (`python -m tutor.indexing seed_data/<id>`).
          - Decide when to delete the legacy chain (`_run_legacy_stages`, extract/, visual/, merge/chapter-build modules).
@@ -178,9 +176,16 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       - **Tutor:** gave a correct answer with 5 references, citing 2:15 and 2:39.
       - **Timestamps:** median error against YouTube captions is 1.0 s (legacy: 1.5 s).
       - **Fixed:** screenshot rows in the References panel showed the raw file path (`outputs/<id>/screenshots/…jpg`) in their label column on both pipelines. They now show "Ch N" (`frontend/src/lib/references.ts`).
-    - **Follow-ups:**
-      - `lean/chapters.select_screenshots` can pick two near-identical frames; in dp8 chapter 1, two different frames got the same "problem description" caption. Deduping by caption or by perceptual hash would fix it.
-      - Note-type references give the chapter start (0:00) rather than the section's `start_sec`.
+    - **Follow-ups (all done 2026-10-29):**
+      - **Duplicate screenshots:** in dp8 chapter 1 (`dc58a8de`), the same slide was shown at 1:04 and 1:36 and both were selected. The scene detector keeps a slide that returns after a cut, and pixels differ too much to compare. `select_screenshots` now drops a frame whose OCR words (or description, when it has fewer than 3 OCR words) overlap an already-kept frame by Jaccard ≥ 0.8 (`DUPLICATE_JACCARD`). Replayed on all 21 lean chapters on disk, only that one frame changes, replaced by the 0:48 diagram. Existing lectures keep their selection until they are re-run.
+      - **Note references seek to the section start:**
+        - **Indexing:** `tutor/indexing._note_docs` attaches `start` from `notes/chapter_N.json` `start_sec`, keyed by chapter and heading. That file is lean only, so legacy notes are unchanged.
+        - **Citations:** verified note citations carry `start` and a new `kind` (`transcript` | `notes` | `screenshot`).
+        - **Frontend:** `Reference.transcript` decides click behaviour. A transcript cite seeks; a note cite still scrolls to its heading, and its seek chip uses the section start. Stored answers without `kind` fall back to the old rule.
+        - **Backfill:** `VectorStore.sync` now refreshes metadata on docs it keeps, so `python -m tutor.indexing outputs/<id>` backfills existing lean lectures with **0 embedding calls**. Checked on a copy of `lean-full-calc17`: 13/13 note docs got a start.
+      - **Streamed tutor output was under-metered:** `langchain-google-genai` 4.2.5 streams `usage_metadata` as per-chunk deltas, and `UsageLoggingChatLLM.astream` took the max, i.e. one chunk's ~28 tokens. It now sums them.
+        - **Size of the miss:** eval answers are a median 580–760 chars, about 150–190 output tokens. That is ≈ +$0.0002 per turn, so a turn costs **≈ $0.0008, not $0.00056**.
+        - **Not re-run:** the eval files' `output_tokens_per_turn` / `cost_per_turn_usd` still show the old numbers, and re-running costs tutor calls.
     - **Server load (2026-10-29).** Target box: Hostinger KVM 1, 1 vCPU / 4 GB / 50 GB NVMe (`docs/DEPLOYMENT_PLAN.md`). No LLM calls were made.
       - **Tool:** `scripts/bench_local_stages.py <url|file> --out <scratch> [--transcript <json>]` runs ingest, frames, scenes and chunking, each in a fresh process. It reports wall time, CPU (including ffmpeg children), peak RSS and disk. Pin it with `taskset -c 0` to model 1 vCPU.
       - **Inputs:** local YouTube downloads fall back to 360p progressive (format 18), because the 720p DASH streams 403 without the POT server. Production (POT, `height<=720`) gets 720p, so 720p was benchmarked on x264 upscales (5 s GOP, 2 Mbps) of calc17 and aws71.

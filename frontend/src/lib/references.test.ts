@@ -47,7 +47,15 @@ describe('buildReferences', () => {
       { section: '3:42 — rings unrolled', heading_path: 'Transcript 3:42–4:10', chunk_id: 'tx_222_a', chapter_id: 2, verified: true, start: 222, end: 250 },
     ]
     const refs = buildReferences([], [], '', cites)
-    expect(refs[0]).toMatchObject({ startSec: 222, endSec: 250, chapterId: 2, title: '3:42 — rings unrolled' })
+    expect(refs[0]).toMatchObject({ startSec: 222, endSec: 250, chapterId: 2, title: '3:42 — rings unrolled', transcript: true })
+  })
+
+  it('keeps a lean notes citation a note ref while carrying its section start', () => {
+    const cites: VerifiedCitation[] = [
+      { section: 'The LIS Problem', heading_path: 'DP > The LIS Problem', chunk_id: 'note_ab', chapter_id: 1, kind: 'notes', verified: true, start: 64 },
+    ]
+    const refs = buildReferences([], [], '', cites)
+    expect(refs[0]).toMatchObject({ startSec: 64, transcript: false, type: 'note' })
   })
 
   it('appends retrieved screenshots alongside note refs', () => {

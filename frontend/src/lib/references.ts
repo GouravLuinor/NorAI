@@ -95,6 +95,8 @@ export function buildReferences(
       chunkId: v.chunk_id ?? undefined,
       startSec: v.start ?? undefined,
       endSec: v.end ?? undefined,
+      // Answers stored before `kind` existed only had a start on transcript cites.
+      transcript: v.kind ? v.kind === 'transcript' : v.start != null,
       type: 'note',
     })
   }

@@ -155,6 +155,24 @@ def test_select_screenshots():
     assert [s["path"] for s in shots] == ["f2.jpg", "f1.jpg"], shots
     assert [s["reason"] for s in shots] == ["diag", "slide"], shots
     assert shots[0]["timestamp"] == 20.0
+
+    # The same slide shown twice (dp8 ch1: 1:04 and 1:36) is kept once — the
+    # first by importance/time; a slide whose text differs is kept.
+    sent = [{"timestamp": 32.0 * i, "image_path": f"g{i}.jpg"} for i in range(5)]
+    frames = [
+        F(frame=1, visual_type="slide", ocr_text="300. Longest Increasing Subsequence",
+          description="The problem description for LIS.", importance=9, include_in_notes=True, section="A"),
+        F(frame=2, visual_type="slide", ocr_text="300.  longest increasing subsequence",
+          description="The LIS problem statement.", importance=9, include_in_notes=True, section="A"),
+        F(frame=3, visual_type="slide", ocr_text="Input: nums = [0, 1, 0, 3, 2, 3] Output = 4",
+          description="Example input.", importance=8, include_in_notes=True, section="A"),
+        F(frame=4, visual_type="diagram", ocr_text="", description="An array visualization for LIS.",
+          importance=7, include_in_notes=True, section="A"),
+        F(frame=5, visual_type="diagram", ocr_text="", description="An array visualization for LIS.",
+          importance=7, include_in_notes=True, section="A"),
+    ]
+    shots = lc.select_screenshots(frames, sent)
+    assert [s["path"] for s in shots] == ["g0.jpg", "g2.jpg", "g3.jpg"], shots
     print("PASS test_select_screenshots")
 
 

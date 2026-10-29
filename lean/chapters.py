@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Literal
@@ -44,6 +45,7 @@ PROMPT_VERSION = "chapter-v4"
 MAX_FRAMES = 12          # keyframes sent per chapter (evenly sampled in time)
 MAX_SELECTED = 4         # screenshots placed in the notes per chapter
 MIN_SELECTED_IMPORTANCE = 6
+DUPLICATE_JACCARD = 0.8   # word overlap above which two selected frames are the same slide
 MAX_WORKERS = 3
 # Notes length target: about half the chapter's spoken words (the legacy
 # pipeline's ratio), within these bounds.
@@ -203,6 +205,19 @@ def section_start(raw: str, span: tuple[float, float]) -> float | None:
     return round(min(max(sec, span[0]), span[1]), 2)
 
 
+def _frame_words(f: FrameNote) -> frozenset[str]:
+    """What a frame says: its OCR text, or its description when it has little
+    on-screen text."""
+    words = re.findall(r"\w+", f.ocr_text.lower())
+    if len(words) < 3:
+        words = re.findall(r"\w+", f.description.lower())
+    return frozenset(words)
+
+
+def _same_content(a: frozenset[str], b: frozenset[str]) -> bool:
+    return bool(a and b) and len(a & b) / len(a | b) >= DUPLICATE_JACCARD
+
+
 def select_screenshots(frames: list[FrameNote], sent: list[dict]) -> list[dict]:
     chosen = [
         f for f in frames
@@ -210,12 +225,16 @@ def select_screenshots(frames: list[FrameNote], sent: list[dict]) -> list[dict]:
         and f.importance >= MIN_SELECTED_IMPORTANCE and f.visual_type != "talking_head"
     ]
     chosen.sort(key=lambda f: (-f.importance, float(sent[f.frame - 1]["timestamp"])))
-    seen, shots = set(), []
+    # The scene detector keeps a slide that comes back after a cut, so the
+    # same slide can be sent twice; keep it once.
+    seen, kept, shots = set(), [], []
     for f in chosen:
         k = sent[f.frame - 1]
-        if k["image_path"] in seen:
+        words = _frame_words(f)
+        if k["image_path"] in seen or any(_same_content(words, w) for w in kept):
             continue
         seen.add(k["image_path"])
+        kept.append(words)
         shots.append({
             "path": k["image_path"],
             "reason": f.description,

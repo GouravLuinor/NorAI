@@ -30,8 +30,8 @@ class UsageLoggingChatLLM(ChatGoogleGenerativeAI):
 
     P6.1: also overrides `astream` so real token streaming (graph
     `astream_events`) still logs aggregated usage for the streamed call. Token
-    chunks are passed through untouched — only the LAST chunk (which carries the
-    response's usage_metadata) triggers a log write.
+    chunks are passed through untouched; their usage deltas are summed into one
+    log write when the stream ends.
 
     P6.5: reads LangChain's `usage_metadata` keys (`input_tokens` /
     `output_tokens`) — langchain-google-genai converts Gemini's
@@ -105,31 +105,32 @@ class UsageLoggingChatLLM(ChatGoogleGenerativeAI):
         return response
 
     async def astream(self, input, config=None, **kwargs: Any) -> Any:
-        # The aggregated usage_metadata rides on a middle/last chunk (and the
-        # trailing chunk often repeats 0/0), so record a SINGLE log write from
-        # the max tokens seen across the stream once it completes.
-        max_prompt = 0
-        max_completion = 0
-        max_cached = 0
+        # langchain-google-genai streams usage_metadata as per-chunk deltas
+        # (the prompt on the first chunk, then each chunk's own output tokens),
+        # so the call's usage is the SUM over chunks — taking the max metered
+        # only the largest chunk (~28 tokens). One log write once it completes.
+        sum_prompt = 0
+        sum_completion = 0
+        sum_cached = 0
         async for chunk in super().astream(input, config=config, **kwargs):
             try:
                 usage = getattr(chunk, "usage_metadata", None) or {}
                 prompt, completion = self._tokens_from(usage)
-                max_prompt = max(max_prompt, prompt or 0)
-                max_completion = max(max_completion, completion or 0)
-                max_cached = max(max_cached, self._cached_tokens_from(usage))
+                sum_prompt += prompt or 0
+                sum_completion += completion or 0
+                sum_cached += self._cached_tokens_from(usage)
             except Exception:  # noqa: BLE001
                 import logging
 
                 logging.getLogger(__name__).debug("llm usage logging failed", exc_info=True)
             yield chunk
-        if max_prompt or max_completion or max_cached:
+        if sum_prompt or sum_completion or sum_cached:
             record_llm_usage(
                 TUTOR_STAGE,
                 model=getattr(self, "model", MODEL_NAME),
-                prompt_tokens=max_prompt,
-                completion_tokens=max_completion,
-                cached_input_tokens=max_cached,
+                prompt_tokens=sum_prompt,
+                completion_tokens=sum_completion,
+                cached_input_tokens=sum_cached,
                 node_override=self._llm_node,
             )
 

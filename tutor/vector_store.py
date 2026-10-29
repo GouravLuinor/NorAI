@@ -133,6 +133,11 @@ class VectorStore:
         self.docs = [self.docs[i] for i in keep]
         self.metas = [self.metas[i] for i in keep]
         self.vectors = self.vectors[keep] if keep else np.zeros((0, self.dims), dtype=np.float32)
+        # Unchanged docs keep their vectors but take the new metadata (e.g. a
+        # section start time added after the doc was first embedded).
+        for i, _id in enumerate(self.ids):
+            if self.metas[i].get("kind") == kind:
+                self.metas[i] = {**metas[wanted[_id]], "kind": kind}
 
         new = [j for _id, j in wanted.items() if _id not in have]
         if new:

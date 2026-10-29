@@ -171,6 +171,14 @@ def test_build_index_and_retrieve_transcript_detail():
         again = build_lecture_index(root, embed=emb)
         assert all(a == 0 and r == 0 for a, r in again.values()), "re-index of unchanged content is a no-op"
 
+        # Lean notes JSON gives each section a start time; re-indexing picks
+        # it up for already-embedded docs without embedding them again.
+        (root / "notes" / "chapter_1.json").write_text(json.dumps(
+            {"chapter_id": 1, "sections": [{"title": "Overview", "start_sec": 3.0}]}), encoding="utf-8")
+        calls = emb.calls
+        build_lecture_index(root, embed=emb)
+        assert emb.calls == calls, "metadata backfill embeds nothing"
+
         original = retriever._embed_query
         retriever._embed_query = _vec
         try:
@@ -182,6 +190,7 @@ def test_build_index_and_retrieve_transcript_detail():
             assert "554" in tx["text"] and tx["start"] == 0.0 and tx["chapter_id"] == 1
             notes_only = retriever.retrieve("dynamic programming", k=1, output_dir=str(root), kinds=("notes",))
             assert len(notes_only) == 1 and notes_only[0]["kind"] == "notes"
+            assert notes_only[0]["start"] == 3.0, notes_only[0]
 
             imgs = retriever.retrieve_images("table of LIS lengths per index", output_dir=str(root), max_distance=0.5)
             assert imgs and imgs[0]["caption"].startswith("Table of LIS")

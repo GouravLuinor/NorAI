@@ -50,7 +50,7 @@ export function ChatArea() {
   // ── Reference handlers ────────────────────────────────────────────────────
   const handleReferenceClick = useCallback((ref: Reference) => {
     // Transcript citations point at a moment in the lecture, not a note heading.
-    if (ref.startSec != null) {
+    if (ref.transcript && ref.startSec != null) {
       useVideoStore.getState().requestSeek(ref.startSec)
       return
     }

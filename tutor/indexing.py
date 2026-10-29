@@ -104,18 +104,41 @@ def transcript_windows(segments: list[dict], ranges: list[tuple[int, float, floa
 
 # ── build ─────────────────────────────────────────────────────────────────────
 
+def _section_starts(lecture_dir: Path) -> dict[tuple[int, str], float]:
+    """(chapter_id, section title) → start second, from the lean pipeline's
+    notes/chapter_N.json. Legacy notes have no start_sec and give {}."""
+    starts: dict[tuple[int, str], float] = {}
+    for f in glob.glob(str(lecture_dir / "notes" / "chapter_*.json")):
+        try:
+            data = json.loads(Path(f).read_text(encoding="utf-8"))
+            for s in data.get("sections", []):
+                if s.get("start_sec") is not None and s.get("title"):
+                    starts[(int(data["chapter_id"]), s["title"].strip())] = float(s["start_sec"])
+        except Exception:  # noqa: BLE001
+            continue
+    return starts
+
+
 def _note_docs(lecture_dir: Path):
     from tutor.chunker import chunk_glob
 
     chunks = chunk_glob(str(lecture_dir / "notes" / "chapter_*.md"))
+    starts = _section_starts(lecture_dir)
     ids = [f"note_{_h(c['text'])}" for c in chunks]
     docs = [c["text"] for c in chunks]
-    metas = [{
-        "heading": c["heading"],
-        "heading_path": c["heading_path"],
-        "chapter_id": c.get("chapter_id") if c.get("chapter_id") is not None else -1,
-        "source": c["source"],
-    } for c in chunks]
+    metas = []
+    for c in chunks:
+        chapter_id = c.get("chapter_id") if c.get("chapter_id") is not None else -1
+        meta = {
+            "heading": c["heading"],
+            "heading_path": c["heading_path"],
+            "chapter_id": chapter_id,
+            "source": c["source"],
+        }
+        start = starts.get((chapter_id, str(c["heading"]).strip()))
+        if start is not None:
+            meta["start"] = start
+        metas.append(meta)
     return ids, docs, metas
 
 

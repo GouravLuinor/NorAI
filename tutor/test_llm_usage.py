@@ -106,9 +106,8 @@ def test_astream_records_one_aggregated_row():
     llm = _llm("generate_answer_node")
 
     async def _fake_parent_astream(self, input, config=None, **kwargs):
-        # Middle chunk carries the aggregated usage; a trailing chunk repeats
-        # 0/0 (both patterns seen live). Must collapse to ONE ledger row with
-        # the max tokens.
+        # One chunk carries all the usage and a trailing chunk repeats 0/0.
+        # Must collapse to ONE ledger row.
         yield type("C", (), {"usage_metadata": {"input_tokens": 300, "output_tokens": 120}})()
         yield type("C", (), {"usage_metadata": {"input_tokens": 0, "output_tokens": 0}})()
         yield type("C", (), {})
@@ -127,6 +126,36 @@ def test_astream_records_one_aggregated_row():
     ul.reset_usage()
 
 
+def test_astream_sums_per_chunk_usage_deltas():
+    from langchain_google_genai import ChatGoogleGenerativeAI
+
+    ul.reset_usage()
+    llm = _llm("generate_answer_node")
+
+    async def _fake_parent_astream(self, input, config=None, **kwargs):
+        # langchain-google-genai 4.x streams usage as per-chunk DELTAS
+        # (subtract_usage(cumulative, prev)): the prompt on the first chunk,
+        # then each chunk's own output tokens. The ledger used to keep the
+        # max, so every streamed answer read ~28 output tokens.
+        yield type("C", (), {"usage_metadata": {"input_tokens": 2000, "output_tokens": 25}})()
+        yield type("C", (), {"usage_metadata": {"input_tokens": 0, "output_tokens": 28}})()
+        yield type("C", (), {"usage_metadata": {"input_tokens": 0, "output_tokens": 27}})()
+        yield type("C", (), {"usage_metadata": {"input_tokens": 0, "output_tokens": 10}})()
+
+    async def run():
+        with patch.object(ChatGoogleGenerativeAI, "astream", _fake_parent_astream):
+            async for _ in llm.astream("hi"):
+                pass
+        full = ul.diff_usage({})
+        return next((d for d in full if d["stage"] == TUTOR_STAGE), None)
+
+    tutor = asyncio.run(run())
+    check("single call", tutor and tutor["calls"] == 1)
+    check("prompt tokens summed", tutor and tutor["input_tokens"] == 2000)
+    check("completion tokens summed", tutor and tutor["output_tokens"] == 90)
+    ul.reset_usage()
+
+
 if __name__ == "__main__":
     test_tokens_from_langchain_keys()
     test_tokens_from_gemini_keys_fallback()
@@ -134,5 +163,6 @@ if __name__ == "__main__":
     test_record_accumulates_into_tutor_ledger()
     test_record_handles_missing_metadata()
     test_astream_records_one_aggregated_row()
+    test_astream_sums_per_chunk_usage_deltas()
     print(f"\n{PASSED} passed, {FAILED} failed")
     sys.exit(1 if FAILED else 0)
