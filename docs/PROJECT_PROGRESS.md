@@ -59,6 +59,38 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
 
 ## Recent changes
 
+- **Pre-deployment checks (2026-10-29, on `master`).**
+  - **Docker image:** builds (2.15 GB), and the embedding model is baked in. The bgutil POT plugin zip had failed to extract silently: the slim image has no `unzip`, and the `|| echo WARN` swallowed the error. It now extracts with `python -m zipfile -e`.
+  - **Login (Supabase, restored):** email sign-up and sign-in work. The backend accepts the Supabase JWT and creates the user on the Free plan. Alembic migrates to `0005_payments` on startup. Google sign-in is shown but not enabled (see RESUME HERE).
+  - **Quota bypass fixed:** a Free user with 45 min left could process a 58-min lecture. When yt-dlp is blocked, the probe returns a placeholder 900 s, and only the per-lecture cap (180 min on Free) was checked after download.
+    - The orchestrator now checks the real downloaded length against the minutes left, before any Gemini call (`usage.plan_limits`, `backend/test_quota_after_download.py`).
+    - `/estimate` treats the placeholder as unknown, and `/process` doesn't trust it.
+    - In the UI, the Free user now sees "Needs 58 lecture-minutes; you have 45 left." with Start disabled.
+  - **Length probe:**
+    - `probe_video_metadata` blocked the event loop inside both async endpoints, for 2–7 s per call, stalling every other request (status polls, tutor streams). It now runs in a thread, and the result is cached for 10 min, so `/process` reuses `/estimate`'s probe.
+    - `ignore_no_formats_error` lets the first client return the duration, instead of failing format selection and falling through every strategy.
+    - oEmbed is only asked when yt-dlp fails.
+    - `/estimate` has its own rate bucket (60/h, `NORAI_RATE_ESTIMATE`). It shared `/process`'s 10/h bucket, and it fires on every URL edit, so a few pasted links could lock a user out of processing for an hour.
+  - **Transcript script:** each 18-min slice is a separate call, and the slices of one Hinglish lecture came back in romanized Latin or Devanagari by turns, which romanized questions can't keyword-match. The transcription prompt now asks for romanized Hinglish. Re-run: 0 of 739 segments in Devanagari.
+  - **58-min Hinglish lecture through the browser** (Apna College "Lecture 1: Intro to Programming & Flowcharts", `WQoB2z67hvY`): one go, 302 s, 15 calls, $0.105, 10 chapters, none degraded. Stage times: transcription 34 s, outline 12 s, chapters 29 s, tutor index 109 s. 58 min were metered.
+  - **Tutor language rule** (`tutor/prompts.py` LANGUAGE, plus Socratic item 6): reply in the language and script of the student's latest message, with the grounding rules unchanged. Judge `gemini-3.6-flash` for every dp8 row; `en_norule` is the current code with the section removed:
+
+    | label | language of answers | OOS abstain | premise corrected | unsupported | false not-covered |
+    |---|---|---|---|---|---|
+    | `lean_j36` (English, before 13cc63c) | — | .75 | 1.0 | .087 | 0 |
+    | `en_norule_j36` (English) | — | .50 | 1.0 | 0 | 0 |
+    | `en_v2_j36` (English) | — | .50 | 1.0 | 0 | .062 |
+    | `hi_before_j36` (Hinglish questions) | 18/23 Hinglish | .25 | .667 | 0 | .062 |
+    | `hi_v2_j36` (Hinglish questions) | 23/23 Hinglish | .50 | .667 | .043 | .062 |
+
+    - The first wording (v1, `hi_lang_j38`) cut OOS abstention. v2 adds that the "not covered" sentence still comes first, with a Hinglish example.
+    - English v2's one "not covered" is correct: the lecturer *gave* interviews, not *conducted* them, and the judge graded it correct.
+    - The English OOS drop (.75 → .50, one question, the O(n²) complexity) predates the rule; it came with the local-embedding retrieval.
+    - Still open: Hinglish misses the O(n) memory OOS question and the "assume you know the whole sequence" premise, which English catches.
+  - **In the browser** on the 58-min lecture:
+    - A Hinglish question got a romanized Hinglish answer with 5 references.
+    - An English question got English.
+    - "recursion kya hota hai?" (not in the lecture) opened with "Yeh lecture mein cover nahi hua hai." before any general knowledge.
 - **Local embeddings (2026-10-29, on `master`).** The tutor index now embeds on the box, so indexing makes no Gemini calls.
   - **Why:** the free embedding tier is 100 requests/min plus a daily cap, and each index doc is a request. A lecture needs ~3.5 docs per minute of video (the 52-min run had 187), so indexing was the first quota to run out, and it spent ~190 s of that run waiting on 429s. Pooling free keys across accounts breaks Google's terms, so rotating keys isn't the fix.
   - **What:** `tutor/local_embedding.py` runs EmbeddingGemma 300M (4-bit ONNX, `onnx-community/embeddinggemma-300m-ONNX` at a pinned revision, ~210 MB) through `onnxruntime` + `tokenizers`, with no torch and no fastembed. It uses the model card's prompts: documents `title: none | text: …`, queries `task: search result | query: …`. One ORT thread by default (`NORAI_EMBED_THREADS`). `get_embedder(role, model)` picks local or Gemini. `NORAI_EMBEDDING_MODEL` sets the model for new indexes; the default is local.
@@ -90,7 +122,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
     - Only worth it if the box can't spare ~300 MB.
   - **Trade-off:** Hinglish retrieval is .79 against .87 for Gemini. To get that back, set `NORAI_EMBEDDING_MODEL=gemini-embedding-2` on one *paid* key: ~2 batch calls per lecture, about $0.005 for 52 min. New lectures then index with Gemini, and existing local indexes stay local until they are re-indexed.
 - **Phase 2 — trust + cost (2026-10-27 → 2026-10-28, branch `phase2`, IN PROGRESS).**
-  - **▶ RESUME HERE (handoff, 2026-10-29; branch not merged to `master`, not pushed).**
+  - **▶ RESUME HERE (handoff, 2026-10-29; all work on local `master`, not pushed).**
     - **Where things stand:**
       - **Lean is the only pipeline:** built, A/B'd, judged by 3.8-flash, and smoke-tested through the UI; the legacy chain was deleted in the cleanup (see "Cleanup" below).
       - **Cost:** a 17-min lecture costs **$0.0335 in 9 calls**, against $0.061 in 29 for legacy.
@@ -114,14 +146,23 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       3. ~~**Cleanup**~~ — done 2026-10-29 (see "Cleanup" below): keyframe-only decode, legacy chain deleted, seed_data re-indexed, `chromadb` removed, README/TUTORIAL/AGENTS updated.
       4. ~~**Final**~~ — done 2026-10-29: report in `docs/PHASE2_REPORT.md`, `master` fast-forwarded to `phase2` (not pushed). A 52-min lecture then ran end to end through the browser ($0.099, 449 s) and exposed empty `RECITATION` chapter replies that weren't retried; fixed with `gemini_client.generate_nonempty` (see the report's "Long-lecture run").
       5. ~~**Local embeddings**~~ — done 2026-10-29 (see "Local embeddings" above): no API quota for indexing; Hinglish-capable.
+      6. ~~**Pre-deployment checks**~~ — done 2026-10-29 (see "Pre-deployment checks" above): Docker image, Supabase login, quota bypass fixed, a 58-min Hinglish lecture in one go, the tutor answers in the student's language, the length probe no longer blocks the server.
+      - **Open before deploy (from those checks):**
+        - Google sign-in: the button is shown, but the Google provider is off in Supabase. Enable it (Google Cloud OAuth client) or hide the button.
+        - Email sign-up is auto-confirmed: any throwaway address gets the free 45 min. Turn on confirmation, with custom SMTP; Supabase's default mailer is rate-limited, which also affects "Forgot password".
+        - The DB is in Sydney (`ap-southeast-2`): ~5 s to connect, 0.3–0.9 s per query from here, so `/usage` takes ~4.5 s. For the planned western audience, recreate Supabase in the same US/EU region as the VPS.
+        - Western audience: pricing is in ₹ through Razorpay, and the copy targets India. Both are planned for after this iteration.
+        - Hinglish grounding still trails English (see "Pre-deployment checks").
+        - Locally, without a POT server, downloads fall back to Android format 18 (360p); the image runs one.
       - Still-open decisions from "Server load": keyframe pruning / JPEG quality (disk), paid Gemini tier + `NORAI_MAX_CONCURRENT_PIPELINES` 2–3 before ~1k users.
     - **How to run things:**
-      - **Offline tests:** `scripts/run-tests.sh` (42 suites + pyflakes); estimator: `venv/bin/python backend/test_estimate.py`; frontend: `cd frontend && npx vitest run && npm run lint && npx tsc -b`.
+      - **Offline tests:** `scripts/run-tests.sh` (43 suites + pyflakes); estimator: `venv/bin/python backend/test_estimate.py`; frontend: `cd frontend && npx vitest run && npm run lint && npx tsc -b`.
       - **Lean CLI:** `venv/bin/python -m lean.pipeline --source <url> --out outputs/<name>` (full run, ~$0.03 for 17 min), or `--reuse outputs/<id>` (structure + chapters + index only).
       - **Tutor eval:** `NORAI_EVAL_JUDGE=gemini-3.8-flash venv/bin/python -m tutor.evals.answer_eval --set dp8|calc17|aws71|hi_deadlock|hi_search --label <x> [--field question_hi] [--lecture-dir outputs/<dir>] [--rejudge|--no-judge]`. Each `--rejudge` is 1 judge call.
       - **Notes eval:** `... -m tutor.evals.notes_fidelity outputs/<dir> ...` makes 1 judge call per lecture. It writes `notes_fidelity__<dir>.json`; rename it with a `__j38`/`__j35` suffix to keep the judge visible.
       - **Timestamp check (free, no LLM call):** `venv/bin/yt-dlp --skip-download --write-auto-subs --sub-langs en --sub-format json3 -o "%(id)s" <url>`, then `venv/bin/python -m tutor.evals.timestamp_check <id>.en.json3 outputs/<dir>/transcripts/<id>.json`. Re-run it whenever the transcription prompt changes.
-      - **UI smoke test locally:** the Supabase project in `.env` is gone.
+      - **UI smoke test with real login (Supabase project `eaaeujkkiflzunrwyfzx`, restored 2026-10-29):** `NORAI_DEV_ACCESS=0 scripts/start-dev.sh start` (a shell value overrides `.env`'s `1`, so quotas are enforced), then sign up at `/signup` (email + password; `/auth` just redirects home). The test account `norai-e2e-test@example.com` was set to Pro by a direct DB update. Read `.env` with python-dotenv only: the DB password has shell metacharacters.
+      - **UI smoke test offline (SQLite):**
         1. Start the servers with `DATABASE_URL=sqlite+aiosqlite:///outputs/norai_main.db scripts/start-dev.sh start`.
         2. In the browser at `http://localhost:5173`, set localStorage `sb-eaaeujkkiflzunrwyfzx-auth-token` to `{"access_token":"dev-token","refresh_token":"x","token_type":"bearer","expires_in":2592000,"expires_at":<now+30d>,"user":{"id":"dev-user-0000-0000-0000-000000000000","aud":"authenticated","email":"dev@norai.local","app_metadata":{},"user_metadata":{}}}`.
         3. Reload. `NORAI_DEV_ACCESS=1` maps `dev-token` to the dev user (Pro, unlimited minutes). Upload lives at `/app`.

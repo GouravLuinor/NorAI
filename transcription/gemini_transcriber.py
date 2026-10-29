@@ -180,7 +180,13 @@ def _transcribe_audio_slice(
         f"[00:00] Hello everyone.\n[00:03] Today we look at dynamic programming.\n"
         f"[01:12] The first idea is overlapping subproblems.\n"
         f"Rules: no headings, speaker labels or commentary; transcribe technical terms, acronyms, "
-        f"math and code accurately; do not summarize or stop early."
+        f"math and code accurately; do not summarize or stop early.\n"
+        # Each slice is a separate call: without this, Hinglish slices of one
+        # lecture came back in romanized Latin and Devanagari by turns, which
+        # students' romanized questions can't keyword-match.
+        f"Script: write Hindi and Hindi-English (Hinglish) speech in romanized Latin script, "
+        f"the way Indian students type it (\"Ab hum loop ka example dekhte hain\"), never in "
+        f"Devanagari; keep English words in English. Write any other language in its usual script."
     )
     config = types.GenerateContentConfig(temperature=0.1, max_output_tokens=65536)
 

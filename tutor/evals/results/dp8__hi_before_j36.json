@@ -1,0 +1,1987 @@
+{
+  "summary": {
+    "n": 23,
+    "graded": 23,
+    "accuracy_core": 1.0,
+    "accuracy_detail": 0.875,
+    "false_not_covered": 0.062,
+    "oos_abstain": 0.25,
+    "premise_corrected": 0.667,
+    "unsupported_claim": 0.0,
+    "invented_visual": 0.0,
+    "answers_citing": 1.0,
+    "citations_verified": 0.976,
+    "latency_p50_s": 2.03,
+    "calls_per_turn": 1,
+    "input_tokens_per_turn": 1940,
+    "output_tokens_per_turn": 153,
+    "cost_per_turn_usd": 0.000714
+  },
+  "rows": [
+    {
+      "category": "core",
+      "question": "lecturer kyu bol rahe hain ki dynamic programming technically algorithm nahi hai?",
+      "gold_answer": "The lecturer explains that dynamic programming is more accurately described as a problem-solving technique rather than a specific algorithm.",
+      "quote": "Technically speaking, DP is not an algorithm. It's actually a problem solving technique.",
+      "quote_ts": 18.14,
+      "question_hi": "lecturer kyu bol rahe hain ki dynamic programming technically algorithm nahi hai?",
+      "question_en": "Why does the lecturer argue that dynamic programming is not technically an algorithm?",
+      "answer": "Lecturer ka kehna hai ki Dynamic Programming (DP) koi ek fixed algorithm nahi hai kyunki yeh kisi ek specific problem ko solve karne ka step-by-step method nahi hai. Balki, yeh ek **problem-solving technique** ya paradigm hai—ek approach hai jise aap alag-alag tarah ki problems ko solve karne ke liye use kar sakte hain.\n\nIska matlab yeh hai ki DP aapko koi \"ready-made\" formula nahi deta, balki yeh sikhata hai ki kaise kisi badi problem ko chote, overlapping subproblems mein tod kar solve kiya jaye.\n\nKya aap samajhna chahenge ki yeh \"technique\" hone ka matlab coding interview mein hamare approach ko kaise badal deta hai?\n\n**Sources**\n• 0:00 — DP is not an algorithm, it's a problem-solving technique.\n• [N1] Section: Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+      "latency_s": 16.28,
+      "calls": 1,
+      "input_tokens": 1911,
+      "output_tokens": 208,
+      "cost_usd": 0.00079,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:00–0:33",
+          "chapter_id": 1,
+          "distance": 0.47238844633102417,
+          "start": 0.02
+        },
+        {
+          "heading_path": "Transcript 3:13–3:40",
+          "chapter_id": 2,
+          "distance": 0.537172794342041,
+          "start": 193.1
+        },
+        {
+          "heading_path": "Transcript 2:50–3:16",
+          "chapter_id": 2,
+          "distance": 0.5672678351402283,
+          "start": 170.94
+        },
+        {
+          "heading_path": "Transcript 2:01–2:27",
+          "chapter_id": 1,
+          "distance": 0.544592022895813,
+          "start": 121.34
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.45756077766418457,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.5381141304969788,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:00 — DP is not an algorithm, it's a problem-solving technique.",
+          "verified": true,
+          "chunk_id": "tx_0_7432cd8c2f",
+          "heading_path": "Transcript 0:00–0:33",
+          "heading": "Transcript 0:00",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 0,
+          "end": 33.02
+        },
+        {
+          "section": "[N1] Section: Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "verified": true,
+          "chunk_id": "note_92513e39da090fbe",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "heading": "1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 0,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately conveys that dynamic programming is a problem-solving technique rather than a specific algorithm."
+      }
+    },
+    {
+      "category": "core",
+      "question": "problems ko sub-problems mein break karne ke bajaye assumptions use karne ka main reason kya hai?",
+      "gold_answer": "Breaking problems into sub-problems can become overly mathematical and difficult to understand, whereas making assumptions leverages our natural human tendency to make judgments.",
+      "quote": "Most people learn to solve DP problems by breaking them into sub-problems. And when you try to do that, the approach becomes quite mathematical and hard to understand. That's why, instead of thinking in terms of sub-problems, I recommend making an assumption.",
+      "quote_ts": 40.02,
+      "question_hi": "problems ko sub-problems mein break karne ke bajaye assumptions use karne ka main reason kya hai?",
+      "question_en": "What is the primary reason the lecturer recommends using assumptions instead of breaking problems into sub-problems?",
+      "answer": "Traditional approaches often teach DP by breaking problems into sub-problems, which can quickly become overly mathematical and difficult to grasp. The lecturer suggests using \"assumptions\" instead because it leverages the way we already think in real life, making the process more intuitive and less intimidating for beginners.\n\nHowever, a key rule is that your assumed sub-problem must be slightly different from the original problem; if they are identical, the logic won't actually help you solve anything.\n\nWould you like to see how this \"assumption\" approach changes the way we define the Longest Increasing Subsequence problem?\n\n**Sources**\n• 0:28 — DP as simple as doing a problem\n• 2:50 — Why the assumption must differ from the original problem\n• [N1] Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE\n• [N2] Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+      "latency_s": 2.22,
+      "calls": 1,
+      "input_tokens": 1937,
+      "output_tokens": 218,
+      "cost_usd": 0.000811,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:28–0:56",
+          "chapter_id": 1,
+          "distance": 0.5046685934066772,
+          "start": 28.46
+        },
+        {
+          "heading_path": "Transcript 0:53–1:19",
+          "chapter_id": 1,
+          "distance": 0.5704578757286072,
+          "start": 53.3
+        },
+        {
+          "heading_path": "Transcript 2:50–3:16",
+          "chapter_id": 2,
+          "distance": 0.5709407925605774,
+          "start": 170.94
+        },
+        {
+          "heading_path": "Transcript 1:15–1:41",
+          "chapter_id": 1,
+          "distance": 0.6984815001487732,
+          "start": 75.86
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.5642484426498413,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.6391562819480896,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:28 — DP as simple as doing a problem",
+          "verified": true,
+          "chunk_id": "tx_28_9f83ac5371",
+          "heading_path": "Transcript 0:28–0:56",
+          "heading": "Transcript 0:28",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 28,
+          "end": 56.62
+        },
+        {
+          "section": "2:50 — Why the assumption must differ from the original problem",
+          "verified": true,
+          "chunk_id": "tx_170_da3853e9fa",
+          "heading_path": "Transcript 2:50–3:16",
+          "heading": "Transcript 2:50",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 170,
+          "end": 196.62
+        },
+        {
+          "section": "[N1] Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "verified": true,
+          "chunk_id": "note_29cbab2b945a862a",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "heading": "2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        },
+        {
+          "section": "[N2] Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "verified": true,
+          "chunk_id": "note_92513e39da090fbe",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "heading": "1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 1,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly explains why assumptions are recommended over sub-problems according to the lecture."
+      }
+    },
+    {
+      "category": "core",
+      "question": "dynamic programming mein original problem aur assumed problem ke liye fundamental requirement kya hoti hai?",
+      "gold_answer": "The original problem and the assumed problem must be somewhat different from each other for the dynamic programming approach to be effective.",
+      "quote": "The main point I am trying to make here is that the original problem and the assumed problem have to be somewhat different for dynamic programming to work.",
+      "quote_ts": 189.54,
+      "question_hi": "dynamic programming mein original problem aur assumed problem ke liye fundamental requirement kya hoti hai?",
+      "question_en": "What is the fundamental requirement for the original problem and the assumed problem in dynamic programming?",
+      "answer": "Dynamic programming mein sabse zaroori requirement yeh hai ki aapka **assumed problem aur original problem ek dusre se alag (different) hone chahiye**.\n\nAgar aapka assumed problem bilkul original problem jaisa hi hoga, toh aap wahi loop mein phanse rahenge aur solution nahi milega. Jaise lecture mein bataya gaya hai, agar aap sirf \"first n numbers\" ka LIS (Longest Increasing Subsequence) nikalne ka assume karenge, toh woh original problem jaisa hi rahega. Isliye, hum problem ko thoda restrict karte hain—jaise ki LIS ko kisi specific index *i* par end hone ke liye force karna.\n\nKya aap dekhna chahenge ki is \"restriction\" se calculation kaise aasaan ho jaati hai?\n\n**Sources**\n• 2:50 — original problem aur assumed problem ka alag hona zaroori hai\n• [N1] Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+      "latency_s": 2.38,
+      "calls": 1,
+      "input_tokens": 1947,
+      "output_tokens": 223,
+      "cost_usd": 0.000821,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 2:50–3:16",
+          "chapter_id": 2,
+          "distance": 0.391906201839447,
+          "start": 170.94
+        },
+        {
+          "heading_path": "Transcript 2:01–2:27",
+          "chapter_id": 1,
+          "distance": 0.3618420958518982,
+          "start": 121.34
+        },
+        {
+          "heading_path": "Transcript 0:28–0:56",
+          "chapter_id": 1,
+          "distance": 0.490498423576355,
+          "start": 28.46
+        },
+        {
+          "heading_path": "Transcript 1:38–2:04",
+          "chapter_id": 1,
+          "distance": 0.49305373430252075,
+          "start": 98.14
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.331531286239624,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.498252272605896,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "2:50 — original problem aur assumed problem ka alag hona zaroori hai",
+          "verified": true,
+          "chunk_id": "tx_170_da3853e9fa",
+          "heading_path": "Transcript 2:50–3:16",
+          "heading": "Transcript 2:50",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 170,
+          "end": 196.62
+        },
+        {
+          "section": "[N1] Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "verified": true,
+          "chunk_id": "note_29cbab2b945a862a",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "heading": "2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 2,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately identifies that the assumed problem and original problem must be different."
+      }
+    },
+    {
+      "category": "core",
+      "question": "longest-increasing subsequence problem mein recursive rule ka kya purpose hota hai?",
+      "gold_answer": "The recursive rule formalizes the logic of checking all previous indices to see if a current number can extend an existing subsequence to create a longer one.",
+      "quote": "Recursive rule is just a fancy way of formalizing what we have already discussed. To find the length of the longest-increasing subsequence ending at the current last index, we go through all the indices to the left of it.",
+      "quote_ts": 352.26,
+      "question_hi": "longest-increasing subsequence problem mein recursive rule ka kya purpose hota hai?",
+      "question_en": "What is the purpose of the recursive rule in the context of the longest-increasing subsequence problem?",
+      "answer": "Recursive rule ka main purpose problem ko break down karke ek systematic way mein solve karna hota hai. Yeh rule formalize karta hai ki kaise hum ek index par khatam hone wali longest subsequence ki length ko uske peeche wale indices ki values ka use karke calculate kar sakte hain.\n\nBasically, yeh humein batata hai ki agar hum kisi current element par hain, toh humein peeche wale kaunse elements check karne hain aur kab apni length ko update karna hai.\n\nShould we walk through an example to see how this rule actually updates the values?\n\n**Sources**\n• 5:36 — defining the recursive rule\n• 5:59 — how to expand the subsequence using left indices\n• N1 — Section: Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+      "latency_s": 1.7,
+      "calls": 1,
+      "input_tokens": 1835,
+      "output_tokens": 172,
+      "cost_usd": 0.000717,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 5:36–6:02",
+          "chapter_id": 2,
+          "distance": 0.29173147678375244,
+          "start": 336.7
+        },
+        {
+          "heading_path": "Transcript 6:25–6:50",
+          "chapter_id": 3,
+          "distance": 0.35061436891555786,
+          "start": 385.66
+        },
+        {
+          "heading_path": "Transcript 5:59–6:29",
+          "chapter_id": 3,
+          "distance": 0.37272220849990845,
+          "start": 359.58
+        },
+        {
+          "heading_path": "Transcript 1:15–1:41",
+          "chapter_id": 1,
+          "distance": 0.46427518129348755,
+          "start": 75.86
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.32229501008987427,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.41798830032348633,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "5:36 — defining the recursive rule",
+          "verified": true,
+          "chunk_id": "tx_336_793b28f183",
+          "heading_path": "Transcript 5:36–6:02",
+          "heading": "Transcript 5:36",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 336,
+          "end": 362.94
+        },
+        {
+          "section": "5:59 — how to expand the subsequence using left indices",
+          "verified": true,
+          "chunk_id": "tx_359_8ab2166627",
+          "heading_path": "Transcript 5:59–6:29",
+          "heading": "Transcript 5:59",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 359,
+          "end": 389.38
+        },
+        {
+          "section": "N1 — Section: Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "verified": true,
+          "chunk_id": "note_038d5a906426269a",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "heading": "5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 3,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states the purpose of the recursive rule in formalizing the subsequence extension logic."
+      }
+    },
+    {
+      "category": "core",
+      "question": "lecturer ne longest-increasing subsequence problem ke liye base case kaise define kiya hai?",
+      "gold_answer": "The base case is defined by initializing the length of the longest-increasing subsequence ending at any index to 1, because each individual number is a subsequence of length 1.",
+      "quote": "Each number by itself can be seen as a subsequence of length 1, ending at its own index. And this subsequence is an increasing subsequence because it has only one number. So the initial length for the longest-increasing subsequence ending at any index would be 1.",
+      "quote_ts": 414.62,
+      "question_hi": "lecturer ne longest-increasing subsequence problem ke liye base case kaise define kiya hai?",
+      "question_en": "How does the lecturer define the base case for the longest-increasing subsequence problem?",
+      "answer": "Lecture ke mutabiq, Longest Increasing Subsequence (LIS) problem mein base case ka matlab hai har index par maujood element ke liye longest subsequence ki shuruati (initial) length set karna.\n\nKyunki har ek number apne aap mein kam se kam 1 length ki subsequence zaroor banata hai, isliye base case mein hum LIS array ke har index ki value ko **1** initialize karte hain.\n\nKya aap samajhna chahenge ki is base case ka istemal karke hum aage ki values kaise calculate karte hain?\n\n**Sources**\n• 7:14 — LIS array mein har index ki length 1 set karna\n• [N1] Section: Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+      "latency_s": 1.84,
+      "calls": 1,
+      "input_tokens": 1905,
+      "output_tokens": 167,
+      "cost_usd": 0.000727,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 6:25–6:50",
+          "chapter_id": 3,
+          "distance": 0.3182433247566223,
+          "start": 385.66
+        },
+        {
+          "heading_path": "Transcript 5:59–6:29",
+          "chapter_id": 3,
+          "distance": 0.39592742919921875,
+          "start": 359.58
+        },
+        {
+          "heading_path": "Transcript 7:14–7:46",
+          "chapter_id": 3,
+          "distance": 0.4196881055831909,
+          "start": 434.66
+        },
+        {
+          "heading_path": "Transcript 1:15–1:41",
+          "chapter_id": 1,
+          "distance": 0.455588698387146,
+          "start": 75.86
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.43647080659866333,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.4248363971710205,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "7:14 — LIS array mein har index ki length 1 set karna",
+          "verified": true,
+          "chunk_id": "tx_434_fd72ab025c",
+          "heading_path": "Transcript 7:14–7:46",
+          "heading": "Transcript 7:14",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 434,
+          "end": 466.38
+        },
+        {
+          "section": "[N1] Section: Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "verified": true,
+          "chunk_id": "note_038d5a906426269a",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "heading": "5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 4,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately explains that the base case initializes each index length to 1."
+      }
+    },
+    {
+      "category": "core",
+      "question": "lengths ka array fill hone ke baad longest-increasing subsequence ka answer nikalne ka final step kya hai?",
+      "gold_answer": "To get the final answer, you take the maximum value found in the array that stores the lengths of the longest-increasing subsequences ending at every index.",
+      "quote": "Now for the answer of the original question, we don't care about which index the subsequence ends at. So we take the maximum of longest subsequence ending at every index and that would be our final answer.",
+      "quote_ts": 336.7,
+      "question_hi": "lengths ka array fill hone ke baad longest-increasing subsequence ka answer nikalne ka final step kya hai?",
+      "question_en": "What is the final step in determining the answer to the longest-increasing subsequence problem once the array of lengths is populated?",
+      "answer": "Jab aapke `lis` array ke saare indices fill ho jaate hain, toh final answer nikalne ke liye aapko bas us array ka maximum value lena hota hai. Kyunki humein isse koi farak nahi padta ki subsequence kis index par khatam ho raha hai, isliye poore array mein jo sabse badi value hogi, wahi hamara longest-increasing subsequence ka global answer hoga.\n\nShould I explain why we initialize the array with 1s before we start filling it?\n\n**Sources**\n• 5:36 — we take the maximum of longest subsequence ending at every index\n• [N1] Section: Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+      "latency_s": 2.28,
+      "calls": 1,
+      "input_tokens": 2022,
+      "output_tokens": 165,
+      "cost_usd": 0.000753,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 5:36–6:02",
+          "chapter_id": 2,
+          "distance": 0.3624473810195923,
+          "start": 336.7
+        },
+        {
+          "heading_path": "Transcript 5:13–5:39",
+          "chapter_id": 2,
+          "distance": 0.3710707426071167,
+          "start": 313.58
+        },
+        {
+          "heading_path": "Transcript 7:14–7:46",
+          "chapter_id": 3,
+          "distance": 0.3721168041229248,
+          "start": 434.66
+        },
+        {
+          "heading_path": "Transcript 3:56–4:23",
+          "chapter_id": 2,
+          "distance": 0.40192627906799316,
+          "start": 236.66
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2,
+          "distance": 0.4192286729812622,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 4. STATE TRANSITION COMPARISON",
+          "chapter_id": 3,
+          "distance": 0.4567909836769104,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "5:36 — we take the maximum of longest subsequence ending at every index",
+          "verified": true,
+          "chunk_id": "tx_336_793b28f183",
+          "heading_path": "Transcript 5:36–6:02",
+          "heading": "Transcript 5:36",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 336,
+          "end": 362.94
+        },
+        {
+          "section": "[N1] Section: Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "verified": true,
+          "chunk_id": "note_36b1957a16fef066",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "heading": "5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 5,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that taking the maximum value from the LIS array provides the final answer."
+      }
+    },
+    {
+      "category": "core",
+      "question": "implementation mein input array ke increasing number of elements ko consider karne ka process kaise handle hota hai?",
+      "gold_answer": "An outer for loop is used to incrementally consider more numbers from the array, starting from the first two and ending at the last index.",
+      "quote": "Now we have a for loop that decides how many numbers of the array are we considering at the current time. In the beginning, we are considering only the first two numbers. So we start the loop at the index 1. In the end, we want to consider all the numbers.",
+      "quote_ts": 463.06,
+      "question_hi": "implementation mein input array ke increasing number of elements ko consider karne ka process kaise handle hota hai?",
+      "question_en": "How does the implementation handle the process of considering an increasing number of elements from the input array?",
+      "answer": "Implementation mein hum ek nested loop structure ka use karte hain jo array ke prefixes ko handle karta hai.\n\nOuter loop decide karta hai ki hum array ke kitne elements ko consider kar rahe hain—ye index 1 se shuru hokar last index tak jata hai. Iske andar ek inner loop hota hai jo current index (jise hum \"last number\" maan rahe hain) ke left mein maujood saare numbers ko check karta hai. Agar left wala number current number se chhota hai, toh hum uss subsequence ki length ko update kar sakte hain.\n\nWant to walk through how the `lis` array values are updated during these loops?\n\n**Sources**\n• 7:43 — loop structure for considering array elements\n• [N2] Section: Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+      "latency_s": 2.19,
+      "calls": 1,
+      "input_tokens": 1963,
+      "output_tokens": 185,
+      "cost_usd": 0.000768,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 7:43–8:06",
+          "chapter_id": 3,
+          "distance": 0.44280004501342773,
+          "start": 463.06
+        },
+        {
+          "heading_path": "Transcript 6:49–7:17",
+          "chapter_id": 3,
+          "distance": 0.5277815461158752,
+          "start": 409.06
+        },
+        {
+          "heading_path": "Transcript 3:56–4:23",
+          "chapter_id": 2,
+          "distance": 0.5095072984695435,
+          "start": 236.66
+        },
+        {
+          "heading_path": "Transcript 5:13–5:39",
+          "chapter_id": 2,
+          "distance": 0.5344155430793762,
+          "start": 313.58
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "chapter_id": 3,
+          "distance": 0.578346312046051,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "chapter_id": 2,
+          "distance": 0.48435747623443604,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "7:43 — loop structure for considering array elements",
+          "verified": true,
+          "chunk_id": "tx_463_faa479c439",
+          "heading_path": "Transcript 7:43–8:06",
+          "heading": "Transcript 7:43",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 463,
+          "end": 486.86
+        },
+        {
+          "section": "[N2] Section: Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "verified": true,
+          "chunk_id": "note_0917f425c651ab89",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "heading": "3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 6,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately describes how the outer loop incrementally considers array prefixes."
+      }
+    },
+    {
+      "category": "core",
+      "question": "longest-increasing subsequence solve karte waqt subsequence ka ending number pata hona kyu important hai?",
+      "gold_answer": "Knowing the ending number is necessary to determine if a new number can be added to the end of the existing subsequence to extend it.",
+      "quote": "If you remember, we compared 3 to the highest number in the longest subsequence so far to decide whether the subsequence can be expanded by adding 3 to it. So knowing where a subsequence ends is very important to solve this problem",
+      "quote_ts": 208.06,
+      "question_hi": "longest-increasing subsequence solve karte waqt subsequence ka ending number pata hona kyu important hai?",
+      "question_en": "Why is it important to know the ending number of a subsequence when solving the longest-increasing subsequence problem?",
+      "answer": "Subsequence ka ending number pata hona isliye zaroori hai kyunki wahi decide karta hai ki aap us subsequence ko aage \"expand\" kar sakte hain ya nahi. Agar aapko naya number add karna hai, toh wo sirf tabhi valid hoga jab wo pichle ending number se bada ho (strictly increasing order maintain karne ke liye).\n\nAgar aapko ye pata ho ki har index par khatam hone wale longest subsequence ki length kya hai, toh aap naye number ko un sabhi chote numbers ke piche attach karke apni length update kar sakte hain.\n\nShould we walk through a quick example to see how this expansion works?\n\n**Sources**\n• 3:36 — knowing where a subsequence ends is important to decide whether we can expand it\n• 3:56 — if the number is smaller than the last number, the subsequence can be expanded",
+      "latency_s": 2.3,
+      "calls": 1,
+      "input_tokens": 1886,
+      "output_tokens": 183,
+      "cost_usd": 0.000746,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 3:36–4:01",
+          "chapter_id": 2,
+          "distance": 0.2516615390777588,
+          "start": 216.1
+        },
+        {
+          "heading_path": "Transcript 3:56–4:23",
+          "chapter_id": 2,
+          "distance": 0.3308192491531372,
+          "start": 236.66
+        },
+        {
+          "heading_path": "Transcript 5:13–5:39",
+          "chapter_id": 2,
+          "distance": 0.3459434509277344,
+          "start": 313.58
+        },
+        {
+          "heading_path": "Transcript 6:49–7:17",
+          "chapter_id": 3,
+          "distance": 0.37265944480895996,
+          "start": 409.06
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "chapter_id": 3,
+          "distance": 0.4078998565673828,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.40101194381713867,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "3:36 — knowing where a subsequence ends is important to decide whether we can expand it",
+          "verified": true,
+          "chunk_id": "tx_216_e7bfd9f36a",
+          "heading_path": "Transcript 3:36–4:01",
+          "heading": "Transcript 3:36",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 216,
+          "end": 241.38
+        },
+        {
+          "section": "3:56 — if the number is smaller than the last number, the subsequence can be expanded",
+          "verified": true,
+          "chunk_id": "tx_236_fe4787764c",
+          "heading_path": "Transcript 3:56–4:23",
+          "heading": "Transcript 3:56",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 236,
+          "end": 263.58
+        }
+      ],
+      "grade": {
+        "id": 7,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly explains why knowing the ending number of a subsequence is required to expand it."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "lecturer ne LeetCode par total kitne coding problems solve kiye hain?",
+      "gold_answer": "The lecturer has solved 554 problems on LeetCode.",
+      "quote": "In my journey to solve 554 lead code problems, DP is what took me the longest time to master.",
+      "quote_ts": 22.66,
+      "question_hi": "lecturer ne LeetCode par total kitne coding problems solve kiye hain?",
+      "question_en": "How many coding problems has the lecturer solved on LeetCode?",
+      "answer": "Lecturer ne apne journey mein total 554 LeetCode problems solve kiye hain.\n\nShould I explain why he emphasizes making an assumption instead of just breaking problems into sub-problems?\n\n**Sources**\n• 0:00 — Dynamic programming is a problem-solving technique; lecturer solved 554 LeetCode problems.",
+      "latency_s": 1.87,
+      "calls": 1,
+      "input_tokens": 1871,
+      "output_tokens": 72,
+      "cost_usd": 0.000576,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:00–0:33",
+          "chapter_id": 1,
+          "distance": 0.6254231929779053,
+          "start": 0.02
+        },
+        {
+          "heading_path": "Transcript 1:15–1:41",
+          "chapter_id": 1,
+          "distance": 0.6358956694602966,
+          "start": 75.86
+        },
+        {
+          "heading_path": "Transcript 8:26–8:40",
+          "chapter_id": 3,
+          "distance": 0.6552611589431763,
+          "start": 506.94
+        },
+        {
+          "heading_path": "Transcript 0:28–0:56",
+          "chapter_id": 1,
+          "distance": 0.7268842458724976,
+          "start": 28.46
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.681318998336792,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.7106540203094482,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:00 — Dynamic programming is a problem-solving technique; lecturer solved 554 LeetCode problems.",
+          "verified": true,
+          "chunk_id": "tx_0_7432cd8c2f",
+          "heading_path": "Transcript 0:00–0:33",
+          "heading": "Transcript 0:00",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 0,
+          "end": 33.02
+        }
+      ],
+      "grade": {
+        "id": 8,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately cites the 554 LeetCode problems solved by the lecturer."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "longest-increasing subsequence samjhane ke liye lecturer ne kaunse specific example numbers use kiye hain?",
+      "gold_answer": "The lecturer uses the sequence 0, 1, 2, and 3 to demonstrate an increasing subsequence.",
+      "quote": "If you look at this example, 0, 1, 2 and 3 appear in an increasing order, which is our longest subsequence.",
+      "quote_ts": 101.02,
+      "question_hi": "longest-increasing subsequence samjhane ke liye lecturer ne kaunse specific example numbers use kiye hain?",
+      "question_en": "What specific example numbers does the lecturer use to illustrate the longest-increasing subsequence?",
+      "answer": "Lecturer ne example ke taur par numbers **0, 1, 2, aur 3** ka istemal kiya hai. Unhone bataya ki ye numbers array mein increasing order mein aate hain, isliye inki longest increasing subsequence ki length 4 hai.\n\nKya aap samajhna chahenge ki in numbers ka use karke hum har index par subsequence ki length kaise calculate karte hain?\n\n**Sources**\n• 1:38 — numbers that appear in an increasing order in the array.",
+      "latency_s": 1.98,
+      "calls": 1,
+      "input_tokens": 1932,
+      "output_tokens": 105,
+      "cost_usd": 0.000641,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:38–2:04",
+          "chapter_id": 1,
+          "distance": 0.4813762307167053,
+          "start": 98.14
+        },
+        {
+          "heading_path": "Transcript 2:25–2:54",
+          "chapter_id": 1,
+          "distance": 0.4777921438217163,
+          "start": 145.54
+        },
+        {
+          "heading_path": "Transcript 7:14–7:46",
+          "chapter_id": 3,
+          "distance": 0.5054872632026672,
+          "start": 434.66
+        },
+        {
+          "heading_path": "Transcript 5:13–5:39",
+          "chapter_id": 2,
+          "distance": 0.49442410469055176,
+          "start": 313.58
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.515009343624115,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.5344852805137634,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "1:38 — numbers that appear in an increasing order in the array.",
+          "verified": true,
+          "chunk_id": "tx_98_e220c5e364",
+          "heading_path": "Transcript 1:38–2:04",
+          "heading": "Transcript 1:38",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 98,
+          "end": 124.66
+        }
+      ],
+      "grade": {
+        "id": 9,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly specifies the numbers 0, 1, 2, and 3 used in the example."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "lecturer ka naam kya hai?",
+      "gold_answer": "The lecturer's name is Sahil.",
+      "quote": "My name is Sahil and I'll see you in the next one.",
+      "quote_ts": 517.7,
+      "question_hi": "lecturer ka naam kya hai?",
+      "question_en": "What is the lecturer's name?",
+      "answer": "The lecture materials provided don't mention the name of the lecturer.\n\nShould we walk through the recursive rule for the Longest Increasing Subsequence problem instead?\n\n**Sources**\n• [N1] Section: Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+      "latency_s": 1.67,
+      "calls": 1,
+      "input_tokens": 1982,
+      "output_tokens": 72,
+      "cost_usd": 0.000604,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:53–1:19",
+          "chapter_id": 1,
+          "distance": 0.8500586748123169,
+          "start": 53.3
+        },
+        {
+          "heading_path": "Transcript 5:36–6:02",
+          "chapter_id": 2,
+          "distance": 0.8579998016357422,
+          "start": 336.7
+        },
+        {
+          "heading_path": "Transcript 6:25–6:50",
+          "chapter_id": 3,
+          "distance": 0.8580118417739868,
+          "start": 385.66
+        },
+        {
+          "heading_path": "Transcript 5:59–6:29",
+          "chapter_id": 3,
+          "distance": 0.8685561418533325,
+          "start": 359.58
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.8419065475463867,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 3. ALGORITHM IMPLEMENTATION AND NESTED LOOPS",
+          "chapter_id": 3,
+          "distance": 0.8502974510192871,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "[N1] Section: Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "verified": true,
+          "chunk_id": "note_4530ae6312022f9c",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "heading": "3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 10,
+        "verdict": "incorrect",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "The tutor incorrectly states the transcript does not mention the lecturer's name, whereas Sahil is explicitly stated at 8:37."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "lecturer ne ab tak kitne interviews conduct kiye hain?",
+      "gold_answer": "The lecturer has given more than 100 interviews.",
+      "quote": "The answer from my experience of giving more than 100 interviews is Dynamic programming.",
+      "quote_ts": 9.34,
+      "question_hi": "lecturer ne ab tak kitne interviews conduct kiye hain?",
+      "question_en": "How many interviews has the lecturer conducted?",
+      "answer": "Lecture ke mutabiq, lecturer ne ab tak 100 se zyada interviews diye hain (conduct nahi, balki khud face kiye hain).\n\n**Sources**\n• 0:00 — lecturer ka experience 100 se zyada interviews dene ka hai.",
+      "latency_s": 8.37,
+      "calls": 1,
+      "input_tokens": 1864,
+      "output_tokens": 59,
+      "cost_usd": 0.000554,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:00–0:33",
+          "chapter_id": 1,
+          "distance": 0.7636560797691345,
+          "start": 0.02
+        },
+        {
+          "heading_path": "Transcript 1:15–1:41",
+          "chapter_id": 1,
+          "distance": 0.767817497253418,
+          "start": 75.86
+        },
+        {
+          "heading_path": "Transcript 0:53–1:19",
+          "chapter_id": 1,
+          "distance": 0.7928689122200012,
+          "start": 53.3
+        },
+        {
+          "heading_path": "Transcript 8:26–8:40",
+          "chapter_id": 3,
+          "distance": 0.799336314201355,
+          "start": 506.94
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.7354069948196411,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.7963471412658691,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:00 — lecturer ka experience 100 se zyada interviews dene ka hai.",
+          "verified": true,
+          "chunk_id": "tx_0_7432cd8c2f",
+          "heading_path": "Transcript 0:00–0:33",
+          "heading": "Transcript 0:00",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 0,
+          "end": 33.02
+        }
+      ],
+      "grade": {
+        "id": 11,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly clarifies that the lecturer gave more than 100 interviews rather than conducting them."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "lecturer ne aur kaunsa coding problem mention kiya hai jo bohot logon ko difficult lagta hai?",
+      "gold_answer": "The lecturer mentions that many people also find binary tree problems to be very difficult.",
+      "quote": "Other than DP, many people also find solving binary tree problems very difficult.",
+      "quote_ts": 506.94,
+      "question_hi": "lecturer ne aur kaunsa coding problem mention kiya hai jo bohot logon ko difficult lagta hai?",
+      "question_en": "What other type of coding problem does the lecturer mention as being difficult for many people?",
+      "answer": "Lecture mein DP ke alawa \"binary tree\" problems ko bhi mention kiya gaya hai, jise bahut se log solve karne mein kaafi mushkil mehsoos karte hain.\n\nKya aapne kabhi binary tree ke problems try kiye hain, ya aap abhi DP par hi focus kar rahe hain?\n\n**Sources**\n• 8:26 — Other than DP, many people also find solving binary tree problems very difficult.",
+      "latency_s": 1.73,
+      "calls": 1,
+      "input_tokens": 1898,
+      "output_tokens": 89,
+      "cost_usd": 0.000608,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:15–1:41",
+          "chapter_id": 1,
+          "distance": 0.5550484657287598,
+          "start": 75.86
+        },
+        {
+          "heading_path": "Transcript 0:00–0:33",
+          "chapter_id": 1,
+          "distance": 0.5681997537612915,
+          "start": 0.02
+        },
+        {
+          "heading_path": "Transcript 8:26–8:40",
+          "chapter_id": 3,
+          "distance": 0.6031492352485657,
+          "start": 506.94
+        },
+        {
+          "heading_path": "Transcript 8:04–8:31",
+          "chapter_id": 3,
+          "distance": 0.7044764757156372,
+          "start": 484.14
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.5997809171676636,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.7007757425308228,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "8:26 — Other than DP, many people also find solving binary tree problems very difficult.",
+          "verified": true,
+          "chunk_id": "tx_506_68863a4e62",
+          "heading_path": "Transcript 8:26–8:40",
+          "heading": "Transcript 8:26",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 506,
+          "end": 520.02
+        }
+      ],
+      "grade": {
+        "id": 12,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately identifies binary tree problems as another difficult topic mentioned."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "kaunsi company ka interview problem lecturer ne dusre video mein ek line mein solve karne ka mention kiya tha?",
+      "gold_answer": "The lecturer mentions solving a binary tree problem from an Amazon interview in one line.",
+      "quote": "If you are one of them, watch this video where I solve a binary tree problem asked in an Amazon interview in just one line.",
+      "quote_ts": 511.62,
+      "question_hi": "kaunsi company ka interview problem lecturer ne dusre video mein ek line mein solve karne ka mention kiya tha?",
+      "question_en": "What company's interview problem does the lecturer mention solving in one line in another video?",
+      "answer": "Lecturer ne mention kiya hai ki unhone ek Amazon interview problem ko dusre video mein sirf ek line mein solve kiya hai.\n\nKya aap janna chahenge ki us video mein unhone kaunsa approach use kiya tha?\n\n**Sources**\n• 8:26 — Binary tree problem asked in an Amazon interview",
+      "latency_s": 1.86,
+      "calls": 1,
+      "input_tokens": 1972,
+      "output_tokens": 66,
+      "cost_usd": 0.000592,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 8:26–8:40",
+          "chapter_id": 3,
+          "distance": 0.5168924927711487,
+          "start": 506.94
+        },
+        {
+          "heading_path": "Transcript 1:15–1:41",
+          "chapter_id": 1,
+          "distance": 0.5973424911499023,
+          "start": 75.86
+        },
+        {
+          "heading_path": "Transcript 0:00–0:33",
+          "chapter_id": 1,
+          "distance": 0.6377115249633789,
+          "start": 0.02
+        },
+        {
+          "heading_path": "Transcript 0:28–0:56",
+          "chapter_id": 1,
+          "distance": 0.7204309701919556,
+          "start": 28.46
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "chapter_id": 1,
+          "distance": 0.7776751518249512,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.7192493677139282,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "8:26 — Binary tree problem asked in an Amazon interview",
+          "verified": true,
+          "chunk_id": "tx_506_68863a4e62",
+          "heading_path": "Transcript 8:26–8:40",
+          "heading": "Transcript 8:26",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 506,
+          "end": 520.02
+        }
+      ],
+      "grade": {
+        "id": 13,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that the company mentioned was Amazon."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "jab lecturer longest-increasing subsequence solve nahi kar paaye toh unke friend ne unhe kya bola tha?",
+      "gold_answer": "The friend told him that he would never be able to crack coding interviews at big tech companies if he could not solve such easy problems.",
+      "quote": "When I could not solve this problem, he told me that I would never be able to crack coding interviews at big tech companies if I could not solve such easy problems.",
+      "quote_ts": 79.1,
+      "question_hi": "jab lecturer longest-increasing subsequence solve nahi kar paaye toh unke friend ne unhe kya bola tha?",
+      "question_en": "What did the lecturer's friend tell him when he could not solve the longest-increasing subsequence problem?",
+      "answer": "Jab lecturer us problem ko solve nahi kar paaye the, toh unke friend ne unse kaha tha ki agar woh itne aasaan problems solve nahi kar sakte, toh woh kabhi bhi badi tech companies ke coding interviews crack nahi kar payenge.\n\nWant to walk through why the lecturer chose this specific problem to discuss despite that experience?\n\n**Sources**\n• 1:15 — lecturer's friend's comment on their coding interview prospects",
+      "latency_s": 1.69,
+      "calls": 1,
+      "input_tokens": 1942,
+      "output_tokens": 92,
+      "cost_usd": 0.000624,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:15–1:41",
+          "chapter_id": 1,
+          "distance": 0.3959583044052124,
+          "start": 75.86
+        },
+        {
+          "heading_path": "Transcript 0:53–1:19",
+          "chapter_id": 1,
+          "distance": 0.4783601760864258,
+          "start": 53.3
+        },
+        {
+          "heading_path": "Transcript 3:36–4:01",
+          "chapter_id": 2,
+          "distance": 0.5400553345680237,
+          "start": 216.1
+        },
+        {
+          "heading_path": "Transcript 2:25–2:54",
+          "chapter_id": 1,
+          "distance": 0.5170508623123169,
+          "start": 145.54
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.5705680251121521,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.5782127380371094,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "1:15 — lecturer's friend's comment on their coding interview prospects",
+          "verified": true,
+          "chunk_id": "tx_75_083e3d227b",
+          "heading_path": "Transcript 1:15–1:41",
+          "heading": "Transcript 1:15",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 75,
+          "end": 101.02
+        }
+      ],
+      "grade": {
+        "id": 14,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Accurately reports what the lecturer's friend said."
+      }
+    },
+    {
+      "category": "detail",
+      "question": "assumption ko real banane ke liye lecturer kaunsa specific phrase baar baar repeat karte hain?",
+      "gold_answer": "The lecturer repeatedly uses the phrase \"except the last one\" to explain the iterative process.",
+      "quote": "You must have noticed me saying the same phrase except the last one again and again. The answer lies in this very simple phrase.",
+      "quote_ts": 290.54,
+      "question_hi": "assumption ko real banane ke liye lecturer kaunsa specific phrase baar baar repeat karte hain?",
+      "question_en": "What is the specific phrase the lecturer repeats to explain how to make the assumption real?",
+      "answer": "Lecturer is phrase ko baar-baar repeat karte hain: **\"except the last one\"** (yaani \"aakhri wale ko chhod kar\").\n\nWoh is phrase ka istemal isliye karte hain taaki aap yeh assume kar sakein ki aapko usse chote problem ka solution pehle se pata hai, aur phir aap uske basis par final answer nikal sakein.\n\nKya aap dekhna chahenge ki is \"except the last one\" wali assumption ko use karke hum LIS (Longest Increasing Subsequence) ka logic kaise build karte hain?\n\n**Sources**\n• 4:20 — lecturer explains that to make the assumption real, you must have noticed the phrase \"except the last one\" being repeated.",
+      "latency_s": 10.35,
+      "calls": 1,
+      "input_tokens": 2023,
+      "output_tokens": 156,
+      "cost_usd": 0.00074,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 4:20–4:55",
+          "chapter_id": 2,
+          "distance": 0.6811169385910034,
+          "start": 260.66
+        },
+        {
+          "heading_path": "Transcript 0:28–0:56",
+          "chapter_id": 1,
+          "distance": 0.7000049948692322,
+          "start": 28.46
+        },
+        {
+          "heading_path": "Transcript 0:53–1:19",
+          "chapter_id": 1,
+          "distance": 0.6987303495407104,
+          "start": 53.3
+        },
+        {
+          "heading_path": "Transcript 2:01–2:27",
+          "chapter_id": 1,
+          "distance": 0.6859768629074097,
+          "start": 121.34
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "chapter_id": 1,
+          "distance": 0.6872580051422119,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 2. THE CORE DP INSIGHT: ALTERING THE SUBPROBLEM SCOPE",
+          "chapter_id": 2,
+          "distance": 0.75438392162323,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "4:20 — lecturer explains that to make the assumption real, you must have noticed the phrase \"except the last one\" being repeated.",
+          "verified": true,
+          "chunk_id": "tx_260_708c2e9765",
+          "heading_path": "Transcript 4:20–4:55",
+          "heading": "Transcript 4:20",
+          "chapter_id": 2,
+          "kind": "transcript",
+          "start": 260,
+          "end": 295.38
+        }
+      ],
+      "grade": {
+        "id": 15,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly identifies the repeated phrase 'except the last one'."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "longest-increasing subsequence problem ke dynamic programming solution ka time complexity kya hai?",
+      "gold_answer": "The lecture does not provide information regarding the time complexity of the solution.",
+      "quote": "",
+      "question_hi": "longest-increasing subsequence problem ke dynamic programming solution ka time complexity kya hai?",
+      "question_en": "What is the time complexity of the dynamic programming solution for the longest-increasing subsequence problem?",
+      "answer": "Longest Increasing Subsequence (LIS) ke basic dynamic programming solution ki time complexity $O(n^2)$ hai. Yeh isliye hota hai kyunki har index $i$ ke liye, hum usse pehle ke sabhi indices ko check karte hain taaki recursive rule apply kar sakein.\n\nKya aap dekhna chahenge ki yeh $O(n^2)$ complexity kaise derive hoti hai?\n\n**Sources**\n• [N2] Section: Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+      "latency_s": 1.99,
+      "calls": 1,
+      "input_tokens": 1967,
+      "output_tokens": 125,
+      "cost_usd": 0.000679,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 1:38–2:04",
+          "chapter_id": 1,
+          "distance": 0.41054248809814453,
+          "start": 98.14
+        },
+        {
+          "heading_path": "Transcript 3:13–3:40",
+          "chapter_id": 2,
+          "distance": 0.4619344472885132,
+          "start": 193.1
+        },
+        {
+          "heading_path": "Transcript 2:01–2:27",
+          "chapter_id": 1,
+          "distance": 0.44521111249923706,
+          "start": 121.34
+        },
+        {
+          "heading_path": "Transcript 2:50–3:16",
+          "chapter_id": 2,
+          "distance": 0.4531441926956177,
+          "start": 170.94
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.3615763187408447,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2,
+          "distance": 0.3926467299461365,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "[N2] Section: Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "verified": true,
+          "chunk_id": "note_36b1957a16fef066",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "heading": "5. ALGORITHMIC STEPS TO COMPUTE THE GLOBAL LIS",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 16,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "For an out-of-scope question, the answer fails to state that the lecture does not cover time complexity."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "pseudocode ki jagah main is solution ko Python mein kaise implement kar sakta hoon?",
+      "gold_answer": "The lecture does not provide specific code implementation in any programming language.",
+      "quote": "",
+      "question_hi": "pseudocode ki jagah main is solution ko Python mein kaise implement kar sakta hoon?",
+      "question_en": "How can I implement this solution using Python instead of pseudocode?",
+      "answer": "Python mein ise implement karne ke liye hum ek list (array) ka use karte hain jisme har index `i` par us index par khatam hone wale longest increasing subsequence (LIS) ki length store hoti hai.\n\nBase case ke liye, har index par LIS ki minimum length `1` hoti hai (kyunki har number apne aap mein ek subsequence hai). Phir hum nested loops ka use karke har `i` ke liye usse pehle ke sabhi `left` indices ko check karte hain.\n\n```python\ndef lis(nums):\n    n = len(nums)\n    # Base case: har index par minimum length 1 hai\n    lengths = [1] * n\n    \n    for i in range(n):\n        for left in range(i):\n            if nums[left] < nums[i]:\n                # Agar condition match ho, toh update karo\n                lengths[i] = max(lengths[i], lengths[left] + 1)\n                \n    return max(lengths) if n > 0 else 0\n```\n\nKya aap samajh paa rahe hain ki yahan `lengths` list ka har element kaise hamari \"state\" ko represent kar raha hai?\n\n**Sources**\n• 6:25 — Base case ki zaroorat aur initial value\n• [N2] Section: Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+      "latency_s": 2.3,
+      "calls": 1,
+      "input_tokens": 2043,
+      "output_tokens": 314,
+      "cost_usd": 0.000982,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 6:25–6:50",
+          "chapter_id": 3,
+          "distance": 0.6093540191650391,
+          "start": 385.66
+        },
+        {
+          "heading_path": "Transcript 2:50–3:16",
+          "chapter_id": 2,
+          "distance": 0.6448317170143127,
+          "start": 170.94
+        },
+        {
+          "heading_path": "Transcript 2:01–2:27",
+          "chapter_id": 1,
+          "distance": 0.6221124529838562,
+          "start": 121.34
+        },
+        {
+          "heading_path": "Transcript 3:13–3:40",
+          "chapter_id": 2,
+          "distance": 0.6680961847305298,
+          "start": 193.1
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "chapter_id": 1,
+          "distance": 0.6325224041938782,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "chapter_id": 2,
+          "distance": 0.638622522354126,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "6:25 — Base case ki zaroorat aur initial value",
+          "verified": true,
+          "chunk_id": "tx_385_4e7317f637",
+          "heading_path": "Transcript 6:25–6:50",
+          "heading": "Transcript 6:25",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 385,
+          "end": 410.9
+        },
+        {
+          "section": "[N2] Section: Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "verified": true,
+          "chunk_id": "note_0917f425c651ab89",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "heading": "3. INCREMENTAL PREFIX APPROACH AND STATE TRANSITION",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 17,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "For an out-of-scope question, the answer fails to state that the lecture does not cover Python implementation."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "kya koi aise alternative algorithms hain jo longest-increasing subsequence ko dynamic programming se fast solve kar sake?",
+      "gold_answer": "The lecture does not discuss alternative algorithms or performance comparisons for this problem.",
+      "quote": "",
+      "question_hi": "kya koi aise alternative algorithms hain jo longest-increasing subsequence ko dynamic programming se fast solve kar sake?",
+      "question_en": "Are there any alternative algorithms that solve the longest-increasing subsequence problem faster than dynamic programming?",
+      "answer": "The lecture doesn't cover alternative algorithms for the Longest Increasing Subsequence (LIS) problem; it focuses specifically on the dynamic programming approach and the thinking process behind it.\n\nIn general, yes, there is a more efficient approach using binary search that solves the LIS problem in $O(n \\log n)$ time, whereas the standard DP approach typically takes $O(n^2)$. This faster method works by maintaining a list of \"smallest possible tail\" values for all increasing subsequences of different lengths found so far.\n\nWould you like to walk through how that binary search logic works?\n\n**Sources**\n• 0:00 — DP is a problem-solving technique\n• 1:38 — Longest Increasing Subsequence definition\n• [N1] Section: Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+      "latency_s": 2.01,
+      "calls": 1,
+      "input_tokens": 1913,
+      "output_tokens": 193,
+      "cost_usd": 0.000768,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 2:01–2:27",
+          "chapter_id": 1,
+          "distance": 0.4894983172416687,
+          "start": 121.34
+        },
+        {
+          "heading_path": "Transcript 0:00–0:33",
+          "chapter_id": 1,
+          "distance": 0.5226882100105286,
+          "start": 0.02
+        },
+        {
+          "heading_path": "Transcript 1:38–2:04",
+          "chapter_id": 1,
+          "distance": 0.5138438940048218,
+          "start": 98.14
+        },
+        {
+          "heading_path": "Transcript 3:13–3:40",
+          "chapter_id": 2,
+          "distance": 0.5229324698448181,
+          "start": 193.1
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.4516599774360657,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 1. INTRODUCTION TO DYNAMIC PROGRAMMING AND LIS",
+          "chapter_id": 3,
+          "distance": 0.4605976939201355,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:00 — DP is a problem-solving technique",
+          "verified": true,
+          "chunk_id": "tx_0_7432cd8c2f",
+          "heading_path": "Transcript 0:00–0:33",
+          "heading": "Transcript 0:00",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 0,
+          "end": 33.02
+        },
+        {
+          "section": "1:38 — Longest Increasing Subsequence definition",
+          "verified": true,
+          "chunk_id": "tx_98_e220c5e364",
+          "heading_path": "Transcript 1:38–2:04",
+          "heading": "Transcript 1:38",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 98,
+          "end": 124.66
+        },
+        {
+          "section": "[N1] Section: Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "verified": true,
+          "chunk_id": "note_cecea3c8ed233149",
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "heading": "1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 18,
+        "verdict": "correct",
+        "says_not_covered": true,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Correctly states that the lecture does not cover alternative algorithms before providing general knowledge."
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "is approach mein jo LIS array use hota hai uska memory requirement kya hai?",
+      "gold_answer": "The lecture does not mention the space complexity or memory requirements for the LIS array.",
+      "quote": "",
+      "question_hi": "is approach mein jo LIS array use hota hai uska memory requirement kya hai?",
+      "question_en": "What are the memory requirements for the LIS array used in this approach?",
+      "answer": "Is approach mein `LIS` array ka memory requirement $O(n)$ hota hai, jahan $n$ array ka size hai. Kyunki humein har index $i$ ke liye ek value store karni padti hai jo us index par khatam hone wali longest increasing subsequence ki length batati hai, isliye humein array ke har element ke liye ek space ki zaroorat hoti hai.\n\nKya aap dekhna chahenge ki yeh array runtime mein kaise update hota hai?\n\n**Sources**\n• 7:14 — LIS array ka upyog aur uska structure\n• [N2] Section: Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+      "latency_s": 1.84,
+      "calls": 1,
+      "input_tokens": 1927,
+      "output_tokens": 146,
+      "cost_usd": 0.000701,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 7:14–7:46",
+          "chapter_id": 3,
+          "distance": 0.4929777979850769,
+          "start": 434.66
+        },
+        {
+          "heading_path": "Transcript 3:56–4:23",
+          "chapter_id": 2,
+          "distance": 0.7022219300270081,
+          "start": 236.66
+        },
+        {
+          "heading_path": "Transcript 5:13–5:39",
+          "chapter_id": 2,
+          "distance": 0.7243393659591675,
+          "start": 313.58
+        },
+        {
+          "heading_path": "Transcript 1:38–2:04",
+          "chapter_id": 1,
+          "distance": 0.7229693531990051,
+          "start": 98.14
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 4. COMPARISON: SUBSTRING VS SUBSEQUENCE",
+          "chapter_id": 2,
+          "distance": 0.5097854137420654,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "chapter_id": 3,
+          "distance": 0.48796844482421875,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "7:14 — LIS array ka upyog aur uska structure",
+          "verified": true,
+          "chunk_id": "tx_434_fd72ab025c",
+          "heading_path": "Transcript 7:14–7:46",
+          "heading": "Transcript 7:14",
+          "chapter_id": 3,
+          "kind": "transcript",
+          "start": 434,
+          "end": 466.38
+        },
+        {
+          "section": "[N2] Section: Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "verified": true,
+          "chunk_id": "note_b6ca0336569a94ed",
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 2. BASE CASE AND INITIALIZATION",
+          "heading": "2. BASE CASE AND INITIALIZATION",
+          "chapter_id": 3,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 19,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "For an out-of-scope question, the answer fails to state that the lecture does not cover memory requirements."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "lecturer kyu bolte hain ki coding interviews mein Prim's algorithm sabse hard hota hai?",
+      "gold_answer": "The lecturer actually identifies dynamic programming, not Prim's algorithm, as the hardest and most frequently asked topic in coding interviews.",
+      "quote": "Which of these is the hardest algorithm asked in coding interviews? Is it A. Tykstra's algorithm or B. Prim's algorithm or C. Dynamic programming? The answer from my experience of giving more than 100 interviews is Dynamic programming.",
+      "quote_ts": 0.02,
+      "question_hi": "lecturer kyu bolte hain ki coding interviews mein Prim's algorithm sabse hard hota hai?",
+      "question_en": "Why does the lecturer suggest that Prim's algorithm is the hardest algorithm in coding interviews?",
+      "answer": "Actually, the lecturer says the opposite: they identify **Dynamic Programming** as the hardest topic in coding interviews, not Prim's algorithm. They explain that DP is particularly difficult because it is both complex to master and very frequently asked by interviewers.\n\nWould you like to know why the lecturer suggests using \"assumptions\" instead of the traditional sub-problem approach to solve these?\n\n**Sources**\n• 0:00 — Dynamic programming is the hardest algorithm asked in coding interviews\n• [N1] Section: Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+      "latency_s": 2.11,
+      "calls": 1,
+      "input_tokens": 1934,
+      "output_tokens": 128,
+      "cost_usd": 0.000676,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:00–0:33",
+          "chapter_id": 1,
+          "distance": 0.4140111804008484,
+          "start": 0.02
+        },
+        {
+          "heading_path": "Transcript 1:15–1:41",
+          "chapter_id": 1,
+          "distance": 0.606582522392273,
+          "start": 75.86
+        },
+        {
+          "heading_path": "Transcript 0:53–1:19",
+          "chapter_id": 1,
+          "distance": 0.6775980591773987,
+          "start": 53.3
+        },
+        {
+          "heading_path": "Transcript 0:28–0:56",
+          "chapter_id": 1,
+          "distance": 0.7732054591178894,
+          "start": 28.46
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.5712684392929077,
+          "start": null
+        },
+        {
+          "heading_path": "Algorithm Design, State Definition, and Implementation > 5. KEY TAKEAWAYS AND TRANSITIONS",
+          "chapter_id": 3,
+          "distance": 0.6877701282501221,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:00 — Dynamic programming is the hardest algorithm asked in coding interviews",
+          "verified": true,
+          "chunk_id": "tx_0_7432cd8c2f",
+          "heading_path": "Transcript 0:00–0:33",
+          "heading": "Transcript 0:00",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 0,
+          "end": 33.02
+        },
+        {
+          "section": "[N1] Section: Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "verified": true,
+          "chunk_id": "note_92513e39da090fbe",
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "heading": "1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "kind": "notes",
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 20,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly rejects the false premise by stating DP, not Prim's algorithm, was identified as the hardest."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "lecturer ka kya claim hai ki longest-increasing subsequence problem beginners ke liye bohot hard kyu hai?",
+      "gold_answer": "The lecturer explicitly states that the problem is neither too hard nor too easy, which is why he chose it for the demonstration.",
+      "quote": "There are two reasons why I picked this problem. 1. This problem is neither too hard, nor too easy.",
+      "quote_ts": 66.06,
+      "question_hi": "lecturer ka kya claim hai ki longest-increasing subsequence problem beginners ke liye bohot hard kyu hai?",
+      "question_en": "Why does the lecturer claim that the longest-increasing subsequence problem is too hard for beginners?",
+      "answer": "Actually, the lecturer doesn't claim that the Longest Increasing Subsequence (LIS) problem is \"too hard\" for beginners. In fact, they specifically chose it because it is neither too hard nor too easy, making it a perfect benchmark for learning how to think through a problem.\n\nThe lecturer mentions that when they first encountered it, they couldn't solve it, and a friend told them it was an \"easy\" problem that they needed to master to pass big tech interviews. They share this story specifically to give hope to students who might feel intimidated by coding interviews.\n\nWould you like to walk through the logic of how we start breaking down this problem?\n\n**Sources**\n• 0:53 — LIS is neither too hard nor too easy\n• 1:15 — Lecturer's personal experience and motivation for choosing the problem",
+      "latency_s": 2.03,
+      "calls": 1,
+      "input_tokens": 1926,
+      "output_tokens": 175,
+      "cost_usd": 0.000744,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:53–1:19",
+          "chapter_id": 1,
+          "distance": 0.42253321409225464,
+          "start": 53.3
+        },
+        {
+          "heading_path": "Transcript 1:15–1:41",
+          "chapter_id": 1,
+          "distance": 0.37282609939575195,
+          "start": 75.86
+        },
+        {
+          "heading_path": "Transcript 3:36–4:01",
+          "chapter_id": 2,
+          "distance": 0.47814738750457764,
+          "start": 216.1
+        },
+        {
+          "heading_path": "Transcript 2:01–2:27",
+          "chapter_id": 1,
+          "distance": 0.5128966569900513,
+          "start": 121.34
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 3. BENCHMARK PROBLEM: LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 1,
+          "distance": 0.4753882884979248,
+          "start": null
+        },
+        {
+          "heading_path": "Chapter 2: Longest Increasing Subsequence: Subproblem Formulation > 1. INTRODUCTION TO THE LONGEST INCREASING SUBSEQUENCE (LIS)",
+          "chapter_id": 2,
+          "distance": 0.5192998647689819,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:53 — LIS is neither too hard nor too easy",
+          "verified": true,
+          "chunk_id": "tx_53_986c079746",
+          "heading_path": "Transcript 0:53–1:19",
+          "heading": "Transcript 0:53",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 53,
+          "end": 79.1
+        },
+        {
+          "section": "1:15 — Lecturer's personal experience and motivation for choosing the problem",
+          "verified": true,
+          "chunk_id": "tx_75_083e3d227b",
+          "heading_path": "Transcript 1:15–1:41",
+          "heading": "Transcript 1:15",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 75,
+          "end": 101.02
+        }
+      ],
+      "grade": {
+        "id": 21,
+        "verdict": "correct",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": true,
+        "invented_visual": false,
+        "note": "Correctly corrects the false premise by explaining the lecturer considers the problem neither too hard nor too easy."
+      }
+    },
+    {
+      "category": "false_premise",
+      "question": "problem solve karne ke liye lecturer pura sequence pata hone ka assumption lene ko kyu recommend karte hain?",
+      "gold_answer": "The lecturer states that assuming you know the sequence does not work; instead, you should assume you know the length of the longest-increasing subsequence ending at each index.",
+      "quote": "What if we knew the length of the longest-increasing subsequence ending at each index of the array? Would that help us?",
+      "quote_ts": 236.66,
+      "question_hi": "problem solve karne ke liye lecturer pura sequence pata hone ka assumption lene ko kyu recommend karte hain?",
+      "question_en": "Why does the lecturer recommend assuming you know the entire sequence to solve the problem?",
+      "answer": "Lecturer ka kehna hai ki jab hum \"sub-problems\" ke mathematical approach se sochte hain, toh woh aksar kaafi mushkil aur confusing ho jata hai. Iske bajaye, \"assumption\" lene se hum apni real-life ki soch ka istemal kar paate hain, jisse complex problems ko samajhna aur solve karna zyada intuitive aur simple ho jata hai.\n\nJab hum ye assume karte hain ki humein ek chote hisse ka answer pehle se pata hai, toh humein bas ye sochna padta hai ki uss information ko use karke hum agla step kaise nikal sakte hain.\n\nKya aap chahenge ki hum kisi specific problem par is \"assumption\" technique ko apply karke dekhein?\n\n**Sources**\n• 0:28 — DP ko simple banane ke liye assumption technique ka introduction.\n• [N1] — 5-Step Framework & The Assumption Technique.",
+      "latency_s": 2.2,
+      "calls": 1,
+      "input_tokens": 2020,
+      "output_tokens": 196,
+      "cost_usd": 0.000799,
+      "retrieval_status": "ok",
+      "retrieved": [
+        {
+          "heading_path": "Transcript 0:28–0:56",
+          "chapter_id": 1,
+          "distance": 0.48450225591659546,
+          "start": 28.46
+        },
+        {
+          "heading_path": "Transcript 2:01–2:27",
+          "chapter_id": 1,
+          "distance": 0.499519944190979,
+          "start": 121.34
+        },
+        {
+          "heading_path": "Transcript 4:20–4:55",
+          "chapter_id": 2,
+          "distance": 0.5406278371810913,
+          "start": 260.66
+        },
+        {
+          "heading_path": "Transcript 2:50–3:16",
+          "chapter_id": 2,
+          "distance": 0.5171370506286621,
+          "start": 170.94
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 2. THE 5-STEP FRAMEWORK & THE ASSUMPTION TECHNIQUE",
+          "chapter_id": 1,
+          "distance": 0.4782184362411499,
+          "start": null
+        },
+        {
+          "heading_path": "Introduction to Dynamic Programming and Problem-Solving Techniques > 1. FUNDAMENTALS OF DYNAMIC PROGRAMMING",
+          "chapter_id": 1,
+          "distance": 0.6190967559814453,
+          "start": null
+        }
+      ],
+      "images": [],
+      "citations": [
+        {
+          "section": "0:28 — DP ko simple banane ke liye assumption technique ka introduction.",
+          "verified": true,
+          "chunk_id": "tx_28_9f83ac5371",
+          "heading_path": "Transcript 0:28–0:56",
+          "heading": "Transcript 0:28",
+          "chapter_id": 1,
+          "kind": "transcript",
+          "start": 28,
+          "end": 56.62
+        },
+        {
+          "section": "[N1] — 5-Step Framework & The Assumption Technique.",
+          "verified": false,
+          "chunk_id": null,
+          "heading_path": null,
+          "heading": null,
+          "chapter_id": null,
+          "kind": null,
+          "start": null,
+          "end": null
+        }
+      ],
+      "grade": {
+        "id": 22,
+        "verdict": "incorrect",
+        "says_not_covered": false,
+        "unsupported_lecture_claim": false,
+        "corrected_premise": false,
+        "invented_visual": false,
+        "note": "Fails to correct the false premise that the lecturer recommends assuming you know the full sequence."
+      }
+    }
+  ]
+}
