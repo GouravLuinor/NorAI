@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Mail, Lock, User as UserIcon, ArrowRight, Sparkles, Brain, BookOpen, Clock } from 'lucide-react'
+import { Mail, Lock, User as UserIcon, ArrowRight, Brain, BookOpen, Clock } from 'lucide-react'
 import { useAuthStore } from '../stores/useAuthStore'
 import { supabase } from '../lib/supabaseClient'
 import { friendlyError } from '../lib/errorCopy'
 import { FOCUS_RING } from '../components/ui/shared'
+import { FREE_MINUTES } from '../content/faq'
+import { PAGE_META } from '../content/pages'
+import { usePageMeta } from '../lib/usePageMeta'
 
 type AuthMode = 'login' | 'signup' | 'forgot'
 
@@ -27,6 +30,7 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
+  usePageMeta(mode === 'signup' ? PAGE_META.signup : { ...PAGE_META.login, path: mode === 'forgot' ? '/forgot-password' : '/login', noindex: mode === 'forgot' })
 
   // Determine redirect target
   const fromLoc = (location.state as { from?: { pathname: string; search?: string } })?.from
@@ -122,18 +126,14 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
               Nor<span className="text-np">AI</span>
             </span>
           </Link>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-npb text-npt font-mono text-11 font-medium mb-3">
-            <Sparkles size={12} className="text-np" />
-            <span>Autonomous Lecture Intelligence</span>
-          </div>
           <h1 className="text-24 font-bold font-serif text-nt">
             {mode === 'login' ? 'Sign in to your account' : mode === 'signup' ? 'Create your free account' : 'Reset your password'}
           </h1>
           <p className="text-13 text-nt2 mt-1">
             {mode === 'login'
-              ? 'Access your processed lectures, study notes, and Nora AI Tutor'
+              ? 'Your lectures, notes, quizzes and tutor are waiting.'
               : mode === 'signup'
-                ? 'Includes 45 minutes free lecture processing quota and interactive AI tutoring'
+                ? `Free: ${FREE_MINUTES} lecture-minutes a month, every feature included. No card.`
                 : "Enter your account email and we'll send you a link to choose a new password"}
           </p>
         </div>
@@ -143,8 +143,8 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
           <div className="mb-6 p-4 rounded-lg bg-ns border border-bdr grid grid-cols-3 gap-2 text-center">
             <div className="flex flex-col items-center gap-1">
               <Clock size={16} className="text-np" />
-              <span className="font-mono text-10 uppercase text-nt font-bold">45 Mins Free</span>
-              <span className="text-10 text-nt3">Trial Quota</span>
+              <span className="font-mono text-10 uppercase text-nt font-bold">{FREE_MINUTES} min free</span>
+              <span className="text-10 text-nt3">Every month</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <Brain size={16} className="text-np" />
@@ -292,10 +292,10 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
               className="w-full py-3 px-4 bg-np hover:bg-nph text-npfg font-display text-12 font-semibold uppercase tracking-wider rounded shadow-bp flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer active:translate-y-[1px]"
             >
               {loading ? (
-                <span>{mode === 'forgot' ? 'Sending…' : 'Authenticating...'}</span>
+                <span>{mode === 'forgot' ? 'Sending…' : mode === 'signup' ? 'Creating account…' : 'Signing in…'}</span>
               ) : (
                 <>
-                  <span>{mode === 'login' ? 'Sign In to Workspace' : mode === 'signup' ? 'Start Free (45m Quota)' : 'Send Reset Link'}</span>
+                  <span>{mode === 'login' ? 'Sign in' : mode === 'signup' ? 'Create free account' : 'Send reset link'}</span>
                   <ArrowRight size={15} />
                 </>
               )}

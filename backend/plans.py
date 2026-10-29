@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 
 from backend.timeutil import ensure_utc
-from config import MAX_FREE_DURATION_MIN, PLAN_PRO_PRICE_INR, PLAN_STARTER_PRICE_INR
+from config import FREE_MONTHLY_MINUTES, MAX_FREE_DURATION_MIN, PLAN_PRO_PRICE_INR, PLAN_STARTER_PRICE_INR
 
 
 @dataclass(frozen=True)
@@ -55,14 +55,14 @@ class Plan:
 FREE = Plan(
     id="free",
     name="Free",
-    tagline="Try NorAI on your own lectures. No card needed.",
+    tagline="Everything NorAI does, free. No card needed.",
     price_inr=0,
-    minutes=45,
-    max_lecture_min=MAX_FREE_DURATION_MIN,
+    minutes=FREE_MONTHLY_MINUTES,
+    max_lecture_min=min(MAX_FREE_DURATION_MIN, FREE_MONTHLY_MINUTES),
     period_days=30,
     features=(
-        "45 lecture-minutes every 30 days",
-        f"Lectures up to {MAX_FREE_DURATION_MIN} minutes long",
+        f"{FREE_MONTHLY_MINUTES} lecture-minutes every 30 days",
+        f"Lectures up to {min(MAX_FREE_DURATION_MIN, FREE_MONTHLY_MINUTES)} minutes long",
         "Study notes, revision sheet, quiz & flashcards",
         "Lecture-grounded AI tutor and PDF export",
     ),

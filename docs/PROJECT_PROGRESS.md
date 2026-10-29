@@ -122,6 +122,17 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
     - Only worth it if the box can't spare ~300 MB.
   - **Trade-off:** Hinglish retrieval is .79 against .87 for Gemini. To get that back, set `NORAI_EMBEDDING_MODEL=gemini-embedding-2` on one *paid* key: ~2 batch calls per lecture, about $0.005 for 52 min. New lectures then index with Gemini, and existing local indexes stay local until they are re-indexed.
 - **Phase 2 — trust + cost (2026-10-27 → 2026-10-28, branch `phase2`, IN PROGRESS).**
+  - **▶ UX launch work (branch `ux-launch`, started 2026-10-29; not merged or pushed).** Launch target, decided by the user: a **free-only** SaaS for a **western audience**, run on the Supabase and Gemini free tiers. Analytics, transactional email and legal pages are deferred. Plan, in order:
+    - **A. Repositioning + quick wins (done):**
+      - **Free allowance:** `FREE_MONTHLY_MINUTES` (env `NORAI_FREE_MINUTES`, default 60) replaces the hard-coded 45. Existing Free users are raised to it on their next quota check (`usage.rollover_if_needed`). `/quota` now returns `resets_at`.
+      - **Copy:** US English, free-only. `/pricing` is a free-plan page; the paid sheet only renders when `payments_enabled`. The "Upgrade / See plans" links became reset dates.
+      - **Pre-render:** `frontend/scripts/prerender.mjs` runs after `vite build` and writes `dist/_prerender/{home,pricing,signup,login}.html`: per-route head + FAQ JSON-LD, plus React-rendered markup for `/` and `/pricing`. `backend/main.py` `_spa_page` serves them. First paint is ~200 ms, with no JS needed.
+      - **Processing page:** progress in the tab title; hidden tabs poll every 20 s instead of stopping; an opt-in "Notify me" browser notification.
+      - **Smaller fixes:** lectures open on Study notes; the auth modal only loads when opened.
+    - **B. One design (next):** an `impeccable`-led polish onto one design language across the app (the app interior still uses the old blueprint/mono style). Also: favicon/brand mark (the favicon is still the old purple "N"), PWA manifest + icons, trimming the 4 font families, the floating "Watch video" button overlapping notes.
+    - **C.** Study home on `/app`: continue where you left off, flashcards due across lectures, quiz retakes.
+    - **D.** Guest tutor on demo lectures: 5 questions/day per visitor, plus cached answers to suggested questions and a global daily guest cap to protect the Gemini free tier. Also paste-first onboarding and per-lecture share-link previews.
+    - **E.** Public pre-rendered demo-lecture pages and answer-first content pages for SEO, AEO and GEO.
   - **▶ RESUME HERE (handoff, 2026-10-29; all work on local `master`, not pushed).**
     - **Where things stand:**
       - **Lean is the only pipeline:** built, A/B'd, judged by 3.8-flash, and smoke-tested through the UI; the legacy chain was deleted in the cleanup (see "Cleanup" below).

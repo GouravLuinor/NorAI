@@ -22,7 +22,7 @@ let _loadChapterGeneration = 0
 
 export const useChapterStore = create<ChapterState>((set) => ({
   activeChapterId: 1,
-  activeDocTab: 'revision',
+  activeDocTab: 'notes',
   sidebarCollapsed: false,
   chapters: [],
   chaptersLoading: false,

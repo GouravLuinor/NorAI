@@ -2,6 +2,8 @@
  * Plan catalogue types and the static fallback. Dependency-free so the build
  * (vite-plugin-seo: JSON-LD offers, llms.txt) can import it too.
  */
+import { FREE_MINUTES } from './faq.ts'
+
 /** Mirrors backend/plans.py `Plan.public()`. */
 export interface Plan {
   id: 'free' | 'starter' | 'pro'
@@ -30,11 +32,11 @@ export const FALLBACK_PLANS: PlansResponse = {
   payments_enabled: false,
   plans: [
     {
-      id: 'free', name: 'Free', tagline: 'Try NorAI on your own lectures. No card needed.',
-      price_inr: 0, minutes: 45, max_lecture_min: 45, period_days: 30, purchasable: false,
+      id: 'free', name: 'Free', tagline: 'Everything NorAI does, free. No card needed.',
+      price_inr: 0, minutes: FREE_MINUTES, max_lecture_min: FREE_MINUTES, period_days: 30, purchasable: false,
       features: [
-        '45 lecture-minutes every 30 days',
-        'Lectures up to 45 minutes long',
+        `${FREE_MINUTES} lecture-minutes every 30 days`,
+        `Lectures up to ${FREE_MINUTES} minutes long`,
         'Study notes, revision sheet, quiz & flashcards',
         'Lecture-grounded AI tutor and PDF export',
       ],

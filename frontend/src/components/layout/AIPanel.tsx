@@ -1,3 +1,4 @@
+import { DEFAULT_TRIAL_QUOTA_MINUTES } from '../../config/features'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore, fetchQuizQuestions } from '../../stores/useQuizStore'
 import { ChatArea } from '../chat/ChatArea'
@@ -67,7 +68,7 @@ export function AIPanel() {
           <div className="w-full max-w-xs space-y-2 mb-6 text-left">
             <div className="flex items-start gap-2 text-11 text-nt2">
               <span className="text-np font-bold">✓</span>
-              <span>100% grounded in video transcripts & slides</span>
+              <span>Answers only from this lecture's transcript and slides</span>
             </div>
             <div className="flex items-start gap-2 text-11 text-nt2">
               <span className="text-np font-bold">✓</span>
@@ -75,7 +76,7 @@ export function AIPanel() {
             </div>
             <div className="flex items-start gap-2 text-11 text-nt2">
               <span className="text-np font-bold">✓</span>
-              <span>Includes 45 minutes of free lecture processing</span>
+              <span>Free: {DEFAULT_TRIAL_QUOTA_MINUTES} lecture-minutes a month of your own lectures</span>
             </div>
           </div>
 

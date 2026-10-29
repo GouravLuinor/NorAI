@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import { Select } from '../ui/Select'
 import type { QuotaInfo } from '../../stores/useAuthStore'
 import { DEFAULT_TRIAL_QUOTA_MINUTES, DEMO_LECTURES_CONFIG } from '../../config/features'
+import { quotaResetLabel } from '../../lib/plans'
 
 
 const planLabel = (tier?: string) =>
@@ -301,12 +302,14 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
                 <span className="font-semibold text-nt text-10 uppercase tracking-wider">
                   {planLabel(quota?.plan_tier)}
                 </span>
-                <button
-                  onClick={() => navigate('/billing')}
-                  className="text-10 text-np font-medium hover:underline cursor-pointer"
-                >
-                  {quota && quota.plan_tier !== 'free' ? 'Manage' : 'Upgrade'}
-                </button>
+                {quota && quota.plan_tier !== 'free' && (
+                  <button
+                    onClick={() => navigate('/billing')}
+                    className="text-10 text-np font-medium hover:underline cursor-pointer"
+                  >
+                    Manage
+                  </button>
+                )}
               </div>
               <div
                 className="w-full bg-ns4 h-1.5 rounded-full overflow-hidden mb-1"
@@ -325,8 +328,8 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
                 <span>
                   Used: {quota?.used_minutes_this_month ?? 0} / {quota?.monthly_minutes_quota ?? DEFAULT_TRIAL_QUOTA_MINUTES} mins
                 </span>
-                {quota && quota.plan_tier === 'free' && (
-                  <span className="text-nt4">Free trial</span>
+                {quota?.resets_at && (
+                  <span className="text-nt4">{quotaResetLabel(quota.resets_at)}</span>
                 )}
               </div>
               <div className="mt-2 flex justify-between text-10">
@@ -340,7 +343,7 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
                   onClick={() => navigate('/usage')}
                   className="text-np font-medium hover:underline cursor-pointer"
                 >
-                  Usage &amp; cost
+                  Usage
                 </button>
               </div>
 

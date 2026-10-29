@@ -31,6 +31,8 @@ export function usePageMeta({ title, description, path, noindex = false }: {
     setMeta('property', 'og:title', title)
     setMeta('property', 'og:description', description)
     setMeta('property', 'og:url', url)
+    setMeta('name', 'twitter:title', title)
+    setMeta('name', 'twitter:description', description)
     setMeta('name', 'robots', noindex ? 'noindex, nofollow' : 'index, follow')
     let link = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')
     if (!link) {

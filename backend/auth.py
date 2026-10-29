@@ -20,6 +20,7 @@ from sqlalchemy.exc import IntegrityError
 
 from backend.db.database import get_db
 from backend.db.models import User, Subscription
+from config import FREE_MONTHLY_MINUTES
 
 # HTTP Bearer authentication scheme (auto_error=False to allow anonymous optional routes)
 security = HTTPBearer(auto_error=False)
@@ -131,7 +132,7 @@ async def get_or_create_user_from_token(payload: Dict[str, Any], db: AsyncSessio
             user_id=user_id,
             status="trial",
             plan_tier="free",
-            monthly_minutes_quota=45,  # 45 mins free trial
+            monthly_minutes_quota=FREE_MONTHLY_MINUTES,
             used_minutes_this_month=0,
         )
         db.add(subscription)
@@ -184,7 +185,7 @@ async def get_or_create_user_from_token(payload: Dict[str, Any], db: AsyncSessio
                 user_id=user.id,
                 status="trial",
                 plan_tier="free",
-                monthly_minutes_quota=45,
+                monthly_minutes_quota=FREE_MONTHLY_MINUTES,
                 used_minutes_this_month=0,
             )
         )

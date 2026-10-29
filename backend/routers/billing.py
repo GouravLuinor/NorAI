@@ -16,7 +16,7 @@ Checkout flow (Razorpay Standard Checkout, one-time orders):
 
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -60,6 +60,25 @@ async def _load_subscription(db: AsyncSession, user_id: str) -> Optional[Subscri
         return None
 
 
+def _resets_at(sub: Optional[Subscription]) -> Optional[str]:
+    """When the used minutes go back to zero (same rule as rollover_if_needed).
+
+    None when nothing is used yet, or the period already lapsed and will roll
+    over on the next check.
+    """
+    if sub is None or not sub.used_minutes_this_month:
+        return None
+    end = sub.current_period_end
+    if end is None:
+        start = sub.current_period_start or sub.created_at
+        if start is None:
+            return None
+        end = start + timedelta(days=30)
+    if end.tzinfo is None:
+        end = end.replace(tzinfo=timezone.utc)
+    return _iso(end) if end > datetime.now(timezone.utc) else None
+
+
 def _iso(dt: Optional[datetime]) -> Optional[str]:
     if dt is None:
         return None
@@ -99,6 +118,7 @@ async def get_user_quota(
         "remaining_minutes": max(0, quota - used),
         "max_lecture_minutes": plan.max_lecture_min,
         "current_period_end": _iso(sub.current_period_end) if sub else None,
+        "resets_at": _resets_at(sub),
         "is_anonymous": user.is_anonymous,
     }
 

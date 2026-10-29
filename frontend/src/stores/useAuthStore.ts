@@ -25,6 +25,8 @@ export interface QuotaInfo {
   max_lecture_minutes?: number
   /** ISO end of a paid pass; null on Free. */
   current_period_end?: string | null
+  /** ISO time the used minutes go back to zero; null when none are used. */
+  resets_at?: string | null
   is_anonymous: boolean
 }
 

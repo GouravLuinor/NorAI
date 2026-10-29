@@ -5,46 +5,61 @@
  * search bots do not execute JavaScript, so a client-rendered page is empty to
  * them. This plugin puts the product's answer-style content into the static
  * HTML and emits the crawler files, all from the same sources the pages render
- * (src/content/faq.ts, src/content/plans.ts) so copy never drifts:
+ * (src/content/faq.ts, src/content/pages.ts) so copy never drifts:
  *
- *   index.html  JSON-LD (Organization, WebSite, SoftwareApplication with INR
- *               offers, FAQPage) + a <noscript> summary + absolute OG URLs
+ *   index.html  JSON-LD (Organization, WebSite, SoftwareApplication with a
+ *               free Offer, FAQPage) + a <noscript> summary + absolute OG URLs
  *   robots.txt  allow all (incl. AI crawlers), disallow private app routes
  *   sitemap.xml public routes
  *   llms.txt    plain-markdown product summary for LLMs (llmstxt.org)
  *
- * Absolute URLs come from VITE_SITE_URL (e.g. https://norai.in). Without it
+ * scripts/prerender.mjs then renders each public page into its own HTML file
+ * after the build, swapping in that page's <head> and FAQ (see routeHead()).
+ *
+ * Absolute URLs come from VITE_SITE_URL (e.g. https://norai.app). Without it
  * the build still works but warns, and URLs stay relative.
  */
 import type { Plugin } from 'vite'
-import { PRICING_FAQ, PRODUCT_FAQ, type FaqItem } from './src/content/faq.ts'
-import { FALLBACK_PLANS } from './src/content/plans.ts'
+import { FREE_FAQ, FREE_MINUTES, HOME_FAQ, PRODUCT_FAQ, type FaqItem } from './src/content/faq.ts'
+import { PAGE_META, type PageMeta } from './src/content/pages.ts'
 
 const NAME = 'NorAI'
 const TAGLINE = 'Turn lecture videos into notes, quizzes & an AI tutor'
-const DESCRIPTION =
-  'Paste a YouTube lecture or upload a class recording. NorAI writes chapter-wise study notes, a revision sheet, quiz and flashcards, plus a tutor that answers from your lecture. Free to start; passes from ₹149.'
+const DESCRIPTION = PAGE_META.home.description
 
-/** Same list the landing page renders in its FAQ section. */
-const HOME_FAQ: FaqItem[] = [...PRODUCT_FAQ, PRICING_FAQ[0], PRICING_FAQ[1]]
+/** FAQ shown (and marked up as FAQPage) on each public route. */
+export const ROUTE_FAQ: Record<string, FaqItem[]> = {
+  '/': HOME_FAQ,
+  '/pricing': FREE_FAQ,
+}
 
-const PUBLIC_ROUTES = [
-  { path: '/', priority: '1.0' },
-  { path: '/pricing', priority: '0.9' },
-  { path: '/signup', priority: '0.6' },
-  { path: '/login', priority: '0.3' },
-]
+const PRIVATE_PREFIXES = ['/app', '/billing', '/usage', '/courses', '/process/', '/print', '/reset-password', '/forgot-password', '/api/', '/_prerender/']
 
-const PRIVATE_PREFIXES = ['/app', '/billing', '/usage', '/courses', '/process/', '/print', '/reset-password', '/api/']
-
-const esc = (s: string) =>
+export const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 /** JSON inside <script> must not be able to close the tag. */
 const jsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c')
 
+const ldScript = (data: unknown, id?: string) =>
+  `<script type="application/ld+json"${id ? ` id="${id}"` : ''}>${jsonLd(data)}</script>`
+
+export function faqJsonLd(items: FaqItem[]) {
+  return ldScript(
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: items.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+    'ld-faq',
+  )
+}
+
 function structuredData(site: string) {
-  const paid = FALLBACK_PLANS.plans
   return [
     {
       '@context': 'https://schema.org',
@@ -58,7 +73,7 @@ function structuredData(site: string) {
       '@type': 'WebSite',
       name: NAME,
       url: `${site}/`,
-      inLanguage: 'en-IN',
+      inLanguage: 'en',
     },
     {
       '@context': 'https://schema.org',
@@ -70,39 +85,44 @@ function structuredData(site: string) {
       image: `${site}/og.jpg`,
       description: DESCRIPTION,
       audience: { '@type': 'EducationalAudience', educationalRole: 'student' },
-      offers: paid.map((p) => ({
+      isAccessibleForFree: true,
+      offers: {
         '@type': 'Offer',
-        name: `${p.name} (${p.period_days} days)`,
-        price: String(p.price_inr),
-        priceCurrency: 'INR',
-        description: p.features.join('; '),
+        name: 'Free',
+        price: '0',
+        priceCurrency: 'USD',
+        description: `${FREE_MINUTES} lecture-minutes every 30 days, every feature included`,
         url: `${site}/pricing`,
-      })),
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: HOME_FAQ.map((f) => ({
-        '@type': 'Question',
-        name: f.q,
-        acceptedAnswer: { '@type': 'Answer', text: f.a },
-      })),
+      },
     },
   ]
 }
 
+/**
+ * The route-specific part of <head>: title, description, canonical, OG/Twitter
+ * text. index.html carries the home values; prerender.mjs swaps them per route.
+ */
+export function routeHead(site: string, meta: PageMeta) {
+  const url = `${site}${meta.path}`
+  return [
+    `<title>${esc(meta.title)}</title>`,
+    `<meta name="description" content="${esc(meta.description)}" />`,
+    `<link rel="canonical" href="${url}" />`,
+    `<meta property="og:title" content="${esc(meta.title)}" />`,
+    `<meta property="og:description" content="${esc(meta.description)}" />`,
+    `<meta property="og:url" content="${url}" />`,
+    `<meta name="twitter:title" content="${esc(meta.title)}" />`,
+    `<meta name="twitter:description" content="${esc(meta.description)}" />`,
+  ].join('\n    ')
+}
+
 function noscriptSummary(site: string) {
-  const plans = FALLBACK_PLANS.plans
-    .map((p) => `<li><strong>${esc(p.name)}</strong>: ₹${p.price_inr} for ${p.period_days} days. ${esc(p.features.join('; '))}.</li>`)
-    .join('')
   const faq = HOME_FAQ.map((f) => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('')
   return `<noscript>
       <main>
         <h1>${esc(NAME)}: ${esc(TAGLINE)}</h1>
         <p>${esc(DESCRIPTION)}</p>
-        <h2>Pricing</h2>
-        <ul>${plans}</ul>
-        <p><a href="${site}/pricing">Full pricing</a> · <a href="${site}/signup">Start free</a></p>
+        <p><a href="${site}/pricing">It's free: ${FREE_MINUTES} lecture-minutes a month</a> · <a href="${site}/signup">Start free</a></p>
         <h2>Frequently asked questions</h2>
         ${faq}
         <p>NorAI needs JavaScript to run the study workspace.</p>
@@ -111,23 +131,25 @@ function noscriptSummary(site: string) {
 }
 
 function llmsTxt(site: string) {
-  const plans = FALLBACK_PLANS.plans
-    .map((p) => `- **${p.name}**: ₹${p.price_inr} for ${p.period_days} days. ${p.features.join('; ')}.`)
-    .join('\n')
-  const faq = [...PRODUCT_FAQ, ...PRICING_FAQ].map((f) => `### ${f.q}\n\n${f.a}`).join('\n\n')
+  const faq = [...PRODUCT_FAQ, ...FREE_FAQ].map((f) => `### ${f.q}\n\n${f.a}`).join('\n\n')
   return `# ${NAME}
 
-> ${NAME} turns a lecture video into chapter-wise study notes, a revision sheet, a quiz, flashcards and an AI tutor that answers only from that lecture. Built for college students in India; prices in rupees.
+> ${NAME} turns a lecture video into chapter-by-chapter study notes, a revision sheet, a quiz, flashcards, a mind map and an AI tutor that answers only from that lecture, with timestamps back to the video. It is free: ${FREE_MINUTES} lecture-minutes every 30 days per account, no credit card.
 
 ## Key pages
 
 - [Home](${site}/): what NorAI does, demo lectures, how it works
-- [Pricing](${site}/pricing): plans in INR and payment FAQ (UPI, cards, netbanking; one-time 30-day passes, no auto-debit)
-- [Sign up](${site}/signup): free account, 45 lecture-minutes every 30 days
+- [Free plan](${site}/pricing): what the free allowance includes and how lecture-minutes work
+- [Sign up](${site}/signup): free account, ${FREE_MINUTES} lecture-minutes every 30 days
 
-## Plans
+## What you get from one lecture
 
-${plans}
+- Study notes, chapter by chapter, in the order the lecture taught them, with formulas and the key slides
+- A revision sheet of takeaways and definitions per chapter
+- A quiz (multiple choice and true/false) linked back to the notes
+- Flashcards with spaced-repetition review, exportable to Anki
+- A mind map of each chapter
+- An AI tutor grounded in the lecture transcript and slides that cites timestamps
 
 ## FAQ
 
@@ -148,9 +170,10 @@ Sitemap: ${site}/sitemap.xml
 
 function sitemapXml(site: string) {
   const today = new Date().toISOString().slice(0, 10)
-  const urls = PUBLIC_ROUTES.map(
-    (r) => `  <url><loc>${site}${r.path}</loc><lastmod>${today}</lastmod><priority>${r.priority}</priority></url>`,
-  ).join('\n')
+  const urls = Object.values(PAGE_META as Record<string, PageMeta>)
+    .filter((p) => p.priority)
+    .map((r) => `  <url><loc>${site}${r.path}</loc><lastmod>${today}</lastmod><priority>${r.priority}</priority></url>`)
+    .join('\n')
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls}
@@ -168,10 +191,9 @@ export function seoPlugin(siteUrl: string | undefined): Plugin {
       }
     },
     transformIndexHtml(html) {
-      const scripts = structuredData(site)
-        .map((d) => `<script type="application/ld+json">${jsonLd(d)}</script>`)
-        .join('\n    ')
+      const scripts = [...structuredData(site).map((d) => ldScript(d)), faqJsonLd(ROUTE_FAQ['/'])].join('\n    ')
       return html
+        .replace('<!--seo:head-->', routeHead(site, PAGE_META.home))
         .replaceAll('__SITE_URL__', site)
         .replace('</head>', `    ${scripts}\n  </head>`)
         .replace('<div id="root"></div>', `<div id="root"></div>\n    ${noscriptSummary(site)}`)

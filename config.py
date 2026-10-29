@@ -60,8 +60,11 @@ MAX_SEGMENTS_PER_CHUNK = 30
 # 505.76s lecture ≈ 10.44 seg/min). Re-fit from real runs via calibration.
 DEFAULT_SEGS_PER_MIN = 10.5
 # Free-trial duration gate (mirrors the env override used in orchestrator).
-MAX_FREE_DURATION_MIN = int(os.environ.get("MAX_FREE_DURATION_MIN", "45"))
-DEFAULT_TRIAL_QUOTA_MINUTES = 45
+MAX_FREE_DURATION_MIN = int(os.environ.get("MAX_FREE_DURATION_MIN", "60"))
+# Lecture-minutes every Free account gets per 30-day period. NorAI launches
+# free-only on the Gemini free tier, so this is the main cost guard.
+FREE_MONTHLY_MINUTES = int(os.environ.get("NORAI_FREE_MINUTES", "60"))
+DEFAULT_TRIAL_QUOTA_MINUTES = FREE_MONTHLY_MINUTES
 
 # ── Feature Flags ────────────────────────────────────────────────────────────
 ENABLE_PAYMENTS = os.environ.get("ENABLE_PAYMENTS", "0") == "1"

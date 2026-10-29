@@ -45,9 +45,16 @@ function LandingRouteWrapper() {
   return <LandingPage onStartWorkspace={() => navigate('/app')} />
 }
 
+// Mounted only once opened, so visitors who never sign in don't download it.
 function AuthModalBridge() {
   const navigate = useNavigate()
-  return <AuthModal onSuccess={() => navigate('/app')} />
+  const isOpen = useAuthStore(s => s.isAuthModalOpen)
+  if (!isOpen) return null
+  return (
+    <Suspense fallback={null}>
+      <AuthModal onSuccess={() => navigate('/app')} />
+    </Suspense>
+  )
 }
 
 // If Supabase falls back to the Site URL for a reset link (redirect URL not

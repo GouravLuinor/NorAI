@@ -1,6 +1,6 @@
 /**
  * Answer-first FAQ copy. Rendered on /pricing and the landing page, and
- * mirrored into the FAQPage JSON-LD in index.html — keep the two in step.
+ * mirrored into the FAQPage JSON-LD and llms.txt by vite-plugin-seo.
  * Each answer opens with a direct one-sentence answer (what search and AI
  * answer engines quote), then the detail.
  */
@@ -9,6 +9,34 @@ export interface FaqItem {
   a: string
 }
 
+/** Free allowance; mirrors backend config FREE_MONTHLY_MINUTES (NORAI_FREE_MINUTES). */
+export const FREE_MINUTES = 60
+
+/** NorAI launches free-only: these replace the paid-pass FAQ on public pages. */
+export const FREE_FAQ: FaqItem[] = [
+  {
+    q: 'Is NorAI free?',
+    a: `Yes. Every account gets ${FREE_MINUTES} lecture-minutes every 30 days with every feature included: notes, revision sheet, quiz, flashcards, mind map and the AI tutor. There is no paid plan and no credit card to enter.`,
+  },
+  {
+    q: 'What counts as a lecture-minute?',
+    a: `One minute of the video you process. A 45-minute lecture uses 45 of your ${FREE_MINUTES} minutes. Opening its notes, quiz, flashcards or tutor again afterwards costs nothing.`,
+  },
+  {
+    q: 'What happens when I run out of minutes?',
+    a: 'You can keep studying everything you already processed; only new lectures wait. Your minutes reset 30 days after your current period started, and NorAI shows the reset date in the app.',
+  },
+  {
+    q: 'Why is there a monthly limit?',
+    a: 'Turning a video into notes uses real AI compute for every minute of it. A monthly allowance per account is how NorAI stays free for everyone.',
+  },
+]
+
+/**
+ * Paid-pass FAQ from the India launch plan (rupees, UPI, Razorpay). Only shown
+ * when the backend reports payments_enabled; rewrite for the target market
+ * before turning payments on.
+ */
 export const PRICING_FAQ: FaqItem[] = [
   {
     q: 'How much does NorAI cost in India?',
@@ -39,18 +67,25 @@ export const PRICING_FAQ: FaqItem[] = [
 export const PRODUCT_FAQ: FaqItem[] = [
   {
     q: 'What does NorAI do?',
-    a: 'NorAI turns a lecture video into chapter-wise study notes, a revision sheet, a quiz, flashcards and an AI tutor that answers only from that lecture, with timestamps back to the video.',
+    a: 'NorAI turns a lecture video into chapter-by-chapter study notes, a revision sheet, a quiz, flashcards and an AI tutor that answers only from that lecture, with timestamps back to the video.',
   },
   {
     q: 'Which videos can I use?',
-    a: 'Paste a YouTube link or upload an MP4, MOV, MKV, AVI or WebM file. Recorded classes, NPTEL and university lectures, coaching videos and conference talks all work; NorAI is tuned for English-language lectures today.',
+    a: 'Paste a YouTube link or upload an MP4, MOV, MKV, AVI or WebM file. Recorded classes, university lectures, online courses and conference talks all work. NorAI works best on English-language lectures.',
   },
   {
     q: 'How long does processing take?',
-    a: 'NorAI shows an estimate before you start, and most lectures are ready in a few minutes. You can close the tab while it works; the finished notes appear in your library.',
+    a: 'Most lectures are ready in a few minutes; NorAI shows the length and the minutes it will use before you start. You can close the tab while it works, and the finished lecture appears in your library.',
   },
   {
     q: 'Is the AI tutor accurate?',
-    a: 'The tutor answers from the lecture you uploaded, not from the open web, and cites the timestamp each answer comes from so you can check it against the video.',
+    a: 'The tutor answers from the lecture you processed, not from the open web, and cites the timestamp each answer comes from so you can check it against the video. If the lecture does not cover something, it says so.',
+  },
+  {
+    q: 'How is NorAI different from asking ChatGPT about a video?',
+    a: 'NorAI reads the whole lecture, transcript and slides, and builds a complete study set from it before you ask anything. The tutor is grounded in that one lecture and links every answer to the moment in the video, so it does not fill gaps with things your professor never said.',
   },
 ]
+
+/** The landing page's FAQ section (and its FAQPage JSON-LD). */
+export const HOME_FAQ: FaqItem[] = [...PRODUCT_FAQ, FREE_FAQ[0], FREE_FAQ[2]]

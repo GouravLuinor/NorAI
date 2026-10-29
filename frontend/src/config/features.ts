@@ -2,7 +2,9 @@
  * Application feature flags and defaults.
  * Non-destructively controls feature availability across UI and routing.
  */
-export const DEFAULT_TRIAL_QUOTA_MINUTES = 45
+import { FREE_MINUTES } from '../content/faq'
+
+export const DEFAULT_TRIAL_QUOTA_MINUTES = FREE_MINUTES
 
 export const PRIMARY_DEMO_LECTURE_ID = 'ab648382-638f-4dde-b7c1-4007a2e638bb'
 

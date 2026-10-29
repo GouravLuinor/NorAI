@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Lock, RotateCcw, Smartphone } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Lock, RotateCcw, Smartphone } from 'lucide-react'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useToastStore } from '../stores/useToastStore'
 import { PlanSheet } from '../components/billing/PlanSheet'
 import { FaqList } from '../components/marketing/FaqList'
-import { PRICING_FAQ } from '../content/faq'
+import { FREE_FAQ, FREE_MINUTES, PRICING_FAQ } from '../content/faq'
+import { PAGE_META } from '../content/pages'
 import { usePlans, type Plan } from '../lib/plans'
 import { startCheckout } from '../lib/razorpay'
 import { friendlyError } from '../lib/errorCopy'
-import { LINK_RING } from '../components/ui/shared'
+import { FOCUS_RING, LINK_RING } from '../components/ui/shared'
 import { usePageMeta } from '../lib/usePageMeta'
 
 export function PricingPage() {
@@ -21,12 +22,7 @@ export function PricingPage() {
   const { plans, payments_enabled } = usePlans()
   const [busy, setBusy] = useState<string | null>(null)
 
-  usePageMeta({
-    title: 'Pricing — NorAI | Lecture notes & AI tutor from ₹149',
-    description:
-      'NorAI pricing in rupees: free for 45 lecture-minutes, Starter ₹149 for 5 hours, Pro ₹449 for 20 hours. One-time 30-day passes, pay by UPI or card, no auto-debit.',
-    path: '/pricing',
-  })
+  usePageMeta(PAGE_META.pricing)
 
   const signedIn = Boolean(user && !user.isAnonymous)
   useEffect(() => {
@@ -61,6 +57,66 @@ export function PricingPage() {
     } finally {
       setBusy(null)
     }
+  }
+
+  // NorAI launches free-only: the paid-pass sheet below only shows once the
+  // backend reports payments_enabled.
+  if (!payments_enabled) {
+    return (
+      <div id="main" className="min-h-screen bg-nb text-nt font-sans selection:bg-npb selection:text-npt">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10 sm:py-14">
+          <Link to="/" className={`inline-flex items-center gap-1.5 text-13 text-nt3 hover:text-nt ${LINK_RING}`}>
+            <ArrowLeft size={14} aria-hidden="true" /> NorAI home
+          </Link>
+
+          <header className="mt-10">
+            <h1 className="font-serif text-44 sm:text-[3.5rem] leading-[1.05] tracking-tight text-balance">
+              NorAI is free.
+            </h1>
+            <p className="mt-5 max-w-xl text-17 leading-relaxed text-nt2">
+              Every account gets {FREE_MINUTES} lecture-minutes every 30 days, with every feature included. There is
+              no paid tier holding anything back, and no card to enter.
+            </p>
+          </header>
+
+          <dl className="mt-12 divide-y divide-bdr border-y border-bdr">
+            {[
+              [`${FREE_MINUTES} lecture-minutes`, 'Of new video, every 30 days. A 45-minute class uses 45 of them.'],
+              ['Study notes', 'Chapter by chapter, with formulas typeset and the slides that mattered.'],
+              ['Revision sheet, quiz, flashcards', 'Built from the same lecture; flashcards come back on a spaced-repetition schedule.'],
+              ['AI tutor', 'Answers only from your lecture and links each answer to the moment in the video.'],
+              ['Mind map and PDF export', 'For seeing the whole chapter at once, or studying offline.'],
+            ].map(([term, body]) => (
+              <div key={term} className="grid gap-1 py-5 sm:grid-cols-[14rem_1fr] sm:gap-8">
+                <dt className="font-serif text-20 text-nt">{term}</dt>
+                <dd className="text-15 leading-relaxed text-nt2">{body}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-4">
+            <button
+              onClick={() => navigate(signedIn ? '/app' : '/signup')}
+              className={`inline-flex items-center justify-center gap-2 rounded-md bg-npf px-6 py-3 text-15 font-medium text-npfg hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
+            >
+              {signedIn ? 'Open your workspace' : 'Create a free account'} <ArrowRight size={16} aria-hidden="true" />
+            </button>
+            {signedIn && quota && (
+              <p className="text-13 text-nt3 tabular-nums">
+                You have {quota.remaining_minutes} of {quota.monthly_minutes_quota} minutes left.
+              </p>
+            )}
+          </div>
+
+          <section aria-labelledby="free-faq" className="mt-20">
+            <h2 id="free-faq" className="font-serif text-28 tracking-tight">Questions about the free plan</h2>
+            <div className="mt-5">
+              <FaqList items={FREE_FAQ} />
+            </div>
+          </section>
+        </div>
+      </div>
+    )
   }
 
   return (

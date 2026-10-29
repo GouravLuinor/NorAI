@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { X, Mail, Lock, User as UserIcon, ArrowRight, Sparkles } from 'lucide-react'
+import { X, Mail, Lock, User as UserIcon, ArrowRight } from 'lucide-react'
 import { useAuthStore } from '../../stores/useAuthStore'
+import { FREE_MINUTES } from '../../content/faq'
 import { supabase } from '../../lib/supabaseClient'
 import { friendlyError } from '../../lib/errorCopy'
 import { Dialog } from '../ui/Dialog'
@@ -103,17 +104,13 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
 
         {/* Header */}
         <div className="mb-6 text-center">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-npb text-npt font-mono text-10 font-medium mb-3">
-            <Sparkles size={11} className="text-np" />
-            <span>NorAI Study Platform</span>
-          </div>
           <h2 className="text-22 font-bold font-serif text-nt">
-            {tab === 'login' ? 'Welcome Back' : 'Create Your Account'}
+            {tab === 'login' ? 'Welcome back' : 'Create your free account'}
           </h2>
           <p className="text-12 text-nt2 mt-1 font-sans">
             {tab === 'login'
-              ? 'Sign in to access your saved lectures & tutor threads'
-              : 'Sign up to get 45 minutes free lecture processing & Nora AI Tutor'}
+              ? 'Your lectures, notes and tutor threads are waiting.'
+              : `Free: ${FREE_MINUTES} lecture-minutes a month, every feature included. No card.`}
           </p>
         </div>
 
@@ -227,10 +224,10 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
             className="w-full py-2.5 px-4 bg-np hover:bg-nph text-npfg font-display text-11 font-semibold uppercase tracking-wider rounded shadow-bp flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer active:translate-y-[1px]"
           >
             {loading ? (
-              <span>Authenticating...</span>
+              <span>{tab === 'login' ? 'Signing in…' : 'Creating account…'}</span>
             ) : (
               <>
-                <span>{tab === 'login' ? 'Sign In' : 'Create Free Account (45m Quota)'}</span>
+                <span>{tab === 'login' ? 'Sign in' : 'Create free account'}</span>
                 <ArrowRight size={15} />
               </>
             )}

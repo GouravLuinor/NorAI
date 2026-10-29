@@ -4,10 +4,9 @@ import { ArrowRight, ArrowUpRight, LogOut, Menu, X } from 'lucide-react'
 import { useAuthStore } from '../stores/useAuthStore'
 import { FOCUS_RING, LINK_RING } from '../components/ui/shared'
 import { DEMO_LECTURES_CONFIG, PRIMARY_DEMO_LECTURE_ID } from '../config/features'
-import { PlanSheet } from '../components/billing/PlanSheet'
 import { FaqList } from '../components/marketing/FaqList'
-import { PRICING_FAQ, PRODUCT_FAQ } from '../content/faq'
-import { usePlans } from '../lib/plans'
+import { FREE_MINUTES, HOME_FAQ } from '../content/faq'
+import { PAGE_META } from '../content/pages'
 import { usePageMeta } from '../lib/usePageMeta'
 
 interface LandingPageProps {
@@ -45,7 +44,7 @@ const OUTPUTS = [
 const STEPS = [
   {
     title: 'Paste a YouTube link or upload the recording',
-    body: 'MP4, MOV, MKV, AVI or WebM. NPTEL, a recorded class, a coaching video: anything with someone teaching.',
+    body: 'MP4, MOV, MKV, AVI or WebM. A recorded class, a university lecture, an online course: anything with someone teaching.',
   },
   {
     title: 'Check the estimate, then let it run',
@@ -57,9 +56,7 @@ const STEPS = [
   },
 ] as const
 
-const HOME_FAQ = [...PRODUCT_FAQ, PRICING_FAQ[0], PRICING_FAQ[1]]
-
-/** The red margin rule of an Indian ruled notebook; content sits to its right on md+. */
+/** The red margin rule of a ruled notebook; content sits to its right on md+. */
 function Margin({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <div className={`relative mx-auto w-full max-w-6xl px-4 sm:px-6 md:pl-28 ${className}`}>
@@ -73,15 +70,9 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
-  const { plans, payments_enabled } = usePlans()
   const [menuOpen, setMenuOpen] = useState(false)
 
-  usePageMeta({
-    title: 'NorAI — Turn lecture videos into notes, quizzes & an AI tutor',
-    description:
-      'Paste a YouTube lecture or upload a class recording. NorAI writes chapter-wise study notes, a revision sheet, quiz and flashcards, plus a tutor that answers from your lecture. Free to start; passes from ₹149.',
-    path: '/',
-  })
+  usePageMeta(PAGE_META.home)
 
   const start = () => (user ? onStartWorkspace() : navigate('/signup'))
   const signOut = async () => {
@@ -94,7 +85,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
     <>
       <a href="#how-it-works" className={`hover:text-nt transition-colors ${LINK_RING}`} onClick={() => setMenuOpen(false)}>How it works</a>
       <a href="#demo" className={`hover:text-nt transition-colors ${LINK_RING}`} onClick={() => setMenuOpen(false)}>Demo</a>
-      <Link to="/pricing" className={`hover:text-nt transition-colors ${LINK_RING}`}>Pricing</Link>
+      <Link to="/pricing" className={`hover:text-nt transition-colors ${LINK_RING}`}>It's free</Link>
       <a href="#faq" className={`hover:text-nt transition-colors ${LINK_RING}`} onClick={() => setMenuOpen(false)}>FAQ</a>
     </>
   )
@@ -180,7 +171,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
               onClick={start}
               className={`inline-flex items-center justify-center gap-2 rounded-md bg-npf px-6 py-3.5 text-15 font-medium text-npfg shadow-bp hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
             >
-              {user ? 'Open your workspace' : 'Start free: 45 minutes, no card'}
+              {user ? 'Open your workspace' : 'Start free: no card needed'}
               <ArrowRight size={16} aria-hidden="true" />
             </button>
             <Link
@@ -191,7 +182,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
             </Link>
           </div>
           <p className="mt-5 text-13 text-nt3">
-            Paid passes from ₹149 for 30 days. Pay with UPI or card; nothing auto-renews.
+            Free for every student: {FREE_MINUTES} lecture-minutes a month, every feature included.
           </p>
         </Margin>
 
@@ -331,24 +322,37 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
         </Margin>
       </section>
 
-      {/* Pricing */}
+      {/* Free — what the allowance covers */}
       <section id="pricing" aria-labelledby="pricing-heading" className="py-20 sm:py-28">
-        <Margin>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <Margin className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+          <div>
             <h2 id="pricing-heading" className="max-w-xl font-serif text-36 sm:text-44 leading-tight tracking-tight text-balance">
-              Priced for a student budget.
+              Free. All of it.
             </h2>
-            <Link to="/pricing" className={`text-14 text-nt underline decoration-np/50 decoration-2 underline-offset-4 hover:decoration-np ${LINK_RING}`}>
-              Full pricing and payment FAQ
-            </Link>
+            <p className="mt-5 max-w-md text-15 leading-relaxed text-nt2">
+              Every account gets {FREE_MINUTES} lecture-minutes every 30 days, with nothing held back for a paid tier.
+              Everything you process stays in your library, and studying it again never uses minutes.
+            </p>
+            <button
+              onClick={start}
+              className={`mt-8 inline-flex items-center justify-center gap-2 rounded-md bg-npf px-6 py-3 text-15 font-medium text-npfg hover:bg-npfh active:translate-y-px cursor-pointer transition-colors ${FOCUS_RING}`}
+            >
+              {user ? 'Open your workspace' : 'Create a free account'} <ArrowRight size={16} aria-hidden="true" />
+            </button>
           </div>
-          <div className="mt-10">
-            <PlanSheet
-              plans={plans}
-              paymentsEnabled={payments_enabled}
-              onChoose={(p) => navigate(p.purchasable ? '/pricing' : user ? '/app' : '/signup')}
-            />
-          </div>
+          <dl className="divide-y divide-bdr border-y border-bdr self-start">
+            {[
+              [`${FREE_MINUTES} minutes`, 'Of new lectures, every 30 days. A 45-minute class uses 45.'],
+              ['Every feature', 'Notes, revision sheet, quiz, flashcards, mind map, PDF export and the tutor.'],
+              ['No card', 'Sign up with an email. Nothing to cancel, nothing that renews.'],
+              ['Yours to keep', 'Re-reading notes, retaking quizzes and asking the tutor never use minutes.'],
+            ].map(([term, body]) => (
+              <div key={term} className="grid gap-1 py-4 sm:grid-cols-[9.5rem_1fr] sm:gap-6">
+                <dt className="font-serif text-20 text-nt">{term}</dt>
+                <dd className="text-14 leading-relaxed text-nt2">{body}</dd>
+              </div>
+            ))}
+          </dl>
         </Margin>
       </section>
 
@@ -383,10 +387,10 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
           <p>
             <span className="font-serif text-17 text-nt">Nor<span className="text-np">AI</span></span>
-            <span className="ml-3">Study notes and a tutor from your lectures, built for students in India. © 2026</span>
+            <span className="ml-3">Study notes and a tutor from your lectures. © 2026</span>
           </p>
           <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link to="/pricing" className={`hover:text-nt ${LINK_RING}`}>Pricing</Link>
+            <Link to="/pricing" className={`hover:text-nt ${LINK_RING}`}>Free plan</Link>
             <a href="#demo" className={`hover:text-nt ${LINK_RING}`}>Demo lectures</a>
             <Link to="/signup" className={`hover:text-nt ${LINK_RING}`}>Sign up</Link>
             <Link to="/login" className={`hover:text-nt ${LINK_RING}`}>Log in</Link>

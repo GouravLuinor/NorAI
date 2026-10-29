@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Sparkles, Film, Upload, Link2, FileVideo, ArrowRight, BookOpen, Clock, Info, Activity, AlertTriangle, LogOut, RefreshCw } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
@@ -10,7 +10,7 @@ import { useAuthStore } from '../stores/useAuthStore'
 import { useCourseStore } from '../stores/useCourseStore'
 import { useRateLimitStore } from '../stores/useRateLimitStore'
 import { DEFAULT_TRIAL_QUOTA_MINUTES } from '../config/features'
-import { formatMinutes } from '../lib/plans'
+import { formatMinutes, quotaResetLabel } from '../lib/plans'
 
 type InputType = 'youtube' | 'upload' | 'drive'
 
@@ -46,8 +46,6 @@ interface EstimateResult {
 
 // The tab says "Drive"; the API's source_type is "gdrive".
 const apiSourceType = (t: InputType) => (t === 'drive' ? 'gdrive' : t)
-
-const PLAN_LABEL: Record<string, string> = { free: 'Free', starter: 'Starter', pro: 'Pro' }
 
 /** Pull a readable message out of a FastAPI error body (string or {message}). */
 function errorDetail(body: unknown): string | null {
@@ -260,7 +258,6 @@ export function UploadPage() {
     ((inputType === 'upload' && file) ||
       ((inputType === 'youtube' || inputType === 'drive') && url.trim()))
 
-  const planLabel = quota ? (PLAN_LABEL[quota.plan_tier] ?? quota.plan_tier) : 'Free'
 
   const logout = useAuthStore((s) => s.logout)
 
@@ -445,11 +442,9 @@ export function UploadPage() {
                     <AlertTriangle size={11} strokeWidth={1.5} className="mt-0.5 shrink-0" />
                     <span>
                       {estimate.plan_max_min !== undefined && (estimate.duration_min ?? 0) > estimate.plan_max_min
-                        ? `Longer than the ${estimate.plan_name ?? planLabel} plan's ${estimate.plan_max_min}-minute limit per lecture.`
-                        : `Needs ${estimate.minutes_needed} lecture-minutes; you have ${estimate.remaining_minutes} left.`}{' '}
-                      <Link to="/billing" className="font-medium underline underline-offset-2 hover:text-nt">
-                        See plans
-                      </Link>
+                        ? `Longer than the ${estimate.plan_max_min}-minute limit per lecture.`
+                        : `Needs ${estimate.minutes_needed} lecture-minutes; you have ${estimate.remaining_minutes} left.`}
+                      {quota?.resets_at && ` Your minutes ${quotaResetLabel(quota.resets_at)}.`}
                     </span>
                   </div>
                 )}
@@ -486,14 +481,7 @@ export function UploadPage() {
                 <AlertTriangle size={11} strokeWidth={1.5} className="mt-0.5 shrink-0" />
                 <span>
                   {submitError}
-                  {submitErrorIsQuota && (
-                    <>
-                      {' '}
-                      <Link to="/billing" className="font-medium underline underline-offset-2 hover:text-nt">
-                        See plans
-                      </Link>
-                    </>
-                  )}
+                  {submitErrorIsQuota && quota?.resets_at && ` Your minutes ${quotaResetLabel(quota.resets_at)}.`}
                 </span>
               </div>
             )}
@@ -539,14 +527,12 @@ export function UploadPage() {
             <span>
               {quota ? (
                 <>
-                  {planLabel} plan · {formatMinutes(quota.remaining_minutes)} left
-                  {quota.max_lecture_minutes ? ` · lectures up to ${quota.max_lecture_minutes} min` : ''} ·{' '}
-                  <Link to="/billing" className="underline underline-offset-2 hover:text-nt2">
-                    {quota.plan_tier === 'free' ? 'Get more time' : 'Plan & billing'}
-                  </Link>
+                  {formatMinutes(quota.remaining_minutes)} of lectures left
+                  {quota.resets_at ? ` · ${quotaResetLabel(quota.resets_at)}` : ''}
+                  {quota.max_lecture_minutes ? ` · lectures up to ${quota.max_lecture_minutes} min` : ''}
                 </>
               ) : (
-                `Free accounts include ${DEFAULT_TRIAL_QUOTA_MINUTES} lecture-minutes every 30 days.`
+                `Free: ${DEFAULT_TRIAL_QUOTA_MINUTES} lecture-minutes every 30 days.`
               )}
             </span>
           </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Check, ArrowRight, RotateCcw, AlertTriangle, Clock, Info } from 'lucide-react'
+import { Check, ArrowRight, RotateCcw, AlertTriangle, Clock, Info, Bell, BellRing } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { useAuthStore } from '../stores/useAuthStore'
@@ -37,6 +37,19 @@ function formatCountdown(totalSeconds: number): string {
   return `${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`
 }
 
+const NOTIFY_KEY = 'norai-notify-ready'
+
+const canNotify = () => typeof Notification !== 'undefined'
+
+/** Opted in earlier (and the browser still allows it). */
+const notifyOptedIn = () => {
+  try {
+    return canNotify() && Notification.permission === 'granted' && localStorage.getItem(NOTIFY_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 export function ProcessingPage() {
   const { taskId } = useParams<{ taskId: string }>()
   const navigate = useNavigate()
@@ -49,6 +62,49 @@ export function ProcessingPage() {
   const [errored, setErrored] = useState(false)
   const [isRpdLimited, setIsRpdLimited] = useState(false)
   const { remainingSeconds } = useRateLimitStore()
+  const [notify, setNotify] = useState(notifyOptedIn)
+
+  const enableNotify = async () => {
+    if (!canNotify()) return
+    const permission = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission
+    const on = permission === 'granted'
+    setNotify(on)
+    try {
+      localStorage.setItem(NOTIFY_KEY, on ? '1' : '0')
+    } catch {
+      /* private mode: this run still notifies */
+    }
+  }
+
+  // The tab title carries progress, so a backgrounded tab still shows it.
+  useEffect(() => {
+    const previous = document.title
+    return () => {
+      document.title = previous
+    }
+  }, [])
+  useEffect(() => {
+    document.title = finished
+      ? 'Ready: your lecture · NorAI'
+      : errored
+        ? 'Stopped · NorAI'
+        : `${Math.round(progress)}% processing · NorAI`
+  }, [finished, errored, progress])
+
+  // Tell a user who went elsewhere that the lecture is ready.
+  useEffect(() => {
+    if (!finished || !notify || !document.hidden || !canNotify() || Notification.permission !== 'granted') return
+    const n = new Notification('Your lecture is ready', {
+      body: 'Notes, quiz, flashcards and the tutor are waiting in NorAI.',
+      icon: '/favicon.svg',
+      tag: `norai-ready-${taskId}`,
+    })
+    n.onclick = () => {
+      window.focus()
+      navigate(`/workspace/${taskId}`)
+      n.close()
+    }
+  }, [finished, notify, taskId, navigate])
 
   useEffect(() => {
     if (!taskId) return
@@ -56,6 +112,9 @@ export function ProcessingPage() {
     const controller = new AbortController()
     const BASE_DELAY_MS = 1500
     const MAX_DELAY_MS = 10000
+    // Hidden tabs keep a slow poll so the title and the "ready" notification
+    // still fire while the user is in another tab.
+    const HIDDEN_DELAY_MS = 20000
     let timer: ReturnType<typeof setTimeout> | null = null
     let delay = BASE_DELAY_MS
     let lastSignature = ''
@@ -126,20 +185,15 @@ export function ProcessingPage() {
     }
 
     const scheduleNext = () => {
-      // P3.4: hidden tabs don't need live progress — defer polling until the
-      // tab is visible again instead of burning a request every 1.5s for an
-      // hour-long pipeline.
-      if (document.hidden || stopped) return
-      timer = setTimeout(poll, delay)
+      // P3.4: hidden tabs don't need live progress — poll every 20 s instead
+      // of every 1.5 s for an hour-long pipeline.
+      if (stopped) return
+      timer = setTimeout(poll, document.hidden ? Math.max(delay, HIDDEN_DELAY_MS) : delay)
     }
 
     const poll = async () => {
       timer = null
       if (stopped) return
-      if (document.hidden) {
-        scheduleNext()  // reschedules only once visible
-        return
-      }
       try {
         const res = await apiFetchRaw(`/process/${taskId}/status`, { signal: controller.signal })
         if (res.status === 404) {
@@ -176,7 +230,12 @@ export function ProcessingPage() {
     }
 
     const handleVisibility = () => {
-      if (!document.hidden && timer === null && !stopped) poll()
+      // Back in view: refresh now instead of waiting out the slow hidden poll.
+      if (!document.hidden && !stopped) {
+        if (timer) clearTimeout(timer)
+        delay = BASE_DELAY_MS
+        poll()
+      }
     }
     document.addEventListener('visibilitychange', handleVisibility)
 
@@ -291,6 +350,17 @@ export function ProcessingPage() {
               lecture appears under Your lectures when it's ready.
             </span>
           </p>
+        )}
+        {!finished && !errored && canNotify() && Notification.permission !== 'denied' && (
+          <button
+            type="button"
+            onClick={() => void enableNotify()}
+            disabled={notify}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-bdr2 bg-ns px-3 py-1.5 text-12 text-nt2 hover:bg-ns2 hover:text-nt disabled:cursor-default disabled:hover:bg-ns cursor-pointer transition-colors"
+          >
+            {notify ? <BellRing size={13} aria-hidden="true" className="text-np" /> : <Bell size={13} aria-hidden="true" />}
+            {notify ? "We'll notify you when it's ready" : "Notify me when it's ready"}
+          </button>
         )}
 
         {/* Go to workspace button */}

@@ -34,13 +34,16 @@ os.environ["NORAI_DEV_ACCESS"] = "0"
 # Patch the auth dependency so we can simulate a signed-in user without
 # crafting real Supabase JWTs.
 from backend import main as main_mod
+from backend.plans import get_plan
+
+FREE_MIN = get_plan("free").minutes
 main_mod.NORAI_DEV_ACCESS = False
 from backend.db.models import User as _User
 
 FAKE_USER_ID = "user_test_1"
 
 
-async def _seed(user_id: str = FAKE_USER_ID, used: int = 0, quota: int = 45,
+async def _seed(user_id: str = FAKE_USER_ID, used: int = 0, quota: int = FREE_MIN,
                 tier: str = "free", status: str = "trial", elapsed_period: bool = False):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -98,7 +101,7 @@ def test_quota_requires_auth_and_reports_usage():
     r_unauth = client.get("/quota")
     check("quota 401 without auth", r_unauth.status_code == 401)
 
-    asyncio.run(_seed(used=3, quota=45))
+    asyncio.run(_seed(used=3))
     # Authenticated user
     main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
     try:
@@ -106,8 +109,9 @@ def test_quota_requires_auth_and_reports_usage():
         data = r.json()
         check("quota 200 with auth", r.status_code == 200)
         check("used reported", data["used_minutes_this_month"] == 3)
-        check("quota reported 45", data["monthly_minutes_quota"] == 45)
-        check("remaining computed 42", data["remaining_minutes"] == 42)
+        check("quota reported free minutes", data["monthly_minutes_quota"] == FREE_MIN)
+        check("remaining computed", data["remaining_minutes"] == FREE_MIN - 3)
+        check("resets_at set once minutes are used", bool(data.get("resets_at")))
         check("plan tier free", data["plan_tier"] == "free")
         check("subscription status trial", data["subscription_status"] == "trial")
     finally:
@@ -123,7 +127,7 @@ def _enable_payments(on: bool):
 
 def test_billing_returns_plan_and_usage():
     _enable_payments(True)
-    asyncio.run(_seed(used=3, quota=45))
+    asyncio.run(_seed(used=3))
     client = TestClient(main_mod.app)
     main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
     try:
@@ -133,7 +137,7 @@ def test_billing_returns_plan_and_usage():
         check("plan tier", data["plan_tier"] == "free")
         check("plan details", data["plan"]["id"] == "free" and data["plan"]["max_lecture_min"] > 0)
         check("used", data["used_minutes_this_month"] == 3)
-        check("remaining", data["remaining_minutes"] == 42)
+        check("remaining", data["remaining_minutes"] == FREE_MIN - 3)
         check("payments list", data["payments"] == [])
         check("payments enabled flag", data["payments_enabled"] is True)
         check("no lemon squeezy fields", "checkout_urls" not in data and "manage_url" not in data)
@@ -158,7 +162,7 @@ def test_razorpay_order_and_verify():
     import hmac
     from backend import razorpay_client
 
-    asyncio.run(_seed(used=0, quota=45))
+    asyncio.run(_seed(used=0))
     client = TestClient(main_mod.app)
 
     r = client.post("/billing/razorpay/order", json={"plan_id": "starter"})
@@ -234,7 +238,7 @@ def test_razorpay_order_and_verify():
 
 
 def test_paid_plan_raises_duration_cap():
-    # A Starter pass lifts the 45-min free cap to 90 min.
+    # A Starter pass lifts the free per-lecture cap to 90 min.
     asyncio.run(_seed(used=0, quota=300, tier="starter", status="active"))
     async def _set_end():
         from sqlalchemy import select
@@ -287,7 +291,7 @@ def test_guest_rejected_from_quota():
 
 
 def test_process_enforces_pre_download_quota():
-    asyncio.run(_seed(used=44, quota=45))  # only 1 minute left
+    asyncio.run(_seed(used=FREE_MIN - 1))  # only 1 minute left
     client = TestClient(main_mod.app)
     main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
     try:
@@ -304,7 +308,7 @@ def test_process_enforces_pre_download_quota():
 
 
 def test_process_rejects_exhausted_quota():
-    asyncio.run(_seed(used=45, quota=45))
+    asyncio.run(_seed(used=FREE_MIN))
     client = TestClient(main_mod.app)
     main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
     try:
@@ -321,7 +325,7 @@ def test_process_rejects_exhausted_quota():
 def test_quota_rolls_over_expired_period():
     # P0 regression: /quota must roll an elapsed billing period forward
     # instead of reporting a permanently exhausted quota.
-    asyncio.run(_seed(used=45, quota=45, elapsed_period=True))
+    asyncio.run(_seed(used=FREE_MIN, elapsed_period=True))
     client = TestClient(main_mod.app)
     main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
     try:
@@ -329,7 +333,7 @@ def test_quota_rolls_over_expired_period():
         data = r.json()
         check("expired-period quota 200", r.status_code == 200)
         check("expired-period used rolled to 0", data["used_minutes_this_month"] == 0)
-        check("expired-period remaining restored to 45", data["remaining_minutes"] == 45)
+        check("expired-period remaining restored", data["remaining_minutes"] == FREE_MIN)
     finally:
         main_mod.app.dependency_overrides.clear()
 
@@ -337,7 +341,7 @@ def test_quota_rolls_over_expired_period():
 def test_process_unlocked_after_period_rollover():
     # P0 regression: rollover used to run only on pipeline completion, which
     # this very gate blocked — expired-period users were 429-locked forever.
-    asyncio.run(_seed(used=45, quota=45, elapsed_period=True))
+    asyncio.run(_seed(used=FREE_MIN, elapsed_period=True))
     client = TestClient(main_mod.app)
     main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
     try:
@@ -352,14 +356,14 @@ def test_process_unlocked_after_period_rollover():
 
 
 def test_process_rejects_over_free_trial_duration():
-    asyncio.run(_seed(used=0, quota=45))
+    asyncio.run(_seed(used=0))
     client = TestClient(main_mod.app)
     main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
     try:
-        # 50 minutes > 45-min free-trial ceiling.
+        # Longer than the Free plan's per-lecture ceiling.
         r = client.post(
             "/process",
-            data={"source_type": "upload", "duration": "50"},
+            data={"source_type": "upload", "duration": str(get_plan("free").max_lecture_min + 5)},
             files={"file": ("v.mp4", b"fakedata", "video/mp4")},
         )
         check("process 429 over free-trial duration", r.status_code == 429)
@@ -368,7 +372,7 @@ def test_process_rejects_over_free_trial_duration():
 
 
 def test_process_allows_within_quota_upload():
-    asyncio.run(_seed(used=0, quota=45))
+    asyncio.run(_seed(used=0))
     client = TestClient(main_mod.app)
     main_mod.app.dependency_overrides[main_mod.get_current_user] = _fake_user()
     try:

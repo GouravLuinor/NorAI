@@ -55,8 +55,14 @@ def rollover_if_needed(sub: Subscription, now: Optional[datetime] = None) -> boo
             downgrade_to_free(sub, now)
             return True
         return False
+    # Free accounts are raised to the current Free allowance
+    # (FREE_MONTHLY_MINUTES), so users who signed up under a lower one get it.
+    topped_up = False
+    if sub.plan_tier == "free" and (sub.monthly_minutes_quota or 0) < get_plan("free").minutes:
+        sub.monthly_minutes_quota = get_plan("free").minutes
+        topped_up = True
     if sub.used_minutes_this_month == 0:
-        return False
+        return topped_up
     end = sub.current_period_end
     if end is None:
         start = sub.current_period_start or sub.created_at or now
@@ -69,7 +75,7 @@ def rollover_if_needed(sub: Subscription, now: Optional[datetime] = None) -> boo
         sub.used_minutes_this_month = 0
         sub.current_period_start = now
         return True
-    return False
+    return topped_up
 
 
 def _free_limits() -> tuple[int, int]:

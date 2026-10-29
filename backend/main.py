@@ -72,6 +72,7 @@ from tutor.vector_store import VectorStore, has_tutor_index, index_dir
 from config import (
     CHECKPOINT_DB_PATH,
     DEMO_LECTURE_IDS,
+    FREE_MONTHLY_MINUTES,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func
@@ -310,6 +311,18 @@ SPA_HTML_ROUTES = {
     "/login", "/signup", "/forgot-password", "/reset-password",
 }
 SPA_HTML_PREFIXES = ("/app", "/workspace", "/process/", "/print", "/share/")
+# Public pages with a build-time prerender (frontend/scripts/prerender.mjs):
+# their own <head> and, for some, the page markup, for crawlers and first paint.
+SPA_PRERENDERED = {"/": "home", "/pricing": "pricing", "/signup": "signup", "/login": "login"}
+
+
+def _spa_page(path: str) -> Path:
+    name = SPA_PRERENDERED.get(path)
+    if name:
+        candidate = SPA_DIST_DIR / "_prerender" / f"{name}.html"
+        if candidate.is_file():
+            return candidate
+    return SPA_DIST_DIR / "index.html"
 
 
 @app.middleware("http")
@@ -323,7 +336,7 @@ async def spa_middleware(request: Request, call_next):
         if "application/json" not in accept and "text/html" in accept and (
             path in SPA_HTML_ROUTES or path.startswith(SPA_HTML_PREFIXES)
         ):
-            return FileResponse(SPA_DIST_DIR / "index.html", media_type="text/html")
+            return FileResponse(_spa_page(path), media_type="text/html")
     return await call_next(request)
 
 
@@ -592,7 +605,7 @@ async def start_processing(
         # P0 fix: roll the billing period forward BEFORE comparing usage.
         if sub is not None and rollover_if_needed(sub):
             await db.commit()
-        quota = sub.monthly_minutes_quota if sub else 45
+        quota = sub.monthly_minutes_quota if sub else FREE_MONTHLY_MINUTES
         used = sub.used_minutes_this_month if sub else 0
         if used >= quota:
             raise HTTPException(
