@@ -1,0 +1,78 @@
+{
+    "chapter_id": 7,
+    "chapter_title": "Constant Acceleration and Integration",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 7,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Integration"
+            ],
+            "question": "Why is integration described as 'guessing' in the lecture?",
+            "options": [
+                "Because there is no mathematical basis for it.",
+                "Because it is the opposite of the algorithmic process of differentiation.",
+                "Because the constants are always random numbers.",
+                "Because it only works for constant acceleration."
+            ],
+            "answer": "Because it is the opposite of the algorithmic process of differentiation.",
+            "explanation": "The lecturer explains that while differentiation is an algorithmic process, integration requires guessing a function that satisfies the derivative conditions.",
+            "flashcard_front": "Why is integration described as 'guessing'?",
+            "flashcard_back": "It is the inverse of the algorithmic process of differentiation.",
+            "flashcard_explanation": "Unlike differentiation, which follows a set procedure, integration requires finding a function that results in the given derivative."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 7,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Initial Position"
+            ],
+            "question": "The constant $C$ in the position function $X(t) = \\frac{1}{2}AT^2 + BT + C$ represents the initial velocity of the particle.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The constant $C$ represents the initial position, while $B$ represents the initial velocity.",
+            "flashcard_front": "What does the constant C represent in the position function?",
+            "flashcard_back": "The initial position of the object at time T=0.",
+            "flashcard_explanation": "Evaluating the position function at T=0 shows that X(0) equals C."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 7,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Constant Acceleration"
+            ],
+            "question": "What is the most general form of the position function for a particle with constant acceleration A?",
+            "options": [],
+            "answer": "X(t) = 1/2 AT^2 + BT + C",
+            "explanation": "The lecturer derives this by integrating the constant acceleration twice and including the constants of integration B and C.",
+            "flashcard_front": "What is the general position function for constant acceleration A?",
+            "flashcard_back": "X(t) = 1/2 AT^2 + BT + C",
+            "flashcard_explanation": "This includes the acceleration term and the two constants representing initial velocity and position."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 7,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Integration"
+            ],
+            "question": "Why can you add a term $BT$ to the position function without changing the acceleration?",
+            "options": [],
+            "answer": "Because the second derivative of a linear term in T is zero.",
+            "explanation": "The first derivative of $BT$ is $B$, and the second derivative is $0$, so it does not affect the acceleration $A$.",
+            "flashcard_front": "Why can you add BT to the position function?",
+            "flashcard_back": "Its second derivative is zero, so it does not change the acceleration.",
+            "flashcard_explanation": "Taking two derivatives of a linear term results in zero, thus preserving the acceleration value."
+        }
+    ]
+}

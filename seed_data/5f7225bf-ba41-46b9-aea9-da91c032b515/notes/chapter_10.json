@@ -1,0 +1,24 @@
+{
+    "chapter_id": 10,
+    "title": "Conclusion and Course Logistics",
+    "sections": [
+        {
+            "section_type": "list",
+            "title": "Introduction of Teaching Assistants",
+            "content_markdown": "The lecturer introduced the team of teaching assistants who will be supporting the course. The group consists of Jackie, Emily Ankowitz, Wolf Soler, and Ella Heim Starkman Heim. All four individuals are advanced graduate students within the history department. Their academic specializations are diverse: Wolf and Emily are primarily early Americanists, Ella focuses on Civil War and Reconstruction history, and Jackie is a historian of 20th-century Asian-American history. The lecturer expressed gratitude for their presence, noting that they are a valuable asset to the course. Students are encouraged to engage with them as part of the instructional team.",
+            "start_sec": 3113.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Section Enrollment and Communication",
+            "content_markdown": "Regarding course administration, the lecturer instructed students to sign up for their sections, noting that the options are now available for selection. Clear communication channels have been established for the remainder of the course. Students are directed to send any questions or inquiries through Michael Hepp. It was confirmed during the session that Michael Hepp has already distributed the course syllabus to all enrolled students, ensuring that everyone has access to the necessary foundational documents for the semester.",
+            "start_sec": 3144.0
+        },
+        {
+            "section_type": "callout",
+            "title": "Final Course Instructions",
+            "content_markdown": "The session concluded with a brief administrative check to confirm that the syllabus distribution was successful, which the class confirmed. The lecturer provided a final reminder regarding the schedule, stating that the next class meeting will take place next Tuesday. No further academic content was presented, as the lecturer shifted focus entirely to these logistical requirements to ensure students are prepared for the upcoming weeks of the course.",
+            "start_sec": 3154.0
+        }
+    ]
+}

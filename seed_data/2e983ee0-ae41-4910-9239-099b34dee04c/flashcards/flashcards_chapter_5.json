@@ -1,0 +1,26 @@
+{
+    "chapter_id": 5,
+    "chapter_title": "Guest Speakers and Course Outline",
+    "flashcards": [
+        {
+            "front": "What is the Yale endowment?",
+            "back": "The financial assets owned by Yale University.",
+            "explanation": "The lecturer excludes physical assets like buildings and art collections from this definition."
+        },
+        {
+            "front": "Does pooling risk make the risk disappear?",
+            "back": "No, it spreads the risk out so the impact on any one person is reduced.",
+            "explanation": "Risk pooling redistributes the burden of risk rather than eliminating the risk itself."
+        },
+        {
+            "front": "What market event did Andrew Redleaf foresee?",
+            "back": "The subprime crisis.",
+            "explanation": "Redleaf identified the subprime crisis early, which allowed him to profit from his unique perspective."
+        },
+        {
+            "front": "What was Yale's endowment return two years ago?",
+            "back": "22%.",
+            "explanation": "The lecturer noted 28% for the most recent year and 22% for the year prior."
+        }
+    ]
+}

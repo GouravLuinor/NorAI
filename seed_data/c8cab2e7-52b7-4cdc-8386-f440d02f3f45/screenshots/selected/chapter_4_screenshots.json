@@ -1,0 +1,12 @@
+{
+  "chapter_id": 4,
+  "screenshots": [
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1418.jpg",
+      "reason": "The lecturer writes 'Newtonian' on the blackboard.",
+      "section": "The Foundations of Newtonian Mechanics",
+      "importance": 8,
+      "timestamp": 1418.42
+    }
+  ]
+}

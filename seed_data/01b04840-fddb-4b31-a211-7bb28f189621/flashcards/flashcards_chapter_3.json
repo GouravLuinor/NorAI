@@ -1,0 +1,26 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "The Derivative Formula",
+    "flashcards": [
+        {
+            "front": "What is the slope of the secant line?",
+            "back": "The ratio of the change in function value (delta f) to the change in x (delta x).",
+            "explanation": "The secant line connects two points; its slope is the rise over run, represented by delta f / delta x."
+        },
+        {
+            "front": "How is the derivative defined using a limit?",
+            "back": "The limit of the secant slope as delta x approaches zero.",
+            "explanation": "The derivative is the instantaneous slope, found by shrinking the secant interval to zero."
+        },
+        {
+            "front": "What is the formula for f'(x0)?",
+            "back": "limit as delta x approaches 0 of [f(x0 + delta x) - f(x0)] / delta x.",
+            "explanation": "This is the definition of the derivative as the limit of the difference quotient."
+        },
+        {
+            "front": "What are the coordinates of point Q?",
+            "back": "(x0 + delta x, f(x0 + delta x))",
+            "explanation": "Q is the point on the curve shifted by delta x from the original point P."
+        }
+    ]
+}

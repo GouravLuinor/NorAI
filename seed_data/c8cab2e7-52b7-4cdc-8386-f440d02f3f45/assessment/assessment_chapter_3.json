@@ -1,0 +1,81 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "Q&A and Course Prerequisites",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 3,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Laboratory Requirements"
+            ],
+            "question": "The lecturer recommends taking the laboratory course concurrently with the lecture because the lecture does not include demonstrations.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The lecturer stated that he does not have demonstrations in the lecture and that taking the lab concurrently reminds students that physics is an experimental science.",
+            "flashcard_front": "Why does the lecturer recommend taking the lab concurrently?",
+            "flashcard_back": "The lecture lacks demonstrations, and the lab shows the experimental origins of physics laws.",
+            "flashcard_explanation": "The lecturer noted that all demonstrations are in a different building, making the lab essential for experimental context."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 3,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Calculus requirements"
+            ],
+            "question": "Which of the following mathematical skills does the lecturer explicitly expect students to know without needing to look them up?",
+            "options": [
+                "Multivariable calculus",
+                "Complex differential equations",
+                "Trigonometric functions like sine and cosine",
+                "Advanced series expansions"
+            ],
+            "answer": "Trigonometric functions like sine and cosine",
+            "explanation": "The lecturer stated that students must know trigonometry and what a sine and cosine are, noting that these are not things you look up.",
+            "flashcard_front": "What mathematical topics must students know without looking them up?",
+            "flashcard_back": "Trigonometric functions, specifically sine and cosine, and basic trigonometric identities.",
+            "flashcard_explanation": "The lecturer emphasized that these are fundamental tools that should be known from high school."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 3,
+            "type": "Short Answer",
+            "difficulty": "Easy",
+            "concepts": [
+                "Midterm schedule"
+            ],
+            "question": "Approximately how many lectures will be covered on the midterm exam?",
+            "options": [],
+            "answer": "12",
+            "explanation": "The lecturer stated that the first 12 lectures, roughly half of the 24 total lectures, will be part of the midterm.",
+            "flashcard_front": "How many lectures are covered by the midterm?",
+            "flashcard_back": "Approximately 12 lectures.",
+            "flashcard_explanation": "The course has 24 lectures total, and the midterm covers the first half."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 3,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Student questions"
+            ],
+            "question": "The lecturer prefers that students hold their questions until the end of the lecture to avoid stopping the progress of the class.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer explicitly stated that students should stop him anytime they don't follow something and that they should not feel they are stopping the class progress.",
+            "flashcard_front": "Should students wait until the end of class to ask questions?",
+            "flashcard_back": "No, the lecturer encourages students to stop him anytime they do not follow something.",
+            "flashcard_explanation": "The lecturer finds it more exciting to answer questions than to give a monologue."
+        }
+    ]
+}

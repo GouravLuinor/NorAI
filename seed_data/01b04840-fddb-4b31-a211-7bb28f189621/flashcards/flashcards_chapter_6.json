@@ -1,0 +1,26 @@
+{
+    "chapter_id": 6,
+    "chapter_title": "Solving the Geometry Problem",
+    "flashcards": [
+        {
+            "front": "What is the X-intercept of the tangent line to $y=1/x$ at $x_0$?",
+            "back": "The X-intercept is $2x_0$.",
+            "explanation": "Setting the tangent line equation to $y=0$ and solving for $x$ yields $2x_0$."
+        },
+        {
+            "front": "Is $y=1/x$ symmetric if $x$ and $y$ are swapped?",
+            "back": "True.",
+            "explanation": "The equation $xy=1$ is invariant when $x$ and $y$ are exchanged."
+        },
+        {
+            "front": "What is the Y-intercept of the tangent line at $(x_0, y_0)$?",
+            "back": "The Y-intercept is $2y_0$.",
+            "explanation": "By symmetry with the X-intercept $2x_0$, the Y-intercept is $2y_0$."
+        },
+        {
+            "front": "Why does single variable calculus involve multiple variables?",
+            "back": "Solving problems requires tracking several quantities like coordinates and intercepts simultaneously.",
+            "explanation": "Geometric problems often involve multiple related variables that must be managed together."
+        }
+    ]
+}

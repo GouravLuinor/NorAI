@@ -1,0 +1,33 @@
+{
+  "chapter_id": 4,
+  "screenshots": [
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_807.jpg",
+      "reason": "The full algorithm steps are written on the board.",
+      "section": "Procedure Steps",
+      "importance": 10,
+      "timestamp": 807.17
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_743.jpg",
+      "reason": "The lecturer begins outlining the birthday problem algorithm on the board.",
+      "section": "The Birthday Problem Algorithm",
+      "importance": 9,
+      "timestamp": 743.11
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_727.jpg",
+      "reason": "The lecturer writes the mathematical definition of an algorithm on the board.",
+      "section": "Defining Algorithms as Procedures",
+      "importance": 8,
+      "timestamp": 727.09
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_876.jpg",
+      "reason": "The lecturer draws a diagram showing inputs mapping to outputs.",
+      "section": "Defining Algorithms as Procedures",
+      "importance": 7,
+      "timestamp": 876.04
+    }
+  ]
+}

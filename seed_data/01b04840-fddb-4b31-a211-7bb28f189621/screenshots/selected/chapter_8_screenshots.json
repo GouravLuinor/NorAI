@@ -1,0 +1,33 @@
+{
+  "chapter_id": 8,
+  "screenshots": [
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_3012.jpg",
+      "reason": "The final power rule formula and mention of polynomial extension.",
+      "section": "Extension to Polynomials",
+      "importance": 10,
+      "timestamp": 3012.04
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2851.jpg",
+      "reason": "Expansion of (x + delta x)^n using the binomial theorem.",
+      "section": "Applying the Binomial Theorem",
+      "importance": 9,
+      "timestamp": 2851.88
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2958.jpg",
+      "reason": "Simplifying the expression by dividing by delta x.",
+      "section": "Applying the Binomial Theorem",
+      "importance": 9,
+      "timestamp": 2958.66
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_3049.jpg",
+      "reason": "Example of applying the power rule to a polynomial.",
+      "section": "Extension to Polynomials",
+      "importance": 9,
+      "timestamp": 3049.41
+    }
+  ]
+}

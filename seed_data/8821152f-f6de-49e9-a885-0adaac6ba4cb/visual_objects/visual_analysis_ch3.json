@@ -1,0 +1,89 @@
+{
+  "chapter_id": 3,
+  "frames": {
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_393.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer introduces the birthday problem context."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_415.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses probability and input spaces."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_436.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer transitions to deterministic algorithms."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_458.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains why fixed classroom examples are boring."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_478.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer emphasizes the need for general algorithms."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_498.jpg": {
+      "ocr_text": "",
+      "importance_score": 6,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses scaling to arbitrary input sizes."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_513.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer summarizes the goal of general problems."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_545.jpg": {
+      "ocr_text": "arbitrarily sized inputs",
+      "importance_score": 9,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "A diagram showing inputs mapping to outputs on the blackboard."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_570.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the definition of an algorithm."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_597.jpg": {
+      "ocr_text": "Inputs Outputs -general problems -arbitrarily sized inputs",
+      "importance_score": 10,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The blackboard showing the relationship between inputs and outputs."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_629.jpg": {
+      "ocr_text": "Algorithm f:",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The lecturer writes the definition of an algorithm as a function."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_655.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concludes the definition of an algorithm."
+    }
+  }
+}

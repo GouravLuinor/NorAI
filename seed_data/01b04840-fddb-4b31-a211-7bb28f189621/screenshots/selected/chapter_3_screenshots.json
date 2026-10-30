@@ -1,0 +1,33 @@
+{
+  "chapter_id": 3,
+  "screenshots": [
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1001.jpg",
+      "reason": "The boxed formal definition of the derivative.",
+      "section": "Defining the Formal Limit Definition of the Derivative",
+      "importance": 10,
+      "timestamp": 1001.5
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_836.jpg",
+      "reason": "The limit expression for the slope of the secant line.",
+      "section": "Defining the Slope of a Secant Line",
+      "importance": 9,
+      "timestamp": 836.0
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_942.jpg",
+      "reason": "The coordinates of point Q expressed in terms of x0 and delta x.",
+      "section": "Defining the Formal Limit Definition of the Derivative",
+      "importance": 9,
+      "timestamp": 942.77
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_783.jpg",
+      "reason": "A diagram showing points P and Q on a curve with delta x labeled.",
+      "section": "Defining the Slope of a Secant Line",
+      "importance": 8,
+      "timestamp": 783.15
+    }
+  ]
+}

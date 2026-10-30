@@ -1,0 +1,89 @@
+{
+  "chapter_id": 4,
+  "frames": {
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1092.jpg": {
+      "ocr_text": "Example 1 f(x) = 1/x",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer introduces the function f(x) = 1/x on the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1140.jpg": {
+      "ocr_text": "delta f / delta x = (1/(x0 + delta x) - 1/x0) / delta x",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The difference quotient formula for 1/x is written on the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1161.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The lecturer gestures to the difference quotient formula."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1220.jpg": {
+      "ocr_text": "= 1/delta x * (x0 - (x0 + delta x)) / ((x0 + delta x)x0)",
+      "importance_score": 8,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The algebraic step of putting the numerator over a common denominator."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1247.jpg": {
+      "ocr_text": "= 1/delta x * (-delta x) / ((x0 + delta x)x0)",
+      "importance_score": 8,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The simplification of the numerator to negative delta x."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1305.jpg": {
+      "ocr_text": "f'(x0) = -1/x0^2",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The final derivative result is written on the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1332.jpg": {
+      "ocr_text": "f'(x0) = -1/x0^2 < 0",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer highlights the negative sign of the derivative."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1391.jpg": {
+      "ocr_text": "LIMIT OF SECANT LINES PQ AS Q -> P (P fixed)",
+      "importance_score": 4,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The lecturer explains the geometric meaning of the limit."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1401.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer addresses a student question."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1465.jpg": {
+      "ocr_text": "-1 / ((3 + delta x) * 3) -> -1/3^2",
+      "importance_score": 7,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The lecturer demonstrates the limit using x0 = 3."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1476.jpg": {
+      "ocr_text": "-1 / ((x0 + delta x)x0) -> -1/x0^2",
+      "importance_score": 8,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The general limit process shown on the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1487.jpg": {
+      "ocr_text": "f'(x0) = -1/x0^2",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The full board summary of the derivative calculation."
+    }
+  }
+}

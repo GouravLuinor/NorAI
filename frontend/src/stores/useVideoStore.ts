@@ -178,6 +178,11 @@ export const useVideoStore = create<VideoState>((set, get) => ({
       player.seekTo(seconds, true)
       player.playVideo()
     } else {
+      // On phones/tablets the doc pane may be unmounted; ask the shell to
+      // show it so the player can mount and consume the pending seek.
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('norai:show-doc'))
+      }
       set({ pendingSeek: seconds })
     }
   },
@@ -240,6 +245,9 @@ export const useVideoStore = create<VideoState>((set, get) => ({
       if (chunk?.start_sec != null) return chunk.start_sec
     }
 
-    return chapter.start_sec ?? null
+    // A section that has no exact chunk must not pretend the chapter opening
+    // is its timestamp. The first section is the chapter opening; later ones
+    // hide their seek chip instead of jumping to the wrong moment.
+    return sectionIndex === 0 ? (chapter.start_sec ?? null) : null
   },
 }))

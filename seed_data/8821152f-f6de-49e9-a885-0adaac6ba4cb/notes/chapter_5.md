@@ -1,0 +1,21 @@
+# Proving Correctness with Induction
+
+
+## The Need for Formal Correctness
+
+When we design an algorithm, we are essentially creating a recipe or a procedure that takes an input and produces an output. While it is straightforward to manually verify that an algorithm works for a small number of inputs—such as checking the birthday problem against four students by testing all combinations of matches—this approach becomes impractical as the input size grows. If we have 300 students, testing every possibility is impossible. As computer scientists, we often write code of a constant size that must handle arbitrarily large inputs, which typically involves looping or recursion. To formally argue that such an algorithm is correct for any input size, we rely on mathematical induction. This technique allows us to move beyond manual verification of small cases and establish a rigorous proof that the algorithm behaves as expected for all possible inputs, which is why inductive reasoning is a fundamental prerequisite for this course.
+
+
+## Setting Up the Inductive Proof
+
+To structure an inductive proof for an algorithm, we require three main components: a base case, an inductive hypothesis, and an inductive step. The inductive hypothesis is a statement that we assume holds for a smaller value, which we then use to argue the correctness for a larger value in our well-ordered set. For the birthday problem, we define our hypothesis based on the number of students interviewed, $K$. Specifically, the hypothesis states: 'If the first $K$ students contain a match, the algorithm returns a match before interviewing student $K+1$.' By maintaining this property throughout the execution, we ensure that when we reach the end of the class (where $N$ is the total number of students), the algorithm will have correctly identified a pair if one exists, or returned 'none' if no match is found among the $N$ students.
+
+
+## Base Case and Inductive Step
+
+The base case is the simplest scenario where we can verify our hypothesis. For the birthday problem, the most efficient base case is $K=0$. After interviewing zero students, we have performed no work, and it is trivially true that there is no match among zero students. Thus, the predicate holds. With the base case established, we proceed to the inductive step. We assume the inductive hypothesis is true for some $K=K'$, and we consider the case for $K'+1$. This allows us to break the problem down into a smaller interface, avoiding the need to consider the entire set at once. We analyze two scenarios: either a match was already found in the first $K'$ students (in which case the algorithm has already returned the correct answer), or we must check the $K'+1$ student against the existing record to see if a new match is created.
+
+
+## Case Analysis and Conclusion
+
+The inductive step relies on a case analysis to maintain the inductive hypothesis: 1. **Case 1:** If the first $K'$ students already contain a match, the algorithm has already returned the correct pair as per our inductive hypothesis. 2. **Case 2:** If there is no match in the first $K'$ students, we interview the $(K'+1)$-th student. We then check if this new student's birthday exists in our record. If it does, we have found a match and return it. If not, we have successfully re-established the inductive hypothesis for $K'+1$ students. This process demonstrates that the algorithm is correct for any $K$. While this level of formality is rigorous, the practical goal in this class is to communicate your algorithm clearly enough that a peer could implement it. This inductive framework is a tool you will use throughout the course to ensure your algorithms are logically sound.

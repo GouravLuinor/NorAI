@@ -1,0 +1,89 @@
+{
+  "chapter_id": 5,
+  "frames": {
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1603.jpg": {
+      "ocr_text": "Newtonian Mech Kinematics",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer writes the course and chapter titles on the board."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1624.jpg": {
+      "ocr_text": "Kinematics Dynamics",
+      "importance_score": 4,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The board lists the two main branches of mechanics."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1641.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains the distinction between kinematics and dynamics."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1676.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the philosophy of starting with simple examples."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1696.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains why we use point particles."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1711.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer contrasts point particles with rigid bodies like potatoes."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1733.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer introduces the concept of one-dimensional motion."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1755.jpg": {
+      "ocr_text": "x",
+      "importance_score": 6,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "A line representing the x-axis is drawn on the board."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1771.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses defining the origin and coordinate system."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1786.jpg": {
+      "ocr_text": "0 1 2 3 4 5 x",
+      "importance_score": 8,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "A number line showing the origin and position markers."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1827.jpg": {
+      "ocr_text": "x = 5m t Secs",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The board shows the units for position (meters) and time (seconds)."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1861.jpg": {
+      "ocr_text": "x(t) t",
+      "importance_score": 7,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer begins drawing a graph of position versus time."
+    }
+  }
+}

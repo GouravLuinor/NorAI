@@ -1,0 +1,26 @@
+{
+    "chapter_id": 10,
+    "chapter_title": "Advanced Mathematical Interpretations",
+    "flashcards": [
+        {
+            "front": "How should you treat unexpected mathematical solutions in physics?",
+            "back": "Respect the mathematics and investigate the physical meaning of the solution.",
+            "explanation": "Extra solutions often contain deep physical insights, such as the prediction of antiparticles in Dirac's work."
+        },
+        {
+            "front": "Did Dirac intentionally search for antiparticles?",
+            "back": "False. He was describing electrons, but the math revealed antiparticles.",
+            "explanation": "The negative energy solution was an unexpected result that led to the discovery of antiparticles."
+        },
+        {
+            "front": "Is canceling $dt$ in derivatives legitimate in physics?",
+            "back": "Yes, if understood as the limit of infinitesimal changes over the same time.",
+            "explanation": "This manipulation is valid when interpreted as equating changes in quantities over a vanishingly small time interval."
+        },
+        {
+            "front": "How to find height without knowing time?",
+            "back": "Use the time-independent formula: V^2 = V_0^2 + 2a(Y - Y_0).",
+            "explanation": "This formula allows solving for displacement (height) without needing to calculate the time variable first."
+        }
+    ]
+}

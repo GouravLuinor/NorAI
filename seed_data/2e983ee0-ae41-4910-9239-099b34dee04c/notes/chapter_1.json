@@ -1,0 +1,36 @@
+{
+    "chapter_id": 1,
+    "title": "Course Introduction and Logistics",
+    "sections": [
+        {
+            "section_type": "list",
+            "title": "Introduction of Teaching Fellows",
+            "content_markdown": "Professor Shiller introduces five international teaching fellows, emphasizing that finance is a global phenomenon. The teaching fellows are: 1. Usman Ali from Pakistan (LUMS graduate), a PhD candidate researching stock analyst recommendations and behavioral finance. 2. Santosh Anagol from the United States, who has published research in the American Economic Review on the return to capital in Ghana and has studied village economies in India. 3. Christian Awuku-Budu from Ghana (Morehouse College graduate), a PhD candidate researching financial markets in developing countries. 4. Yashin Duan from China (Nanjing University graduate), a PhD candidate researching options prices, the 'options smile,' and behavioral finance. 5. Shaolan Ju from China (Wuhan University graduate), a PhD candidate researching bank mergers. The international diversity of the teaching team reflects the professor's intention to make the course globally relevant.",
+            "start_sec": 12.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Course Philosophy and Scope",
+            "content_markdown": "Professor Shiller has taught this course for over 20 years and expresses pride in his alumni, many of whom work in finance, though he stresses the course is not strictly vocational. He argues that finance is a fundamental technology underpinning almost all human endeavors, including fields like poetry, where one must eventually navigate financial situations with publishers. The course is intended to be an intellectual exploration of how the world really works, rather than just professional training. Finance is described as a powerful, often hidden force in society. The professor aims to draw out these underlying mechanisms, helping students understand the financial realities that affect everyone, regardless of their eventual career path.",
+            "start_sec": 255.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Financial Markets vs. Financial Theory",
+            "content_markdown": "Yale offers two primary undergraduate finance courses: Economics 252 (Financial Markets) and Economics 251 (Financial Theory). The distinction was established about eight years ago when Professor Shiller and John Geanakoplos attempted to divide the subject matter. However, they concluded that finance cannot be cleanly split into separate courses on theory and practice, as both are essential to understanding the field. Consequently, the courses are designed to be self-contained; students may take either or both. While there may be some repetition, Economics 251 is more focused on theoretical detail and mathematical rigor, whereas Economics 252 is designed to be accessible to students who are not comfortable with heavy amounts of mathematics.",
+            "start_sec": 377.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Expectations and Course Detail",
+            "content_markdown": "The professor addresses the level of detail expected in the course. He acknowledges that while some students might find the prospect of extensive detail daunting, it is necessary to understand how the world functions. He draws an analogy to organic chemistry, which is often perceived as having a 'bad reputation' due to its intense detail, yet is fundamentally important for understanding how things work. He clarifies that he does not intend to turn students off, but rather to prepare them for the reality that this course will involve learning many facts. The goal is to connect these facts with financial theory to provide a comprehensive understanding of financial markets.",
+            "start_sec": 572.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Course Materials",
+            "content_markdown": "The professor concludes the introductory session by identifying the primary textbook for the course. The principal textbook is authored by Frank Fabozzi, with co-authors Modigliani, Jones, and Ferri. This text serves as the foundation for the course's exploration of financial markets and the practical application of financial concepts.",
+            "start_sec": 687.0
+        }
+    ]
+}

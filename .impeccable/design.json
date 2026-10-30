@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T23:45:00Z",
+  "title": "Design System: NorAI — The Stacks",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Reading Room Paper",
+        "canonical": "#FBFBF8",
+        "tonalRamp": ["#1A1B19", "#2C2E2B", "#4A4C48", "#6A6C67", "#8C8E88", "#B3B5AF", "#D9DBD4", "#FBFBF8"]
+      },
+      "library-green": {
+        "role": "primary",
+        "displayName": "Stack Signage Green",
+        "canonical": "#1F4D3F",
+        "tonalRamp": ["#0A1F19", "#123127", "#1F4D3F", "#2A6352", "#3D7A68", "#5F9C89", "#93C4B3", "#D6EAE2"]
+      },
+      "brass": {
+        "role": "secondary",
+        "displayName": "Catalog Brass",
+        "canonical": "#C8932E",
+        "tonalRamp": ["#2E2008", "#5A3D0D", "#8A5F12", "#C8932E", "#DCAF56", "#EAC783", "#F4DFB2", "#FBF3DF"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Near-Black Ink",
+        "canonical": "#16181A",
+        "tonalRamp": ["#16181A", "#2B2E30", "#404447", "#55595C", "#6C7074", "#9BA0A4", "#C9CDD0", "#F1F2F3"]
+      },
+      "zone-revision": {
+        "role": "tertiary",
+        "displayName": "Revision Blue",
+        "canonical": "#2F6FB2",
+        "tonalRamp": ["#10263D", "#1B3F63", "#26588A", "#2F6FB2", "#4E8AC9", "#7FAEDD", "#B4D2EE", "#E3EFFA"]
+      },
+      "zone-quiz": {
+        "role": "tertiary",
+        "displayName": "Quiz Brick",
+        "canonical": "#B8432F",
+        "tonalRamp": ["#3A120C", "#602016", "#8C3122", "#B8432F", "#D0644F", "#DF9385", "#EFC4BC", "#FAE9E6"]
+      },
+      "zone-cards": {
+        "role": "tertiary",
+        "displayName": "Flashcard Violet",
+        "canonical": "#6B4FA0",
+        "tonalRamp": ["#201636", "#362558", "#4F3A7B", "#6B4FA0", "#8B72BB", "#AE9AD1", "#D3C7E8", "#F0EBF8"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Literata Display", "purpose": "Document H1s and the landing hero." },
+      "headline": { "displayName": "Literata Headline", "purpose": "Chapter and section headings inside notes." },
+      "title": { "displayName": "Atkinson Title", "purpose": "Panel titles, card titles, mode names." },
+      "body": { "displayName": "Atkinson Body", "purpose": "All UI copy and controls." },
+      "label": { "displayName": "Atkinson Label", "purpose": "Sentence-case section labels." },
+      "mono": { "displayName": "Atkinson Mono", "purpose": "Shelf marks, timestamps, counts." }
+    },
+    "shadows": [
+      { "name": "ev1", "value": "0 0 0 1px rgba(22,24,26,0.10), 0 1px 2px rgba(22,24,26,0.04)", "purpose": "Resting buttons and small controls." },
+      { "name": "ev2", "value": "0 1px 2px rgba(22,24,26,0.06), 0 4px 12px rgba(22,24,26,0.06)", "purpose": "Primary buttons, popovers, video dock." },
+      { "name": "ev3", "value": "0 2px 4px rgba(22,24,26,0.06), 0 12px 32px rgba(22,24,26,0.12)", "purpose": "Dialogs and command palette." }
+    ],
+    "motion": [
+      { "name": "fast", "value": "150ms", "easing": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Hover, focus, press and small state changes." },
+      { "name": "panel", "value": "240ms", "easing": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Panels, overlays, and layout transitions." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "767px", "purpose": "Rail becomes a sheet-level chapter selector; single column." },
+      { "name": "tablet", "value": "1023px", "purpose": "Tutor folds into the document tab." },
+      { "name": "desktop", "value": "1279px", "purpose": "Toolbar labels collapse to icons." }
+    ],
+    "components": [
+      {
+        "name": "button-primary",
+        "html": "<button class=\"ds-btn-primary\">Add a lecture</button>",
+        "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;background:var(--color-npf,#1F4D3F);color:#FFFFFF;border:0;border-radius:6px;font-family:'Atkinson Hyperlegible',sans-serif;font-size:15px;font-weight:700;line-height:1.2;box-shadow:0 1px 2px rgba(22,24,26,.06),0 4px 12px rgba(22,24,26,.06);cursor:pointer;transition:background 150ms cubic-bezier(.16,1,.3,1),transform 150ms cubic-bezier(.16,1,.3,1),box-shadow 150ms cubic-bezier(.16,1,.3,1)}.ds-btn-primary:hover{background:var(--color-nph,#2A6352)}.ds-btn-primary:active{transform:translateY(1px);box-shadow:none}.ds-btn-primary:focus-visible{outline:2px solid var(--color-np,#1F4D3F);outline-offset:2px}"
+      },
+      {
+        "name": "button-outline",
+        "html": "<button class=\"ds-btn-outline\">Open lecture</button>",
+        "css": ".ds-btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 16px;background:transparent;color:var(--color-nt2,#3F4447);border:1px solid var(--color-bdr2,rgba(22,24,26,.2));border-radius:6px;font-family:'Atkinson Hyperlegible',sans-serif;font-size:14px;font-weight:700;line-height:1.2;cursor:pointer;transition:background 150ms ease,color 150ms ease}.ds-btn-outline:hover{background:var(--color-ns2,#F2F3EF);color:var(--color-nt,#16181A)}.ds-btn-outline:active{transform:translateY(1px)}.ds-btn-outline:focus-visible{outline:2px solid var(--color-np,#1F4D3F);outline-offset:2px}"
+      },
+      {
+        "name": "input",
+        "html": "<label class=\"ds-field\"><span>Paste a YouTube link</span><input class=\"ds-input\" type=\"url\" placeholder=\"https://www.youtube.com/watch?v=…\" /></label>",
+        "css": ".ds-field{display:flex;flex-direction:column;gap:6px;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;font-weight:700;color:var(--color-nt3,#5D6266)}.ds-input{width:100%;box-sizing:border-box;padding:11px 12px;background:var(--color-ns,#FFFFFF);color:var(--color-nt,#16181A);border:1px solid var(--color-bdr,rgba(22,24,26,.12));border-radius:6px;font-family:inherit;font-size:15px;font-weight:400;line-height:1.4}.ds-input::placeholder{color:var(--color-nt4,#6C7074)}.ds-input:focus{outline:none;border-color:var(--color-np,#1F4D3F);box-shadow:0 0 0 3px var(--color-npb,rgba(31,77,63,.08))}"
+      },
+      {
+        "name": "card",
+        "html": "<article class=\"ds-card\"><p class=\"ds-card-label\">Lecture notes</p><h3 class=\"ds-card-title\">Algorithms and Computation</h3><p class=\"ds-card-body\">Chapter-by-chapter notes pulled from the lecture transcript and slides.</p></article>",
+        "css": ".ds-card{background:var(--color-ns,#FFFFFF);border:1px solid var(--color-bdr,rgba(22,24,26,.12));border-radius:6px;padding:16px;font-family:'Atkinson Hyperlegible',sans-serif}.ds-card-label{margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--color-z-notes,#1F4D3F)}.ds-card-title{margin:0 0 6px;font-family:'Literata',Georgia,serif;font-size:20px;font-weight:600;line-height:1.25;color:var(--color-nt,#16181A)}.ds-card-body{margin:0;font-size:14px;line-height:1.55;color:var(--color-nt2,#3F4447)}"
+      },
+      {
+        "name": "shelf-mark",
+        "html": "<button class=\"ds-shelf-mark\" aria-current=\"true\"><span class=\"ds-shelf-top\">QA</span><span>12:04</span></button>",
+        "css": ".ds-shelf-mark{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 6px;background:var(--color-brass,#C8932E);color:var(--color-nt,#16181A);border:1.5px solid var(--color-brass,#C8932E);border-radius:3px;font-family:'Atkinson Hyperlegible Mono',ui-monospace,monospace;font-size:12px;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums;cursor:pointer;transition:transform 150ms cubic-bezier(.16,1,.3,1),background 150ms ease}.ds-shelf-mark .ds-shelf-top{color:inherit}.ds-shelf-mark:hover{background:var(--color-brass-soft,#F6EBD2)}.ds-shelf-mark:active{transform:translateY(1px)}.ds-shelf-mark:focus-visible{outline:2px solid var(--color-np,#1F4D3F);outline-offset:2px}"
+      },
+      {
+        "name": "rail-chapter",
+        "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-row\" href=\"#\"><span class=\"ds-rail-range\">01</span><span class=\"ds-rail-title\">Introduction</span></a><a class=\"ds-rail-row ds-rail-current\" href=\"#\" aria-current=\"true\"><span class=\"ds-rail-range\">02</span><span class=\"ds-rail-title\">Algorithms</span><span class=\"ds-rail-brass\">12:04</span></a></nav>",
+        "css": ".ds-rail{display:flex;flex-direction:column;gap:2px;padding:12px;background:var(--color-rail,#1F4D3F);border-radius:8px;font-family:'Atkinson Hyperlegible',sans-serif}.ds-rail-row{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:10px;padding:10px 10px;border-radius:4px;color:var(--color-rail-ink,#EAF1EC);text-decoration:none;font-size:14px}.ds-rail-row:hover{background:rgba(255,255,255,.08)}.ds-rail-current{background:#FBFBF8;color:#16181A}.ds-rail-range{font-family:'Atkinson Hyperlegible Mono',monospace;font-size:12px;font-weight:600;color:var(--color-rail-brass,#E7B04A)}.ds-rail-current .ds-rail-range{padding:3px 6px;background:var(--color-brass,#C8932E);color:#16181A;border-radius:3px}.ds-rail-brass{font-family:'Atkinson Hyperlegible Mono',monospace;font-size:12px;color:var(--color-brass-ink,#8A5F12)}.ds-rail-row:focus-visible{outline:2px solid var(--color-rail-brass,#E7B04A);outline-offset:2px}"
+      },
+      {
+        "name": "tutor-composer",
+        "html": "<form class=\"ds-composer\"><input class=\"ds-composer-input\" placeholder=\"Ask about this lecture…\" /><button class=\"ds-composer-ask\" type=\"submit\">Ask</button></form>",
+        "css": ".ds-composer{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;background:var(--color-ns,#FFFFFF);border:1px solid var(--color-bdr2,rgba(22,24,26,.2));border-radius:6px;font-family:'Atkinson Hyperlegible',sans-serif}.ds-composer-input{flex:1;min-width:0;border:0;background:transparent;color:var(--color-nt,#16181A);font:inherit;font-size:14px;line-height:1.4;outline:none}.ds-composer-input::placeholder{color:var(--color-nt4,#6C7074)}.ds-composer-ask{padding:7px 14px;background:var(--color-np,#1F4D3F);color:#FFFFFF;border:0;border-radius:4px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}.ds-composer-ask:hover{background:var(--color-nph,#2A6352)}.ds-composer:focus-within{border-color:var(--color-np,#1F4D3F);box-shadow:0 0 0 3px var(--color-npb,rgba(31,77,63,.08))}"
+      }
+    ],
+    "narrative": {
+      "northStar": "The university library at closing time.",
+      "overview": "NorAI borrows its visual grammar from the physical library: green stack-signage rails, white spine labels, call numbers, brass current-item markers, and reading-room paper. The workspace should feel like a place built for sustained study, not a dashboard built for monitoring. Navigation is signage; content is a sheet on the desk; the tutor is a librarian sitting beside it.",
+      "keyCharacteristics": [
+        "Library green signage plus warm paper and brass.",
+        "Literata for reading, Atkinson Hyperlegible for UI, Mono for call numbers.",
+        "Square-ish geometry (3–6px), hairline borders, soft low elevation.",
+        "One color per study zone; brass reserved for current position and cited moments.",
+        "Light \"reading room\" and dark \"after hours\" themes with equal contrast."
+      ],
+      "rules": [
+        { "section": "Colors", "name": "The One Accent Rule", "body": "Brass is for the current item and citations only; it never fills a whole panel or decorates a heading." },
+        { "section": "Colors", "name": "The Zone Rule", "body": "A study mode's color appears on its mode control, its shelf marks, and its accents — nowhere else on the screen." },
+        { "section": "Colors", "name": "The Ink Border Rule", "body": "Borders are translucent ink, not a second neutral. If a border needs to be more visible, increase alpha, not blueness." },
+        { "section": "Typography", "name": "The 12px Floor Rule", "body": "Nothing renders below 12px. Small steps in the token ramp resolve to 12px or 13px rather than shrinking further." },
+        { "section": "Typography", "name": "The Reading Serif Rule", "body": "Literata is for content the student reads at length; never set controls, labels, or navigation in it." },
+        { "section": "Typography", "name": "The Shelf-Mark Rule", "body": "Any timestamp, chapter range, or citation that can seek the video is set in mono and carries the shelf-mark treatment." },
+        { "section": "Elevation & Depth", "name": "The Flat-At-Rest Rule", "body": "A static card has a border, not a shadow. Shadows respond to state or float above the page." },
+        { "section": "Elevation & Depth", "name": "The Rail-Is-A-Plane Rule", "body": "The rail never floats, blurs, or gradients; it is painted signage." }
+      ],
+      "dos": [
+        "Use library green for navigation and primary action; use brass for the current item and citations.",
+        "Set timestamps, chapter ranges, and citations in mono with the shelf-mark treatment.",
+        "Keep study modes color-coded and visually separate.",
+        "Use Literata for long-form reading and Atkinson Hyperlegible for every control.",
+        "Prefer hairline ink borders and tone shifts over shadows and rounded floating cards.",
+        "Hold the 12px type floor and the 68ch reading measure."
+      ],
+      "donts": [
+        "Don't reintroduce grid paper, noise, fold marks, hard offset shadows, or red-pencil annotations.",
+        "Don't use uppercase mono kickers; labels are sentence case.",
+        "Don't use brass as a general highlight or fill large areas with it.",
+        "Don't mix zone colors within one panel or use status red/green for decoration.",
+        "Don't set UI or navigation in Literata, or body copy below 12px.",
+        "Don't add stock imagery, invented testimonials, user counts, or university affiliations."
+      ]
+    }
+  }
+}

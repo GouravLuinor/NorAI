@@ -1,0 +1,26 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Course Introduction and Goals",
+    "flashcards": [
+        {
+            "front": "What are the three core pillars of this course?",
+            "back": "Solving computational problems, proving correctness, and arguing efficiency.",
+            "explanation": "These three pillars form the foundation of the course's approach to algorithms."
+        },
+        {
+            "front": "Is communication a key focus of this course?",
+            "back": "Yes, it is essential for explaining and justifying solutions to others.",
+            "explanation": "The course emphasizes communicating ideas to people, not just computers."
+        },
+        {
+            "front": "Why is writing important in this course?",
+            "back": "To prove correctness and communicate efficiency of solutions to others.",
+            "explanation": "Writing is the primary tool for justifying and explaining algorithmic work."
+        },
+        {
+            "front": "What must you prove about your solution?",
+            "back": "You must prove it is correct and argue its efficiency.",
+            "explanation": "These are the two primary requirements for evaluating a computational solution."
+        }
+    ]
+}

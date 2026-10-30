@@ -67,16 +67,26 @@ const STEPS = [
 
 /** The primary demo lecture's real chapter ranges (from its video map). */
 const DEMO_RANGES = [
-  { ch: '01', at: '0:04', title: 'Foundations of Neural Network Architecture' },
-  { ch: '02', at: '5:04', title: 'Hierarchical Feature Learning and Abstraction' },
-  { ch: '03', at: '10:07', title: 'Weights, Biases, and Activation' },
-  { ch: '04', at: '15:17', title: 'Parameterization and Linear Algebra' },
+  { ch: '01', at: '0:12', title: 'Course Introduction and Goals' },
+  { ch: '02', at: '3:04', title: 'Defining Computational Problems' },
+  { ch: '03', at: '6:32', title: 'Generalizing Problems and Algorithms' },
+  { ch: '04', at: '10:57', title: 'Example: The Birthday Problem' },
 ] as const
 
 const DEMO_CODES: Record<string, string> = {
-  'Computer Science & AI': 'CS',
-  'Economics & Market Theory': 'ECON',
-  'Modern AI Engineering': 'AI',
+  'Computer Science & Algorithms': 'CS',
+  'Mathematics & Calculus': 'MATH',
+  'Physics & Mechanics': 'PHYS',
+  'Economics & Finance': 'ECON',
+  'History & Humanities': 'HIST',
+}
+
+const DEMO_SLUGS: Record<string, string> = {
+  '8821152f-f6de-49e9-a885-0adaac6ba4cb': 'algorithms-and-computation',
+  '01b04840-fddb-4b31-a211-7bb28f189621': 'calculus-differentiation',
+  'c8cab2e7-52b7-4cdc-8386-f440d02f3f45': 'newtonian-mechanics',
+  '2e983ee0-ae41-4910-9239-099b34dee04c': 'financial-markets',
+  '5f7225bf-ba41-46b9-aea9-da91c032b515': 'civil-war-reconstruction',
 }
 
 function Container({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -108,6 +118,49 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
       <a href="#faq" className={`hover:text-nt transition-colors ${LINK_RING}`} onClick={() => setMenuOpen(false)}>FAQ</a>
     </>
   )
+
+  const [pasteUrl, setPasteUrl] = useState('')
+  const [isEstimating, setIsEstimating] = useState(false)
+  const [estimateError, setEstimateError] = useState<string | null>(null)
+  const [estimateResult, setEstimateResult] = useState<{
+    title?: string
+    duration_min?: number
+    time_est_min?: number
+    calls?: number
+  } | null>(null)
+
+  const handleInspectUrl = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = pasteUrl.trim()
+    if (!trimmed) return
+    if (!trimmed.includes('youtube.com/') && !trimmed.includes('youtu.be/')) {
+      setEstimateError('Please paste a valid YouTube lecture link (e.g. https://www.youtube.com/watch?v=...)')
+      return
+    }
+    setIsEstimating(true)
+    setEstimateError(null)
+    setEstimateResult(null)
+    try {
+      const fd = new FormData()
+      fd.append('source_type', 'youtube')
+      fd.append('url', trimmed)
+      const res = await fetch('/estimate', { method: 'POST', body: fd })
+      if (!res.ok) {
+        setEstimateError('Could not inspect this YouTube video. Check the link or privacy settings.')
+        return
+      }
+      const data = await res.json()
+      if (data.available) {
+        setEstimateResult(data)
+      } else {
+        setEstimateError(data.reason || 'Could not read duration for this lecture.')
+      }
+    } catch {
+      setEstimateError('Failed to inspect video. Please try again.')
+    } finally {
+      setIsEstimating(false)
+    }
+  }
 
   const demoHref = `/workspace/${PRIMARY_DEMO_LECTURE_ID}`
 
@@ -189,7 +242,69 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
               sheet, a quiz and flashcards, and gives you a tutor that answers only from that lecture, down to the
               minute it was said.
             </p>
-            <div className="mt-9 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+
+            {/* Paste-first YouTube Onboarding */}
+            <form onSubmit={handleInspectUrl} className="mt-8 max-w-xl">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="url"
+                    value={pasteUrl}
+                    onChange={(e) => {
+                      setPasteUrl(e.target.value)
+                      if (estimateError) setEstimateError(null)
+                    }}
+                    placeholder="Paste a YouTube lecture link…"
+                    className={`w-full h-12 px-4 rounded-md bg-ns border border-bdr text-15 text-nt placeholder:text-nt3 ${FOCUS_RING}`}
+                    aria-label="YouTube lecture URL"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isEstimating || !pasteUrl.trim()}
+                  className="h-12 px-5 rounded-md bg-npf text-npfg hover:bg-npfh text-15 font-bold shrink-0 disabled:opacity-50 cursor-pointer transition-colors"
+                >
+                  {isEstimating ? 'Inspecting…' : 'Preview Study Pack'}
+                </button>
+              </div>
+
+              {estimateError && (
+                <p className="mt-2 text-13 text-nrt">{estimateError}</p>
+              )}
+
+              {estimateResult && (
+                <div className="mt-4 p-4 rounded-lg bg-ns border border-bdr text-left shadow-ev1">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="spec-label text-np font-bold">Ready to process</span>
+                    <span className="text-12 font-mono text-nt3">
+                      {estimateResult.duration_min ? `${Math.round(estimateResult.duration_min)} min lecture` : 'Detected'}
+                    </span>
+                  </div>
+                  <p className="text-15 font-bold text-nt truncate mb-2">
+                    {estimateResult.title || pasteUrl}
+                  </p>
+                  <p className="text-13 text-nt2 mb-3">
+                    Generates chapter notes, revision sheet, practice quiz, flashcards & Nora AI tutor in ~{Math.ceil(estimateResult.time_est_min || 3)} min.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (user) {
+                        onStartWorkspace()
+                      } else {
+                        navigate(`/signup?url=${encodeURIComponent(pasteUrl)}`)
+                      }
+                    }}
+                    className={PRIMARY_BTN + ' h-10 text-14 px-4'}
+                  >
+                    {user ? 'Process in your library' : 'Start free: generate pack'}
+                    <ArrowRight size={15} />
+                  </button>
+                </div>
+              )}
+            </form>
+
+            <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
               <button onClick={start} className={PRIMARY_BTN}>
                 {user ? 'Open your library' : 'Start free: no card needed'}
                 <ArrowRight size={17} aria-hidden="true" />
@@ -209,14 +324,14 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
           {/* Stack sign: the demo lecture's chapters as call ranges */}
           <Link
             to={demoHref}
-            aria-label="Open the demo lecture: Foundations of Neural Networks and Deep Learning"
+            aria-label="Open the demo lecture: Algorithms and Computation"
             className={`rail group block rounded-lg p-5 sm:p-6 ${FOCUS_RING}`}
           >
             <div className="flex items-baseline justify-between gap-3">
               <span className="spec-label">Demo lecture</span>
-              <span className="font-mono text-13 text-nt3">18 min · 4 chapters</span>
+              <span className="font-mono text-13 text-nt3">45 min · 9 chapters</span>
             </div>
-            <p className="mt-2 text-20 font-bold leading-snug">Foundations of Neural Networks &amp; Deep Learning</p>
+            <p className="mt-2 text-20 font-bold leading-snug">Algorithms and Computation</p>
             <ul className="mt-5 space-y-1.5" aria-hidden="true">
               {DEMO_RANGES.map((r, i) => (
                 <li
@@ -244,7 +359,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
                 <source media="(max-width: 767px)" srcSet="/landing/tutor-mobile.webp" width={722} height={960} />
                 <img
                   src="/landing/notes-and-tutor.webp"
-                  alt="NorAI workspace: chapter notes on neural networks, each section carrying its timestamp, beside Nora answering a question from the lecture with its sources."
+                  alt="NorAI workspace: chapter notes with timestamps, beside Nora answering a question from the lecture with its sources."
                   width={1600}
                   height={936}
                   fetchPriority="high"
@@ -314,27 +429,45 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
           <p className="mt-4 max-w-xl text-16 text-nt2">No account needed. Read the notes, take the quiz, flip the cards.</p>
           <ol className="mt-10 border-t border-bdr2">
             {DEMO_LECTURES_CONFIG.map((demo) => (
-              <li key={demo.id} className="border-b border-bdr2">
-                <Link
-                  to={`/workspace/${demo.id}`}
-                  className={`group grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6 gap-y-2 py-6 sm:grid-cols-[auto_1fr_auto] sm:items-center ${LINK_RING}`}
-                >
-                  <ShelfMark
-                    top={DEMO_CODES[demo.category] ?? 'LEC'}
-                    time={demo.duration}
-                    className="min-w-[64px] self-start sm:self-center"
-                  />
-                  <span>
-                    <span className="block text-20 sm:text-22 font-bold text-nt group-hover:text-np transition-colors">
+              <li key={demo.id} className="border-b border-bdr2 py-6">
+                <div className="grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6 gap-y-3 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+                  <Link to={`/workspace/${demo.id}`} className="shrink-0">
+                    <ShelfMark
+                      top={DEMO_CODES[demo.category] ?? 'LEC'}
+                      time={demo.duration}
+                      className="min-w-[64px]"
+                    />
+                  </Link>
+                  <div>
+                    <Link
+                      to={`/workspace/${demo.id}`}
+                      className="block text-20 sm:text-22 font-bold text-nt hover:text-np transition-colors"
+                    >
                       {demo.title}
-                    </span>
-                    <span className="mt-1 block max-w-[62ch] text-15 text-nt2">{demo.summary}</span>
-                  </span>
-                  <span className="col-start-2 sm:col-start-auto flex items-center gap-2 text-14 text-nt3 sm:whitespace-nowrap">
-                    {demo.chapterCount} chapters
-                    <ArrowUpRight size={17} aria-hidden="true" className="shrink-0 text-np" />
-                  </span>
-                </Link>
+                    </Link>
+                    <p className="mt-1 max-w-[62ch] text-15 text-nt2">{demo.summary}</p>
+                    {DEMO_SLUGS[demo.id] && (
+                      <div className="mt-2 flex items-center gap-4 text-13">
+                        <Link
+                          to={`/demo/${DEMO_SLUGS[demo.id]}`}
+                          className="font-medium text-np hover:underline underline-offset-4"
+                        >
+                          Read answer-first study guide & syllabus →
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                  <div className="col-start-2 sm:col-start-auto flex items-center gap-3 text-14 text-nt3 sm:whitespace-nowrap">
+                    <span>{demo.chapterCount} chapters</span>
+                    <Link
+                      to={`/workspace/${demo.id}`}
+                      aria-label={`Open ${demo.title}`}
+                      className="p-1 rounded text-np hover:bg-ns2"
+                    >
+                      <ArrowUpRight size={18} aria-hidden="true" />
+                    </Link>
+                  </div>
+                </div>
               </li>
             ))}
           </ol>

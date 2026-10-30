@@ -1,0 +1,33 @@
+{
+  "chapter_id": 5,
+  "screenshots": [
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1359.jpg",
+      "reason": "The board shows the full inductive hypothesis, base case, and assumption.",
+      "section": "Base Case and Inductive Step",
+      "importance": 10,
+      "timestamp": 1359.19
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1412.jpg",
+      "reason": "The lecturer writes the case analysis structure on the board.",
+      "section": "List",
+      "importance": 9,
+      "timestamp": 1412.58
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_897.jpg",
+      "reason": "The lecturer introduces the birthday problem algorithm on the board.",
+      "section": "The Need for Formal Correctness",
+      "importance": 8,
+      "timestamp": 897.4
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1226.jpg",
+      "reason": "The lecturer writes part of the inductive hypothesis on the board.",
+      "section": "Setting Up the Inductive Proof",
+      "importance": 6,
+      "timestamp": 1226.26
+    }
+  ]
+}

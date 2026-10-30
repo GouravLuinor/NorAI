@@ -17,13 +17,14 @@ const PATTERNS: Array<{ re: RegExp; copy: string }> = [
 ]
 
 export function friendlyError(err: unknown): string {
-  if (typeof err === 'string') {
-    const hit = PATTERNS.find((p) => p.re.test(err))
-    return hit ? hit.copy : sanitize(err)
-  }
-  if (err instanceof Error) {
-    const msg = err.message || ''
-    if (err.name === 'AbortError') return ''
+  const msg = typeof err === 'string' ? err : err instanceof Error ? err.message || '' : ''
+  if (err instanceof Error && err.name === 'AbortError') return ''
+
+  if (msg) {
+    if (/guest (?:question|quota)|demo lecture/i.test(msg)) {
+      const cleaned = msg.replace(/^(?:Error:\s*)?(?:HTTP\s*\d+:\s*)?/i, '').trim()
+      return sanitize(cleaned)
+    }
     const hit = PATTERNS.find((p) => p.re.test(msg))
     return hit ? hit.copy : sanitize(msg)
   }

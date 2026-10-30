@@ -1,0 +1,78 @@
+{
+    "chapter_id": 5,
+    "chapter_title": "Proving Correctness with Induction",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 5,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Base case"
+            ],
+            "question": "What is the base case used for the birthday problem induction?",
+            "options": [
+                "K=1",
+                "K=2",
+                "K=0",
+                "K=N"
+            ],
+            "answer": "K=0",
+            "explanation": "The lecturer identifies K=0 as the easiest base case because no work is done and the predicate is trivially true.",
+            "flashcard_front": "What is the base case for the birthday problem induction?",
+            "flashcard_back": "K=0.",
+            "flashcard_explanation": "Interviewing zero students is the simplest case where the algorithm's property is trivially maintained."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 5,
+            "type": "True/False",
+            "difficulty": "Medium",
+            "concepts": [
+                "Inductive hypothesis"
+            ],
+            "question": "The inductive hypothesis assumes the algorithm is correct for K+1 and proves it for K.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "Induction assumes the hypothesis is true for K and uses that to prove it for K+1.",
+            "flashcard_front": "Does induction prove K from K+1?",
+            "flashcard_back": "False.",
+            "flashcard_explanation": "Induction assumes the hypothesis is true for K and uses it to prove K+1."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 5,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Case analysis"
+            ],
+            "question": "Why does the lecturer perform case analysis during the inductive step?",
+            "options": [],
+            "answer": "To isolate the problem and consider smaller, manageable scenarios rather than the entire input set at once.",
+            "explanation": "Case analysis allows the proof to handle different possibilities (like whether a match was already found) without needing to evaluate every possible input state simultaneously.",
+            "flashcard_front": "",
+            "flashcard_back": "",
+            "flashcard_explanation": ""
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 5,
+            "type": "Short Answer",
+            "difficulty": "Hard",
+            "concepts": [
+                "Inductive hypothesis"
+            ],
+            "question": "State the inductive hypothesis for the birthday problem as defined in the lecture.",
+            "options": [],
+            "answer": "If the first K students contain a match, the algorithm returns a match before interviewing student K+1.",
+            "explanation": "This hypothesis ensures that the algorithm maintains the property of finding a match if one exists throughout the process.",
+            "flashcard_front": "",
+            "flashcard_back": "",
+            "flashcard_explanation": ""
+        }
+    ]
+}

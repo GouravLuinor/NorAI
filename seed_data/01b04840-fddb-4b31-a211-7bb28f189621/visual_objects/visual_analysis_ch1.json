@@ -1,0 +1,89 @@
+{
+  "chapter_id": 1,
+  "frames": {
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_0.jpg": {
+      "ocr_text": "MIT Massachusetts Institute of Technology 18.01 Single Variable Calculus Fall 2007",
+      "importance_score": 1,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "Title slide for the course."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_25.jpg": {
+      "ocr_text": "MIT Massachusetts Institute of Technology 18.01 Single Variable Calculus Fall 2007",
+      "importance_score": 1,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "Title slide for the course."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_30.jpg": {
+      "ocr_text": "18.01",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer standing in front of the blackboard."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_57.jpg": {
+      "ocr_text": "18.01 UNIT 1 DIFFERENTIATION",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Blackboard showing the unit title."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_116.jpg": {
+      "ocr_text": "geom. interp. physical interp.",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Blackboard listing the interpretations of the derivative."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_127.jpg": {
+      "ocr_text": "importance to all measurements (sci, eng, econ, polit. sci)",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Blackboard listing the importance of derivatives."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_201.jpg": {
+      "ocr_text": "DIFFERENTIATE ANY F'N YOU KNOW",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Blackboard showing the goal of the unit."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_207.jpg": {
+      "ocr_text": "d/dx e^x arctan x = ?",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "Blackboard showing an example of a function to differentiate."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_233.jpg": {
+      "ocr_text": "A WHAT IS A DERIVATIVE - geom interp - physical interp B HOW TO DIFFERENTIATE ANY F'N YOU KNOW",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Summary of the unit topics on the blackboard."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_265.jpg": {
+      "ocr_text": "GEOM INTERP: FIND THE TANGENT LINE",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Blackboard stating the geometric problem."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_329.jpg": {
+      "ocr_text": "GEOM INTERP: FIND THE TANGENT LINE TO y=f(x) at P=(x0, y0)",
+      "importance_score": 10,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "Blackboard showing the problem setup with a graph."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_350.jpg": {
+      "ocr_text": "",
+      "importance_score": 10,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "Lecturer drawing the tangent line on the graph."
+    }
+  }
+}

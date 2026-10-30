@@ -20,11 +20,11 @@ type DocTab = 'notes' | 'revision' | 'assessment' | 'guide' | 'concepts'
 // Zone colours (DESIGN.md): notes green, revision blue, quiz brick, guide
 // violet, mind map brass. The active tab takes its zone's rule and tint.
 const ZONES: { value: DocTab; label: string; dot: string; active: string }[] = [
-  { value: 'notes', label: 'Study notes', dot: 'bg-z-notes', active: 'border-z-notes text-z-notes bg-z-notes/8' },
+  { value: 'notes', label: 'Notes', dot: 'bg-z-notes', active: 'border-z-notes text-z-notes bg-z-notes/8' },
   { value: 'revision', label: 'Revision', dot: 'bg-z-revision', active: 'border-z-revision text-z-revision bg-z-revision/8' },
   { value: 'assessment', label: 'Quiz', dot: 'bg-z-quiz', active: 'border-z-quiz text-z-quiz bg-z-quiz/8' },
   { value: 'guide', label: 'Guide', dot: 'bg-z-cards', active: 'border-z-cards text-z-cards bg-z-cards/8' },
-  { value: 'concepts', label: 'Mind map', dot: 'bg-brass', active: 'border-brass text-z-map bg-brass/10' },
+  { value: 'concepts', label: 'Map', dot: 'bg-brass', active: 'border-brass text-z-map bg-brass/10' },
 ]
 
 const TOOL = 'gap-1.5 px-2 xl:px-2.5 h-8 min-w-8 rounded-md text-13 font-bold bg-transparent border-bdr2 text-nt2 hover:text-nt'
@@ -66,22 +66,22 @@ export function DocPanel() {
   return (
     <main className="relative flex flex-col min-w-0 min-h-0 border-r border-bdr bg-nb flex-1">
       {/* Mode bar: each study mode owns a zone colour */}
-      <div className="flex items-stretch pl-2 pr-3 h-12 border-b border-bdr bg-ns gap-2 shrink-0 overflow-x-auto">
+      <div className="@container flex flex-wrap items-stretch pl-1.5 pr-2 min-h-12 border-b border-bdr bg-ns gap-2 shrink-0 overflow-x-auto no-scrollbar @max-[620px]:py-1">
         <SegmentedControl
           containerClass="flex items-stretch shrink-0 whitespace-nowrap"
-          itemClass="flex items-center gap-2 px-3 text-13 font-bold border-b-[3px] -mb-px transition-colors whitespace-nowrap cursor-pointer"
+          itemClass="flex items-center gap-2 px-2 text-13 font-bold border-b-[3px] -mb-px transition-colors whitespace-nowrap cursor-pointer"
           inactiveClass="border-transparent text-nt3 hover:text-nt"
           options={ZONES.map((z) => ({
             value: z.value,
             label: z.label,
-            prefix: <span aria-hidden="true" className={`w-2 h-2 rounded-[2px] ${z.dot}`} />,
+            prefix: <span aria-hidden="true" className={`w-2 h-2 rounded-[2px] @max-[620px]:hidden ${z.dot}`} />,
             activeClass: z.active,
           }))}
           value={activeDocTab}
           onChange={(v) => setDocTab(v)}
         />
 
-        <div className="ml-auto flex items-center gap-1.5 shrink-0">
+        <div className="ml-auto flex items-center gap-1.5 shrink-0 @max-[620px]:w-full @max-[620px]:justify-end">
           <VideoToggle />
           <Button
             variant="outline"
@@ -90,20 +90,20 @@ export function DocPanel() {
             aria-label={searchOpen ? 'Close search' : 'Search the notes'}
             className={TOOL}
           >
-            <Search size={14} strokeWidth={1.75} /> <span className="hidden xl:inline">{searchOpen ? 'Close search' : 'Search'}</span>
+            <Search size={14} strokeWidth={1.75} /> <span className="hidden 2xl:inline">{searchOpen ? 'Close search' : 'Search'}</span>
           </Button>
 
           <Button variant="outline" onClick={handleDownloadPDF} aria-label="Download as PDF" className={TOOL}>
-            <Download size={14} strokeWidth={1.75} /> <span className="hidden xl:inline">PDF</span>
+            <Download size={14} strokeWidth={1.75} /> <span className="hidden 2xl:inline">PDF</span>
           </Button>
 
           <Button variant="outline" onClick={() => setShareOpen(true)} aria-label="Share this lecture" className={TOOL}>
-            <Share2 size={14} strokeWidth={1.75} /> <span className="hidden xl:inline">Share</span>
+            <Share2 size={14} strokeWidth={1.75} /> <span className="hidden 2xl:inline">Share</span>
           </Button>
 
           {activeDocTab === 'concepts' && (
             <Button variant="outline" onClick={handleDownloadInteractive} aria-label="Download the interactive mind map" className={TOOL}>
-              <Download size={14} strokeWidth={1.75} /> <span className="hidden xl:inline">Interactive</span>
+              <Download size={14} strokeWidth={1.75} /> <span className="hidden 2xl:inline">Interactive</span>
             </Button>
           )}
 

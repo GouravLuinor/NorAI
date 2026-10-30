@@ -10,6 +10,7 @@ import { Dialog } from '../ui/Dialog'
 import { IconButton } from '../ui/IconButton'
 import { useParams } from 'react-router-dom'
 import { useLectureStore } from '../../stores/useLectureStore'
+import { useVideoStore } from '../../stores/useVideoStore'
 import { FOCUS_RING } from '../ui/shared'
 
 const SIDEBAR_MIN = 220
@@ -27,6 +28,8 @@ export function Workspace() {
   const setActiveLecture = useLectureStore((s) => s.setActiveLecture)
   const loadLectures = useLectureStore((s) => s.loadLectures)
   const loadChapters = useChapterStore((s) => s.loadChapters)
+  const loadVideo = useVideoStore((s) => s.load)
+  const resetVideo = useVideoStore((s) => s.reset)
   const aiMode = useQuizStore((s) => s.aiMode)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(268)
@@ -88,9 +91,15 @@ export function Workspace() {
     if (lectureId) {
       setActiveLecture(lectureId)
       loadChapters(lectureId)
+      // Load source + seek map at the layout level, not inside DocPanel:
+      // phones show only one pane, so the video info must exist even when the
+      // tutor tab is the one mounted.
+      void loadVideo(lectureId)
+    } else {
+      resetVideo()
     }
     loadLectures()
-  }, [lectureId, setActiveLecture, loadLectures, loadChapters])
+  }, [lectureId, setActiveLecture, loadLectures, loadChapters, loadVideo, resetVideo])
 
   const minAiWidth = aiMode === 'tutor' || aiMode === 'socratic' ? AI_MIN_TUTOR : AI_MIN_QUIZ_CARDS
   const prevAiModeRef = useRef(aiMode)

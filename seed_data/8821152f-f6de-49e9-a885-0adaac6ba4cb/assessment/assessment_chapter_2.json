@@ -1,0 +1,78 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Defining Computational Problems",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 2,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Binary relation"
+            ],
+            "question": "How is a computational problem formally defined in this lecture?",
+            "options": [
+                "As a function from inputs to a single output.",
+                "As a binary relation between inputs and outputs.",
+                "As a list of all possible input-output pairs.",
+                "As a sequence of steps to reach an output."
+            ],
+            "answer": "As a binary relation between inputs and outputs.",
+            "explanation": "The lecturer explicitly defines a computational problem as a binary relation between a set of inputs and a set of outputs.",
+            "flashcard_front": "How is a computational problem formally defined?",
+            "flashcard_back": "As a binary relation between a set of inputs and a set of outputs.",
+            "flashcard_explanation": "It is a mapping where edges in a bipartite graph specify which outputs are correct for each input."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 2,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Binary relation"
+            ],
+            "question": "True or False: A computational problem must map every input to exactly one unique output.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer stated that a problem does not necessarily have to map to one output; a single input can map to multiple valid outputs.",
+            "flashcard_front": "Must a computational problem map an input to exactly one output?",
+            "flashcard_back": "No, an input can map to multiple valid outputs.",
+            "flashcard_explanation": "The lecturer used the example of finding an index of a value in an array with multiple occurrences."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 2,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Predicates"
+            ],
+            "question": "Why do we typically use predicates to define computational problems instead of listing all input-output pairs?",
+            "options": [],
+            "answer": "Listing all pairs is impractical and would take forever for most problems.",
+            "explanation": "Predicates allow us to check correctness for any input-output pair without needing to enumerate every possible instance of the problem.",
+            "flashcard_front": "Why use predicates to define problems?",
+            "flashcard_back": "To verify correctness without listing every possible input-output pair.",
+            "flashcard_explanation": "Listing pairs is impractical for large or infinite input spaces."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 2,
+            "type": "Application",
+            "difficulty": "Medium",
+            "concepts": [
+                "Generalization"
+            ],
+            "question": "In the birthday example, what principle is used to determine that at least two people share a birthday in a large enough group?",
+            "options": [],
+            "answer": "The pigeonhole principle.",
+            "explanation": "The lecturer cited the pigeonhole principle to explain why, with more than 365 people, a birthday collision is guaranteed.",
+            "flashcard_front": "What principle guarantees a birthday collision with >365 people?",
+            "flashcard_back": "The pigeonhole principle.",
+            "flashcard_explanation": "The lecturer used this to illustrate the power of generalizing problems."
+        }
+    ]
+}

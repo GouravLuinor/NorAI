@@ -1,0 +1,26 @@
+{
+    "chapter_id": 4,
+    "chapter_title": "Example: The Birthday Problem",
+    "flashcards": [
+        {
+            "front": "What is the first step when interviewing a student in the birthday problem algorithm?",
+            "back": "Ask for their birthday.",
+            "explanation": "The algorithm requires obtaining the data (birthday) before checking it against the existing record."
+        },
+        {
+            "front": "Does the algorithm continue after finding a matching birthday?",
+            "back": "No, it stops and returns the pair.",
+            "explanation": "Once the condition of finding a match is met, the procedure terminates."
+        },
+        {
+            "front": "How is an algorithm defined in this chapter?",
+            "back": "A procedure taking an input and producing a correct output.",
+            "explanation": "The lecturer emphasizes that an algorithm is a plan to reach a correct result from an input."
+        },
+        {
+            "front": "What is the output if no matching birthday is found?",
+            "back": "The algorithm returns that there is none.",
+            "explanation": "The procedure must account for the case where no match exists after checking all inputs."
+        }
+    ]
+}

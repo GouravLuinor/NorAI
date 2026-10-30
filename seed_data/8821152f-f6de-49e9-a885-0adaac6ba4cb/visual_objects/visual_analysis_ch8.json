@@ -1,0 +1,89 @@
+{
+  "chapter_id": 8,
+  "frames": {
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2268.jpg": {
+      "ocr_text": "Model of Computation Word-RAM",
+      "importance_score": 10,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer introduces the Word-RAM model of computation."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2294.jpg": {
+      "ocr_text": "Model of Computation Word-RAM Memory",
+      "importance_score": 8,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "A diagram showing the relationship between the model and memory."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2331.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains how modern computers are addressed."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2358.jpg": {
+      "ocr_text": "CPU",
+      "importance_score": 7,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer adds the CPU component to the model diagram."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2383.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer defines word size."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2409.jpg": {
+      "ocr_text": "Model of Computation Word-RAM Memory CPU",
+      "importance_score": 9,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The completed model diagram showing memory and CPU."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2441.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the history of word sizes."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2468.jpg": {
+      "ocr_text": "",
+      "importance_score": 6,
+      "visual_type": "diagram",
+      "include_in_notes": false,
+      "description": "The lecturer writes on the board regarding addressing limits."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2495.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains the capacity of 64-bit addressing."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2521.jpg": {
+      "ocr_text": "2^theta(n)",
+      "importance_score": 7,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer notes complexity on the board."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2559.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer summarizes CPU operations."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2586.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concludes the chapter on complexity."
+    }
+  }
+}

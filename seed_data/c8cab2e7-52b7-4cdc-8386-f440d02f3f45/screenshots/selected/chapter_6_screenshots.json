@@ -1,0 +1,33 @@
+{
+  "chapter_id": 6,
+  "screenshots": [
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2157.jpg",
+      "reason": "The definition of instantaneous velocity as a limit.",
+      "section": "Instantaneous Velocity and Derivatives",
+      "importance": 10,
+      "timestamp": 2157.29
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2207.jpg",
+      "reason": "The definition of acceleration as the second derivative of position.",
+      "section": "Acceleration and Constant Motion",
+      "importance": 10,
+      "timestamp": 2207.2
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1986.jpg",
+      "reason": "The formula for average velocity.",
+      "section": "Average Velocity",
+      "importance": 9,
+      "timestamp": 1986.99
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2082.jpg",
+      "reason": "A diagram showing the slope of a line on a position-time graph.",
+      "section": "Instantaneous Velocity and Derivatives",
+      "importance": 9,
+      "timestamp": 2082.01
+    }
+  ]
+}

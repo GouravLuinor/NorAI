@@ -1,0 +1,26 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "Q&A and Course Prerequisites",
+    "flashcards": [
+        {
+            "front": "Why does the lecturer recommend taking the lab concurrently?",
+            "back": "The lecture lacks demonstrations, and the lab shows the experimental origins of physics laws.",
+            "explanation": "The lecturer noted that all demonstrations are in a different building, making the lab essential for experimental context."
+        },
+        {
+            "front": "What mathematical topics must students know without looking them up?",
+            "back": "Trigonometric functions, specifically sine and cosine, and basic trigonometric identities.",
+            "explanation": "The lecturer emphasized that these are fundamental tools that should be known from high school."
+        },
+        {
+            "front": "How many lectures are covered by the midterm?",
+            "back": "Approximately 12 lectures.",
+            "explanation": "The course has 24 lectures total, and the midterm covers the first half."
+        },
+        {
+            "front": "Should students wait until the end of class to ask questions?",
+            "back": "No, the lecturer encourages students to stop him anytime they do not follow something.",
+            "explanation": "The lecturer finds it more exciting to answer questions than to give a monologue."
+        }
+    ]
+}

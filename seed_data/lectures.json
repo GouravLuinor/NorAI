@@ -1,20 +1,47 @@
 {
-  "506dd685-05f9-43df-8d09-5b944c7392f5": {
-    "lecture_id": "506dd685-05f9-43df-8d09-5b944c7392f5",
-    "title": "The Rise of Open-Weights Models and Local Deployment",
-    "created_at": "2026-08-15T17:41:10",
-    "output_dir": "outputs/506dd685-05f9-43df-8d09-5b944c7392f5"
+  "8821152f-f6de-49e9-a885-0adaac6ba4cb": {
+    "lecture_id": "8821152f-f6de-49e9-a885-0adaac6ba4cb",
+    "title": "Algorithms and Computation",
+    "created_at": "2026-10-30T00:00:00",
+    "output_dir": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb",
+    "source_url": "https://www.youtube.com/watch?v=ZA-tUyM_y7s",
+    "source_license": "CC BY-NC-SA 4.0",
+    "source_creator": "MIT OpenCourseWare"
   },
-  "e54d7376-0e7b-472a-9ca6-9b21ad0b2710": {
-    "lecture_id": "e54d7376-0e7b-472a-9ca6-9b21ad0b2710",
-    "title": "Foundations of Economic Thinking: Incentives and Opportunity Cost",
-    "created_at": "2026-08-16T07:24:31",
-    "output_dir": "outputs/e54d7376-0e7b-472a-9ca6-9b21ad0b2710"
+  "01b04840-fddb-4b31-a211-7bb28f189621": {
+    "lecture_id": "01b04840-fddb-4b31-a211-7bb28f189621",
+    "title": "Introduction to Differentiation",
+    "created_at": "2026-10-30T00:10:00",
+    "output_dir": "outputs/01b04840-fddb-4b31-a211-7bb28f189621",
+    "source_url": "https://www.youtube.com/watch?v=jbIQW0gkgxo",
+    "source_license": "CC BY-NC-SA 4.0",
+    "source_creator": "MIT OpenCourseWare"
   },
-  "ab648382-638f-4dde-b7c1-4007a2e638bb": {
-    "lecture_id": "ab648382-638f-4dde-b7c1-4007a2e638bb",
-    "title": "Foundations of Neural Network Architecture",
-    "created_at": "2026-08-16T07:36:53",
-    "output_dir": "outputs/ab648382-638f-4dde-b7c1-4007a2e638bb"
+  "c8cab2e7-52b7-4cdc-8386-f440d02f3f45": {
+    "lecture_id": "c8cab2e7-52b7-4cdc-8386-f440d02f3f45",
+    "title": "Newtonian Mechanics: Motion and Calculus",
+    "created_at": "2026-10-30T00:20:00",
+    "output_dir": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45",
+    "source_url": "https://www.youtube.com/watch?v=KOKnWaLiL8w",
+    "source_license": "CC BY-NC-SA 3.0",
+    "source_creator": "YaleCourses"
+  },
+  "2e983ee0-ae41-4910-9239-099b34dee04c": {
+    "lecture_id": "2e983ee0-ae41-4910-9239-099b34dee04c",
+    "title": "Finance and Insurance in the Modern Economy",
+    "created_at": "2026-10-30T00:30:00",
+    "output_dir": "outputs/2e983ee0-ae41-4910-9239-099b34dee04c",
+    "source_url": "https://www.youtube.com/watch?v=D3aHciiVdvQ",
+    "source_license": "CC BY-NC-SA 3.0",
+    "source_creator": "YaleCourses"
+  },
+  "5f7225bf-ba41-46b9-aea9-da91c032b515": {
+    "lecture_id": "5f7225bf-ba41-46b9-aea9-da91c032b515",
+    "title": "The Civil War and Reconstruction in American Memory",
+    "created_at": "2026-10-30T00:40:00",
+    "output_dir": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515",
+    "source_url": "https://www.youtube.com/watch?v=tPtyQP9jqc0",
+    "source_license": "CC BY-NC-SA 3.0",
+    "source_creator": "YaleCourses"
   }
 }

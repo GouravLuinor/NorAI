@@ -1,0 +1,78 @@
+{
+    "chapter_id": 5,
+    "chapter_title": "Kinematics and One-Dimensional Motion",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 5,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Kinematics"
+            ],
+            "question": "What is the primary focus of kinematics?",
+            "options": [
+                "Explaining why an object moves",
+                "Describing the current state of a system",
+                "Calculating the forces acting on a body",
+                "Analyzing the rotation of rigid bodies"
+            ],
+            "answer": "Describing the current state of a system",
+            "explanation": "Kinematics is defined as the complete description of the present state of a system, focusing on what it is doing rather than why.",
+            "flashcard_front": "What is kinematics?",
+            "flashcard_back": "A complete description of a system's current state of motion.",
+            "flashcard_explanation": "Kinematics describes the 'what' of motion, such as position and speed, without addressing the 'why'."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 5,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Mathematical point particle"
+            ],
+            "question": "A mathematical point particle has no spatial extent.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The lecturer defines a mathematical point as an entity that has no size or spatial extent.",
+            "flashcard_front": "Does a mathematical point particle have spatial extent?",
+            "flashcard_back": "No, it has no size or spatial extent.",
+            "flashcard_explanation": "It is an idealized point used to simplify mechanics by ignoring rotation and internal structure."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 5,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "One-dimensional motion"
+            ],
+            "question": "What is the simplest way to visualize one-dimensional motion?",
+            "options": [],
+            "answer": "A bead with a wire going through it that can only slide back and forth.",
+            "explanation": "The lecturer uses the analogy of a bead on a wire to illustrate motion constrained to a single dimension.",
+            "flashcard_front": "How is one-dimensional motion visualized?",
+            "flashcard_back": "A bead sliding back and forth on a wire.",
+            "flashcard_explanation": "This analogy represents the simplest possible constraint for motion along a single line."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 5,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Dynamics"
+            ],
+            "question": "How does dynamics differ from kinematics?",
+            "options": [],
+            "answer": "Dynamics explains the reasons behind motion (the 'why'), whereas kinematics only describes the current state of motion.",
+            "explanation": "Kinematics describes the present state, while dynamics explains the forces that cause changes to that state.",
+            "flashcard_front": "What is the difference between kinematics and dynamics?",
+            "flashcard_back": "Kinematics describes motion; dynamics explains why motion changes.",
+            "flashcard_explanation": "Kinematics is descriptive (the 'what'), while dynamics is explanatory (the 'why')."
+        }
+    ]
+}

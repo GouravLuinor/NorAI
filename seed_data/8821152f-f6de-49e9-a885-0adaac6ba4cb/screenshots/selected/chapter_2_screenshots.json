@@ -1,0 +1,33 @@
+{
+  "chapter_id": 2,
+  "screenshots": [
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_255.jpg",
+      "reason": "Bipartite graph setup showing inputs and outputs.",
+      "section": "The Formal Definition of a Computational Problem",
+      "importance": 9,
+      "timestamp": 255.16
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_303.jpg",
+      "reason": "Bipartite graph with edges drawn between inputs and outputs.",
+      "section": "The Formal Definition of a Computational Problem",
+      "importance": 9,
+      "timestamp": 303.2
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_239.jpg",
+      "reason": "Lecturer writing 'Problem' and 'Inputs' on the board.",
+      "section": "The Formal Definition of a Computational Problem",
+      "importance": 8,
+      "timestamp": 239.14
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_372.jpg",
+      "reason": "The bipartite graph remains on the board.",
+      "section": "Generalizing Problems: An Example",
+      "importance": 6,
+      "timestamp": 372.61
+    }
+  ]
+}

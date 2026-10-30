@@ -1,0 +1,26 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Introduction to Differentiation",
+    "flashcards": [
+        {
+            "front": "What is the geometric interpretation of the derivative?",
+            "back": "Finding the tangent line to the graph of a function at a specific point.",
+            "explanation": "The lecturer defines the geometric problem as constructing the tangent line to a function at (x0, y0)."
+        },
+        {
+            "front": "Are derivatives useful outside of pure mathematics?",
+            "back": "Yes, they are fundamental to measurements in science, engineering, economics, and other fields.",
+            "explanation": "The lecturer emphasizes the importance of derivatives to all measurements in various practical disciplines."
+        },
+        {
+            "front": "What is the main goal of this differentiation unit?",
+            "back": "To learn how to differentiate any function you can write down.",
+            "explanation": "The lecturer sets the goal of being able to differentiate any function known to the student."
+        },
+        {
+            "front": "What does point P represent in the geometric interpretation?",
+            "back": "A point on the graph of the function at a fixed x-coordinate x0.",
+            "explanation": "P is identified as a point on the function's graph corresponding to a fixed x0."
+        }
+    ]
+}

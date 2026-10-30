@@ -1,0 +1,40 @@
+{
+  "chapter_id": 3,
+  "frames": {
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1342.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer walking to the podium."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1402.jpg": {
+      "ocr_text": "Behavioral Finance",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The words 'Behavioral Finance' written on the blackboard."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1462.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer speaking to the class."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1522.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer smiling while discussing the crisis."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1582.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concluding a point."
+    }
+  }
+}

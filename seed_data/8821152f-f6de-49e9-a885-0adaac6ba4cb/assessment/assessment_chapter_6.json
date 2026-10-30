@@ -1,0 +1,78 @@
+{
+    "chapter_id": 6,
+    "chapter_title": "Efficiency and Asymptotic Analysis",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 6,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Efficiency"
+            ],
+            "question": "Why is measuring the raw time an algorithm takes to run on a computer problematic?",
+            "options": [
+                "It is too difficult to measure.",
+                "It depends on the strength of the computer.",
+                "It is always the same regardless of the input.",
+                "It does not account for the algorithm's correctness."
+            ],
+            "answer": "It depends on the strength of the computer.",
+            "explanation": "The lecturer explains that raw timing depends on the hardware, whereas we want an abstract measure of performance.",
+            "flashcard_front": "Why is measuring raw time for an algorithm problematic?",
+            "flashcard_back": "It depends on the strength of the computer, not just the algorithm.",
+            "flashcard_explanation": "Raw time is hardware-dependent; we need an abstract measure independent of the machine."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 6,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Asymptotic analysis"
+            ],
+            "question": "Theta notation provides a tight bound by being bounded from both above and below.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The lecturer states that Theta corresponds to both upper and lower bounds, making it tight.",
+            "flashcard_front": "What does Theta notation represent?",
+            "flashcard_back": "A tight bound, being bounded from both above and below.",
+            "flashcard_explanation": "Theta notation provides a tight bound on the growth of a function."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 6,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Input size"
+            ],
+            "question": "How is the input size defined for an N by N array?",
+            "options": [],
+            "answer": "N squared",
+            "explanation": "The lecturer explicitly states that for an N by N array, the input size is N squared.",
+            "flashcard_front": "What is the input size of an N by N array?",
+            "flashcard_back": "N squared.",
+            "flashcard_explanation": "The input size is the total information needed to convey the array."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 6,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Efficiency"
+            ],
+            "question": "Instead of measuring time, what do we count to measure algorithm efficiency?",
+            "options": [],
+            "answer": "Fundamental operations",
+            "explanation": "The lecturer states that we should count the number of fundamental operations the computer performs.",
+            "flashcard_front": "What do we count to measure algorithm efficiency?",
+            "flashcard_back": "Fundamental operations.",
+            "flashcard_explanation": "Counting operations provides an abstract, machine-independent measure of performance."
+        }
+    ]
+}

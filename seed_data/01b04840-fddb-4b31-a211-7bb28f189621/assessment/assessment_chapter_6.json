@@ -1,0 +1,78 @@
+{
+    "chapter_id": 6,
+    "chapter_title": "Solving the Geometry Problem",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 6,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "X-intercept"
+            ],
+            "question": "What is the X-intercept of the tangent line to $y = 1/x$ at $(x_0, y_0)$?",
+            "options": [
+                "x = x_0",
+                "x = 2x_0",
+                "x = 1/x_0",
+                "x = 0"
+            ],
+            "answer": "x = 2x_0",
+            "explanation": "Setting y=0 in the tangent line equation $y - y_0 = -1/x_0^2(x - x_0)$ leads to $x = 2x_0$.",
+            "flashcard_front": "What is the X-intercept of the tangent line to $y=1/x$ at $x_0$?",
+            "flashcard_back": "The X-intercept is $2x_0$.",
+            "flashcard_explanation": "Setting the tangent line equation to $y=0$ and solving for $x$ yields $2x_0$."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 6,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Symmetry"
+            ],
+            "question": "The equation $y = 1/x$ is symmetric with respect to swapping $x$ and $y$.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The equation $y = 1/x$ can be rewritten as $xy = 1$, which remains unchanged if $x$ and $y$ are swapped.",
+            "flashcard_front": "Is $y=1/x$ symmetric if $x$ and $y$ are swapped?",
+            "flashcard_back": "True.",
+            "flashcard_explanation": "The equation $xy=1$ is invariant when $x$ and $y$ are exchanged."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 6,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Y-intercept"
+            ],
+            "question": "Using the symmetry argument, what is the Y-intercept of the tangent line to $y = 1/x$ at $(x_0, y_0)$?",
+            "options": [],
+            "answer": "2y_0",
+            "explanation": "By symmetry, if the X-intercept is $2x_0$, the Y-intercept must be $2y_0$.",
+            "flashcard_front": "What is the Y-intercept of the tangent line at $(x_0, y_0)$?",
+            "flashcard_back": "The Y-intercept is $2y_0$.",
+            "flashcard_explanation": "By symmetry with the X-intercept $2x_0$, the Y-intercept is $2y_0$."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 6,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Calculus"
+            ],
+            "question": "Why does the lecturer mention that single variable calculus often involves multiple variables?",
+            "options": [],
+            "answer": "Because solving geometric problems often requires tracking several quantities like coordinates and intercepts simultaneously.",
+            "explanation": "The lecturer notes that while the course is single variable, we must manage variables like $x, y, x_0, y_0$ to solve the problem.",
+            "flashcard_front": "Why does single variable calculus involve multiple variables?",
+            "flashcard_back": "Solving problems requires tracking several quantities like coordinates and intercepts simultaneously.",
+            "flashcard_explanation": "Geometric problems often involve multiple related variables that must be managed together."
+        }
+    ]
+}

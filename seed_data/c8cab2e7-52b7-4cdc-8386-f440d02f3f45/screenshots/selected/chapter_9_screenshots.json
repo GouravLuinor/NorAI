@@ -1,0 +1,33 @@
+{
+  "chapter_id": 9,
+  "screenshots": [
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3310.jpg",
+      "reason": "The specific position equation for the object.",
+      "section": "Problem-Solving Strategy and Setup",
+      "importance": 10,
+      "timestamp": 3310.31
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3529.jpg",
+      "reason": "Calculations for the time and height at the peak.",
+      "section": "Finding the Maximum Height",
+      "importance": 10,
+      "timestamp": 3529.86
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3680.jpg",
+      "reason": "Setting up the equation to find when the object hits the ground.",
+      "section": "Impact Time and Mathematical Solutions",
+      "importance": 10,
+      "timestamp": 3680.68
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3340.jpg",
+      "reason": "The initial conditions for the problem.",
+      "section": "Problem-Solving Strategy and Setup",
+      "importance": 9,
+      "timestamp": 3340.14
+    }
+  ]
+}

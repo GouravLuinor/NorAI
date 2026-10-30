@@ -1,0 +1,89 @@
+{
+  "chapter_id": 8,
+  "frames": {
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2691.jpg": {
+      "ocr_text": "Example 2. f(x)=x^n n=1,2,3... d/dx x^n = ? delta f / delta x = (x+delta x)^n - x^n / delta x",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer writes the definition of the derivative for x^n."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2750.jpg": {
+      "ocr_text": "delta f / delta x = (x+delta x)^n - x^n / delta x",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "Close up of the difference quotient formula."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2777.jpg": {
+      "ocr_text": "(binomial theorem)",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer introduces the binomial theorem."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2851.jpg": {
+      "ocr_text": "(x+delta x)^n = x^n + n x^(n-1) delta x + junk O(delta x^2)",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Expansion of (x + delta x)^n using the binomial theorem."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2873.jpg": {
+      "ocr_text": "O(delta x^2) terms w/ (delta x)^2, (delta x)^3...",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Clarification of the 'junk' terms."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2915.jpg": {
+      "ocr_text": "delta f / delta x = 1/delta x ((x+delta x)^n - x^n) = 1/delta x (x^n + n x^(n-1) delta x + O(delta x^2) - x^n)",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Substituting the expansion into the difference quotient."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2958.jpg": {
+      "ocr_text": "delta f / delta x = 1/delta x (n x^(n-1) delta x + O(delta x^2)) = n x^(n-1) + O(delta x)",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Simplifying the expression by dividing by delta x."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2985.jpg": {
+      "ocr_text": "n x^(n-1)",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The result of the limit as delta x goes to zero."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_3012.jpg": {
+      "ocr_text": "d/dx x^n = n x^(n-1) Extends to polynomials",
+      "importance_score": 10,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The final power rule formula and mention of polynomial extension."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_3049.jpg": {
+      "ocr_text": "d/dx (x^3 + 5x^10) = 3x^2 + 50x^9",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Example of applying the power rule to a polynomial."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_3065.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer addressing a student question."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_3086.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concluding the lecture."
+    }
+  }
+}

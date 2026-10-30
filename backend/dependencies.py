@@ -280,6 +280,7 @@ def _thread_exists(db_path: Path, thread_id: str) -> bool:
 def _register_thread_if_needed(db_path: Path, thread_id: str) -> None:
     """Ensure active thread is recorded in user_threads and un-marked from deleted_threads."""
     try:
+        db_path.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(str(db_path), timeout=5.0)
         try:
             conn.execute("CREATE TABLE IF NOT EXISTS user_threads (thread_id TEXT, user_id TEXT DEFAULT '', PRIMARY KEY (thread_id, user_id))")

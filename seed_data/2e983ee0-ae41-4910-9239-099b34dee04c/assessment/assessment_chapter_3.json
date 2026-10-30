@@ -1,0 +1,83 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "Behavioral Finance and the Subprime Crisis",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 3,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Behavioral Finance"
+            ],
+            "question": "Which disciplines does the lecturer mention as being integrated into behavioral finance?",
+            "options": [
+                "Physics, Chemistry, and Biology",
+                "Psychology, Sociology, Political Science, and Anthropology",
+                "History, Geography, and Philosophy",
+                "Mathematics, Statistics, and Computer Science"
+            ],
+            "answer": "Psychology, Sociology, Political Science, and Anthropology",
+            "explanation": "The lecturer explicitly lists psychology, sociology, political science, and anthropology as the social sciences mixed into behavioral finance.",
+            "flashcard_front": "What is behavioral finance?",
+            "flashcard_back": "Finance theory integrated with social sciences like psychology, sociology, political science, and anthropology.",
+            "flashcard_explanation": "It represents a revolution in finance by moving away from studying finance in isolation."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 3,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Subprime Mortgage Crisis"
+            ],
+            "question": "A subprime borrower is defined as someone with a perfect credit history.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "A subprime borrower is someone with a poor credit history or indicators suggesting they might not be able to repay the mortgage.",
+            "flashcard_front": "What is a subprime borrower?",
+            "flashcard_back": "Someone with a poor credit history or indicators suggesting they might default on a mortgage.",
+            "flashcard_explanation": "Subprime lending involves higher risk due to the borrower's credit profile."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 3,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Finance as Technology"
+            ],
+            "question": "How does the lecturer describe the relationship between finance and engineering?",
+            "options": [],
+            "answer": "The lecturer describes finance as a technology and financial instruments as being like engineering devices.",
+            "explanation": "The lecturer uses the analogy of an engineering device to explain that finance has a lot of detail and is a way of doing things.",
+            "flashcard_front": "",
+            "flashcard_back": "",
+            "flashcard_explanation": ""
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 3,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Subprime Mortgage Crisis"
+            ],
+            "question": "What happens when a borrower defaults on their mortgage according to the lecturer?",
+            "options": [
+                "The bank renegotiates the interest rate.",
+                "The government pays the mortgage.",
+                "The borrower loses the house to the mortgage originator.",
+                "The mortgage is forgiven."
+            ],
+            "answer": "The borrower loses the house to the mortgage originator.",
+            "explanation": "The lecturer states that the contract says you lose the house and it goes back to the mortgage originator.",
+            "flashcard_front": "",
+            "flashcard_back": "",
+            "flashcard_explanation": ""
+        }
+    ]
+}

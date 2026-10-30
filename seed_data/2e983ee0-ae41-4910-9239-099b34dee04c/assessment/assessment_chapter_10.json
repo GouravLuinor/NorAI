@@ -1,0 +1,78 @@
+{
+    "chapter_id": 10,
+    "chapter_title": "Brokerages, Futures, Options, and Democratization",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 10,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Futures Markets"
+            ],
+            "question": "Where were futures contracts originally invented in the 1600s?",
+            "options": [
+                "London",
+                "Amsterdam",
+                "Osaka",
+                "Chicago"
+            ],
+            "answer": "Osaka",
+            "explanation": "The lecturer stated that futures contracts were invented in Japan in the 1600s at Osaka for the rice market.",
+            "flashcard_front": "Where were futures contracts originally invented?",
+            "flashcard_back": "They were invented in Osaka, Japan, in the 1600s for the rice market.",
+            "flashcard_explanation": "The lecturer identified Osaka, Japan, as the origin of futures contracts in the 17th century."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 10,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Forward Contracts"
+            ],
+            "question": "Forward contracts are typically traded on standardized exchanges.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer noted that forward contracts are generally over-the-counter contracts because they are not arranged through exchanges.",
+            "flashcard_front": "Are forward contracts traded on exchanges?",
+            "flashcard_back": "No, they are generally over-the-counter contracts.",
+            "flashcard_explanation": "Forward contracts are not arranged through exchanges, unlike standardized futures contracts."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 10,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Democratization of finance"
+            ],
+            "question": "What is a primary danger associated with the democratization of finance as discussed in the lecture?",
+            "options": [],
+            "answer": "The primary danger is that it brings in participants who are less knowledgeable about finance and therefore more vulnerable to exploitation.",
+            "explanation": "The lecturer warned that increasing participation in financial markets involves people who may not understand financial concepts, making them susceptible to exploitation.",
+            "flashcard_front": "What is a danger of democratizing finance?",
+            "flashcard_back": "It involves less knowledgeable participants who are more vulnerable to exploitation.",
+            "flashcard_explanation": "Expanding financial access to the general population can expose those without financial expertise to significant risks."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 10,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Futures Markets"
+            ],
+            "question": "What does the lecturer mean when they say an oil futures market is in 'backwardation'?",
+            "options": [],
+            "answer": "It means the market is predicting major drops in the price of oil in the future.",
+            "explanation": "The lecturer used the example of oil prices to explain that backwardation in the futures market indicates expected future price decreases.",
+            "flashcard_front": "What does backwardation in a futures market suggest?",
+            "flashcard_back": "It suggests that the market is predicting major drops in future prices.",
+            "flashcard_explanation": "Backwardation is used by the lecturer to describe market expectations of declining future prices."
+        }
+    ]
+}

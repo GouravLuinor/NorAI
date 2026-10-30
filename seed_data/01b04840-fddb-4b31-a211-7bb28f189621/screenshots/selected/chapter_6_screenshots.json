@@ -1,0 +1,33 @@
+{
+  "chapter_id": 6,
+  "screenshots": [
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1949.jpg",
+      "reason": "The equation of the tangent line is written on the board.",
+      "section": "Finding the X-Intercept",
+      "importance": 9,
+      "timestamp": 1949.65
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1981.jpg",
+      "reason": "The substitution of y=0 into the tangent line equation.",
+      "section": "Finding the X-Intercept",
+      "importance": 9,
+      "timestamp": 1981.68
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2083.jpg",
+      "reason": "The shortcut for the Y-intercept is written on the board.",
+      "section": "Using Symmetry for the Y-Intercept",
+      "importance": 9,
+      "timestamp": 2083.11
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2179.jpg",
+      "reason": "The algebraic explanation for the symmetry of the curve.",
+      "section": "Using Symmetry for the Y-Intercept",
+      "importance": 9,
+      "timestamp": 2179.21
+    }
+  ]
+}

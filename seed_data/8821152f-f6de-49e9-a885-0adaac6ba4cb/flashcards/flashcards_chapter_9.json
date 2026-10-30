@@ -1,0 +1,26 @@
+{
+    "chapter_id": 9,
+    "chapter_title": "Data Structures and Course Overview",
+    "flashcards": [
+        {
+            "front": "What is the focus of the first eight lectures?",
+            "back": "Data structures and sorting.",
+            "explanation": "The lecturer defined the first segment of the course as covering data structures and sorting algorithms."
+        },
+        {
+            "front": "Do data structures operate on constant amounts of data?",
+            "back": "No, they operate on large, non-constant amounts of data.",
+            "explanation": "Data structures are designed to manage and perform operations on large, variable-sized datasets."
+        },
+        {
+            "front": "What are the two main strategies for solving algorithm problems?",
+            "back": "Reduction to known problems or designing recursive algorithms.",
+            "explanation": "These are the two fundamental approaches taught in the course for solving algorithmic challenges."
+        },
+        {
+            "front": "What is the final topic of the course?",
+            "back": "Dynamic programming.",
+            "explanation": "The course structure concludes with dynamic programming as the final major topic."
+        }
+    ]
+}

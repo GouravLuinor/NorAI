@@ -1,0 +1,26 @@
+{
+  "chapter_id": 3,
+  "screenshots": [
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_597.jpg",
+      "reason": "The blackboard showing the relationship between inputs and outputs.",
+      "section": "Defining the Algorithm as a Function",
+      "importance": 10,
+      "timestamp": 597.36
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_629.jpg",
+      "reason": "The lecturer writes the definition of an algorithm as a function.",
+      "section": "Defining the Algorithm as a Function",
+      "importance": 10,
+      "timestamp": 629.39
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_545.jpg",
+      "reason": "A diagram showing inputs mapping to outputs on the blackboard.",
+      "section": "Moving Beyond Fixed Inputs",
+      "importance": 9,
+      "timestamp": 545.04
+    }
+  ]
+}

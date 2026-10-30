@@ -20,7 +20,7 @@ interface ChapterState {
 
 let _loadChapterGeneration = 0
 
-export const useChapterStore = create<ChapterState>((set) => ({
+export const useChapterStore = create<ChapterState>((set, get) => ({
   activeChapterId: 1,
   activeDocTab: 'notes',
   sidebarCollapsed: false,
@@ -52,9 +52,14 @@ export const useChapterStore = create<ChapterState>((set) => ({
         title: ch.title || `Chapter ${ch.chapter_id || ch.id}`,
       }))
 
+      const existingId = get().activeChapterId
+      const targetChapterId = chapters.some((c) => c.id === existingId)
+        ? existingId
+        : (chapters[0]?.id || 1)
+
       set({
         chapters,
-        activeChapterId: chapters[0]?.id || 1,
+        activeChapterId: targetChapterId,
         chaptersLoading: false,
       })
     } catch {

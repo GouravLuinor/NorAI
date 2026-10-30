@@ -1,0 +1,26 @@
+{
+    "chapter_id": 5,
+    "chapter_title": "Proving Correctness with Induction",
+    "flashcards": [
+        {
+            "front": "What is the base case for the birthday problem induction?",
+            "back": "K=0.",
+            "explanation": "Interviewing zero students is the simplest case where the algorithm's property is trivially maintained."
+        },
+        {
+            "front": "Does induction prove K from K+1?",
+            "back": "False.",
+            "explanation": "Induction assumes the hypothesis is true for K and uses it to prove K+1."
+        },
+        {
+            "front": "Why does the lecturer perform case analysis during the inductive step?",
+            "back": "To isolate the problem and consider smaller, manageable scenarios rather than the entire input set at once.",
+            "explanation": "Case analysis allows the proof to handle different possibilities (like whether a match was already found) without needing to evaluate every possible input state simultaneously."
+        },
+        {
+            "front": "State the inductive hypothesis for the birthday problem as defined in the lecture.",
+            "back": "If the first K students contain a match, the algorithm returns a match before interviewing student K+1.",
+            "explanation": "This hypothesis ensures that the algorithm maintains the property of finding a match if one exists throughout the process."
+        }
+    ]
+}

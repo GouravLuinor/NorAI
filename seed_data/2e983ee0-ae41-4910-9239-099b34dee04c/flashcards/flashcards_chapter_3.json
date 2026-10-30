@@ -1,0 +1,26 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "Behavioral Finance and the Subprime Crisis",
+    "flashcards": [
+        {
+            "front": "What is behavioral finance?",
+            "back": "Finance theory integrated with social sciences like psychology, sociology, political science, and anthropology.",
+            "explanation": "It represents a revolution in finance by moving away from studying finance in isolation."
+        },
+        {
+            "front": "What is a subprime borrower?",
+            "back": "Someone with a poor credit history or indicators suggesting they might default on a mortgage.",
+            "explanation": "Subprime lending involves higher risk due to the borrower's credit profile."
+        },
+        {
+            "front": "How does the lecturer describe the relationship between finance and engineering?",
+            "back": "The lecturer describes finance as a technology and financial instruments as being like engineering devices.",
+            "explanation": "The lecturer uses the analogy of an engineering device to explain that finance has a lot of detail and is a way of doing things."
+        },
+        {
+            "front": "What happens when a borrower defaults on their mortgage according to the lecturer?",
+            "back": "The borrower loses the house to the mortgage originator.",
+            "explanation": "The lecturer states that the contract says you lose the house and it goes back to the mortgage originator."
+        }
+    ]
+}

@@ -1,0 +1,78 @@
+{
+    "chapter_id": 9,
+    "chapter_title": "Data Structures and Course Overview",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 9,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Course roadmap"
+            ],
+            "question": "Which topics are covered in the first eight lectures of the course?",
+            "options": [
+                "Dynamic programming and graphs",
+                "Data structures and sorting",
+                "Shortest paths and recursion",
+                "Static arrays and Python dictionaries"
+            ],
+            "answer": "Data structures and sorting",
+            "explanation": "The lecturer explicitly states that the first eight lectures and the first quiz will cover data structures and sorting.",
+            "flashcard_front": "What is the focus of the first eight lectures?",
+            "flashcard_back": "Data structures and sorting.",
+            "flashcard_explanation": "The lecturer defined the first segment of the course as covering data structures and sorting algorithms."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 9,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Data structures"
+            ],
+            "question": "Data structures are primarily designed to operate on a constant amount of data.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer states that data structures are for operating on a large, non-constant amount of data, unlike the CPU which operates on constant amounts.",
+            "flashcard_front": "Do data structures operate on constant amounts of data?",
+            "flashcard_back": "No, they operate on large, non-constant amounts of data.",
+            "flashcard_explanation": "Data structures are designed to manage and perform operations on large, variable-sized datasets."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 9,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Problem-solving strategies"
+            ],
+            "question": "What are the two main strategies for solving an algorithm problem in this class?",
+            "options": [],
+            "answer": "Reduction to a known problem or designing a custom recursive algorithm.",
+            "explanation": "The lecturer identifies these as the two primary strategies for solving algorithmic problems.",
+            "flashcard_front": "What are the two main strategies for solving algorithm problems?",
+            "flashcard_back": "Reduction to known problems or designing recursive algorithms.",
+            "flashcard_explanation": "These are the two fundamental approaches taught in the course for solving algorithmic challenges."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 9,
+            "type": "Short Answer",
+            "difficulty": "Easy",
+            "concepts": [
+                "Course roadmap"
+            ],
+            "question": "What is the final topic covered in the course?",
+            "options": [],
+            "answer": "Dynamic programming",
+            "explanation": "The lecturer lists dynamic programming as the topic for the last part of the course.",
+            "flashcard_front": "What is the final topic of the course?",
+            "flashcard_back": "Dynamic programming.",
+            "flashcard_explanation": "The course structure concludes with dynamic programming as the final major topic."
+        }
+    ]
+}

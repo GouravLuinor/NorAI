@@ -102,9 +102,9 @@ def main() -> int:
         check("GET /quota guest rejected with 401", r.status_code == 401)
 
         # ── Demo lectures: public read-only 200, but AI tutor chat 401 ──────
-        r = client.get("/lectures/ab648382-638f-4dde-b7c1-4007a2e638bb")
+        r = client.get("/lectures/8821152f-f6de-49e9-a885-0adaac6ba4cb")
         check("GET demo lecture unauthenticated 200", r.status_code == 200)
-        r = client.post("/chat", json={"lecture_id": "ab648382-638f-4dde-b7c1-4007a2e638bb", "thread_id": "t1", "user_question": "hi"})
+        r = client.post("/chat", json={"lecture_id": "8821152f-f6de-49e9-a885-0adaac6ba4cb", "thread_id": "t1", "user_question": "hi"})
         check("POST /chat demo unauthenticated 401", r.status_code == 401)
 
         # ── Validation-negative (authenticated as a fake user) ───────────────

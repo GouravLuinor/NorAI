@@ -40,4 +40,39 @@ export const PAGE_META = {
     description: 'Log in to your NorAI library of lecture notes, quizzes, flashcards and your AI tutor.',
     priority: '0.3',
   },
+  demoAlgorithms: {
+    path: '/demo/algorithms-and-computation',
+    title: 'MIT 6.006: Algorithms and Computation — Lecture Notes, Quiz & AI Tutor',
+    description:
+      'Complete study pack for MIT 6.006 Lecture 1. Mathematical induction, correctness proofs, asymptotic running times, word-RAM model, and the birthday problem.',
+    priority: '0.9',
+  },
+  demoCalculus: {
+    path: '/demo/calculus-differentiation',
+    title: 'MIT 18.01: Differentiation & Limits — Lecture Notes, Quiz & AI Tutor',
+    description:
+      'Complete study pack for MIT 18.01 Single Variable Calculus Lecture 1. The derivative from first principles, limit definitions, secant to tangent slopes, and power rules.',
+    priority: '0.9',
+  },
+  demoMechanics: {
+    path: '/demo/newtonian-mechanics',
+    title: 'Yale PHYS 200: Newtonian Mechanics — Lecture Notes, Quiz & AI Tutor',
+    description:
+      'Complete study pack for Yale PHYS 200 Lecture 1. Kinematics, position, velocity, acceleration, calculus connections, and systematic problem-solving methods.',
+    priority: '0.9',
+  },
+  demoFinance: {
+    path: '/demo/financial-markets',
+    title: 'Yale ECON 252: Financial Markets — Lecture Notes, Quiz & AI Tutor',
+    description:
+      'Complete study pack for Yale ECON 252 Lecture 1. Risk pooling, insurance theory, Modern Portfolio Theory, debt vs. equity, behavioral finance, and banking crises.',
+    priority: '0.9',
+  },
+  demoCivilWar: {
+    path: '/demo/civil-war-reconstruction',
+    title: 'Yale HIST 119: Civil War & Reconstruction — Lecture Notes, Quiz & AI Tutor',
+    description:
+      'Complete study pack for Yale HIST 119 Lecture 1 with Professor David Blight. Constitutional compromises, sectionalism, memory, and the unfinished revolution of Reconstruction.',
+    priority: '0.9',
+  },
 } satisfies Record<string, PageMeta>

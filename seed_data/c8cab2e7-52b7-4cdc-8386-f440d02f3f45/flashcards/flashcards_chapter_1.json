@@ -1,0 +1,26 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Course Overview and Logistics",
+    "flashcards": [
+        {
+            "front": "What is the final exam's weight in the course grade?",
+            "back": "The final exam is worth 50% of the total course grade.",
+            "explanation": "The grading breakdown is 20% homework, 30% midterm, and 50% final."
+        },
+        {
+            "front": "What is the purpose of the amnesty plan?",
+            "back": "It allows the final grade to be based on the higher of the weighted average or final exam.",
+            "explanation": "This policy provides a safety net for students who improve throughout the semester."
+        },
+        {
+            "front": "When is the weekly homework due?",
+            "back": "Homework is due before class on the following Wednesday.",
+            "explanation": "Assignments are given on Wednesdays and due exactly one week later before class starts."
+        },
+        {
+            "front": "Why are advanced topics like quantum mechanics included?",
+            "back": "They are the biggest, most interesting physics revolutions that everyone should learn.",
+            "explanation": "The lecturer wants to share the fascination that initially drew him into the field."
+        }
+    ]
+}

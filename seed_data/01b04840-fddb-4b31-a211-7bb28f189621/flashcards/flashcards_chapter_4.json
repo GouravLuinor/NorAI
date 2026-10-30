@@ -1,0 +1,26 @@
+{
+    "chapter_id": 4,
+    "chapter_title": "Example: Derivative of 1/x",
+    "flashcards": [
+        {
+            "front": "What is the derivative of f(x) = 1/x?",
+            "back": "f'(x) = -1/x^2",
+            "explanation": "The derivative is found by taking the limit of the difference quotient as delta x approaches zero."
+        },
+        {
+            "front": "Is the slope of f(x) = 1/x always negative?",
+            "back": "True",
+            "explanation": "The derivative -1/x^2 is negative for all x, indicating the function is always sloping down."
+        },
+        {
+            "front": "Why simplify the difference quotient before taking the limit?",
+            "back": "To avoid the indeterminate 0/0 form.",
+            "explanation": "Simplification removes the delta x factor that causes division by zero in the limit."
+        },
+        {
+            "front": "What happens to the steepness of 1/x as x increases?",
+            "back": "It becomes less steep.",
+            "explanation": "The magnitude of the derivative -1/x^2 decreases as x gets larger."
+        }
+    ]
+}

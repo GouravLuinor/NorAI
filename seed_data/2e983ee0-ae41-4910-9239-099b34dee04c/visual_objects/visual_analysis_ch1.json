@@ -1,0 +1,89 @@
+{
+  "chapter_id": 1,
+  "frames": {
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_0.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "Black screen."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_4.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Professor Shiller standing at the podium."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_31.jpg": {
+      "ocr_text": "Usman Ali, Lahore, Pakistan, Lahore University of Management Science (LUMS), Ph.D. candidate, economics, Research on stock analyst recommendations and biases in stock market, Behavioral finance",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Slide introducing teaching fellow Usman Ali."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_91.jpg": {
+      "ocr_text": "Santosh Anagol, Long Branch NJ, Ph.D. candidate, economics, \"The Return to Capital in Ghana.\" AER 2006 (with Christopher Udry), Economic institutions in village India, Behavioral finance",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Slide introducing teaching fellow Santosh Anagol."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_151.jpg": {
+      "ocr_text": "Christian Awuku-Budu, Accra, Ghana, Morehouse College, Ph.D. candidate, economics, Research on financial markets in developing countries",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Slide introducing teaching fellow Christian Awuku-Budu."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_256.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "Blank slide."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_261.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Professor Shiller at the podium."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_381.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Professor Shiller gesturing while speaking."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_441.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Professor Shiller at the podium."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_501.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Professor Shiller speaking."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_621.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Professor Shiller smiling."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_681.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Professor Shiller looking down at notes."
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+    "chapter_id": 2,
+    "title": "Tips for Success and Classroom Etiquette",
+    "sections": [
+        {
+            "section_type": "prose",
+            "title": "The Importance of Lecture Attendance",
+            "content_markdown": "Attending lectures is highly recommended for success in this course. While it may seem self-serving for the instructor to say so, the primary benefit is the opportunity to hear the subject matter presented orally. The course textbook is quite extensive, spanning 1100 pages, which is significantly larger than the 300-page books used when the instructor learned physics. Because it is unrealistic for students to digest the entire content of such a large volume, the lectures serve as a filter. The instructor identifies and covers only the essential material during class time. By attending, students can determine exactly what is required and what is not, preventing the unnecessary effort of learning extraneous information that will not be emphasized in the course. Essentially, the lecture acts as a guide to focus your study efforts on the most critical concepts.",
+            "start_sec": 494.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Mastering Physics Through Homework",
+            "content_markdown": "Homework is identified as the most important component for doing well in physics. Although it accounts for 20% of the grade, this figure does not accurately reflect its true importance to the learning process. Homework is the primary mechanism for discovering what you truly understand versus what you do not. While watching the instructor solve problems on the blackboard may seem straightforward and reasonable, you only truly test your knowledge when you attempt to solve the problems yourself. It is recommended that you attempt the problems as soon as they are posted, typically on Wednesdays, to cover the material for that week. The instructor assumes that students have completed these problems before attending subsequent lectures, making timely completion vital for keeping up with the course progression.",
+            "start_sec": 549.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Collaboration and Resources",
+            "content_markdown": "Physics is inherently a collaborative endeavor, and working in groups on homework is encouraged. Modern scientific research, such as large collider experiments, often involves collaborations of hundreds or even thousands of people. While working with peers is acceptable, it is crucial that you pull your weight. The goal is not merely to obtain the final solution, but to ensure you fully understand the methodology behind it. To support this, students are encouraged to utilize the undergraduate lounge on the third floor of Sloan. This facility is equipped with computers, printers, and comfortable seating, providing an ideal environment to work on problems. It is a space where you can interact with peers, more advanced students, and teaching assistants (TAs) who are available daily to provide guidance and help clarify complex topics.",
+            "start_sec": 594.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Classroom Etiquette and Expectations",
+            "content_markdown": "Maintaining proper classroom etiquette is essential for a productive learning environment. The instructor explicitly requests that students refrain from talking to their neighbors during lectures. This behavior is highly distracting, as it disrupts the instructor's line of thinking and interferes with their ability to gauge student understanding through visual feedback. While brief, necessary communication—such as asking for a dropped item—is acceptable, excessive talking is discouraged. Regarding sleeping in class, the instructor is generally permissive, provided that students do not talk in their sleep. To prevent a 'domino effect' where an entire row topples over, students are advised to sit between non-sleepers. Finally, the instructor aims to finish lectures on time but may occasionally run over by a few minutes to complete a derivation. Students are asked not to shuffle their feet or pack up early, as this is disruptive.",
+            "start_sec": 683.0
+        }
+    ]
+}

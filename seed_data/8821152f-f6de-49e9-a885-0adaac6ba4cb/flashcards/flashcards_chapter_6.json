@@ -1,0 +1,26 @@
+{
+    "chapter_id": 6,
+    "chapter_title": "Efficiency and Asymptotic Analysis",
+    "flashcards": [
+        {
+            "front": "Why is measuring raw time for an algorithm problematic?",
+            "back": "It depends on the strength of the computer, not just the algorithm.",
+            "explanation": "Raw time is hardware-dependent; we need an abstract measure independent of the machine."
+        },
+        {
+            "front": "What does Theta notation represent?",
+            "back": "A tight bound, being bounded from both above and below.",
+            "explanation": "Theta notation provides a tight bound on the growth of a function."
+        },
+        {
+            "front": "What is the input size of an N by N array?",
+            "back": "N squared.",
+            "explanation": "The input size is the total information needed to convey the array."
+        },
+        {
+            "front": "What do we count to measure algorithm efficiency?",
+            "back": "Fundamental operations.",
+            "explanation": "Counting operations provides an abstract, machine-independent measure of performance."
+        }
+    ]
+}

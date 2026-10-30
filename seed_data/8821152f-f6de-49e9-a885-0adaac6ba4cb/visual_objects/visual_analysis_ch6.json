@@ -1,0 +1,89 @@
+{
+  "chapter_id": 6,
+  "frames": {
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1547.jpg": {
+      "ocr_text": "arbitrarily sized inputs",
+      "importance_score": 3,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "Lecturer standing in front of a chalkboard with a graph diagram."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1584.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer walking across the stage."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1614.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer gesturing while talking about computer strength."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1646.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer explaining the abstraction of time."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1678.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer walking away from the board."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1711.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer introducing asymptotic analysis."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1748.jpg": {
+      "ocr_text": "Don't measure time, instead count fundamental operations",
+      "importance_score": 9,
+      "visual_type": "other",
+      "include_in_notes": true,
+      "description": "Chalkboard showing the core principle of efficiency measurement."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1790.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer discussing input size dependency."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1822.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer pointing to the board while discussing input size."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1854.jpg": {
+      "ocr_text": "Efficiency Don't measure time, instead count fundamental operations. Expect performance to depend on input size.",
+      "importance_score": 10,
+      "visual_type": "other",
+      "include_in_notes": true,
+      "description": "Chalkboard summary of efficiency and input size."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1908.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer gesturing about asymptotic notation."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1940.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer concluding the discussion on linear time."
+    }
+  }
+}

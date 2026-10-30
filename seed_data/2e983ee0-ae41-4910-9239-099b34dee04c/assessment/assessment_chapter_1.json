@@ -1,0 +1,78 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Course Introduction and Logistics",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 1,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Course structure"
+            ],
+            "question": "How does Professor Shiller describe the relationship between Economics 251 (Financial Theory) and Economics 252 (Financial Markets)?",
+            "options": [
+                "They are strictly divided into theory and practice respectively.",
+                "They are self-contained courses that may have some repetition.",
+                "Students must take both to understand the subject matter.",
+                "Economics 252 is a prerequisite for Economics 251."
+            ],
+            "answer": "They are self-contained courses that may have some repetition.",
+            "explanation": "The professor states that they are self-contained courses and that they decided to divide the subject matter imperfectly, leading to some repetition.",
+            "flashcard_front": "Are Economics 251 and 252 self-contained?",
+            "flashcard_back": "Yes, they are self-contained, though there may be some repetition between them.",
+            "flashcard_explanation": "Professor Shiller notes that students can take either or both, as they are designed to be self-contained."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 1,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Course goals"
+            ],
+            "question": "Professor Shiller views this course primarily as a vocational course for students planning careers in finance.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The professor explicitly states that it is not primarily a vocational course, but an intellectual one.",
+            "flashcard_front": "Is this course primarily vocational?",
+            "flashcard_back": "No, it is an intellectual course about how things work.",
+            "flashcard_explanation": "The professor emphasizes the course is not just for those pursuing careers in finance."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 1,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Financial theory vs. financial markets"
+            ],
+            "question": "What is the primary difference in focus between Economics 251 and Economics 252 as described by the professor?",
+            "options": [],
+            "answer": "Economics 251 is more tuned into theoretical detail and mathematical rigor, while Economics 252 is designed to be accessible to those not comfortable with heavy math.",
+            "explanation": "The professor notes that John Geanakoplos is a mathematical economist and his course (251) is more tuned into theoretical detail.",
+            "flashcard_front": "",
+            "flashcard_back": "",
+            "flashcard_explanation": ""
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 1,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Course goals"
+            ],
+            "question": "Why does Professor Shiller believe finance is important for students who do not plan to work in the financial sector?",
+            "options": [],
+            "answer": "He believes finance is a fundamental technology that underpins almost all human endeavors, and understanding it is necessary to understand how the real world works.",
+            "explanation": "The professor uses the example of a poet needing to understand the financial situation of publishers to illustrate that finance affects everyone.",
+            "flashcard_front": "",
+            "flashcard_back": "",
+            "flashcard_explanation": ""
+        }
+    ]
+}

@@ -87,38 +87,75 @@ from backend.db.migrate import run_migrations
 from backend.routers import billing as billing_router, courses as courses_router, quiz as quiz_router, webhooks
 from backend.routers import content as content_router
 from backend.routers import tutor as tutor_router
+from backend.routers import study as study_router
 
 
 # ── Seeded Public Demo Workspaces ──────────────────────────────────────────────
-# Three high-impact educational lectures permanently accessible to all users for free.
+# Five high-impact educational lectures permanently accessible to all users for
+# free. The YouTube sources are CC BY-NC-SA (MIT OpenCourseWare / YaleCourses).
 DEMO_LECTURES = [
     {
-        "lecture_id": "ab648382-638f-4dde-b7c1-4007a2e638bb",
-        "title": "Foundations of Neural Networks & Deep Learning",
-        "duration_seconds": 1100,
-        "chapter_count": 4,
-        "category": "Computer Science & Deep Learning",
+        "lecture_id": "8821152f-f6de-49e9-a885-0adaac6ba4cb",
+        "title": "Algorithms and Computation",
+        "duration_seconds": 2734,
+        "chapter_count": 9,
+        "category": "Computer Science & Algorithms",
         "source_type": "youtube",
+        "source_url": "https://www.youtube.com/watch?v=ZA-tUyM_y7s",
+        "source_license": "CC BY-NC-SA 4.0",
+        "source_creator": "MIT OpenCourseWare",
         "status": "completed",
         "is_demo": True,
     },
     {
-        "lecture_id": "e54d7376-0e7b-472a-9ca6-9b21ad0b2710",
-        "title": "Foundations of Economic Thinking: Incentives and Opportunity Cost",
-        "duration_seconds": 1150,
-        "chapter_count": 6,
-        "category": "Economics & Market Theory",
+        "lecture_id": "01b04840-fddb-4b31-a211-7bb28f189621",
+        "title": "Introduction to Differentiation",
+        "duration_seconds": 3092,
+        "chapter_count": 8,
+        "category": "Mathematics & Calculus",
         "source_type": "youtube",
+        "source_url": "https://www.youtube.com/watch?v=jbIQW0gkgxo",
+        "source_license": "CC BY-NC-SA 4.0",
+        "source_creator": "MIT OpenCourseWare",
         "status": "completed",
         "is_demo": True,
     },
     {
-        "lecture_id": "506dd685-05f9-43df-8d09-5b944c7392f5",
-        "title": "The Rise of Open-Weights Models and Local Deployment",
-        "duration_seconds": 580,
-        "chapter_count": 3,
-        "category": "Modern AI Engineering",
+        "lecture_id": "c8cab2e7-52b7-4cdc-8386-f440d02f3f45",
+        "title": "Newtonian Mechanics: Motion and Calculus",
+        "duration_seconds": 4401,
+        "chapter_count": 10,
+        "category": "Physics & Mechanics",
         "source_type": "youtube",
+        "source_url": "https://www.youtube.com/watch?v=KOKnWaLiL8w",
+        "source_license": "CC BY-NC-SA 3.0",
+        "source_creator": "YaleCourses",
+        "status": "completed",
+        "is_demo": True,
+    },
+    {
+        "lecture_id": "2e983ee0-ae41-4910-9239-099b34dee04c",
+        "title": "Finance and Insurance in the Modern Economy",
+        "duration_seconds": 4444,
+        "chapter_count": 10,
+        "category": "Economics & Finance",
+        "source_type": "youtube",
+        "source_url": "https://www.youtube.com/watch?v=D3aHciiVdvQ",
+        "source_license": "CC BY-NC-SA 3.0",
+        "source_creator": "YaleCourses",
+        "status": "completed",
+        "is_demo": True,
+    },
+    {
+        "lecture_id": "5f7225bf-ba41-46b9-aea9-da91c032b515",
+        "title": "The Civil War and Reconstruction in American Memory",
+        "duration_seconds": 3165,
+        "chapter_count": 10,
+        "category": "History & Humanities",
+        "source_type": "youtube",
+        "source_url": "https://www.youtube.com/watch?v=tPtyQP9jqc0",
+        "source_license": "CC BY-NC-SA 3.0",
+        "source_creator": "YaleCourses",
         "status": "completed",
         "is_demo": True,
     },
@@ -312,10 +349,20 @@ SPA_HTML_ROUTES = {
     "/", "/pricing", "/billing", "/usage", "/courses",
     "/login", "/signup", "/forgot-password", "/reset-password",
 }
-SPA_HTML_PREFIXES = ("/app", "/workspace", "/process/", "/print", "/share/")
+SPA_HTML_PREFIXES = ("/app", "/workspace", "/process/", "/print", "/share/", "/demo")
 # Public pages with a build-time prerender (frontend/scripts/prerender.mjs):
 # their own <head> and, for some, the page markup, for crawlers and first paint.
-SPA_PRERENDERED = {"/": "home", "/pricing": "pricing", "/signup": "signup", "/login": "login"}
+SPA_PRERENDERED = {
+    "/": "home",
+    "/pricing": "pricing",
+    "/signup": "signup",
+    "/login": "login",
+    "/demo/algorithms-and-computation": "demoAlgorithms",
+    "/demo/calculus-differentiation": "demoCalculus",
+    "/demo/newtonian-mechanics": "demoMechanics",
+    "/demo/financial-markets": "demoFinance",
+    "/demo/civil-war-reconstruction": "demoCivilWar",
+}
 
 
 def _spa_page(path: str) -> Path:
@@ -349,6 +396,7 @@ app.include_router(courses_router.router)
 app.include_router(quiz_router.router)
 app.include_router(content_router.router)
 app.include_router(tutor_router.router)
+app.include_router(study_router.router)
 
 # Log the full detail of any unhandled exception server-side, but never leak
 # raw exception text to clients.
@@ -798,15 +846,24 @@ async def get_lecture_info(
     info = get_lecture(clean_id)
     if not info:
         raise HTTPException(status_code=404, detail="Lecture not found")
+    # Seeded demos have no DB row: fill source fields from the canonical demo
+    # metadata so the video embed and source card work in a fresh install.
+    demo = next((d for d in DEMO_LECTURES if d["lecture_id"] == clean_id), None)
+    if demo:
+        info["title"] = demo["title"]
+        for key in ("source_type", "source_url", "status", "duration_seconds",
+                    "source_license", "source_creator"):
+            info[key] = demo.get(key)
     # P6.3: merge DB source fields so the frontend knows whether a YouTube
     # embed is possible (the registry itself only stores id/title/output_dir).
     row = (
         await db.execute(select(Lecture).where(Lecture.id == clean_id))
     ).scalar_one_or_none()
-    info["source_type"] = row.source_type if row else None
-    info["source_url"] = row.source_url if row else None
-    info["status"] = row.status if row else None
-    info["duration_seconds"] = row.duration_seconds if row else None
+    if row is not None:
+        info["source_type"] = row.source_type
+        info["source_url"] = row.source_url
+        info["status"] = row.status
+        info["duration_seconds"] = row.duration_seconds
     return info
 
 

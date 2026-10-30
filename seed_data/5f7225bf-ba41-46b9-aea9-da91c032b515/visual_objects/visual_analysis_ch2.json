@@ -1,0 +1,19 @@
+{
+  "chapter_id": 2,
+  "frames": {
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_434.jpg": {
+      "ocr_text": "YALE UNIVERSITY ART GALLERY",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer stands at a podium at the Yale University Art Gallery."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_495.jpg": {
+      "ocr_text": "YALE UNIVERSITY ART GALLERY",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer continues his presentation at the podium."
+    }
+  }
+}

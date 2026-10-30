@@ -1,0 +1,78 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Introduction to Differentiation",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 1,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Geometric interpretation"
+            ],
+            "question": "What is the primary geometric problem addressed in this chapter?",
+            "options": [
+                "Finding the area under a curve",
+                "Finding the tangent line to a graph at a point",
+                "Calculating the roots of a function",
+                "Determining the maximum value of a function"
+            ],
+            "answer": "Finding the tangent line to a graph at a point",
+            "explanation": "The lecturer explicitly states the geometric problem is finding the tangent line to the graph of a function at a point (x0, y0).",
+            "flashcard_front": "What is the geometric interpretation of the derivative?",
+            "flashcard_back": "Finding the tangent line to the graph of a function at a specific point.",
+            "flashcard_explanation": "The lecturer defines the geometric problem as constructing the tangent line to a function at (x0, y0)."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 1,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Derivative"
+            ],
+            "question": "The derivative is only useful in pure mathematics and has no practical applications.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer notes that derivatives are important to all measurements in science, engineering, economics, and political science.",
+            "flashcard_front": "Are derivatives useful outside of pure mathematics?",
+            "flashcard_back": "Yes, they are fundamental to measurements in science, engineering, economics, and other fields.",
+            "flashcard_explanation": "The lecturer emphasizes the importance of derivatives to all measurements in various practical disciplines."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 1,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Derivative"
+            ],
+            "question": "What is the ultimate goal of the unit regarding differentiation?",
+            "options": [],
+            "answer": "To explain how to differentiate any function you know.",
+            "explanation": "The lecturer states the goal is to explain how to differentiate any function you can write down.",
+            "flashcard_front": "What is the main goal of this differentiation unit?",
+            "flashcard_back": "To learn how to differentiate any function you can write down.",
+            "flashcard_explanation": "The lecturer sets the goal of being able to differentiate any function known to the student."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 1,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Geometric interpretation"
+            ],
+            "question": "In the geometric interpretation, what does the point P represent?",
+            "options": [],
+            "answer": "A point on the graph of the function at a fixed x-coordinate x0.",
+            "explanation": "The lecturer describes P as a point on the graph above the fixed place x0 on the x-axis.",
+            "flashcard_front": "What does point P represent in the geometric interpretation?",
+            "flashcard_back": "A point on the graph of the function at a fixed x-coordinate x0.",
+            "flashcard_explanation": "P is identified as a point on the function's graph corresponding to a fixed x0."
+        }
+    ]
+}

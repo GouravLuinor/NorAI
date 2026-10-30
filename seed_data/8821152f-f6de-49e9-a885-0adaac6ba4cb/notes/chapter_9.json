@@ -1,0 +1,24 @@
+{
+    "chapter_id": 9,
+    "title": "Data Structures and Course Overview",
+    "sections": [
+        {
+            "section_type": "prose",
+            "title": "Introduction to Data Structures",
+            "content_markdown": "The course will focus on data structures for the first half, specifically the first eight lectures. Unlike the CPU model which operates on a constant amount of data, data structures are designed to store and manage large amounts of information. The goal is to support various operations on this non-constant amount of data efficiently. A fundamental example of a data structure is the static array, which can be used to maintain records, such as a list of birthdays. This approach differs from high-level languages like Python, which provide built-in structures like lists, sets, and dictionaries. While convenient, these Python abstractions often obscure the underlying performance costs, as there is significant code between the user and the computer. By studying data structures directly, we aim to understand how to store information to make specific operations faster.",
+            "start_sec": 2592.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Problem-Solving Strategies",
+            "content_markdown": "To solve algorithmic problems in this class, there are two primary strategies. First, one can reduce a new problem to a solution for a problem that is already known and understood. Second, one can design a custom algorithm, which is typically recursive in nature. These design paradigms are essential tools for tackling the various challenges presented throughout the course. Whether we are storing data in a structure, solving a sorting problem, or performing a search within a graph, these two approaches—reduction and recursive design—form the backbone of our methodology. Understanding when to apply each strategy is a key skill for algorithm design.",
+            "start_sec": 2682.0
+        },
+        {
+            "section_type": "list",
+            "title": "Course Roadmap",
+            "content_markdown": "The course is structured into three main segments, each culminating in a quiz: \n- **Quiz 1 (Lectures 1-8):** Focuses on data structures and sorting algorithms.\n- **Quiz 2:** Covers shortest path algorithms and graph theory.\n- **Final Segment:** Dedicated to dynamic programming.\n\nThis progression moves from fundamental data storage and manipulation to more complex algorithmic paradigms, providing a comprehensive overview of computational problem-solving.",
+            "start_sec": 2715.0
+        }
+    ]
+}

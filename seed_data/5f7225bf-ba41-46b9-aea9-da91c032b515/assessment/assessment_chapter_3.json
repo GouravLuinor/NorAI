@@ -1,0 +1,78 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "The Role of History and Human Tragedy",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 3,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "James Baldwin"
+            ],
+            "question": "According to the lecturer, what does James Baldwin say Americans do with their history?",
+            "options": [
+                "They analyze it deeply.",
+                "They cover up the sleeper.",
+                "They celebrate it too much.",
+                "They ignore it entirely."
+            ],
+            "answer": "They cover up the sleeper.",
+            "explanation": "Baldwin used the metaphor of covering up a sleeper to describe the American tendency to avoid confronting difficult historical truths.",
+            "flashcard_front": "What does Baldwin say Americans do with their history?",
+            "flashcard_back": "They cover up the sleeper instead of waking him up.",
+            "flashcard_explanation": "This metaphor illustrates the American desire to avoid the 'nightmare' of difficult historical truths."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 3,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Historical consciousness"
+            ],
+            "question": "How did James Baldwin define having a 'sense of history' during his interview with Studs Terkel?",
+            "options": [],
+            "answer": "It means knowing that you are not alone.",
+            "explanation": "Baldwin explained that a sense of history provides the realization that whatever is happening to you has happened before somewhere else.",
+            "flashcard_front": "How did Baldwin define a 'sense of history'?",
+            "flashcard_back": "It simply means knowing that you are not alone.",
+            "flashcard_explanation": "Knowing you are not alone provides grounding, as current struggles have happened before."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 3,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Historical parallels"
+            ],
+            "question": "The lecturer argues that historical parallels are always direct and exact repetitions of past events.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer explicitly states that historical parallels are never entirely parallel and that history does not repeat exactly.",
+            "flashcard_front": "Are historical parallels always direct repetitions of the past?",
+            "flashcard_back": "No, they are never entirely parallel.",
+            "flashcard_explanation": "History may rhyme, but events are never identical."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 3,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Human condition"
+            ],
+            "question": "Why does the lecturer suggest people prefer histories that focus on hope and victory?",
+            "options": [],
+            "answer": "Because people want a good night's rest and wish to avoid the 'nightmare' of tragic history.",
+            "explanation": "The lecturer notes that we naturally want to avoid the discomfort of historical tragedy, preferring narratives that are fun and hopeful.",
+            "flashcard_front": "Why do people prefer histories that focus on victory?",
+            "flashcard_back": "To avoid the 'nightmare' of tragic history and get a good night's rest.",
+            "flashcard_explanation": "People naturally seek comfort and avoid the unsettling aspects of the human condition."
+        }
+    ]
+}

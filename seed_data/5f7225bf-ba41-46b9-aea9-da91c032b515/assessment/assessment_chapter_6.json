@@ -1,0 +1,78 @@
+{
+    "chapter_id": 6,
+    "chapter_title": "The Civil War as a Hinge Point in History",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 6,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "14th Amendment"
+            ],
+            "question": "Approximately what fraction of litigation in American courts is estimated to be 14th Amendment litigation?",
+            "options": [
+                "One-quarter",
+                "One-half",
+                "Two-thirds",
+                "Three-quarters"
+            ],
+            "answer": "Two-thirds",
+            "explanation": "The lecturer explicitly states that almost two-thirds of all litigation in American courts is 14th Amendment litigation.",
+            "flashcard_front": "How much American court litigation involves the 14th Amendment?",
+            "flashcard_back": "Approximately two-thirds of all litigation.",
+            "flashcard_explanation": "The lecturer identifies the 14th Amendment as a constant, active site of legal conflict in modern America."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 6,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "History vs. Memory"
+            ],
+            "question": "The lecturer suggests that history and memory are identical concepts.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer poses questions about how history and memory are different and how they fit together, implying they are distinct.",
+            "flashcard_front": "Are history and memory the same concept?",
+            "flashcard_back": "No, they are distinct but related concepts that interact.",
+            "flashcard_explanation": "The lecturer asks how they are different and how they fit together, indicating they are not identical."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 6,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Past and Present"
+            ],
+            "question": "Who is the historian mentioned as having written 'The Craft of History' while in the French Resistance?",
+            "options": [],
+            "answer": "Marc Bloch",
+            "explanation": "The lecturer identifies Marc Bloch as the author who wrote the book while hiding from the Nazis.",
+            "flashcard_front": "Who wrote 'The Craft of History' during the French Resistance?",
+            "flashcard_back": "Marc Bloch.",
+            "flashcard_explanation": "Bloch is cited as a heroic historian who understood the deep connection between past and present."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 6,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Civil War"
+            ],
+            "question": "What happened to Yale's student body during the Civil War?",
+            "options": [],
+            "answer": "It lost all of its southern students.",
+            "explanation": "The lecturer notes that the Civil War tore the place apart and caused it to lose all of its southern students.",
+            "flashcard_front": "What happened to Yale's student population during the Civil War?",
+            "flashcard_back": "It lost all of its southern students.",
+            "flashcard_explanation": "The lecturer highlights this as a specific consequence of the war on the university."
+        }
+    ]
+}

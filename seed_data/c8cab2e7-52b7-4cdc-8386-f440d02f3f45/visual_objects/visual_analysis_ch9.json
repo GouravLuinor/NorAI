@@ -1,0 +1,89 @@
+{
+  "chapter_id": 9,
+  "frames": {
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3165.jpg": {
+      "ocr_text": "Y(t) = Y0 + V0t + 1/2 at^2 V(t) = V0 + at t = V - V0 / a V^2 = V0^2 + 2a(x - x0)",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The kinematic equations written on the blackboard."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3187.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer drawing a diagram of a building."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3310.jpg": {
+      "ocr_text": "Y(t) = 15 + 10t - 5t^2",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The specific position equation for the object."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3340.jpg": {
+      "ocr_text": "Y0 = 15m V0 = 10m/s a = -10m/s^2",
+      "importance_score": 9,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The initial conditions for the problem."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3383.jpg": {
+      "ocr_text": "V(t) = dy/dt = 10 - 10t",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The velocity equation derived from the position equation."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3529.jpg": {
+      "ocr_text": "10t* - 10 = 0 t* = 1sec Y(1) = 15 + 10 - 5 = 20m",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "Calculations for the time and height at the peak."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3565.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "The lecturer standing in front of the blackboard."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3588.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer speaking to the class."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3612.jpg": {
+      "ocr_text": "Y(t) = 15 + 10t - 5t^2 V(t) = 10 - 10t 10t* - 10 = 0 t* = 1sec Y(1) = 15 + 10 - 5 = 20m",
+      "importance_score": 8,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "Summary of the equations and results found so far."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3680.jpg": {
+      "ocr_text": "Y = 0 15 + 10t - 5t^2 = 0 t^2 - 2t - 3 = 0",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "Setting up the equation to find when the object hits the ground."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3740.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "The lecturer explaining the quadratic equation."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3777.jpg": {
+      "ocr_text": "t^2 - 2t - 3 = 0",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The final quadratic equation for the impact time."
+    }
+  }
+}

@@ -1,0 +1,16 @@
+# Common Running Time Functions
+
+
+## Defining Running Time Categories
+
+Algorithms are categorized by their running time functions, which describe how performance scales with input size $N$. Constant time operations do not depend on the input size at all. Logarithmic time is highly efficient, appearing nearly constant at large scales. Linear time, denoted as $\Theta(N)$, serves as a primary baseline for comparison. Moving beyond these, we encounter $N \log N$ (log-linear) time, which eventually behaves like a linear function with a constant multiplier. Quadratic time, $\Theta(N^2)$, is a specific instance of polynomial time. In general, polynomial time is defined as $\Theta(N^C)$ for some constant $C$. In this course, polynomial time is typically considered the threshold for an efficient algorithm, whereas exponential time, such as $2^{\Theta(N)}$, is considered inefficient and performs poorly as $N$ increases.
+
+
+## Visualizing Growth Rates
+
+To understand the difference between these functions, we can plot them on a graph with $N$ on the horizontal axis (up to 1,000) and running time on the vertical axis. Constant time appears as a flat horizontal line. Linear time appears as a straight diagonal line. Logarithmic time grows slowly, staying closer to the constant line than the linear line, and effectively flattens out as $N$ becomes very large. Conversely, exponential time functions grow extremely rapidly, appearing as a steep, nearly vertical line on the same scale. Quadratic and $N \log N$ functions fall between linear and exponential growth. Because exponential functions grow so much faster than polynomial functions, they are generally avoided. The goal is to keep the running time from increasing too rapidly relative to the input size.
+
+
+## Models of Computation
+
+To measure these running times accurately, we must establish a formal model of computation that defines which operations are considered to take constant time. Without a defined model, it is impossible to count fundamental operations. In this class, we utilize the Word RAM model. This model is chosen for its theoretical brevity and provides a standard framework for determining what a computer is allowed to do in a fixed, constant amount of time. Defining this model is a necessary step before we can rigorously analyze the efficiency of various algorithms.

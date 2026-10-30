@@ -1,0 +1,26 @@
+{
+    "chapter_id": 9,
+    "chapter_title": "Banking, Monetary Policy, and Investment Banking",
+    "flashcards": [
+        {
+            "front": "What is the primary function of an investment bank?",
+            "back": "They underwrite securities for financial institutions and do not accept public deposits.",
+            "explanation": "Investment banks focus on institutional financial services rather than retail banking activities like deposit-taking."
+        },
+        {
+            "front": "How do central banks manage the economy?",
+            "back": "They control short-term interest rates to manage and stabilize the economy.",
+            "explanation": "Interest rate manipulation is the primary tool mentioned for central bank monetary policy."
+        },
+        {
+            "front": "Name two examples of central banks.",
+            "back": "The Federal Reserve and the Bank of England.",
+            "explanation": "These are two of the central banks identified by the lecturer as managing national economies."
+        },
+        {
+            "front": "What influences money manager success besides technology?",
+            "back": "Behavioral factors, interpersonal psychology, and human connections.",
+            "explanation": "The lecturer emphasizes that money managers are human and subject to behavioral finance influences."
+        }
+    ]
+}

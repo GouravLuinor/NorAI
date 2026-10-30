@@ -1,0 +1,78 @@
+{
+    "chapter_id": 4,
+    "chapter_title": "Example: The Birthday Problem",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 4,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Algorithm Procedure"
+            ],
+            "question": "What is the first step when interviewing a student in the birthday problem algorithm?",
+            "options": [
+                "Add the student to the record",
+                "Ask for their birthday",
+                "Check if the birthday is in the record",
+                "Return a pair"
+            ],
+            "answer": "Ask for their birthday",
+            "explanation": "The lecturer states that the interviewer asks for the birthday and then writes it down in the record.",
+            "flashcard_front": "What is the first step when interviewing a student in the birthday problem algorithm?",
+            "flashcard_back": "Ask for their birthday.",
+            "flashcard_explanation": "The algorithm requires obtaining the data (birthday) before checking it against the existing record."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 4,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Record Maintenance"
+            ],
+            "question": "If a match is found in the record, the algorithm continues to interview the remaining students.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer specifies that if a match is found, the algorithm returns a pair and stops.",
+            "flashcard_front": "Does the algorithm continue after finding a matching birthday?",
+            "flashcard_back": "No, it stops and returns the pair.",
+            "flashcard_explanation": "Once the condition of finding a match is met, the procedure terminates."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 4,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Algorithm Procedure"
+            ],
+            "question": "How does the lecturer define an algorithm in the context of this chapter?",
+            "options": [],
+            "answer": "A procedure that takes an input and produces a correct output.",
+            "explanation": "The lecturer defines an algorithm as a procedure that takes inputs, produces an output, and must be correct at the end.",
+            "flashcard_front": "How is an algorithm defined in this chapter?",
+            "flashcard_back": "A procedure taking an input and producing a correct output.",
+            "flashcard_explanation": "The lecturer emphasizes that an algorithm is a plan to reach a correct result from an input."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 4,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Record Maintenance"
+            ],
+            "question": "What happens if the interviewer finishes interviewing all students without finding a match?",
+            "options": [],
+            "answer": "The algorithm returns that there is none.",
+            "explanation": "The lecturer states that if they go through everybody and haven't found a match, they return that there is none.",
+            "flashcard_front": "What is the output if no matching birthday is found?",
+            "flashcard_back": "The algorithm returns that there is none.",
+            "flashcard_explanation": "The procedure must account for the case where no match exists after checking all inputs."
+        }
+    ]
+}

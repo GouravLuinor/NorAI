@@ -1,0 +1,89 @@
+{
+  "chapter_id": 7,
+  "frames": {
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1945.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer introduces the topic of running time functions."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1966.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses linear time operations."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1991.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer introduces logarithmic time."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2012.jpg": {
+      "ocr_text": "Theta(N) Theta(N log N)",
+      "importance_score": 6,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer writes linear and log-linear time on the board."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2044.jpg": {
+      "ocr_text": "Theta(lg n) Theta(n) Theta(n lg n) Theta(n^2) Theta(n^c)",
+      "importance_score": 9,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The board shows a list of running time complexities."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2071.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses exponential time."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2103.jpg": {
+      "ocr_text": "Theta(n^c) 2^Theta(n)",
+      "importance_score": 8,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The board shows polynomial versus exponential time."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2135.jpg": {
+      "ocr_text": "1000 n",
+      "importance_score": 7,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer draws a graph of linear time."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2167.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer contrasts good and bad running times."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2188.jpg": {
+      "ocr_text": "Theta(lg n) Theta(n) Theta(n lg n) Theta(n^2) Theta(n^c)",
+      "importance_score": 10,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The board shows a graph comparing multiple growth rates."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2220.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer introduces the Word RAM model."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2263.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concludes the discussion on computation models."
+    }
+  }
+}

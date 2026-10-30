@@ -1,0 +1,78 @@
+{
+    "chapter_id": 8,
+    "chapter_title": "Debt Markets, Stocks, and Real Estate",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 8,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Interest Rates"
+            ],
+            "question": "What does the lecturer describe as the 'price of time'?",
+            "options": [
+                "Stock prices",
+                "Interest rates",
+                "Mortgage debt",
+                "Dividends"
+            ],
+            "answer": "Interest rates",
+            "explanation": "The transcript explicitly states at 59:18 that interest rates represent the price of time.",
+            "flashcard_front": "What is the 'price of time'?",
+            "flashcard_back": "Interest rates.",
+            "flashcard_explanation": "The lecturer defines interest rates as the price of time at the start of the chapter."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 8,
+            "type": "True/False",
+            "difficulty": "Medium",
+            "concepts": [
+                "Real Estate"
+            ],
+            "question": "Between 1997 and 2006, real home prices in the United States rose by 85%.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The transcript confirms that home prices rose 85% in real terms between 1997 and 2006.",
+            "flashcard_front": "Did US real home prices rise 85% between 1997 and 2006?",
+            "flashcard_back": "True.",
+            "flashcard_explanation": "The lecturer cites this 85% increase as a key statistic for the housing boom."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 8,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Stock Market"
+            ],
+            "question": "What two major management decisions does the lecturer note as influencing stock valuation?",
+            "options": [],
+            "answer": "Decisions on how much debt to take on (leverage) and how much in dividends to pay.",
+            "explanation": "The lecturer identifies leverage (debt) and dividend payouts as key management decisions affecting stock valuation.",
+            "flashcard_front": "What two management decisions affect stock valuation?",
+            "flashcard_back": "Decisions regarding leverage (debt) and dividend payouts.",
+            "flashcard_explanation": "Management must decide how much debt to carry and how much profit to pay as dividends."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 8,
+            "type": "Conceptual",
+            "difficulty": "Hard",
+            "concepts": [
+                "Debt Instruments"
+            ],
+            "question": "Why might an investor prefer an indexed debt instrument over a standard debt instrument?",
+            "options": [],
+            "answer": "Because indexed debt instruments are tied to the price level, providing real interest rates rather than just nominal ones.",
+            "explanation": "The transcript notes that indexed debt instruments give real interest rates by being indexed to the price level.",
+            "flashcard_front": "What is the benefit of an indexed debt instrument?",
+            "flashcard_back": "It provides real interest rates by being indexed to the price level.",
+            "flashcard_explanation": "Unlike standard debt, indexed instruments adjust for price level changes to provide real returns."
+        }
+    ]
+}

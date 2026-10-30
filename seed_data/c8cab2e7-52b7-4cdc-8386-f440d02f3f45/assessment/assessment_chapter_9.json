@@ -1,0 +1,78 @@
+{
+    "chapter_id": 9,
+    "chapter_title": "Solving Physics Problems",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 9,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Initial Conditions"
+            ],
+            "question": "In the example problem, what initial height and velocity were used for the object?",
+            "options": [
+                "10 meters and 15 meters per second",
+                "15 meters and 10 meters per second",
+                "15 meters and 5 meters per second",
+                "20 meters and 10 meters per second"
+            ],
+            "answer": "15 meters and 10 meters per second",
+            "explanation": "The lecturer explicitly states the building is 15 meters high and the initial speed is 10 meters per second.",
+            "flashcard_front": "What were the initial height and velocity in the example problem?",
+            "flashcard_back": "15 meters and 10 meters per second.",
+            "flashcard_explanation": "These values were given as the starting conditions for the object thrown from the building."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 9,
+            "type": "True/False",
+            "difficulty": "Medium",
+            "concepts": [
+                "Interpreting Solutions"
+            ],
+            "question": "The mathematical formula for the object's position remains valid even after the object hits the ground.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer states the formula is only valid while the object is in free fall; hitting the ground violates the constant acceleration assumption.",
+            "flashcard_front": "Is the position formula valid after the object hits the ground?",
+            "flashcard_back": "False.",
+            "flashcard_explanation": "The constant acceleration assumption is violated upon impact with the ground."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 9,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Problem-solving Strategy"
+            ],
+            "question": "What physical condition is used to determine the time at which the object reaches its maximum height?",
+            "options": [],
+            "answer": "The velocity is zero at the maximum height.",
+            "explanation": "The lecturer explains that at the highest point, the object is neither going up nor coming down, so its velocity must be zero.",
+            "flashcard_front": "What is the velocity at the maximum height?",
+            "flashcard_back": "Zero.",
+            "flashcard_explanation": "At the peak, the object stops moving upward before it begins to move downward."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 9,
+            "type": "Conceptual",
+            "difficulty": "Hard",
+            "concepts": [
+                "Interpreting Solutions"
+            ],
+            "question": "Why did the quadratic equation for the time of impact yield a negative solution, and how should it be interpreted?",
+            "options": [],
+            "answer": "The equation represents a full parabola that does not know about the building; the negative solution is the time the object would have been at ground level before the experiment started.",
+            "explanation": "The lecturer explains that the math is unaware of the specific setup and only knows the motion parameters; negative time simply refers to the past.",
+            "flashcard_front": "What does a negative time solution in this context represent?",
+            "flashcard_back": "A time before the experiment began.",
+            "flashcard_explanation": "The mathematical model is a parabola that extends into negative time, representing the object's path before $t=0$."
+        }
+    ]
+}

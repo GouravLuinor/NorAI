@@ -98,4 +98,6 @@ export interface ResolvedShare {
   status: string
   source_type?: string | null
   allow_tutor_chat: boolean
+  duration_sec?: number | null
+  chapters_count?: number | null
 }

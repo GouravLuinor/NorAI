@@ -1,0 +1,26 @@
+{
+    "chapter_id": 8,
+    "chapter_title": "Derivative of Power Functions",
+    "flashcards": [
+        {
+            "front": "What is the derivative of x^n?",
+            "back": "n x^(n-1)",
+            "explanation": "This is the power rule for differentiation derived using the binomial theorem."
+        },
+        {
+            "front": "Can the power rule be applied to polynomials?",
+            "back": "Yes, it applies to each term individually.",
+            "explanation": "Differentiation is linear, allowing term-by-term application of the power rule."
+        },
+        {
+            "front": "What happens to higher-order terms in the derivative limit?",
+            "back": "They vanish as delta x approaches zero.",
+            "explanation": "Higher-order terms contain factors of delta x that make them zero in the limit."
+        },
+        {
+            "front": "What is the derivative of x^3 + 5x^10?",
+            "back": "3x^2 + 50x^9",
+            "explanation": "Apply the power rule to each term: 3x^(3-1) + 5(10)x^(10-1)."
+        }
+    ]
+}

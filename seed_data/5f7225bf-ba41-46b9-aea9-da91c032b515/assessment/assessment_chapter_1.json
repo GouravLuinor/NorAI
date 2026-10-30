@@ -1,0 +1,79 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Introduction to the Course and the Yale Slavery Project",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 1,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Yale Slavery Research Project"
+            ],
+            "question": "Who initiated the Yale Slavery Research Project?",
+            "options": [
+                "Ian Shapiro",
+                "Peter Salovey",
+                "Michael Hepp",
+                "Emily Yankowitz"
+            ],
+            "answer": "Peter Salovey",
+            "explanation": "The lecturer explicitly states that Peter Salovey, the former president, owned the project and it was his idea.",
+            "flashcard_front": "Who initiated the Yale Slavery Research Project?",
+            "flashcard_back": "Former Yale president Peter Salovey.",
+            "flashcard_explanation": "The lecturer identifies Peter Salovey as the person who owned the project and initiated it."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 1,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Institutional history"
+            ],
+            "question": "The Yale Slavery Research Project book covers the university's history up to the present day.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer states the book ends in 1915.",
+            "flashcard_front": "Does the Yale Slavery Research book cover history to the present day?",
+            "flashcard_back": "No, it ends in 1915.",
+            "flashcard_explanation": "The lecturer notes the book ends in 1915 due to a rigid deadline."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 1,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Pequot War",
+                "King Philip's War"
+            ],
+            "question": "Which two major 17th-century conflicts in Connecticut are the focus of the first chapter of the research project?",
+            "options": [],
+            "answer": "The Pequot War and King Philip's War.",
+            "explanation": "The transcript identifies these two specific wars as the focus of the 17th-century chapter.",
+            "flashcard_front": "Which two 17th-century wars are central to the project's first chapter?",
+            "flashcard_back": "The Pequot War and King Philip's War.",
+            "flashcard_explanation": "These are the two major Indian wars fought in Connecticut mentioned by the lecturer."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 1,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Institutional history"
+            ],
+            "question": "Why are many universities currently studying their pasts regarding slavery?",
+            "options": [],
+            "answer": "The lecturer suggests this is part of a broader trend over the last 20 years, with around 90 universities investigating their ties to slavery to understand their history and current societal divisions.",
+            "explanation": "The lecturer discusses the trend of roughly 90 universities investigating their pasts, citing examples like Brown and Georgetown.",
+            "flashcard_front": "Why are many universities now studying their pasts?",
+            "flashcard_back": "To understand their historical ties to slavery and address current societal divisions.",
+            "flashcard_explanation": "The lecturer explains this as a 20-year trend involving roughly 90 institutions."
+        }
+    ]
+}

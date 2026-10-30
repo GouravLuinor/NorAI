@@ -1,0 +1,78 @@
+{
+    "chapter_id": 7,
+    "chapter_title": "Variables and Notation",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 7,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Variable confusion"
+            ],
+            "question": "Is it considered standard practice in calculus to reuse the same variable name for different purposes within a single problem to avoid excessive naming?",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The lecturer explicitly states that we reuse variables because it is more convenient than creating many unique names.",
+            "flashcard_front": "Why do we reuse variable names in calculus?",
+            "flashcard_back": "To avoid creating an excessive number of unique names for variables.",
+            "flashcard_explanation": "Reusing names is a deliberate, convenient practice to manage the complexity of problems with many variables."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 7,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Newton's notation"
+            ],
+            "question": "Which of the following is an example of Newton's notation for the derivative?",
+            "options": [
+                "dy/dx",
+                "f'",
+                "d/dx f",
+                "delta y"
+            ],
+            "answer": "f'",
+            "explanation": "The lecturer identifies f' as Newton's notation.",
+            "flashcard_front": "What is Newton's notation for the derivative?",
+            "flashcard_back": "f'",
+            "flashcard_explanation": "Newton's notation is represented by the prime symbol, such as f'."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 7,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Leibniz's notation"
+            ],
+            "question": "What is one potential drawback of Leibniz's notation mentioned by the lecturer?",
+            "options": [],
+            "answer": "It sometimes omits the underlying base point (x0).",
+            "explanation": "The lecturer notes that Leibniz's notation often leaves out the base point, which must be inferred from context.",
+            "flashcard_front": "What is a common nuisance of Leibniz's notation?",
+            "flashcard_back": "It often omits the underlying base point.",
+            "flashcard_explanation": "Leibniz's notation may not explicitly state the base point, requiring the student to infer it."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 7,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Variable confusion"
+            ],
+            "question": "In the example of the triangle area calculation, why did the area result in a constant value of 2?",
+            "options": [],
+            "answer": "It is an accident of the function 1/x.",
+            "explanation": "The lecturer states that the constant area is a specific property of the function 1/x.",
+            "flashcard_front": "Why is the area of the triangle constant for y=1/x?",
+            "flashcard_back": "It is an accident of the function 1/x.",
+            "flashcard_explanation": "The function 1/x has the specific property that the triangle area remains constant regardless of the point chosen."
+        }
+    ]
+}

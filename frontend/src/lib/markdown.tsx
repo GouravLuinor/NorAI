@@ -135,7 +135,11 @@ export function createMarkdownComponents(options: MarkdownComponentsOptions = {}
       }
       return <code className={className}>{children}</code>
     },
-    table: ({ children }) => <table className="w-full text-14 text-nt2 tabular-nums">{children}</table>,
+    table: ({ children }) => (
+      <div className="my-3 max-w-full overflow-x-auto">
+        <table className="w-full text-14 text-nt2 tabular-nums">{children}</table>
+      </div>
+    ),
     thead: ({ children }) => (
       <thead className="text-13 font-bold text-nt border-b border-bdr2">
         {children}

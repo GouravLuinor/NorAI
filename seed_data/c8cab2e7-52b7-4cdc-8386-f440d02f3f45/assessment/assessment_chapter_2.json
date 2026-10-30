@@ -1,0 +1,83 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Tips for Success and Classroom Etiquette",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 2,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Lecture Utility"
+            ],
+            "question": "Why does the instructor recommend attending lectures despite the availability of a textbook?",
+            "options": [
+                "To ensure students memorize the entire 1100-page book.",
+                "To identify which parts of the textbook are essential and which are not.",
+                "Because the instructor is required to take attendance.",
+                "To provide a social environment for students to meet."
+            ],
+            "answer": "To identify which parts of the textbook are essential and which are not.",
+            "explanation": "The instructor explains that the book is too large to digest entirely, so the lecture identifies the essential material.",
+            "flashcard_front": "Why should you attend lectures?",
+            "flashcard_back": "To identify essential material and avoid studying unnecessary content from the large textbook.",
+            "flashcard_explanation": "The instructor uses lectures to filter the 1100-page textbook for the most important concepts."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 2,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Collaboration"
+            ],
+            "question": "Working in groups on homework is discouraged because it prevents students from learning the material individually.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The instructor encourages collaboration, noting that physics is a collaborative field, provided that you understand the work.",
+            "flashcard_front": "Is working in groups on homework allowed?",
+            "flashcard_back": "Yes, it is encouraged, provided you contribute and fully understand the work.",
+            "flashcard_explanation": "Physics is a collaborative field, but you must ensure you understand the solutions."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 2,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Classroom behavior"
+            ],
+            "question": "What is the instructor's primary concern regarding students talking during the lecture?",
+            "options": [],
+            "answer": "It is distracting and disrupts the instructor's line of thinking.",
+            "explanation": "The instructor finds talking distracting because it interferes with their ability to gauge student understanding and disrupts their flow.",
+            "flashcard_front": "Why is talking in class discouraged?",
+            "flashcard_back": "It is distracting and disrupts the instructor's line of thinking.",
+            "flashcard_explanation": "Talking interferes with the instructor's ability to teach and gauge student comprehension."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 2,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Homework importance"
+            ],
+            "question": "When should you attempt the homework problems?",
+            "options": [
+                "Only right before the exam.",
+                "As soon as they are posted to cover the material for that week.",
+                "Only after the TAs have provided the solutions.",
+                "Whenever you have free time during the semester."
+            ],
+            "answer": "As soon as they are posted to cover the material for that week.",
+            "explanation": "The instructor advises attempting problems as soon as they are posted so that you are prepared for subsequent lectures.",
+            "flashcard_front": "When should you do homework?",
+            "flashcard_back": "As soon as it is posted to cover the material for that week.",
+            "flashcard_explanation": "Timely completion ensures you are prepared for the next set of lectures."
+        }
+    ]
+}

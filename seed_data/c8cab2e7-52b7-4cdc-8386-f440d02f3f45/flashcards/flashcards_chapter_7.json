@@ -1,0 +1,26 @@
+{
+    "chapter_id": 7,
+    "chapter_title": "Constant Acceleration and Integration",
+    "flashcards": [
+        {
+            "front": "Why is integration described as 'guessing'?",
+            "back": "It is the inverse of the algorithmic process of differentiation.",
+            "explanation": "Unlike differentiation, which follows a set procedure, integration requires finding a function that results in the given derivative."
+        },
+        {
+            "front": "What does the constant C represent in the position function?",
+            "back": "The initial position of the object at time T=0.",
+            "explanation": "Evaluating the position function at T=0 shows that X(0) equals C."
+        },
+        {
+            "front": "What is the general position function for constant acceleration A?",
+            "back": "X(t) = 1/2 AT^2 + BT + C",
+            "explanation": "This includes the acceleration term and the two constants representing initial velocity and position."
+        },
+        {
+            "front": "Why can you add BT to the position function?",
+            "back": "Its second derivative is zero, so it does not change the acceleration.",
+            "explanation": "Taking two derivatives of a linear term results in zero, thus preserving the acceleration value."
+        }
+    ]
+}

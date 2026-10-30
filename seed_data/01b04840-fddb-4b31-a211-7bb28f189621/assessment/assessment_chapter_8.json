@@ -1,0 +1,78 @@
+{
+    "chapter_id": 8,
+    "chapter_title": "Derivative of Power Functions",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 8,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Power rule"
+            ],
+            "question": "What is the derivative of x^n with respect to x?",
+            "options": [
+                "x^(n-1)",
+                "n x^n",
+                "n x^(n-1)",
+                "n x^(n+1)"
+            ],
+            "answer": "n x^(n-1)",
+            "explanation": "The power rule states that the derivative of x^n is n times x raised to the power of n minus 1.",
+            "flashcard_front": "What is the derivative of x^n?",
+            "flashcard_back": "n x^(n-1)",
+            "flashcard_explanation": "This is the power rule for differentiation derived using the binomial theorem."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 8,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Polynomial differentiation"
+            ],
+            "question": "The power rule can be applied to each term of a polynomial individually.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The lecturer demonstrates that the derivative of a polynomial like x^3 + 5x^10 is found by differentiating each term separately.",
+            "flashcard_front": "Can the power rule be applied to polynomials?",
+            "flashcard_back": "Yes, it applies to each term individually.",
+            "flashcard_explanation": "Differentiation is linear, allowing term-by-term application of the power rule."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 8,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Higher order terms"
+            ],
+            "question": "In the expansion of (x + delta x)^n, what happens to the 'junk' terms (O((delta x)^2)) when calculating the derivative?",
+            "options": [],
+            "answer": "They disappear as delta x approaches zero.",
+            "explanation": "The lecturer explains that these terms contain at least one factor of delta x after division, so they vanish in the limit.",
+            "flashcard_front": "What happens to higher-order terms in the derivative limit?",
+            "flashcard_back": "They vanish as delta x approaches zero.",
+            "flashcard_explanation": "Higher-order terms contain factors of delta x that make them zero in the limit."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 8,
+            "type": "Application",
+            "difficulty": "Medium",
+            "concepts": [
+                "Polynomial differentiation"
+            ],
+            "question": "What is the derivative of f(x) = x^3 + 5x^10?",
+            "options": [],
+            "answer": "3x^2 + 50x^9",
+            "explanation": "Applying the power rule: derivative of x^3 is 3x^2, and derivative of 5x^10 is 5*10*x^9 = 50x^9.",
+            "flashcard_front": "What is the derivative of x^3 + 5x^10?",
+            "flashcard_back": "3x^2 + 50x^9",
+            "flashcard_explanation": "Apply the power rule to each term: 3x^(3-1) + 5(10)x^(10-1)."
+        }
+    ]
+}

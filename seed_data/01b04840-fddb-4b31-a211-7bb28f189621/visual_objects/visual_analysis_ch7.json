@@ -1,0 +1,89 @@
+{
+  "chapter_id": 7,
+  "frames": {
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2248.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer stands in front of a blackboard discussing variable relationships."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2264.jpg": {
+      "ocr_text": "y=1/x",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "A diagram showing the curve y=1/x and a tangent line."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2285.jpg": {
+      "ocr_text": "y=1/x",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The lecturer points to the diagram of the curve y=1/x."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2328.jpg": {
+      "ocr_text": "x=2x0",
+      "importance_score": 8,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "Equations showing the calculation of intercepts."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2355.jpg": {
+      "ocr_text": "y-y0 = -1/x0^2 (x-x0)",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The equation of the tangent line to the curve."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2371.jpg": {
+      "ocr_text": "y=0",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer indicates the y=0 line on the graph."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2414.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer continues the discussion on variable confusion."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2435.jpg": {
+      "ocr_text": "f'(x0) = -1/x0^2",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The derivative of the function 1/x."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2462.jpg": {
+      "ocr_text": "AREA OF TRIANGLE: 1/2(2x0)(2y0) = 2x0y0 = 2",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "Calculation showing the area of the triangle is 2."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2488.jpg": {
+      "ocr_text": "f'(x0) = -1/x0^2",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The derivative result highlighted on the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2579.jpg": {
+      "ocr_text": "f' = df/dx = dy/dx = d/dx f = d/dx y",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "Comparison of Newton's and Leibniz's notations."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2638.jpg": {
+      "ocr_text": "FIND THE TANGENT LINE y=f(x) at (x0, y0)",
+      "importance_score": 4,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The lecturer clears the board to start a new problem."
+    }
+  }
+}

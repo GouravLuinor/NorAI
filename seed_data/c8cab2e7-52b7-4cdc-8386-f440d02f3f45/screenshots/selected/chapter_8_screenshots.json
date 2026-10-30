@@ -1,0 +1,26 @@
+{
+  "chapter_id": 8,
+  "screenshots": [
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2851.jpg",
+      "reason": "The lecturer points to the kinematic position equation on the board.",
+      "section": "The Fundamental Kinematic Equation",
+      "importance": 10,
+      "timestamp": 2851.25
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3053.jpg",
+      "reason": "The board shows the full derivation steps and the final time-independent velocity formula.",
+      "section": "Eliminating Time to Find Velocity",
+      "importance": 10,
+      "timestamp": 3053.05
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2932.jpg",
+      "reason": "The lecturer writes the position equation using Y as the variable.",
+      "section": "Eliminating Time to Find Velocity",
+      "importance": 7,
+      "timestamp": 2932.93
+    }
+  ]
+}

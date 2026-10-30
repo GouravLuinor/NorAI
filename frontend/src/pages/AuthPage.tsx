@@ -34,7 +34,7 @@ export function AuthPage({ defaultMode = 'login' }: AuthPageProps) {
 
   // Determine redirect target
   const fromLoc = (location.state as { from?: { pathname: string; search?: string } })?.from
-  const from = fromLoc?.pathname ? fromLoc.pathname + (fromLoc.search ?? '') : '/app'
+  const from = fromLoc?.pathname ? fromLoc.pathname + (fromLoc.search ?? '') : `/app${location.search || ''}`
 
   useEffect(() => {
     if (user && token) {

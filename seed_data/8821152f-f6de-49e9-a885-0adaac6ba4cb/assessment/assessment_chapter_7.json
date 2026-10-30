@@ -1,0 +1,78 @@
+{
+    "chapter_id": 7,
+    "chapter_title": "Common Running Time Functions",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 7,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Polynomial time"
+            ],
+            "question": "In this course, which category of running time is generally considered 'efficient'?",
+            "options": [
+                "Constant time",
+                "Polynomial time",
+                "Exponential time",
+                "Super-linear time"
+            ],
+            "answer": "Polynomial time",
+            "explanation": "The lecturer explicitly states that polynomial time is generally what is meant by efficient in this class.",
+            "flashcard_front": "What is the general definition of an efficient algorithm in this course?",
+            "flashcard_back": "An algorithm with polynomial running time, denoted as Theta(N^C) for some constant C.",
+            "flashcard_explanation": "The lecturer identifies polynomial time as the standard threshold for efficiency in this class."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 7,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Exponential time"
+            ],
+            "question": "Exponential time algorithms are generally considered efficient.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer describes exponential time as 'pretty bad' and 'crap' compared to polynomial time.",
+            "flashcard_front": "Are exponential time algorithms considered efficient?",
+            "flashcard_back": "False. They are considered inefficient and grow too rapidly.",
+            "flashcard_explanation": "Exponential growth is significantly faster than polynomial growth, making it inefficient."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 7,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Logarithmic time"
+            ],
+            "question": "How does logarithmic time compare to constant time as the input size N becomes very large?",
+            "options": [],
+            "answer": "It appears nearly constant and is much closer to constant time than to linear time.",
+            "explanation": "The lecturer notes that at large scales, log time is much closer to constant than linear, and almost looks like a straight line.",
+            "flashcard_front": "How does logarithmic time behave at very large input sizes?",
+            "flashcard_back": "It appears nearly constant and is much closer to constant than linear time.",
+            "flashcard_explanation": "Logarithmic growth is very slow, making it perform similarly to constant time at scale."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 7,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Word RAM"
+            ],
+            "question": "Why do we use the Word RAM model in this course?",
+            "options": [],
+            "answer": "We use it for its theoretical brevity to define what a computer is allowed to do in constant time.",
+            "explanation": "The lecturer explains that we need a model to define fundamental operations that take constant time, and Word RAM is used for its theoretical brevity.",
+            "flashcard_front": "Why is the Word RAM model used?",
+            "flashcard_back": "For its theoretical brevity in defining constant-time operations.",
+            "flashcard_explanation": "It provides a standard framework for measuring algorithmic efficiency."
+        }
+    ]
+}

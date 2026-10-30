@@ -1,4 +1,4 @@
-import { DEFAULT_TRIAL_QUOTA_MINUTES } from '../../config/features'
+import { DEFAULT_TRIAL_QUOTA_MINUTES, DEMO_LECTURE_IDS } from '../../config/features'
 import { useChapterStore } from '../../stores/useChapterStore'
 import { useQuizStore, fetchQuizQuestions } from '../../stores/useQuizStore'
 import { ChatArea } from '../chat/ChatArea'
@@ -29,7 +29,9 @@ export function AIPanel() {
   const addToast = useToastStore(s => s.addToast)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
-  if (!user) {
+  const isDemoLecture = Boolean(activeLectureId && DEMO_LECTURE_IDS.includes(activeLectureId))
+
+  if (!user && !isDemoLecture) {
     return (
       <div className="flex flex-col min-h-0 bg-ns overflow-hidden h-full">
         <NoraHeader subtitle="Answers from this lecture" />

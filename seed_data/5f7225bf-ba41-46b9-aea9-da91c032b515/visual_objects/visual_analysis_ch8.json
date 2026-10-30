@@ -1,0 +1,89 @@
+{
+  "chapter_id": 8,
+  "frames": {
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2204.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer stands at a podium."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2267.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer gestures while discussing the reasons for the Civil War's hold on us."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2330.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the personal connection to the Civil War."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2458.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the scale of war loss."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2519.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer reflects on Walt Whitman as a poet of death."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2582.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses epic stories and the American love for happy endings."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2645.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer defines modernity."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2708.jpg": {
+      "ocr_text": "",
+      "importance_score": 6,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer describes the Civil War as a moral convulsion."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2773.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the desire for unity."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2785.jpg": {
+      "ocr_text": "",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "A slide showing an interior space, likely a university building."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2792.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer gestures while discussing unity."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2855.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concludes the discussion on racial reckoning."
+    }
+  }
+}

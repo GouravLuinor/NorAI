@@ -1,0 +1,26 @@
+{
+  "chapter_id": 7,
+  "screenshots": [
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2188.jpg",
+      "reason": "The board shows a graph comparing multiple growth rates.",
+      "section": "Visualizing Growth Rates",
+      "importance": 10,
+      "timestamp": 2188.29
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2135.jpg",
+      "reason": "The lecturer draws a graph of linear time.",
+      "section": "Visualizing Growth Rates",
+      "importance": 7,
+      "timestamp": 2135.43
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_2012.jpg",
+      "reason": "The lecturer writes linear and log-linear time on the board.",
+      "section": "Defining Running Time Categories",
+      "importance": 6,
+      "timestamp": 2012.64
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "chapter_id": 1,
+  "screenshots": [
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_153.jpg",
+      "reason": "The chalkboard showing the four main course themes.",
+      "section": "Core Objectives",
+      "importance": 9,
+      "timestamp": 153.72
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_164.jpg",
+      "reason": "The instructor pointing to the list of course goals on the board.",
+      "section": "The Importance of Communication",
+      "importance": 9,
+      "timestamp": 164.4
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_111.jpg",
+      "reason": "The instructor listing course goals on the chalkboard.",
+      "section": "Core Objectives",
+      "importance": 8,
+      "timestamp": 111.01
+    }
+  ]
+}

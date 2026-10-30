@@ -1,0 +1,89 @@
+{
+  "chapter_id": 4,
+  "frames": {
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_659.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer introduces the birthday problem."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_674.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains the process of interviewing students one by one."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_695.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses checking the record for matches."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_711.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer summarizes the algorithm."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_727.jpg": {
+      "ocr_text": "Algorithm f: I -> O",
+      "importance_score": 8,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer writes the mathematical definition of an algorithm on the board."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_743.jpg": {
+      "ocr_text": "Algorithm f: I -> O for Birthday problem: maintain record",
+      "importance_score": 9,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer begins outlining the birthday problem algorithm on the board."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_807.jpg": {
+      "ocr_text": "for Birthday problem: -maintain record -Interview students in some order -Check if birthday in record -if so return pair -add new student to record -Return none",
+      "importance_score": 10,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The full algorithm steps are written on the board."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_823.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains that the verbal description is sufficient for understanding."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_839.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer addresses a student question about pure functions."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_854.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer clarifies the mathematical definition of a function."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_876.jpg": {
+      "ocr_text": "Problem Inputs Outputs",
+      "importance_score": 7,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer draws a diagram showing inputs mapping to outputs."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_892.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concludes the definition of an algorithm as a procedure."
+    }
+  }
+}

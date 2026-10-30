@@ -1,15 +1,36 @@
 import { useCallback, useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Film, Upload, Link2, FileVideo, ArrowRight, Info, Activity, AlertTriangle, LogOut, RefreshCw } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  Film,
+  Upload,
+  Link2,
+  FileVideo,
+  ArrowRight,
+  Info,
+  Activity,
+  AlertTriangle,
+  LogOut,
+  RefreshCw,
+  BookOpen,
+  Layers,
+  RotateCcw,
+  Sparkles,
+  CheckCircle2,
+  Play,
+} from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { Select } from '../components/ui/Select'
+import { ShelfMark } from '../components/ui/ShelfMark'
 import { Wordmark } from '../components/brand/Wordmark'
 import { FOCUS_RING } from '../components/ui/shared'
 import { apiFetchRaw } from '../lib/http'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useCourseStore } from '../stores/useCourseStore'
 import { useRateLimitStore } from '../stores/useRateLimitStore'
+import { useStudyStore } from '../stores/useStudyStore'
+import { useQuizStore } from '../stores/useQuizStore'
+import { useChapterStore } from '../stores/useChapterStore'
 import { DEFAULT_TRIAL_QUOTA_MINUTES } from '../config/features'
 import { formatMinutes, quotaResetLabel } from '../lib/plans'
 
@@ -100,8 +121,10 @@ function readVideoDuration(file: File): Promise<number | null> {
 }
 
 export function UploadPage() {
+  const [searchParams] = useSearchParams()
+  const initialUrl = searchParams.get('url') || ''
   const [inputType, setInputType] = useState<InputType>('youtube')
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(initialUrl)
   const [file, setFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
   const [lectures, setLectures] = useState<LectureInfo[]>([])
@@ -120,6 +143,24 @@ export function UploadPage() {
   const refreshQuota = useAuthStore((s) => s.refreshQuota)
   const { courses, loadCourses } = useCourseStore()
   const { isDailyLimited, expiresAt } = useRateLimitStore()
+  const { overview, loadOverview } = useStudyStore()
+
+  useEffect(() => {
+    void loadOverview()
+  }, [loadOverview])
+
+  const resumeStudy = useCallback(
+    (lectureId: string, chapterId?: number | null, mode?: 'tutor' | 'quiz' | 'cards') => {
+      if (mode) {
+        useQuizStore.getState().setMode(mode)
+      }
+      if (chapterId) {
+        useChapterStore.getState().setChapter(chapterId)
+      }
+      navigate(`/workspace/${lectureId}`)
+    },
+    [navigate],
+  )
 
   useEffect(() => {
     if (user) {
@@ -295,7 +336,203 @@ export function UploadPage() {
         </div>
       </header>
 
-      <div className="w-full max-w-3xl px-4 sm:px-6 pt-10 flex flex-col gap-14">
+      <div className="w-full max-w-3xl px-4 sm:px-6 pt-10 flex flex-col gap-12">
+        {/* Continue where you left off */}
+        {overview?.recent_lecture && (
+          <section aria-labelledby="resume-heading" className="bg-ns border border-bdr rounded-lg p-5 sm:p-6 shadow-ev1">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div className="flex items-center gap-3">
+                <ShelfMark
+                  top={`CH ${String(overview.recent_lecture.last_chapter_id || 1).padStart(2, '0')}`}
+                  time={overview.recent_lecture.duration_seconds > 0 ? `${Math.round(overview.recent_lecture.duration_seconds / 60)}m` : undefined}
+                  current
+                />
+                <span className="spec-label tracking-wider flex items-center gap-2">
+                  <Play size={13} strokeWidth={2} className="text-brass fill-brass" />
+                  Continue where you left off
+                </span>
+              </div>
+              {overview.recent_lecture.is_demo && (
+                <span className="text-12 font-mono px-2 py-0.5 rounded-full bg-ns2 text-nt3 border border-bdr">
+                  Demo workspace
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
+              <div className="min-w-0">
+                <h2 id="resume-heading" className="font-serif font-bold text-22 text-nt leading-snug truncate">
+                  {overview.recent_lecture.title}
+                </h2>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-14 text-nt3 font-mono">
+                  {overview.recent_lecture.category && <span>{overview.recent_lecture.category}</span>}
+                  <span>·</span>
+                  <span>{overview.recent_lecture.chapter_count} chapters</span>
+                  {overview.recent_lecture.duration_seconds > 0 && (
+                    <>
+                      <span>·</span>
+                      <span>{Math.round(overview.recent_lecture.duration_seconds / 60)} min</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                variant="primary"
+                onClick={() => resumeStudy(overview.recent_lecture!.lecture_id, overview.recent_lecture!.last_chapter_id)}
+                className="shrink-0 h-10 px-5 rounded-md text-14 font-bold gap-2"
+              >
+                Resume lecture <ArrowRight size={15} strokeWidth={2} />
+              </Button>
+            </div>
+
+            {/* Quick jump mode bar */}
+            <div className="mt-5 pt-4 border-t border-bdr grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button
+                type="button"
+                onClick={() => resumeStudy(overview.recent_lecture!.lecture_id, overview.recent_lecture!.last_chapter_id)}
+                className={`flex items-center gap-2 p-2.5 rounded-md hover:bg-ns2 text-nt2 hover:text-nt text-13 font-bold transition-colors cursor-pointer ${FOCUS_RING}`}
+              >
+                <BookOpen size={16} strokeWidth={1.75} className="text-np" />
+                <span>Study notes</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => resumeStudy(overview.recent_lecture!.lecture_id, overview.recent_lecture!.last_chapter_id, 'tutor')}
+                className={`flex items-center gap-2 p-2.5 rounded-md hover:bg-ns2 text-nt2 hover:text-nt text-13 font-bold transition-colors cursor-pointer ${FOCUS_RING}`}
+              >
+                <Sparkles size={16} strokeWidth={1.75} className="text-brass" />
+                <span>Ask Nora</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => resumeStudy(overview.recent_lecture!.lecture_id, overview.recent_lecture!.last_chapter_id, 'quiz')}
+                className={`flex items-center gap-2 p-2.5 rounded-md hover:bg-ns2 text-nt2 hover:text-nt text-13 font-bold transition-colors cursor-pointer ${FOCUS_RING}`}
+              >
+                <CheckCircle2 size={16} strokeWidth={1.75} className="text-np" />
+                <span>Practice quiz</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => resumeStudy(overview.recent_lecture!.lecture_id, overview.recent_lecture!.last_chapter_id, 'cards')}
+                className={`flex items-center gap-2 p-2.5 rounded-md hover:bg-ns2 text-nt2 hover:text-nt text-13 font-bold transition-colors cursor-pointer ${FOCUS_RING}`}
+              >
+                <Layers size={16} strokeWidth={1.75} className="text-brass" />
+                <span>Review cards</span>
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* Study Hub: Flashcards due & Quiz retakes */}
+        <section aria-labelledby="study-hub-heading" className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <h2 id="study-hub-heading" className="sr-only">Study queue and retention</h2>
+
+          {/* Flashcards Due */}
+          <div className="bg-ns border border-bdr rounded-lg p-5 flex flex-col justify-between shadow-ev1">
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="spec-label flex items-center gap-1.5 text-nt2">
+                  <Layers size={14} strokeWidth={1.75} className="text-np" />
+                  Flashcards queue
+                </span>
+                {overview && overview.flashcards_due.total_due > 0 ? (
+                  <span className="px-2 py-0.5 rounded-full text-12 font-mono font-bold bg-np/10 text-np border border-np/20">
+                    {overview.flashcards_due.total_due} due today
+                  </span>
+                ) : (
+                  <span className="text-12 text-nt3 font-mono">All reviewed</span>
+                )}
+              </div>
+
+              <h3 className="font-serif font-semibold text-18 text-nt leading-snug">
+                Spaced repetition review
+              </h3>
+              <p className="mt-1 text-14 text-nt3 leading-relaxed">
+                Review flashcards using the SM-2 algorithm to lock key concepts into memory.
+              </p>
+
+              {overview?.flashcards_due.decks && overview.flashcards_due.decks.length > 0 ? (
+                <ul className="mt-4 space-y-2 border-t border-bdr pt-3">
+                  {overview.flashcards_due.decks.slice(0, 3).map((deck) => (
+                    <li key={`${deck.lecture_id}-${deck.chapter_id}`} className="flex items-center justify-between text-13 py-1">
+                      <div className="truncate pr-2">
+                        <span className="font-medium text-nt truncate block">{deck.lecture_title}</span>
+                        <span className="text-nt3 text-12">Chapter {deck.chapter_id} · {deck.due_count} due</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => resumeStudy(deck.lecture_id, deck.chapter_id, 'cards')}
+                        className={`text-13 font-bold text-np hover:underline shrink-0 cursor-pointer ${FOCUS_RING}`}
+                      >
+                        Review
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="mt-4 pt-3 border-t border-bdr flex items-center gap-2 text-13 text-nt3">
+                  <CheckCircle2 size={15} strokeWidth={1.75} className="text-np" />
+                  <span>No cards overdue today.</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Quiz Retakes */}
+          <div className="bg-ns border border-bdr rounded-lg p-5 flex flex-col justify-between shadow-ev1">
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="spec-label flex items-center gap-1.5 text-nt2">
+                  <RotateCcw size={14} strokeWidth={1.75} className="text-brass" />
+                  Quiz retakes & review
+                </span>
+                {overview && overview.quiz_retakes.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-12 font-mono font-bold bg-brass/10 text-brass border border-brass/20">
+                    {overview.quiz_retakes.length} to improve
+                  </span>
+                )}
+              </div>
+
+              <h3 className="font-serif font-semibold text-18 text-nt leading-snug">
+                Target missed questions
+              </h3>
+              <p className="mt-1 text-14 text-nt3 leading-relaxed">
+                Retake quizzes with missed answers to achieve 100% mastery.
+              </p>
+
+              {overview?.quiz_retakes && overview.quiz_retakes.length > 0 ? (
+                <ul className="mt-4 space-y-2 border-t border-bdr pt-3">
+                  {overview.quiz_retakes.slice(0, 3).map((retake) => (
+                    <li key={retake.attempt_id} className="flex items-center justify-between text-13 py-1">
+                      <div className="truncate pr-2">
+                        <span className="font-medium text-nt truncate block">{retake.lecture_title}</span>
+                        <span className="text-nt3 text-12">
+                          Score: {retake.score}/{retake.total} · {retake.missed_count} missed
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => resumeStudy(retake.lecture_id, retake.chapter_id, 'quiz')}
+                        className={`text-13 font-bold text-brass hover:underline shrink-0 cursor-pointer ${FOCUS_RING}`}
+                      >
+                        Retake
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="mt-4 pt-3 border-t border-bdr flex items-center gap-2 text-13 text-nt3">
+                  <CheckCircle2 size={15} strokeWidth={1.75} className="text-np" />
+                  <span>All past quizzes mastered.</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
 
         {/* Add a lecture */}
         <section aria-labelledby="add-heading">

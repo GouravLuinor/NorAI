@@ -1,0 +1,89 @@
+{
+  "chapter_id": 5,
+  "frames": {
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_897.jpg": {
+      "ocr_text": "Algorithm f: I -> O for Birthday problem: -maintain record -Interview student -Check if birthday in record -if so return -add new student to record -Return None",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer introduces the birthday problem algorithm on the board."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_950.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains the difficulty of verifying algorithms for large inputs."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1000.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer gestures to illustrate the concept of looping over large inputs."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1050.jpg": {
+      "ocr_text": "Correctness",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer writes the title 'Correctness' on the board."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1098.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer begins to outline the requirements for an inductive proof."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1151.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains the generalization of the birthday problem for induction."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1226.jpg": {
+      "ocr_text": "before interviewing student K+1",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer writes part of the inductive hypothesis on the board."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1289.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the base case of the induction."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1359.jpg": {
+      "ocr_text": "Inductive hypothesis: if first K students contain match alg returns a match before interviewing student K+1 Base Case: K=0 Assume IH true for K=K'",
+      "importance_score": 10,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The board shows the full inductive hypothesis, base case, and assumption."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1412.jpg": {
+      "ocr_text": "if K' contains match else if K'+1 contains match",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer writes the case analysis structure on the board."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1492.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concludes the formal proof explanation."
+    },
+    "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1542.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer summarizes the importance of communication in algorithm design."
+    }
+  }
+}

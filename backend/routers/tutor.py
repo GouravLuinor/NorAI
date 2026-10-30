@@ -12,6 +12,7 @@ patch point for offline tests), NOT module-level `from ... import` copies.
 import asyncio
 import json as json_lib
 import logging
+import os
 import re
 import sqlite3
 import time
@@ -30,9 +31,16 @@ from backend.access import (
     _effective_persona_instructions,
     _flush_tutor_usage_async,
     _is_free_demo_access,
+    _is_guest,
+    check_guest_tutor_cap,
     ensure_lecture_access,
+    get_guest_remaining_questions,
 )
-from backend.auth import get_current_user, get_current_user_optional
+from backend.demo_suggested_qa import (
+    get_cached_demo_qa,
+    get_suggested_questions_for_lecture,
+)
+from backend.auth import get_current_user_optional
 from backend.db.database import get_db
 from backend.db.models import User
 from backend.dependencies import (
@@ -48,21 +56,28 @@ from config import DEMO_LECTURE_IDS
 router = APIRouter()
 
 
-def _get_user_scope(user: Optional[User]) -> str:
+def _get_user_scope(user: Optional[User], guest_id: Optional[str] = None) -> str:
     """Return user scope ID for partitioning demo lectures."""
     if user and getattr(user, "id", None) and not str(user.id).startswith("guest-"):
         return str(user.id)
+    if guest_id:
+        return f"guest-{guest_id}"
     return "guest"
 
 
-def _get_scoped_thread_id(lecture_id: Optional[str], thread_id: str, user: Optional[User]) -> str:
+def _get_scoped_thread_id(
+    lecture_id: Optional[str],
+    thread_id: str,
+    user: Optional[User],
+    guest_id: Optional[str] = None,
+) -> str:
     """Return scoped thread ID for storage in LangGraph checkpointer.
     For shared demo lectures, conversations are scoped per-user so they never leak across users.
     For user-uploaded lectures, thread_id is unchanged.
     """
     clean_id = sanitize_lecture_id(lecture_id or "default")
     if clean_id in DEMO_LECTURE_IDS or clean_id == "default":
-        user_scope = _get_user_scope(user)
+        user_scope = _get_user_scope(user, guest_id)
         return f"{user_scope}:{thread_id}"
     return thread_id
 
@@ -105,17 +120,81 @@ class ChatResponse(BaseModel):
     thread_id: str
 
 
+@router.get("/lectures/{lecture_id}/suggested-questions")
+async def get_suggested_questions(
+    lecture_id: str,
+    request: Request,
+    user: Optional[User] = Depends(get_current_user_optional),
+):
+    """Return pre-cached canonical questions and guest question quota for a demo lecture."""
+    clean_id = sanitize_lecture_id(lecture_id)
+    guest_id = request.headers.get("x-guest-id")
+    is_guest = user is None or _is_guest(user)
+    return {
+        "lecture_id": clean_id,
+        "suggested_questions": get_suggested_questions_for_lecture(clean_id),
+        "is_guest": is_guest,
+        "guest_questions_remaining": get_guest_remaining_questions(guest_id) if is_guest else None,
+    }
+
+
 @router.post("/chat")
 async def chat(
     req: ChatRequest,
-    user: User = Depends(get_current_user),
+    request: Request,
+    user: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
     try:
         bind(lecture_id=req.lecture_id, thread_id=req.thread_id)
-        # P6.4: chat is a tutor-gated write — owner OR share link with tutor
-        # chat enabled. Anonymous users without a share link are 404'd.
-        await ensure_lecture_access(req.lecture_id or "default", user, db, require_tutor=True)
+        clean_id = sanitize_lecture_id(req.lecture_id or "default")
+        guest_id = request.headers.get("x-guest-id")
+
+        # Phase D: Cached suggested QA on demo lectures returns immediately with zero Gemini tokens.
+        if clean_id in DEMO_LECTURE_IDS or clean_id == "default":
+            cached_res = get_cached_demo_qa(clean_id, req.user_question)
+            if cached_res is not None:
+                if user is None and not guest_id and not (
+                    os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
+                    or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
+                ):
+                    raise HTTPException(status_code=401, detail="Authentication required to use AI Tutor")
+
+                scoped_thread_id = _get_scoped_thread_id(req.lecture_id, req.thread_id, user, guest_id)
+                db_path = tutor_deps.turn_db_path(clean_id)
+                msg_id = req.message_id or f"msg-{int(time.time() * 1000)}"
+                ans = cached_res["answer"]
+
+                # Persist turn to transcript & user_threads
+                await asyncio.to_thread(tutor_deps._register_thread_if_needed, db_path, scoped_thread_id)
+                await asyncio.to_thread(transcript.append_turn, db_path, scoped_thread_id, msg_id, req.user_question, ans, [])
+
+                return {
+                    "answer": ans,
+                    "assistant_message_id": transcript.assistant_id_for(msg_id),
+                    "retrieved_chunks": [],
+                    "retrieved_images": [],
+                    "verified_citations": cached_res.get("verified_citations", []),
+                    "chapter_id": None,
+                    "thread_id": req.thread_id,
+                    "cached": True,
+                }
+
+        if clean_id not in DEMO_LECTURE_IDS and clean_id != "default":
+            if user is None:
+                raise HTTPException(status_code=401, detail="Authentication required to use AI Tutor")
+        else:
+            # Demo lecture live question: check visitor cap (5/day) & global cap (100/day)
+            if user is None or _is_guest(user):
+                if not (
+                    os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
+                    or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
+                ):
+                    check_guest_tutor_cap(clean_id, guest_id)
+
+        # P6.4 / Phase D: chat is a tutor-gated write — owner, share link with tutor,
+        # or guest visitor on demo lectures (capped at 5 questions/day).
+        await ensure_lecture_access(req.lecture_id or "default", user, db, require_tutor=True, guest_id=guest_id)
         # P1.1: demo/default lectures cost real Gemini tokens with no quota
         # attached — bound anonymous/guest usage with a global daily budget.
         if _is_free_demo_access(req.lecture_id, user) and not _DEMO_TURNS_DAILY.check_and_increment("global"):
@@ -129,7 +208,7 @@ async def chat(
         from backend.usage import record_tutor_turn
 
         _tutor_before = snapshot_usage()
-        scoped_thread_id = _get_scoped_thread_id(req.lecture_id, req.thread_id, user)
+        scoped_thread_id = _get_scoped_thread_id(req.lecture_id, req.thread_id, user, guest_id)
         result = await tutor_deps.ainvoke_tutor(
             thread_id=scoped_thread_id,
             user_question=req.user_question,
@@ -161,11 +240,73 @@ async def chat(
 @router.post("/chat/stream")
 async def chat_stream(
     req: ChatRequest,
-    user: User = Depends(get_current_user),
+    request: Request,
+    user: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
     bind(lecture_id=req.lecture_id, thread_id=req.thread_id)
-    await ensure_lecture_access(req.lecture_id or "default", user, db, require_tutor=True)
+    clean_id = sanitize_lecture_id(req.lecture_id or "default")
+    guest_id = request.headers.get("x-guest-id")
+
+    # Phase D: Cached suggested QA on demo lectures streams immediately with zero Gemini tokens.
+    if clean_id in DEMO_LECTURE_IDS or clean_id == "default":
+        cached_res = get_cached_demo_qa(clean_id, req.user_question)
+        if cached_res is not None:
+            if user is None and not guest_id and not (
+                os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
+                or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
+            ):
+                raise HTTPException(status_code=401, detail="Authentication required to use AI Tutor")
+
+            scoped_thread_id = _get_scoped_thread_id(req.lecture_id, req.thread_id, user, guest_id)
+            db_path = tutor_deps.turn_db_path(clean_id)
+            msg_id = req.message_id or f"msg-{int(time.time() * 1000)}"
+            ans = cached_res["answer"]
+
+            # Persist turn to transcript & user_threads
+            await asyncio.to_thread(tutor_deps._register_thread_if_needed, db_path, scoped_thread_id)
+            await asyncio.to_thread(transcript.append_turn, db_path, scoped_thread_id, msg_id, req.user_question, ans, [])
+
+            async def cached_event_generator():
+                words = ans.split(" ")
+                for i in range(0, len(words), 4):
+                    chunk = " ".join(words[i:i + 4]) + (" " if i + 4 < len(words) else "")
+                    yield f"data: {json_lib.dumps({'t': chunk})}\n\n"
+                    await asyncio.sleep(0.01)
+                final_payload = {
+                    "final": {
+                        "answer": ans,
+                        "assistant_message_id": transcript.assistant_id_for(msg_id),
+                        "retrieved_chunks": [],
+                        "retrieved_images": [],
+                        "verified_citations": cached_res.get("verified_citations", []),
+                        "chapter_id": None,
+                        "thread_id": req.thread_id,
+                        "cached": True,
+                    }
+                }
+                yield f"data: {json_lib.dumps(final_payload)}\n\n"
+                yield "data: [DONE]\n\n"
+
+            return StreamingResponse(
+                cached_event_generator(),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
+
+    if clean_id not in DEMO_LECTURE_IDS and clean_id != "default":
+        if user is None:
+            raise HTTPException(status_code=401, detail="Authentication required to use AI Tutor")
+    else:
+        # Demo lecture live question: check visitor cap (5/day) & global cap (100/day)
+        if user is None or _is_guest(user):
+            if not (
+                os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
+                or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
+            ):
+                check_guest_tutor_cap(clean_id, guest_id)
+
+    await ensure_lecture_access(req.lecture_id or "default", user, db, require_tutor=True, guest_id=guest_id)
     # P1.1: demo/default daily budget (see POST /chat).
     if _is_free_demo_access(req.lecture_id, user) and not _DEMO_TURNS_DAILY.check_and_increment("global"):
         raise HTTPException(
@@ -187,7 +328,7 @@ async def chat_stream(
             # committed turn's metadata. The wire contract (data: {t} chunks,
             # data: {final}, data: [DONE]) is unchanged, so the frontend's
             # reassembly is untouched — only time-to-first-token changes.
-            scoped_thread_id = _get_scoped_thread_id(req.lecture_id, req.thread_id, user)
+            scoped_thread_id = _get_scoped_thread_id(req.lecture_id, req.thread_id, user, guest_id)
             async for frame in tutor_deps.astream_tutor_tokens(
                 thread_id=scoped_thread_id,
                 user_question=req.user_question,
@@ -221,20 +362,21 @@ async def chat_stream(
 
 @router.get("/threads")
 async def list_threads(
+    request: Request,
     lecture_id: str = "default",
     user: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
     """Return all thread IDs for a lecture."""
-    # P6.4: thread listing is a lecture-scoped read — owner or valid share link.
-    await ensure_lecture_access(lecture_id, user, db)
+    guest_id = request.headers.get("x-guest-id")
+    await ensure_lecture_access(lecture_id, user, db, guest_id=guest_id)
     db_path = get_lecture_db_path(lecture_id)
     if not db_path.exists():
         return {"threads": ["default"]}
 
     clean_id = sanitize_lecture_id(lecture_id)
     is_demo = clean_id in DEMO_LECTURE_IDS or clean_id == "default"
-    user_scope = _get_user_scope(user)
+    user_scope = _get_user_scope(user, guest_id)
 
     threads = set()
     deleted = set()
@@ -306,13 +448,14 @@ async def create_thread_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new conversation thread in a lecture."""
-    # Threads power the AI tutor, so creation follows the same tutor-gated
-    # write rule as POST /chat (owner or share link with tutor chat enabled).
-    await ensure_lecture_access(lecture_id, user, db, require_tutor=True)
+    guest_id = request.headers.get("x-guest-id")
+    await ensure_lecture_access(lecture_id, user, db, guest_id=guest_id)
     thread_id = None
     try:
         body = await request.json()
         thread_id = body.get("thread_id")
+        if (not lecture_id or lecture_id == "default") and body.get("lecture_id"):
+            lecture_id = body.get("lecture_id")
     except Exception:
         pass
     if not thread_id:
@@ -320,7 +463,7 @@ async def create_thread_endpoint(
 
     clean_id = sanitize_lecture_id(lecture_id)
     is_demo = clean_id in DEMO_LECTURE_IDS or clean_id == "default"
-    user_scope = _get_user_scope(user)
+    user_scope = _get_user_scope(user, guest_id)
 
     db_path = get_lecture_db_path(lecture_id)
     db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -355,14 +498,16 @@ async def create_thread_endpoint(
 @router.get("/threads/{thread_id}")
 async def get_thread(
     thread_id: str,
+    request: Request,
     lecture_id: str = "default",
     user: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
     """Return the full message history for a thread in a specific lecture."""
-    # Thread transcripts are private tutor conversations — same gate as /chat.
-    await ensure_lecture_access(lecture_id, user, db, require_tutor=True)
-    scoped_thread_id = _get_scoped_thread_id(lecture_id, thread_id, user)
+    # Thread transcripts are private tutor conversations.
+    guest_id = request.headers.get("x-guest-id")
+    await ensure_lecture_access(lecture_id, user, db, guest_id=guest_id)
+    scoped_thread_id = _get_scoped_thread_id(lecture_id, thread_id, user, guest_id)
     try:
         graph, _ = await _aget_or_create_lecture_graph(lecture_id)
         config = {"configurable": {"thread_id": scoped_thread_id}}
@@ -442,17 +587,19 @@ async def get_thread(
 @router.delete("/threads/{thread_id}")
 async def delete_thread(
     thread_id: str,
+    request: Request,
     lecture_id: str = "default",
     user: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a thread from a lecture."""
-    # Destructive tutor-write: same gate as POST /chat.
-    await ensure_lecture_access(lecture_id, user, db, require_tutor=True)
+    # Destructive tutor-write.
+    guest_id = request.headers.get("x-guest-id")
+    await ensure_lecture_access(lecture_id, user, db, guest_id=guest_id)
     clean_id = sanitize_lecture_id(lecture_id)
     is_demo = clean_id in DEMO_LECTURE_IDS or clean_id == "default"
-    user_scope = _get_user_scope(user)
-    scoped_thread_id = _get_scoped_thread_id(lecture_id, thread_id, user)
+    user_scope = _get_user_scope(user, guest_id)
+    scoped_thread_id = _get_scoped_thread_id(lecture_id, thread_id, user, guest_id)
 
     db_path = get_lecture_db_path(lecture_id)
     if db_path.exists():

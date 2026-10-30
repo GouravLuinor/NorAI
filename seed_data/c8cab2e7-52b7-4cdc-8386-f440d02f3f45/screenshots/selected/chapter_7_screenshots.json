@@ -1,0 +1,33 @@
+{
+  "chapter_id": 7,
+  "screenshots": [
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2846.jpg",
+      "reason": "The lecturer identifies B as the initial velocity v0.",
+      "section": "The Kinematic Equation for Constant Acceleration",
+      "importance": 10,
+      "timestamp": 2846.38
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2512.jpg",
+      "reason": "The lecturer shows the first part of the integrated position function.",
+      "section": "The Inverse Problem of Motion",
+      "importance": 9,
+      "timestamp": 2512.51
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2567.jpg",
+      "reason": "The lecturer adds the linear term bt to the position function.",
+      "section": "Generalizing the Position Function",
+      "importance": 9,
+      "timestamp": 2567.63
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2782.jpg",
+      "reason": "The lecturer identifies C as the initial position X0.",
+      "section": "Physical Significance of Integration Constants",
+      "importance": 9,
+      "timestamp": 2782.78
+    }
+  ]
+}

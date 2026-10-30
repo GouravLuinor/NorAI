@@ -1,0 +1,79 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Course Introduction and Goals",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 1,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Course Goals"
+            ],
+            "question": "Which of the following is NOT explicitly listed as a core pillar of this course?",
+            "options": [
+                "Solving computational problems",
+                "Proving correctness",
+                "Arguing efficiency",
+                "Mastering a specific programming language"
+            ],
+            "answer": "Mastering a specific programming language",
+            "explanation": "The course focuses on solving, proving correctness, and arguing efficiency, not on mastering a specific language.",
+            "flashcard_front": "What are the three core pillars of this course?",
+            "flashcard_back": "Solving computational problems, proving correctness, and arguing efficiency.",
+            "flashcard_explanation": "These three pillars form the foundation of the course's approach to algorithms."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 1,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Communication"
+            ],
+            "question": "The course emphasizes writing to explain and justify algorithmic solutions to others.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The instructor explicitly states that students will do a lot of writing to communicate their ideas.",
+            "flashcard_front": "Is communication a key focus of this course?",
+            "flashcard_back": "Yes, it is essential for explaining and justifying solutions to others.",
+            "flashcard_explanation": "The course emphasizes communicating ideas to people, not just computers."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 1,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Communication"
+            ],
+            "question": "Why does the instructor compare this course to a 'CI' (Communication Intensive) class?",
+            "options": [],
+            "answer": "Because students will be doing a lot more writing than they will be coding.",
+            "explanation": "The instructor notes that the course requires significant writing to communicate and prove algorithmic ideas.",
+            "flashcard_front": "Why is writing important in this course?",
+            "flashcard_back": "To prove correctness and communicate efficiency of solutions to others.",
+            "flashcard_explanation": "Writing is the primary tool for justifying and explaining algorithmic work."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 1,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Correctness",
+                "Efficiency"
+            ],
+            "question": "Beyond just solving a problem, what two things must you be able to do with your solution?",
+            "options": [],
+            "answer": "Prove correctness and argue efficiency.",
+            "explanation": "The instructor highlights these as the two essential tasks beyond simply finding a solution.",
+            "flashcard_front": "What must you prove about your solution?",
+            "flashcard_back": "You must prove it is correct and argue its efficiency.",
+            "flashcard_explanation": "These are the two primary requirements for evaluating a computational solution."
+        }
+    ]
+}

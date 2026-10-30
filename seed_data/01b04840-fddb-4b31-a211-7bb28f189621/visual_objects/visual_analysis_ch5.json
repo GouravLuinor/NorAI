@@ -1,0 +1,89 @@
+{
+  "chapter_id": 5,
+  "frames": {
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1534.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "The lecturer stands in front of a blackboard with algebraic expressions."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1544.jpg": {
+      "ocr_text": "f'(x0) = lim delta x -> 0 (f(x0+delta x) - f(x0)) / delta x",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "A slide showing the definition of the derivative."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1555.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "The lecturer gestures while talking to the class."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1560.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "The lecturer explains the reputation of calculus."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1571.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Close up of the lecturer."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1625.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "The lecturer prepares to write on the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1673.jpg": {
+      "ocr_text": "FIND AREAS OF TRIANGLES ENCLOSED BY AXES AND TANGENT TO y = 1/x",
+      "importance_score": 8,
+      "visual_type": "other",
+      "include_in_notes": true,
+      "description": "The problem statement written on the blackboard."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1737.jpg": {
+      "ocr_text": "FIND AREAS OF TRIANGLES ENCLOSED BY AXES AND TANGENT TO y = 1/x",
+      "importance_score": 9,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer draws the hyperbola and a tangent line."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1747.jpg": {
+      "ocr_text": "(x0, y0)",
+      "importance_score": 9,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The point (x0, y0) is marked on the curve."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1758.jpg": {
+      "ocr_text": "(x0, y0)",
+      "importance_score": 9,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer points to the triangle formed by the tangent line."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1817.jpg": {
+      "ocr_text": "(x0, y0)",
+      "importance_score": 9,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The diagram showing the triangle base and height."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1849.jpg": {
+      "ocr_text": "Y - y0 =",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The lecturer begins writing the tangent line equation."
+    }
+  }
+}

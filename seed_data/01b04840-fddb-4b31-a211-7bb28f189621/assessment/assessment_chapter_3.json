@@ -1,0 +1,79 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "The Derivative Formula",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 3,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Derivative definition"
+            ],
+            "question": "What does the ratio delta f / delta x represent?",
+            "options": [
+                "The slope of the tangent line",
+                "The slope of the secant line",
+                "The value of the derivative",
+                "The change in x"
+            ],
+            "answer": "The slope of the secant line",
+            "explanation": "The lecturer explicitly defines the ratio of delta f over delta x as the slope of the secant line.",
+            "flashcard_front": "What is the slope of the secant line?",
+            "flashcard_back": "The ratio of the change in function value (delta f) to the change in x (delta x).",
+            "flashcard_explanation": "The secant line connects two points; its slope is the rise over run, represented by delta f / delta x."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 3,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Derivative definition"
+            ],
+            "question": "The derivative is defined as the limit of the secant line slope as delta x approaches zero.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The lecturer states that the derivative is the limit as delta x goes to 0 of the slope of the secant line.",
+            "flashcard_front": "How is the derivative defined using a limit?",
+            "flashcard_back": "The limit of the secant slope as delta x approaches zero.",
+            "flashcard_explanation": "The derivative is the instantaneous slope, found by shrinking the secant interval to zero."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 3,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Derivative definition"
+            ],
+            "question": "Write the formal limit definition of the derivative f'(x0) as presented in the lecture.",
+            "options": [],
+            "answer": "f'(x0) = limit as delta x approaches 0 of [f(x0 + delta x) - f(x0)] / delta x",
+            "explanation": "This is the formula the lecturer placed in a box as the most important formula of the day.",
+            "flashcard_front": "What is the formula for f'(x0)?",
+            "flashcard_back": "limit as delta x approaches 0 of [f(x0 + delta x) - f(x0)] / delta x.",
+            "flashcard_explanation": "This is the definition of the derivative as the limit of the difference quotient."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 3,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Delta x",
+                "Delta f"
+            ],
+            "question": "If point P is at x0 and point Q is at x0 + delta x, what are the coordinates of point Q?",
+            "options": [],
+            "answer": "(x0 + delta x, f(x0 + delta x))",
+            "explanation": "The lecturer defines the x-coordinate as x0 + delta x and the y-coordinate as the function evaluated at that point.",
+            "flashcard_front": "What are the coordinates of point Q?",
+            "flashcard_back": "(x0 + delta x, f(x0 + delta x))",
+            "flashcard_explanation": "Q is the point on the curve shifted by delta x from the original point P."
+        }
+    ]
+}

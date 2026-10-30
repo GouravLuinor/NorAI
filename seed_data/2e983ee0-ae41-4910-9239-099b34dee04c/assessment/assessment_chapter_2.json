@@ -1,0 +1,83 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Course Materials and Resources",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 2,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Grading policy"
+            ],
+            "question": "What is the weight of the final exam in the course grading structure?",
+            "options": [
+                "10%",
+                "20%",
+                "30%",
+                "40%"
+            ],
+            "answer": "40%",
+            "explanation": "The lecturer stated the final exam accounts for 40% of the final grade.",
+            "flashcard_front": "What percentage of the final grade is the final exam?",
+            "flashcard_back": "40%.",
+            "flashcard_explanation": "The course grade is weighted: 10% problem sets, 20% midterm 1, 30% midterm 2, and 40% final exam."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 2,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Reading requirements"
+            ],
+            "question": "Books placed on reserve in the library are mandatory reading for the course.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer clarified that library reserve books are optional background reading, while only clickable links are mandatory.",
+            "flashcard_front": "Are library reserve books mandatory?",
+            "flashcard_back": "No, they are optional background reading.",
+            "flashcard_explanation": "The lecturer stated that only clickable items on the reading list are required."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 2,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Textbook selection"
+            ],
+            "question": "What should students focus on when reading the Fabozzi et al. textbook?",
+            "options": [
+                "Every single detail in the book",
+                "Only the introduction and conclusion",
+                "Key terms and key points",
+                "Only the chapters mentioned in lectures"
+            ],
+            "answer": "Key terms and key points",
+            "explanation": "The lecturer explicitly stated that students should focus on the 'key terms' and 'key points' sections of the Fabozzi book.",
+            "flashcard_front": "What should students focus on in the Fabozzi textbook?",
+            "flashcard_back": "Key terms and key points.",
+            "flashcard_explanation": "The lecturer reduced the requirement from the whole book to just the key terms and points."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 2,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "TA sections"
+            ],
+            "question": "When are the six problem sets generally due?",
+            "options": [],
+            "answer": "Mondays",
+            "explanation": "The lecturer stated that the six problem sets are generally due on Mondays.",
+            "flashcard_front": "When are the six problem sets generally due?",
+            "flashcard_back": "Mondays.",
+            "flashcard_explanation": "The lecturer specified that problem sets are usually due on Mondays."
+        }
+    ]
+}

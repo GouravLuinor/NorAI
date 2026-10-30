@@ -1,0 +1,26 @@
+{
+    "chapter_id": 8,
+    "chapter_title": "Debt Markets, Stocks, and Real Estate",
+    "flashcards": [
+        {
+            "front": "What is the 'price of time'?",
+            "back": "Interest rates.",
+            "explanation": "The lecturer defines interest rates as the price of time at the start of the chapter."
+        },
+        {
+            "front": "Did US real home prices rise 85% between 1997 and 2006?",
+            "back": "True.",
+            "explanation": "The lecturer cites this 85% increase as a key statistic for the housing boom."
+        },
+        {
+            "front": "What two management decisions affect stock valuation?",
+            "back": "Decisions regarding leverage (debt) and dividend payouts.",
+            "explanation": "Management must decide how much debt to carry and how much profit to pay as dividends."
+        },
+        {
+            "front": "What is the benefit of an indexed debt instrument?",
+            "back": "It provides real interest rates by being indexed to the price level.",
+            "explanation": "Unlike standard debt, indexed instruments adjust for price level changes to provide real returns."
+        }
+    ]
+}

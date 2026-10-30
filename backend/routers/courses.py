@@ -460,20 +460,27 @@ async def resolve_share_link(
 
     if lecture is None:
         if str(link.lecture_id) in DEMO_LECTURE_IDS:
-            meta = get_lecture(str(link.lecture_id))
+            meta = get_lecture(str(link.lecture_id)) or {}
+            chapters = meta.get("chapters") or []
             return {
                 "lecture_id": str(link.lecture_id),
-                "title": (meta.get("title") if meta else None) or "Demo Lecture",
+                "title": meta.get("title") or "Demo Lecture",
                 "status": "completed",
                 "source_type": "youtube",
                 "allow_tutor_chat": link.allow_tutor_chat,
+                "duration_sec": meta.get("duration_sec"),
+                "chapters_count": len(chapters),
             }
         raise HTTPException(status_code=404, detail="Lecture not found")
 
+    meta = get_lecture(str(lecture.id)) or {}
+    chapters = meta.get("chapters") or []
     return {
         "lecture_id": lecture.id,
         "title": lecture.title,
         "status": lecture.status,
         "source_type": lecture.source_type,
         "allow_tutor_chat": link.allow_tutor_chat,
+        "duration_sec": lecture.duration_sec or meta.get("duration_sec"),
+        "chapters_count": len(chapters),
     }

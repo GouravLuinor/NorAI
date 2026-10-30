@@ -1,0 +1,24 @@
+{
+    "chapter_id": 6,
+    "title": "Solving the Geometry Problem",
+    "sections": [
+        {
+            "section_type": "prose",
+            "title": "Finding the X-Intercept",
+            "content_markdown": "To solve the geometry problem, we begin with the equation of the tangent line at a point $(x_0, y_0)$ on the curve $y = 1/x$. The derivative of $f(x) = 1/x$ is $f'(x) = -1/x^2$, so the tangent line equation is $y - y_0 = -1/x_0^2(x - x_0)$. To find the X-intercept, we set $y = 0$ in this equation. Since $y_0 = f(x_0) = 1/x_0$, we substitute these values to get $0 - 1/x_0 = -1/x_0^2(x - x_0)$. Simplifying the right side yields $-1/x_0 = -x/x_0^2 + 1/x_0$. Rearranging the terms, we move $-x/x_0^2$ to the left and $1/x_0$ to the right to obtain $x/x_0^2 = 2/x_0$. Multiplying both sides by $x_0^2$ results in the X-intercept $x = 2x_0$.",
+            "start_sec": 1851.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Using Symmetry for the Y-Intercept",
+            "content_markdown": "Once the X-intercept is found to be $2x_0$, we can determine the Y-intercept using a symmetry shortcut. The lecturer claims that by observing the geometry, the Y-intercept is $2y_0$. This symmetry arises from the mirror-like nature of the curve $y = 1/x$ around the diagonal $y = x$. This involves exchanging the roles of $x$ and $y$. Because the original equation $y = 1/x$ is equivalent to $xy = 1$, which can also be written as $x = 1/y$, the equation is invariant under the swap of $x$ and $y$. This symmetry implies that any formula derived for the X-intercept can be mirrored to find the Y-intercept by swapping the variables. If one does not wish to rely on this symmetry, the Y-intercept can also be calculated algebraically by setting $x = 0$ in the tangent line equation.",
+            "start_sec": 2040.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Calculus and Multiple Variables",
+            "content_markdown": "The lecturer concludes the geometric derivation with a remark on the nature of calculus. While the course is titled 'Single Variable Calculus', the process of solving this geometry problem demonstrates that we are often required to handle multiple variables simultaneously—such as $x, y, x_0,$ and $y_0$—to reach a solution. This ability to manage several quantities at once is described as one of the most challenging aspects of calculus. By systematically identifying the intercepts and utilizing the inherent symmetry of the function $y = 1/x$, we successfully resolve the geometry problem, allowing for the calculation of the area defined by the tangent line and the axes.",
+            "start_sec": 2218.0
+        }
+    ]
+}

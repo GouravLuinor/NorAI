@@ -1,0 +1,61 @@
+{
+  "chapter_id": 5,
+  "frames": {
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2483.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer speaking about the importance of philanthropy."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2543.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer introducing David Swenson and the Yale endowment."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2603.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discussing the performance of the Yale endowment."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2663.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explaining the impact of the endowment on campus."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2723.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer transitioning to the second guest speaker, Andrew Redleaf."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2783.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discussing Redleaf's insight into the subprime crisis."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2843.jpg": {
+      "ocr_text": "",
+      "importance_score": 6,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer outlining the course structure."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2903.jpg": {
+      "ocr_text": "",
+      "importance_score": 8,
+      "visual_type": "talking_head",
+      "include_in_notes": true,
+      "description": "The lecturer explaining the principle of risk pooling."
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "chapter_id": 6,
+  "frames": {
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1866.jpg": {
+      "ocr_text": "x vs t",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "A graph showing a curve of position versus time."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1940.jpg": {
+      "ocr_text": "Velocity",
+      "importance_score": 3,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The lecturer writing the word 'Velocity' on the board."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1986.jpg": {
+      "ocr_text": "v = (x(t2) - x(t1)) / (t2 - t1)",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The formula for average velocity."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2032.jpg": {
+      "ocr_text": "v(t)",
+      "importance_score": 5,
+      "visual_type": "equation",
+      "include_in_notes": false,
+      "description": "The notation for instantaneous velocity."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2082.jpg": {
+      "ocr_text": "delta x, delta t, tan theta",
+      "importance_score": 9,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "A diagram showing the slope of a line on a position-time graph."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2112.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explaining the concept of instantaneous velocity."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2157.jpg": {
+      "ocr_text": "v(t) = lim delta t -> 0 (delta x / delta t) = dx / dt",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The definition of instantaneous velocity as a limit."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2207.jpg": {
+      "ocr_text": "a(t) = dv / dt = d^2x / dt^2",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The definition of acceleration as the second derivative of position."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2260.jpg": {
+      "ocr_text": "x(t) = t^n -> dx / dt = n t^(n-1)",
+      "importance_score": 7,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The power rule for derivatives."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2305.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discussing derivatives of simple functions."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2337.jpg": {
+      "ocr_text": "a(t) = a constant",
+      "importance_score": 8,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The condition of constant acceleration."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2371.jpg": {
+      "ocr_text": "g = 9.8 m/s^2",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The value of acceleration due to gravity."
+    }
+  }
+}

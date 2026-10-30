@@ -1,0 +1,89 @@
+{
+  "chapter_id": 3,
+  "frames": {
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_783.jpg": {
+      "ocr_text": "P Q delta x",
+      "importance_score": 8,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "A diagram showing points P and Q on a curve with delta x labeled."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_836.jpg": {
+      "ocr_text": "limit delta f / delta x",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The limit expression for the slope of the secant line."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_852.jpg": {
+      "ocr_text": "TANGENT LINE = LIMIT OF SECANT LINES AS Q -> P",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Text definition of the tangent line."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_868.jpg": {
+      "ocr_text": "m = limit delta f / delta x",
+      "importance_score": 8,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The slope m defined as the limit of the secant slope."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_873.jpg": {
+      "ocr_text": "P Q delta x delta f",
+      "importance_score": 6,
+      "visual_type": "diagram",
+      "include_in_notes": false,
+      "description": "A diagram showing the geometric relationship between P, Q, delta x, and delta f."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_884.jpg": {
+      "ocr_text": "m = limit delta f / delta x",
+      "importance_score": 5,
+      "visual_type": "diagram",
+      "include_in_notes": false,
+      "description": "The lecturer points to the slope equation on the blackboard."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_894.jpg": {
+      "ocr_text": "(x0, f(x0))",
+      "importance_score": 7,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "Labeling the coordinates of point P."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_942.jpg": {
+      "ocr_text": "Q = (x0 + delta x, f(x0 + delta x))",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The coordinates of point Q expressed in terms of x0 and delta x."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1001.jpg": {
+      "ocr_text": "f'(x0) = limit delta x -> 0 [f(x0 + delta x) - f(x0)] / delta x",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The boxed formal definition of the derivative."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1049.jpg": {
+      "ocr_text": "Example 1 f(x) = 1/x",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The first example function introduced for the derivative calculation."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1065.jpg": {
+      "ocr_text": "f'(x0) = ... Example 1 f(x) = 1/x",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The derivative formula alongside the example function."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1076.jpg": {
+      "ocr_text": "Example 1 f(x) = 1/x",
+      "importance_score": 6,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The lecturer begins writing the solution for the example."
+    }
+  }
+}

@@ -153,7 +153,7 @@ describe('useVideoStore', () => {
     expect(s.sectionStart(1, 0)).toBe(0)   // chunk 0
     expect(s.sectionStart(1, 1)).toBe(75)  // chunk 1
     expect(s.sectionStart(2, 0)).toBe(150) // chunk 2
-    expect(s.sectionStart(1, 99)).toBe(0)  // fallback to chapter start
+    expect(s.sectionStart(1, 99)).toBeNull() // no exact chunk: do not fake the chapter start
     expect(s.sectionStart(undefined, 0)).toBeNull()
   })
 

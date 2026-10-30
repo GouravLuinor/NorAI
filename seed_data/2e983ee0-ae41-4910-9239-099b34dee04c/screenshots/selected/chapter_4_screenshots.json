@@ -1,0 +1,19 @@
+{
+  "chapter_id": 4,
+  "screenshots": [
+    {
+      "path": "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2063.jpg",
+      "reason": "The lecturer writes key terms on the blackboard.",
+      "section": "Public Perception and Hostility Toward Finance",
+      "importance": 8,
+      "timestamp": 2063.06
+    },
+    {
+      "path": "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2423.jpg",
+      "reason": "The blackboard shows the lecture topics.",
+      "section": "Philanthropy as a Component of Finance",
+      "importance": 7,
+      "timestamp": 2423.42
+    }
+  ]
+}

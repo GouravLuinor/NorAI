@@ -1,0 +1,33 @@
+{
+  "chapter_id": 7,
+  "screenshots": [
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2462.jpg",
+      "reason": "Calculation showing the area of the triangle is 2.",
+      "section": "Geometric Application and Invariance",
+      "importance": 10,
+      "timestamp": 2462.16
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2579.jpg",
+      "reason": "Comparison of Newton's and Leibniz's notations.",
+      "section": "Derivative Notations",
+      "importance": 10,
+      "timestamp": 2579.61
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2355.jpg",
+      "reason": "The equation of the tangent line to the curve.",
+      "section": "Variable Management and Complexity",
+      "importance": 9,
+      "timestamp": 2355.39
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2435.jpg",
+      "reason": "The derivative of the function 1/x.",
+      "section": "Geometric Application and Invariance",
+      "importance": 9,
+      "timestamp": 2435.47
+    }
+  ]
+}

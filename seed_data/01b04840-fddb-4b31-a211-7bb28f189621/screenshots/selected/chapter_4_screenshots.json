@@ -1,0 +1,33 @@
+{
+  "chapter_id": 4,
+  "screenshots": [
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1305.jpg",
+      "reason": "The final derivative result is written on the board.",
+      "section": "Taking the Limit and Plausibility Check",
+      "importance": 10,
+      "timestamp": 1305.8
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1140.jpg",
+      "reason": "The difference quotient formula for 1/x is written on the board.",
+      "section": "Setting up the Difference Quotient",
+      "importance": 9,
+      "timestamp": 1140.31
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1476.jpg",
+      "reason": "The general limit process shown on the board.",
+      "section": "Taking the Limit and Plausibility Check",
+      "importance": 8,
+      "timestamp": 1476.64
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1465.jpg",
+      "reason": "The lecturer demonstrates the limit using x0 = 3.",
+      "section": "Taking the Limit and Plausibility Check",
+      "importance": 7,
+      "timestamp": 1465.96
+    }
+  ]
+}

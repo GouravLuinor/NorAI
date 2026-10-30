@@ -1,0 +1,26 @@
+{
+  "chapter_id": 1,
+  "screenshots": [
+    {
+      "path": "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_31.jpg",
+      "reason": "Slide introducing teaching fellow Usman Ali.",
+      "section": "Introduction of Teaching Fellows",
+      "importance": 8,
+      "timestamp": 31.03
+    },
+    {
+      "path": "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_91.jpg",
+      "reason": "Slide introducing teaching fellow Santosh Anagol.",
+      "section": "Introduction of Teaching Fellows",
+      "importance": 8,
+      "timestamp": 91.09
+    },
+    {
+      "path": "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_151.jpg",
+      "reason": "Slide introducing teaching fellow Christian Awuku-Budu.",
+      "section": "Introduction of Teaching Fellows",
+      "importance": 8,
+      "timestamp": 151.15
+    }
+  ]
+}

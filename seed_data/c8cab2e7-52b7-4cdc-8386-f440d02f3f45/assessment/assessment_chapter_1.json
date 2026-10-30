@@ -1,0 +1,78 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Course Overview and Logistics",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 1,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Grading policy"
+            ],
+            "question": "What is the weight of the final exam in the course grading policy?",
+            "options": [
+                "20%",
+                "30%",
+                "40%",
+                "50%"
+            ],
+            "answer": "50%",
+            "explanation": "The lecturer explicitly states the grading is 20% homework, 30% midterm, and 50% final.",
+            "flashcard_front": "What is the final exam's weight in the course grade?",
+            "flashcard_back": "The final exam is worth 50% of the total course grade.",
+            "flashcard_explanation": "The grading breakdown is 20% homework, 30% midterm, and 50% final."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 1,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Amnesty plan"
+            ],
+            "question": "The amnesty plan allows the final grade to be based solely on the final exam if that score is higher than the weighted average of all course work.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The lecturer explains that he compares the final exam score to the weighted average and takes the higher of the two.",
+            "flashcard_front": "What is the purpose of the amnesty plan?",
+            "flashcard_back": "It allows the final grade to be based on the higher of the weighted average or final exam.",
+            "flashcard_explanation": "This policy provides a safety net for students who improve throughout the semester."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 1,
+            "type": "Short Answer",
+            "difficulty": "Easy",
+            "concepts": [
+                "Course organization"
+            ],
+            "question": "When is the homework due?",
+            "options": [],
+            "answer": "Before class the following Wednesday.",
+            "explanation": "The lecturer states homework is given on Wednesday and is due before class the following Wednesday.",
+            "flashcard_front": "When is the weekly homework due?",
+            "flashcard_back": "Homework is due before class on the following Wednesday.",
+            "flashcard_explanation": "Assignments are given on Wednesdays and due exactly one week later before class starts."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 1,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Course goals"
+            ],
+            "question": "Why does the lecturer include topics like quantum mechanics in a course that may be taken by non-physics majors?",
+            "options": [],
+            "answer": "He believes these are the most interesting and biggest revolutions in physics that everyone should learn about.",
+            "explanation": "The lecturer explains that these topics are what got him into physics and are essential intellectual revolutions.",
+            "flashcard_front": "Why are advanced topics like quantum mechanics included?",
+            "flashcard_back": "They are the biggest, most interesting physics revolutions that everyone should learn.",
+            "flashcard_explanation": "The lecturer wants to share the fascination that initially drew him into the field."
+        }
+    ]
+}

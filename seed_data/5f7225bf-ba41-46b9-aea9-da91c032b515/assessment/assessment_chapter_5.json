@@ -1,0 +1,78 @@
+{
+    "chapter_id": 5,
+    "chapter_title": "Yale's Founders and the Reinterpretation of History",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 5,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Yale's founders"
+            ],
+            "question": "How many of Yale's ten clerical founders were slaveholders?",
+            "options": [
+                "Three",
+                "Five",
+                "Seven",
+                "All ten"
+            ],
+            "answer": "Seven",
+            "explanation": "The lecturer explicitly states that seven of the ten clerical founders of Yale were slaveholders.",
+            "flashcard_front": "How many of Yale's ten clerical founders were slaveholders?",
+            "flashcard_back": "Seven of the ten clerical founders were slaveholders.",
+            "flashcard_explanation": "The lecturer notes that seven of the ten founders held slaves, including the namesake of Woodbridge Hall."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 5,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Reinterpretation of historical landmarks"
+            ],
+            "question": "The lecturer believes that the names of the founders should be removed from Woodbridge Hall.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer states that the names should stay on the building, but the history needs to be reinterpreted.",
+            "flashcard_front": "Does the lecturer support removing the founders' names from Woodbridge Hall?",
+            "flashcard_back": "No, the lecturer believes they should stay but be reinterpreted.",
+            "flashcard_explanation": "The lecturer argues for reinterpretation rather than removal of historical landmarks."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 5,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Reinterpretation of historical landmarks"
+            ],
+            "question": "What does the lecturer propose doing with Woodbridge Hall to address its history?",
+            "options": [],
+            "answer": "The lecturer proposes turning it into a Yale Museum that features an exhibition on Yale and slavery.",
+            "explanation": "The lecturer suggests making it a museum to explain the building and the names associated with it.",
+            "flashcard_front": "What is the lecturer's proposal for Woodbridge Hall?",
+            "flashcard_back": "Convert it into a Yale Museum featuring an exhibition on Yale and slavery.",
+            "flashcard_explanation": "The museum would serve as a starting point for tours to explain the building's history."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 5,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Slavery and institutional memory"
+            ],
+            "question": "How did Yale historically handle its connection to slavery according to the lecturer?",
+            "options": [],
+            "answer": "Yale historically ignored or suppressed its history, processing it through a 19th-century faith in moderation.",
+            "explanation": "The lecturer explains that Yale did not always suppress its history but often tried to ignore it or process it through a lens of moderation.",
+            "flashcard_front": "How did Yale historically manage its connection to slavery?",
+            "flashcard_back": "It ignored or suppressed the history, processing it through a lens of moderate caution.",
+            "flashcard_explanation": "The institution historically walked around its history rather than confronting it directly."
+        }
+    ]
+}

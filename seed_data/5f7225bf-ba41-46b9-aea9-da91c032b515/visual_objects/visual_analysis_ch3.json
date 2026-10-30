@@ -1,0 +1,33 @@
+{
+  "chapter_id": 3,
+  "frames": {
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_544.jpg": {
+      "ocr_text": "64%",
+      "importance_score": 2,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "A slide showing a percentage value."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_553.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer standing at the podium."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_616.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": true,
+      "description": "The lecturer speaking about James Baldwin's definition of history."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_677.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": true,
+      "description": "The lecturer discussing historical parallels."
+    }
+  }
+}

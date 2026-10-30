@@ -1,0 +1,26 @@
+{
+    "chapter_id": 9,
+    "chapter_title": "Solving Physics Problems",
+    "flashcards": [
+        {
+            "front": "What were the initial height and velocity in the example problem?",
+            "back": "15 meters and 10 meters per second.",
+            "explanation": "These values were given as the starting conditions for the object thrown from the building."
+        },
+        {
+            "front": "Is the position formula valid after the object hits the ground?",
+            "back": "False.",
+            "explanation": "The constant acceleration assumption is violated upon impact with the ground."
+        },
+        {
+            "front": "What is the velocity at the maximum height?",
+            "back": "Zero.",
+            "explanation": "At the peak, the object stops moving upward before it begins to move downward."
+        },
+        {
+            "front": "What does a negative time solution in this context represent?",
+            "back": "A time before the experiment began.",
+            "explanation": "The mathematical model is a parabola that extends into negative time, representing the object's path before $t=0$."
+        }
+    ]
+}

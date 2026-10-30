@@ -1,0 +1,26 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Defining the Tangent Line",
+    "flashcards": [
+        {
+            "front": "What is the equation for a line through (x0, y0) with slope m?",
+            "back": "y - y0 = m(x - x0)",
+            "explanation": "This is the standard point-slope form of a linear equation used to define the tangent line."
+        },
+        {
+            "front": "What is the slope of the tangent line to y = f(x) at x0?",
+            "back": "The derivative of f at x0, denoted f'(x0).",
+            "explanation": "The derivative represents the instantaneous slope of the function at a specific point."
+        },
+        {
+            "front": "How is the tangent line defined using secant lines?",
+            "back": "It is the limit of secant lines PQ as Q approaches P.",
+            "explanation": "This limit process allows us to calculate the slope of the tangent line analytically."
+        },
+        {
+            "front": "What is the y-coordinate of point P on the curve y = f(x) at x0?",
+            "back": "f(x0)",
+            "explanation": "The y-coordinate is simply the function evaluated at the given x-value."
+        }
+    ]
+}

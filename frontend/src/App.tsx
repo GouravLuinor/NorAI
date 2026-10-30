@@ -28,6 +28,7 @@ const CoursesPage = lazy(() => import('./pages/CoursesPage').then(m => ({ defaul
 const ShareRedirect = lazy(() => import('./pages/ShareRedirect').then(m => ({ default: m.ShareRedirect })))
 const Workspace = lazy(() => import('./components/layout/Workspace').then(m => ({ default: m.Workspace })))
 const PrintPage = lazy(() => import('./components/PrintPage').then(m => ({ default: m.PrintPage })))
+const DemoLecturePage = lazy(() => import('./pages/DemoLecturePage').then(m => ({ default: m.DemoLecturePage })))
 
 function RouteFallback() {
   return (
@@ -72,9 +73,17 @@ function PasswordRecoveryRedirect() {
 function WorkspaceRouteWrapper() {
   const { lectureId } = useParams<{ lectureId?: string }>()
   const isDemo = lectureId && DEMO_LECTURE_IDS.includes(lectureId)
+  let isShared = false
+  if (lectureId && typeof window !== 'undefined') {
+    try {
+      isShared = sessionStorage.getItem(`norai_shared_${lectureId}`) === 'true'
+    } catch {
+      // ignore storage restrictions
+    }
+  }
 
-  // Demo lectures can be viewed unauthenticated (AI Tutor in AIPanel remains locked)
-  if (isDemo) {
+  // Demo lectures and shared lectures can be viewed unauthenticated
+  if (isDemo || isShared) {
     return <Workspace />
   }
 
@@ -173,6 +182,7 @@ export default function App() {
                 <Route path="/workspace/:lectureId" element={<WorkspaceRouteWrapper />} />
 
                 <Route path="/share/:slug" element={<ShareRedirect />} />
+                <Route path="/demo/:slug" element={<DemoLecturePage />} />
                 <Route path="/print" element={<PrintPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

@@ -1,0 +1,83 @@
+{
+    "chapter_id": 5,
+    "chapter_title": "Guest Speakers and Course Outline",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 5,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Yale endowment"
+            ],
+            "question": "What does the lecturer define as the Yale endowment?",
+            "options": [
+                "The total value of all university property including buildings and art.",
+                "The financial assets owned by Yale University.",
+                "The total annual tuition revenue collected from students.",
+                "The money donated by alumni specifically for new construction."
+            ],
+            "answer": "The financial assets owned by Yale University.",
+            "explanation": "The lecturer explicitly defines the endowment as the financial assets that Yale University owns, excluding art and physical buildings.",
+            "flashcard_front": "What is the Yale endowment?",
+            "flashcard_back": "The financial assets owned by Yale University.",
+            "flashcard_explanation": "The lecturer excludes physical assets like buildings and art collections from this definition."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 5,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Risk management"
+            ],
+            "question": "According to the lecturer, pooling risks makes the risks disappear entirely.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer states that when you spread risks, they do not disappear; they are still there, but their impact on any one person is reduced.",
+            "flashcard_front": "Does pooling risk make the risk disappear?",
+            "flashcard_back": "No, it spreads the risk out so the impact on any one person is reduced.",
+            "flashcard_explanation": "Risk pooling redistributes the burden of risk rather than eliminating the risk itself."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 5,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Andrew Redleaf"
+            ],
+            "question": "For what specific market event is Andrew Redleaf noted for predicting?",
+            "options": [],
+            "answer": "The subprime crisis.",
+            "explanation": "The lecturer mentions that Redleaf was one of the first to clearly delineate the subprime crisis and profit from it.",
+            "flashcard_front": "What market event did Andrew Redleaf foresee?",
+            "flashcard_back": "The subprime crisis.",
+            "flashcard_explanation": "Redleaf identified the subprime crisis early, which allowed him to profit from his unique perspective."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 5,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "David Swenson"
+            ],
+            "question": "What was the approximate annual return on the Yale portfolio in the year prior to the lecturer's talk?",
+            "options": [
+                "17%",
+                "22%",
+                "28%",
+                "10%"
+            ],
+            "answer": "22%",
+            "explanation": "The lecturer states the return was 28% last year and 22% the year before that.",
+            "flashcard_front": "What was Yale's endowment return two years ago?",
+            "flashcard_back": "22%.",
+            "flashcard_explanation": "The lecturer noted 28% for the most recent year and 22% for the year prior."
+        }
+    ]
+}

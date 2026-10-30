@@ -129,7 +129,7 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       - **Pre-render:** `frontend/scripts/prerender.mjs` runs after `vite build` and writes `dist/_prerender/{home,pricing,signup,login}.html`: per-route head + FAQ JSON-LD, plus React-rendered markup for `/` and `/pricing`. `backend/main.py` `_spa_page` serves them. First paint is ~200 ms, with no JS needed.
       - **Processing page:** progress in the tab title; hidden tabs poll every 20 s instead of stopping; an opt-in "Notify me" browser notification.
       - **Smaller fixes:** lectures open on Study notes; the auth modal only loads when opened.
-    - **B. One design: "The Stacks" (built 2026-10-29; finish review + DESIGN.md still to do):** university library stack signage. Direction contract: `.impeccable/surfaces/frontend-src-components-layout-workspace-tsx.md`; decision sketches: `.impeccable/mocks/decision/` (`assigned.html` is the chosen one).
+    - **B. One design: "The Stacks" (done 2026-10-30):** university library stack signage. Direction contract: `.impeccable/surfaces/frontend-src-components-layout-workspace-tsx.md`; decision sketches: `.impeccable/mocks/decision/` (`assigned.html` is the chosen one); `DESIGN.md` + `.impeccable/design.json` document the finished system.
       - **Tokens (`frontend/src/index.css`):** ground `#FBFBF8`, ink `#16181A`, library green `#1F4D3F` (primary, `--color-np`), brass `#C8932E` (current item, `--color-brass*`), rail tokens `--color-rail*`, zone colours `--color-z-{notes,revision,quiz,cards,map}`. Dark theme "library after hours" (`#131614` ground); with no saved choice the theme follows the OS. Selection, caret, focus and scrollbars are themed. Hard offset shadows, grid paper, noise and fold marks are gone. Type floor: nothing below 12px (`--text-3xs/2xs/10` now resolve to 12px).
       - **Fonts:** Atkinson Hyperlegible (UI), Atkinson Hyperlegible Mono (shelf marks, figures), Literata (headings, notes). Inter/JetBrains/Newsreader/Space Grotesk removed.
       - **Components:** `components/ui/ShelfMark.tsx` (the signature: stacked call-number label; as a button it seeks the video), `components/brand/Wordmark.tsx` (mark + wordmark). `.rail` class re-maps tokens so anything inside reads as green signage.
@@ -137,10 +137,46 @@ All artifacts land under `outputs/<lecture-id>/` (notes, revision, assessment, s
       - **Pages restyled:** Landing (stack-sign hero with the demo's real chapters, zone-coded outputs, demo catalogue with call codes, green closing band), Auth page + modal, Upload ("Add a lecture" + "Your library"), Processing (no motion rail), Share, free Pricing, Reset password. A codemod turned 56 uppercase mono kicker labels into sentence case. Demo-lecture summaries were rewritten to match their real chapters.
       - **Brand assets:** new favicon, `icon-192/512`, maskable icon, `apple-touch-icon`, `site.webmanifest` (backend serves it as `application/manifest+json`), new `og.jpg`. The landing captures (`public/landing/*.webp`) are recaptured from the new UI; provenance is in `.impeccable/asset-provenance.md`.
       - **Checks:** `tsc`, oxlint clean, vitest 86/86, `npm run build` + prerender OK. `impeccable detect` on the changed source: 0 findings. Review captures in `.impeccable/review/{desktop,mobile}.png` (no horizontal scroll at 390px).
-      - **Resume here for B:** (1) spawn the `impeccable-finish-reviewer` subagent on the review captures and fix what it finds (one round); (2) spawn `impeccable-documenter` to write `DESIGN.md` + `.impeccable/design.json`; (3) a quick look at the views not yet eyeballed: Revision, Guide, Mind map, Flashcards, Courses, Usage, dark landing. Known gaps: source rows sometimes seek to the chapter start instead of the section (chunk-start resolution in `useVideoStore`); on phones the tutor tab shows sources without timestamps (the player lives in the doc tab).
-    - **C.** Study home on `/app`: continue where you left off, flashcards due across lectures, quiz retakes.
-    - **D.** Guest tutor on demo lectures: 5 questions/day per visitor, plus cached answers to suggested questions and a global daily guest cap to protect the Gemini free tier. Also paste-first onboarding and per-lecture share-link previews.
-    - **E.** Public pre-rendered demo-lecture pages and answer-first content pages for SEO, AEO and GEO.
+      - **Finish review (2026-10-30):** fixed quiz numbering (`AssessmentView` passed 1-based indices into a card that adds 1), the clipped workspace toolbar at a 375px doc pane (labels, icon-only tools, two-row container-query wrap), markdown-table overflow, and the mind map's one-shot auto-fit/popover-over-root. The map now refits on resize without selecting a node, and its header stacks below 520px. Phone source rows now carry timestamps: video info loads at the Workspace level, and a source tap switches to the doc pane and opens the player at the cited second. Section seeks no longer fall back to the chapter start when the exact chunk is unknown. Known gap: legacy (pre-lean) lectures still lack per-section start times, so a chat source for one falls back to the chapter start.
+    - **C. Study home on `/app` (done 2026-10-30):** transformed `/app` into an active retention cockpit ("Reading room").
+      - **Backend (`backend/routers/study.py`):** added `GET /study/overview` endpoint aggregating:
+        - `recent_lecture`: the user's most recently accessed lecture with completed chapter count, last study time, and resume chapter ID.
+        - `flashcards_due`: flashcards with SM-2 review dates <= now across all user lectures, sorted by urgency, deduplicated, and enriched with lecture title and ShelfMark.
+        - `quiz_retakes`: lowest-scoring quiz attempts (<70%) with missed questions count, lecture title, and chapter badge.
+        - `study_stats`: aggregated study count, total due cards, and pending retakes.
+      - **Frontend (`frontend/src/stores/useStudyStore.ts`, `UploadPage.tsx`):**
+        - Zustand store `useStudyStore` with optimistic caching, automated background fetch on `/app` mount, and unit test suite (`useStudyStore.test.ts`).
+        - Hero "Continue Where You Left Off" card with call-number ShelfMark, relative timestamp, and direct jump to the exact resume chapter.
+        - "Cards Due Today" queue with SM-2 review counts, lecture source badges, and single-click workspace navigation into the Cards mode for that chapter.
+        - "Quiz Retakes" queue showing scores, missed question counts, and quick-retry triggers.
+      - **Verification:** `backend/test_study_home.py` unit suite (passing), `useStudyStore.test.ts` (2/2 passing).
+    - **D. Guest tutor on demo lectures (done 2026-10-30):**
+      - **Pre-cached suggested Q&A (`backend/demo_suggested_qa.py`):** canonical questions with pre-computed answers and verified transcript citations for all 5 MIT and Yale demo lectures.
+      - **Instant Zero-Cost Answers (`backend/routers/tutor.py`):** `GET /lectures/{id}/suggested-questions` serves cached questions. Both `POST /chat` and streaming `POST /chat/stream` check for normalized suggested question hits on demo lectures, returning pre-cached responses instantly with 0 tokens consumed and zero guest quota deduction.
+      - **Visitor & Global Free-Tier Protection (`backend/access.py`):**
+        - Device-scoped guest ID via `X-Guest-Id` (stored in browser `localStorage`).
+        - `DailyCounter` tracks 5 questions/day per visitor on demo lectures, plus a 100 questions/day global guest ceiling across all visitors to strictly protect the Gemini API free tier.
+        - Strict 401 unauthenticated response on non-demo lectures (preserving anonymous share link contract).
+      - **Frontend Integration (`frontend/src/components/chat/ChatArea.tsx`, `AIPanel.tsx`):**
+        - Empty chat state on demo lectures displays 3 clickable suggested question chips and a live "Guest visitor: N free questions remaining today" quota counter.
+        - Tutor input unlocked for guests on demo lectures with proactive limit handling (clear modal prompt when 5 questions are reached).
+      - **Paste-First Onboarding & Rich Share Previews:**
+        - `frontend/src/pages/LandingPage.tsx`: Paste-first YouTube input calling `/estimate` with dynamic study pack preview card (ShelfMark, duration, chapters count, study materials checklist) and "Generate Study Pack" CTA.
+        - `frontend/src/pages/ShareRedirect.tsx`: Replaced immediate redirect with an archival preview card showing lecture metadata, chapters, study aids checklist, and an explicit "Open in Workspace" button.
+      - **Verification:** `backend/test_guest_tutor.py` (28/28 passing), `backend/test_courses_shares.py` (38/38 passing), `backend/test_api_contract_offline.py` (17/17 passing).
+    - **E. Public pre-rendered demo-lecture pages and answer-first content for SEO/AEO/GEO (done 2026-10-30):**
+      - **Answer-First Curated Content (`frontend/src/content/demoPages.ts`):** In-depth educational content, core conceptual takeaways, chapter outlines, ShelfMarks, and lecture-grounded FAQs for all 5 demo lectures:
+        1. MIT 6.006: Introduction to Algorithms & Computation (`/demo/algorithms-and-computation`)
+        2. MIT 18.01SC: Single Variable Calculus & Differentiation (`/demo/calculus-differentiation`)
+        3. Yale PHYS 200: Fundamentals of Physics I — Newtonian Mechanics (`/demo/newtonian-mechanics`)
+        4. Yale ECON 252: Financial Markets & Portfolio Theory (`/demo/financial-markets`)
+        5. Yale HIST 119: The Civil War & Reconstruction Era (`/demo/civil-war-reconstruction`)
+      - **Demo Page Component (`frontend/src/pages/DemoLecturePage.tsx`):** Answer-first study guide layout with Schema.org `LearningResource` and `FAQPage` JSON-LD schemas, breadcrumb navigation, interactive chapter breakdown with video seek markers, sample grounded Q&A previews, and "Open Full Workspace" / "Ask AI Tutor" CTAs.
+      - **Static Pre-Rendering & Multi-Engine Discovery:**
+        - `frontend/vite-plugin-seo.ts`: Added demo route FAQs to build-time `FAQPage` JSON-LD injection, indexed all 5 routes in `sitemap.xml`, and linked all 5 guides in `llms.txt` for AI answer engines (Perplexity, ChatGPT, Gemini).
+        - `frontend/src/prerender.tsx`: SSR markup generation for all 5 demo routes (`dist/_prerender/demo*.html`, 21–23 KB full HTML each).
+        - `backend/main.py`: Configured FastAPI static handler to route `/demo/*` to their corresponding prerendered HTML templates with sub-20ms TTFB.
+      - **Verification:** `npm run build` generates 5 prerendered HTML guides, clean TypeScript compile (`tsc -b`), clean oxlint (0 errors, 0 warnings), vitest (88/88 passing).
   - **▶ RESUME HERE (handoff, 2026-10-29; all work on local `master`, not pushed).**
     - **Where things stand:**
       - **Lean is the only pipeline:** built, A/B'd, judged by 3.8-flash, and smoke-tested through the UI; the legacy chain was deleted in the cleanup (see "Cleanup" below).

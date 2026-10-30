@@ -1,0 +1,83 @@
+{
+    "chapter_id": 10,
+    "chapter_title": "Conclusion and Course Logistics",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 10,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Teaching assistants"
+            ],
+            "question": "Which teaching assistant specializes in Civil War and Reconstruction history?",
+            "options": [
+                "Wolf Soler",
+                "Emily Ankowitz",
+                "Ella Heim Starkman Heim",
+                "Jackie"
+            ],
+            "answer": "Ella Heim Starkman Heim",
+            "explanation": "The lecturer explicitly identified Ella as the Civil War and Reconstruction historian.",
+            "flashcard_front": "Who is the Civil War and Reconstruction historian among the TAs?",
+            "flashcard_back": "Ella Heim Starkman Heim.",
+            "flashcard_explanation": "The lecturer identified Ella as the specialist in Civil War and Reconstruction history."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 10,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Course administration"
+            ],
+            "question": "To whom should students direct their questions regarding the course?",
+            "options": [
+                "The lecturer",
+                "Michael Hepp",
+                "Wolf Soler",
+                "The history department office"
+            ],
+            "answer": "Michael Hepp",
+            "explanation": "The lecturer stated that students are supposed to send their questions through Michael Hepp.",
+            "flashcard_front": "Who is the primary contact for student questions?",
+            "flashcard_back": "Michael Hepp.",
+            "flashcard_explanation": "The lecturer instructed students to send all questions through Michael Hepp."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 10,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Course administration"
+            ],
+            "question": "The lecturer confirmed that the syllabus has been distributed to the students.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The lecturer asked if the syllabus had been sent, and the class confirmed it with a 'Yes'.",
+            "flashcard_front": "Has the syllabus been distributed to all students?",
+            "flashcard_back": "True.",
+            "flashcard_explanation": "The lecturer confirmed with the class that Michael Hepp had sent the syllabus."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 10,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Teaching assistants"
+            ],
+            "question": "What is the primary historical specialization of Wolf Soler and Emily Ankowitz?",
+            "options": [],
+            "answer": "Early American history",
+            "explanation": "The lecturer identified them as early Americanists.",
+            "flashcard_front": "What is the specialization of Wolf Soler and Emily Ankowitz?",
+            "flashcard_back": "Early American history.",
+            "flashcard_explanation": "The lecturer described both as early Americanists."
+        }
+    ]
+}

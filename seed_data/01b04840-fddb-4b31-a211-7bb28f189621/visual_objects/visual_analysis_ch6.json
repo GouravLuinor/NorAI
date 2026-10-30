@@ -1,0 +1,89 @@
+{
+  "chapter_id": 6,
+  "frames": {
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1865.jpg": {
+      "ocr_text": "y=1/x",
+      "importance_score": 8,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The graph of y=1/x with a tangent line drawn at (x0, y0)."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1922.jpg": {
+      "ocr_text": "Find x-intercept (y=0)",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer indicates the X-intercept on the diagram."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1949.jpg": {
+      "ocr_text": "y-y0 = -1/x0^2(x-x0)",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The equation of the tangent line is written on the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1981.jpg": {
+      "ocr_text": "0 - 1/x0 = -1/x0^2(x-x0)",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The substitution of y=0 into the tangent line equation."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2045.jpg": {
+      "ocr_text": "2x0",
+      "importance_score": 8,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The X-intercept is labeled as 2x0 on the graph."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2083.jpg": {
+      "ocr_text": "Shortcut to y-intercept use symmetry. y=2y0",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The shortcut for the Y-intercept is written on the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2120.jpg": {
+      "ocr_text": "(x,y) -> (y,x)",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The symmetry transformation is shown."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2141.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "The lecturer is erasing the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2179.jpg": {
+      "ocr_text": "y=1/x <=> xy=1 <=> x=1/y",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The algebraic explanation for the symmetry of the curve."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2205.jpg": {
+      "ocr_text": "Can also get y-intercept by plugging x=0 into (*)",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Alternative method for finding the Y-intercept."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2221.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "The lecturer continues writing on the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_2243.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": true,
+      "description": "The lecturer explains the difficulty of multi-variable thinking."
+    }
+  }
+}

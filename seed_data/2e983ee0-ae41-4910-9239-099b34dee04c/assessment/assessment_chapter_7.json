@@ -1,0 +1,83 @@
+{
+    "chapter_id": 7,
+    "chapter_title": "Efficient Markets, Behavioral Finance, and Regulation",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 7,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Efficient Markets Hypothesis"
+            ],
+            "question": "According to the lecturer, what is a primary reason why markets are not perfectly efficient?",
+            "options": [
+                "Government regulation is too weak.",
+                "Human psychology drives markets.",
+                "Debt instruments are too complex.",
+                "Interest rates are too volatile."
+            ],
+            "answer": "Human psychology drives markets.",
+            "explanation": "The lecturer states that human psychology drives markets a great deal and that markets are not efficient in a global sense.",
+            "flashcard_front": "Why are markets not perfectly efficient?",
+            "flashcard_back": "Human psychology drives markets, which interacts with institutions in ways not captured by efficient market theory.",
+            "flashcard_explanation": "The lecturer emphasizes that human nature is a key factor that efficient market theory ignores."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 7,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Self-regulatory organizations"
+            ],
+            "question": "FINRA is an example of a government organization that regulates financial markets.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer clarifies that FINRA is not a government organization, but a self-regulatory organization (SRO).",
+            "flashcard_front": "Is FINRA a government organization?",
+            "flashcard_back": "No, it is a self-regulatory organization (SRO) created by the financial industry.",
+            "flashcard_explanation": "FINRA is a membership organization that imposes rules on its members, not a government entity."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 7,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Debt Markets"
+            ],
+            "question": "Why does the lecturer describe the debt market as a 'market for time'?",
+            "options": [],
+            "answer": "Because debt instruments are promises to pay over different durations, and interest rates are fundamentally measured in units of time.",
+            "explanation": "The lecturer notes that debt instruments range from overnight rates to infinite maturities, and interest rates represent the cost of time.",
+            "flashcard_front": "",
+            "flashcard_back": "",
+            "flashcard_explanation": ""
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 7,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Debt Markets"
+            ],
+            "question": "What is the shortest-term debt instrument in the United States mentioned by the lecturer?",
+            "options": [
+                "30-year government bond",
+                "British consols",
+                "Federal funds rate",
+                "100-year bond"
+            ],
+            "answer": "Federal funds rate",
+            "explanation": "The lecturer identifies the federal funds rate as an overnight rate with a one-day maturity.",
+            "flashcard_front": "What is the shortest-term debt instrument in the US?",
+            "flashcard_back": "The federal funds rate, which is an overnight rate with a one-day maturity.",
+            "flashcard_explanation": "The lecturer explicitly defines the federal funds rate as the shortest-term debt instrument."
+        }
+    ]
+}

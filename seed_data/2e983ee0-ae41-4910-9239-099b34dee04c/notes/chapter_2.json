@@ -1,0 +1,36 @@
+{
+    "chapter_id": 2,
+    "title": "Course Materials and Resources",
+    "sections": [
+        {
+            "section_type": "prose",
+            "title": "Foundations of Financial Markets and Institutions",
+            "content_markdown": "The primary textbook for this course is *Foundations of Financial Markets and Institutions* by Fabozzi et al. The lecturer describes this book as very detailed and comprehensive, noting that it covers a vast amount of information. While some students have found it challenging, the lecturer personally found it to be an excellent resource that filled gaps in his own knowledge. Originally, the lecturer required students to master the entire 650-page text; however, he has since adjusted this expectation after hearing feedback from students. Now, the requirement is to focus on the 'key terms' and 'key points' sections provided within the book. These specific areas are considered fair game for examination purposes. The book, co-authored by the late Nobel Prize winner Franco Modigliani, remains a solid and authoritative text on financial markets. Students are expected to use the current edition, though the lecturer may provide specific chapters from newer, unreleased editions on library reserve if necessary.",
+            "start_sec": 703.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Required Reading and Library Resources",
+            "content_markdown": "The course utilizes a specific reading list that includes both online materials and library reserve items. The lecturer emphasizes that any reading material provided as a clickable link is mandatory. Conversely, books placed on reserve in the library are considered optional background reading. The lecturer explains that he does not expect students to visit the library frequently, as he recognizes the modern preference for online resources. The core philosophy is to ensure students have access to the necessary information without imposing undue logistical burdens. By distinguishing between mandatory clickable content and optional library resources, the lecturer aims to streamline the study process while still providing depth for those interested in further exploration. This approach reflects an understanding of student habits and the evolving nature of academic research in the digital age.",
+            "start_sec": 873.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Additional Textbooks: Siegel and Shiller",
+            "content_markdown": "In addition to the Fabozzi text, the course assigns *Stocks for the Long Run* by Jeremy Siegel and *Irrational Exuberance* by the lecturer himself. Siegel's book, now in its fourth edition, is described as highly readable and less intense than the Fabozzi text. It focuses on the long-run performance of the stock market and serves as a general treatise on financial markets. The lecturer shares a personal anecdote about his long-standing friendship with Siegel, which began during their graduate studies at MIT. The final required text, *Irrational Exuberance*, addresses the stock market and housing market booms and busts. The lecturer assigns the second edition, published in 2005, which provides context for the housing market peak. These books are available at Labyrinth Books, an independent bookstore in New Haven, which the lecturer supports to help maintain independent operations in the book industry.",
+            "start_sec": 961.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Teaching Assistant Sections",
+            "content_markdown": "The course structure includes mandatory teaching assistant (TA) sections held during the second half of the week, specifically on Wednesdays, Thursdays, and Fridays. Students are encouraged to review their schedules and select a section that fits their availability before the next lecture. These sections are integral to the course experience, providing a forum for reviewing problem sets and clarifying complex topics. The lecturer expresses high confidence in the teaching assistants and emphasizes the importance of attending these sessions regularly. There are six problem sets throughout the term, which are generally due on Mondays. The TA sections serve as the primary venue for discussing these assignments a few days after submission. Building a relationship with the TAs is highlighted as a key strategy for student success in this large-enrollment course.",
+            "start_sec": 1221.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Grading Policy",
+            "content_markdown": "The grading for the course is based on a structured assessment plan consisting of problem sets, two in-class midterms, and a final exam. The weightings for the final grade are as follows: 10% for the six problem sets, 20% for the first midterm, 30% for the second midterm, and 40% for the final exam. The lecturer notes that while these percentages provide a clear framework, the teaching team will also apply judgment when evaluating student performance. This balance between a rigid grading scale and qualitative assessment is intended to ensure a fair and satisfying experience for all students. The focus remains on demonstrating an understanding of the key terms and concepts covered in the lectures and the assigned readings, rather than rote memorization of every detail in the textbooks.",
+            "start_sec": 1280.0
+        }
+    ]
+}

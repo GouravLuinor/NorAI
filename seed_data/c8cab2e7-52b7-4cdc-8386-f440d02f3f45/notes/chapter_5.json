@@ -1,0 +1,24 @@
+{
+    "chapter_id": 5,
+    "title": "Kinematics and One-Dimensional Motion",
+    "sections": [
+        {
+            "section_type": "definition",
+            "title": "Kinematics vs. Dynamics",
+            "content_markdown": "In the study of Newtonian Mechanics, the field is divided into two primary areas: kinematics and dynamics. Kinematics is defined as the complete description of the present state of a system. It provides a list of necessary information to characterize a system at a given moment, such as an object's position and speed, without concern for the underlying causes of its motion. For example, if one throws a piece of chalk, kinematics describes its current location and velocity. Conversely, dynamics addresses the 'why' behind motion—explaining the forces, such as gravity, that cause an object to change its state of motion. While kinematics describes things as they are, dynamics explains how and why they change.",
+            "start_sec": 1600.0
+        },
+        {
+            "section_type": "prose",
+            "title": "The Mathematical Point Particle",
+            "content_markdown": "To analyze motion, we start with the simplest possible model: a mathematical point particle. Unlike a real-world object like a potato, which has spatial extent and orientation (requiring one to track which way its 'nose' is pointing), a mathematical point has no size or internal structure. Rotating such a point does not change its appearance. By treating an object as a point, we avoid the complexities of rigid body rotation. We further simplify the system by restricting the particle's movement to a single dimension along the x-axis. This can be visualized as a bead sliding back and forth on a wire. This one-dimensional model is the most fundamental representation of motion, as it is impossible to reduce the spatial dimensions further.",
+            "start_sec": 1649.0
+        },
+        {
+            "section_type": "list",
+            "title": "Measuring Position and Time",
+            "content_markdown": "To define the state of our point particle at any given instant, we must establish a coordinate system. This involves: 1. Picking an origin point, defined as zero. 2. Placing markers along the x-axis to measure distance. 3. Using standard units: meters for length and seconds for time. For instance, an object might be located at $x = 5$ meters. It is essential to keep track of these units throughout any calculation; if an answer is provided as a number without units, its physical meaning is lost. While some problems may present data in various units like miles per hour or kilometers per year, one must be able to perform the necessary transformations to maintain consistency. Ultimately, we represent the motion of this particle by plotting its position against time on a graph.",
+            "start_sec": 1766.0
+        }
+    ]
+}

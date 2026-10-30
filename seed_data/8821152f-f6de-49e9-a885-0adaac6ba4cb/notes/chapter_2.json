@@ -1,0 +1,24 @@
+{
+    "chapter_id": 2,
+    "title": "Defining Computational Problems",
+    "sections": [
+        {
+            "section_type": "definition",
+            "title": "The Formal Definition of a Computational Problem",
+            "content_markdown": "A computational problem is formally defined as a binary relation between a set of inputs and a set of outputs. We can visualize this as a bipartite graph where the left side represents all possible inputs and the right side represents all possible outputs. Edges in this graph connect specific inputs to their corresponding correct outputs. It is important to note that this mapping is not necessarily a function; a single input may map to multiple valid outputs. For example, if the problem is to find the index of the value 5 in an array, and the value 5 appears multiple times, any of those indices would be considered a correct output. This structure allows us to specify exactly which outputs are acceptable for any given input, providing a rigorous mathematical foundation for what it means to solve a problem computationally.",
+            "start_sec": 184.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Specifying Problems via Predicates",
+            "content_markdown": "While we can define a problem by explicitly listing every input-output pair, this approach is impractical for most real-world scenarios because it would take an enormous amount of time to enumerate every possibility. Instead, we typically define computational problems using predicates. A predicate allows us to verify whether a given output is correct for a specific input. For instance, if the problem is to find the index of a value 5 in an array, we do not need to list every valid index for every possible array. We simply need a way to check if the value at a provided index is indeed 5. By using predicates, we can define problems over large or infinite input spaces without needing to explicitly map every individual instance, making the definition of problems much more efficient and scalable.",
+            "start_sec": 312.0
+        },
+        {
+            "section_type": "callout",
+            "title": "Generalizing Problems: An Example",
+            "content_markdown": "To illustrate the utility of generalizing problems, consider the task of determining if any two students in a classroom share the same birthday. Rather than treating this as a fixed, small-scale task, we can generalize the problem to any group of people. The lecturer notes that if there are more than 365 people in the room, the answer must be yes, according to the pigeonhole principle. This example highlights why we move away from small, hard-coded instances toward generalized definitions. By defining the problem in terms of inputs (the set of students) and a predicate (checking for matching birthdays), we create a framework that applies regardless of the specific number of students, allowing us to reason about the problem's properties more abstractly and effectively.",
+            "start_sec": 367.0
+        }
+    ]
+}

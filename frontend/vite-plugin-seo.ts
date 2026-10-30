@@ -22,6 +22,7 @@
 import type { Plugin } from 'vite'
 import { FREE_FAQ, FREE_MINUTES, HOME_FAQ, PRODUCT_FAQ, type FaqItem } from './src/content/faq.ts'
 import { PAGE_META, type PageMeta } from './src/content/pages.ts'
+import { DEMO_PAGES } from './src/content/demoPages.ts'
 
 const NAME = 'NorAI'
 const TAGLINE = 'Turn lecture videos into notes, quizzes & an AI tutor'
@@ -31,6 +32,9 @@ const DESCRIPTION = PAGE_META.home.description
 export const ROUTE_FAQ: Record<string, FaqItem[]> = {
   '/': HOME_FAQ,
   '/pricing': FREE_FAQ,
+  ...Object.fromEntries(
+    Object.values(DEMO_PAGES).map((p) => [p.path, p.faq as FaqItem[]])
+  ),
 }
 
 const PRIVATE_PREFIXES = ['/app', '/billing', '/usage', '/courses', '/process/', '/print', '/reset-password', '/forgot-password', '/api/', '/_prerender/']
@@ -141,6 +145,11 @@ function llmsTxt(site: string) {
 - [Home](${site}/): what NorAI does, demo lectures, how it works
 - [Free plan](${site}/pricing): what the free allowance includes and how lecture-minutes work
 - [Sign up](${site}/signup): free account, ${FREE_MINUTES} lecture-minutes every 30 days
+- [MIT 6.006 Algorithms Study Guide](${site}/demo/algorithms-and-computation): complete lecture notes, quiz & AI tutor
+- [MIT 18.01 Calculus Study Guide](${site}/demo/calculus-differentiation): complete lecture notes, quiz & AI tutor
+- [Yale PHYS 200 Mechanics Study Guide](${site}/demo/newtonian-mechanics): complete lecture notes, quiz & AI tutor
+- [Yale ECON 252 Finance Study Guide](${site}/demo/financial-markets): complete lecture notes, quiz & AI tutor
+- [Yale HIST 119 Civil War Study Guide](${site}/demo/civil-war-reconstruction): complete lecture notes, quiz & AI tutor
 
 ## What you get from one lecture
 

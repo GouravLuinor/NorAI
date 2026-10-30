@@ -1,0 +1,47 @@
+{
+  "chapter_id": 7,
+  "frames": {
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1826.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer speaking at a podium."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1889.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discussing the founders' reading habits."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1952.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer gesturing while explaining the problem of factions."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2015.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer referencing Federalist number 57."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2078.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discussing Alexander Hamilton."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2141.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concluding the chapter."
+    }
+  }
+}

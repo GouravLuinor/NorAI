@@ -1,0 +1,47 @@
+{
+  "chapter_id": 6,
+  "frames": {
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1448.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer stands at a podium at the Yale University Art Gallery."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1511.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the Civil War as a hinge point in history."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1574.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains the ongoing relevance of the 14th Amendment."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1637.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer introduces the distinction between history and memory."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1700.jpg": {
+      "ocr_text": "",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses Marc Bloch and the craft of history."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1763.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concludes the discussion on historical methodology."
+    }
+  }
+}

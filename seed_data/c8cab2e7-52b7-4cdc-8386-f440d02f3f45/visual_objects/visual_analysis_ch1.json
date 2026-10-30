@@ -1,0 +1,89 @@
+{
+  "chapter_id": 1,
+  "frames": {
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_0.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "Black screen at the start of the lecture."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_20.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer standing in front of a chalkboard."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_48.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer gesturing while discussing the course topics."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_78.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer standing by the podium."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_110.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer walking behind the podium."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_148.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer discussing the recording of the course."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_165.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer standing at the front of the room."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_220.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer explaining the use of the course website."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_337.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer discussing grading policies."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_361.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer explaining the amnesty plan."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_406.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer introducing the teaching assistants."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_460.jpg": {
+      "ocr_text": "Yale University",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "Lecturer concluding the administrative details."
+    }
+  }
+}

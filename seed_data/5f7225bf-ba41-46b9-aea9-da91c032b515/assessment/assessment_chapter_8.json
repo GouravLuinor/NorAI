@@ -1,0 +1,78 @@
+{
+    "chapter_id": 8,
+    "chapter_title": "Why the Civil War Era Still Has a Hold on Us",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 8,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Demographics"
+            ],
+            "question": "Approximately what fraction of Americans can still trace their family directly to someone in the Civil War?",
+            "options": [
+                "One out of every ten",
+                "One out of every three",
+                "One out of every two",
+                "One out of every five"
+            ],
+            "answer": "One out of every three",
+            "explanation": "The lecturer states that about one out of every three Americans can trace their family directly to someone in the Civil War.",
+            "flashcard_front": "What fraction of Americans can trace their family to the Civil War?",
+            "flashcard_back": "Approximately one out of every three Americans.",
+            "flashcard_explanation": "The lecturer notes this demographic fact to explain the persistent personal connection to the era."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 8,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "War loss"
+            ],
+            "question": "The lecturer estimates that if Civil War deaths were scaled to the Vietnam era, the memorial would have 7 million names.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The lecturer explicitly states that if the Civil War dead were put on the Vietnam Memorial per capita, there would be close to 7 million names.",
+            "flashcard_front": "How many names would be on a Vietnam-scaled Civil War memorial?",
+            "flashcard_back": "Close to 7 million names.",
+            "flashcard_explanation": "This comparison illustrates the massive scale of loss during the Civil War."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 8,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Modernity"
+            ],
+            "question": "According to the lecture, what does 'modernity' encompass in the context of the Civil War era?",
+            "options": [],
+            "answer": "It includes the struggles of capital and labor, the recreation of government, and the rise of 'big government'.",
+            "explanation": "The lecturer defines modernity as involving the growth of capital and labor struggles and the creation of big government.",
+            "flashcard_front": "What does the lecturer include in the definition of 'modernity'?",
+            "flashcard_back": "Capital/labor struggles and the rise of big government.",
+            "flashcard_explanation": "Modernity is described as more than just industrialization; it involves institutional and governmental changes."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 8,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Moral convulsion"
+            ],
+            "question": "What phrase does the lecturer use to describe the Civil War's effect on society's institutions?",
+            "options": [],
+            "answer": "A moral convulsion.",
+            "explanation": "The lecturer describes the Civil War as a moral convulsion that made people reorder and recreate their institutions.",
+            "flashcard_front": "What phrase describes the Civil War's effect on institutions?",
+            "flashcard_back": "A moral convulsion.",
+            "flashcard_explanation": "This term highlights the intense, forced reordering of society during the war."
+        }
+    ]
+}

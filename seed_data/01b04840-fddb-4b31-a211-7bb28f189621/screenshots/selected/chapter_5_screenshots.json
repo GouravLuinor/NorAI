@@ -1,0 +1,33 @@
+{
+  "chapter_id": 5,
+  "screenshots": [
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1849.jpg",
+      "reason": "The lecturer begins writing the tangent line equation.",
+      "section": "The Role of Calculus",
+      "importance": 10,
+      "timestamp": 1849.28
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1737.jpg",
+      "reason": "The lecturer draws the hyperbola and a tangent line.",
+      "section": "Setting Up the Geometry Problem",
+      "importance": 9,
+      "timestamp": 1737.17
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1747.jpg",
+      "reason": "The point (x0, y0) is marked on the curve.",
+      "section": "Setting Up the Geometry Problem",
+      "importance": 9,
+      "timestamp": 1747.85
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_1758.jpg",
+      "reason": "The lecturer points to the triangle formed by the tangent line.",
+      "section": "Setting Up the Geometry Problem",
+      "importance": 9,
+      "timestamp": 1758.52
+    }
+  ]
+}

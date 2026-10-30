@@ -1,0 +1,33 @@
+{
+  "chapter_id": 10,
+  "screenshots": [
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_4314.jpg",
+      "reason": "Full derivation of the time-independent kinematic formula using calculus.",
+      "section": "Integration and Final Results",
+      "importance": 10,
+      "timestamp": 4314.31
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3954.jpg",
+      "reason": "The relativistic energy equation showing the positive and negative roots.",
+      "section": "The Discovery of Antiparticles",
+      "importance": 9,
+      "timestamp": 3954.02
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_4007.jpg",
+      "reason": "Kinematic equations for motion.",
+      "section": "Time-Independent Kinematics",
+      "importance": 9,
+      "timestamp": 4007.0
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_4394.jpg",
+      "reason": "The final derived kinematic formula.",
+      "section": "Integration and Final Results",
+      "importance": 9,
+      "timestamp": 4394.19
+    }
+  ]
+}

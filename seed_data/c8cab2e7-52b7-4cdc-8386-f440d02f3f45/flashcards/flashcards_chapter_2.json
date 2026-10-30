@@ -1,0 +1,26 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Tips for Success and Classroom Etiquette",
+    "flashcards": [
+        {
+            "front": "Why should you attend lectures?",
+            "back": "To identify essential material and avoid studying unnecessary content from the large textbook.",
+            "explanation": "The instructor uses lectures to filter the 1100-page textbook for the most important concepts."
+        },
+        {
+            "front": "Is working in groups on homework allowed?",
+            "back": "Yes, it is encouraged, provided you contribute and fully understand the work.",
+            "explanation": "Physics is a collaborative field, but you must ensure you understand the solutions."
+        },
+        {
+            "front": "Why is talking in class discouraged?",
+            "back": "It is distracting and disrupts the instructor's line of thinking.",
+            "explanation": "Talking interferes with the instructor's ability to teach and gauge student comprehension."
+        },
+        {
+            "front": "When should you do homework?",
+            "back": "As soon as it is posted to cover the material for that week.",
+            "explanation": "Timely completion ensures you are prepared for the next set of lectures."
+        }
+    ]
+}

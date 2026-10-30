@@ -1,0 +1,78 @@
+{
+    "chapter_id": 5,
+    "chapter_title": "Calculus in Context: A Word Problem",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 5,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Calculus in Context"
+            ],
+            "question": "The lecturer claims that the calculus portion of a word problem is usually the most difficult part.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer states that the calculus part is actually fairly routine and the difficulty comes from the surrounding context.",
+            "flashcard_front": "Is the calculus part of a word problem usually the most difficult?",
+            "flashcard_back": "No, it is usually a routine, isolated step.",
+            "flashcard_explanation": "The lecturer argues that the difficulty lies in the surrounding context, not the calculus itself."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 5,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Geometry of curves"
+            ],
+            "question": "What curve is used for the geometry problem in this chapter?",
+            "options": [
+                "y = x^2",
+                "y = 1/x",
+                "y = sin(x)",
+                "y = sqrt(x)"
+            ],
+            "answer": "y = 1/x",
+            "explanation": "The lecturer specifies the curve is the hyperbola y = 1/x.",
+            "flashcard_front": "What curve is used for the geometry problem?",
+            "flashcard_back": "The hyperbola y = 1/x.",
+            "flashcard_explanation": "The lecturer explicitly defines the curve as y = 1/x."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 5,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Tangent line equation"
+            ],
+            "question": "What is the only step in the triangle area problem that requires calculus?",
+            "options": [],
+            "answer": "Finding the equation of the tangent line.",
+            "explanation": "The lecturer identifies the tangent line as the only part needing calculus.",
+            "flashcard_front": "What is the only calculus step in the triangle area problem?",
+            "flashcard_back": "Finding the equation of the tangent line.",
+            "flashcard_explanation": "The lecturer states that once the tangent line is found, the rest is geometry."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 5,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Geometry of curves"
+            ],
+            "question": "Why does the lecturer use the notation (x0, y0) in the problem?",
+            "options": [],
+            "answer": "To represent a specific point on the curve.",
+            "explanation": "The lecturer uses (x0, y0) to distinguish a specific point from the general variables x and y.",
+            "flashcard_front": "Why use (x0, y0) notation?",
+            "flashcard_back": "To represent a specific point on the curve.",
+            "flashcard_explanation": "It distinguishes the fixed point of tangency from the general variables x and y."
+        }
+    ]
+}

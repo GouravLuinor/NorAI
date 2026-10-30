@@ -1,0 +1,62 @@
+{
+    "chapter_id": 9,
+    "chapter_title": "Racial Reckoning and the Social Contract",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 9,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Social Contract"
+            ],
+            "question": "According to the lecturer, what historical event serves as a reminder that the United States has previously failed to maintain a unified social contract?",
+            "options": [
+                "The Great Depression",
+                "The 1860-61 period",
+                "The passage of the Voting Rights Act",
+                "The ratification of the 14th Amendment"
+            ],
+            "answer": "The 1860-61 period",
+            "explanation": "The lecturer explicitly cites 1860-61 as the time the Union broke up and led to Civil War due to a failed social contract.",
+            "flashcard_front": "What historical period does the lecturer use to illustrate a failed social contract?",
+            "flashcard_back": "The 1860-61 period, which led to the breakup of the Union and the Civil War.",
+            "flashcard_explanation": "The lecturer uses this era as a warning against assuming current divisions are unprecedented."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 9,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Political Division"
+            ],
+            "question": "The lecturer argues that there are no valid parallels between the political divisions of the 1860s and those of today.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer states that while some parallels do not work, others do, such as the decreasing confidence in institutions.",
+            "flashcard_front": "Are there valid parallels between 1860s divisions and today?",
+            "flashcard_back": "Yes, the lecturer notes some parallels exist, such as decreasing confidence in institutions.",
+            "flashcard_explanation": "The lecturer specifically identifies the decline in institutional trust as a shared ingredient of division."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 9,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Social Contract"
+            ],
+            "question": "What specific legislation does the lecturer identify as a foundation for the American social contract that lasted for nearly 50 years?",
+            "options": [],
+            "answer": "The Voting Rights Act of 1965",
+            "explanation": "The lecturer notes the Voting Rights Act of 1965 provided a framework for democratic participation until Shelby v. Holder.",
+            "flashcard_front": "What act provided a framework for the social contract for nearly 50 years?",
+            "flashcard_back": "The Voting Rights Act of 1965.",
+            "flashcard_explanation": "This act is cited as a key component of the social contract until the Shelby v. Holder decision."
+        }
+    ]
+}

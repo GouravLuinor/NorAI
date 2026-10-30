@@ -1,0 +1,78 @@
+{
+    "chapter_id": 4,
+    "chapter_title": "Example: Derivative of 1/x",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 4,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Derivative"
+            ],
+            "question": "What is the derivative of f(x) = 1/x at a point x0?",
+            "options": [
+                "1/x0",
+                "-1/x0",
+                "-1/x0^2",
+                "1/x0^2"
+            ],
+            "answer": "-1/x0^2",
+            "explanation": "Through the limit process of the difference quotient, the derivative is calculated as -1/x0^2.",
+            "flashcard_front": "What is the derivative of f(x) = 1/x?",
+            "flashcard_back": "f'(x) = -1/x^2",
+            "flashcard_explanation": "The derivative is found by taking the limit of the difference quotient as delta x approaches zero."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 4,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Plausibility check"
+            ],
+            "question": "The slope of f(x) = 1/x is always negative.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The derivative -1/x^2 is always negative for all x not equal to zero, consistent with the graph's downward slope.",
+            "flashcard_front": "Is the slope of f(x) = 1/x always negative?",
+            "flashcard_back": "True",
+            "flashcard_explanation": "The derivative -1/x^2 is negative for all x, indicating the function is always sloping down."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 4,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Algebraic simplification"
+            ],
+            "question": "Why can we not evaluate the limit of the difference quotient before simplifying?",
+            "options": [],
+            "answer": "Because it results in an indeterminate 0/0 form.",
+            "explanation": "Direct substitution of delta x = 0 into the unsimplified difference quotient leads to division by zero.",
+            "flashcard_front": "Why simplify the difference quotient before taking the limit?",
+            "flashcard_back": "To avoid the indeterminate 0/0 form.",
+            "flashcard_explanation": "Simplification removes the delta x factor that causes division by zero in the limit."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 4,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Plausibility check"
+            ],
+            "question": "What happens to the steepness of the graph of 1/x as x goes to infinity?",
+            "options": [],
+            "answer": "It becomes less and less steep.",
+            "explanation": "As x0 increases, the magnitude of the derivative -1/x0^2 decreases, meaning the curve flattens out.",
+            "flashcard_front": "What happens to the steepness of 1/x as x increases?",
+            "flashcard_back": "It becomes less steep.",
+            "flashcard_explanation": "The magnitude of the derivative -1/x^2 decreases as x gets larger."
+        }
+    ]
+}

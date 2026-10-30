@@ -1,0 +1,19 @@
+{
+  "chapter_id": 6,
+  "screenshots": [
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1854.jpg",
+      "reason": "Chalkboard summary of efficiency and input size.",
+      "section": "Defining Algorithmic Efficiency",
+      "importance": 10,
+      "timestamp": 1854.49
+    },
+    {
+      "path": "outputs/8821152f-f6de-49e9-a885-0adaac6ba4cb/screenshots/keyframes/frame_1748.jpg",
+      "reason": "Chalkboard showing the core principle of efficiency measurement.",
+      "section": "Defining Algorithmic Efficiency",
+      "importance": 9,
+      "timestamp": 1748.38
+    }
+  ]
+}

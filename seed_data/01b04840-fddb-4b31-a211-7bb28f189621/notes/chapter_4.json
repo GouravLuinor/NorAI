@@ -1,0 +1,24 @@
+{
+    "chapter_id": 4,
+    "title": "Example: Derivative of 1/x",
+    "sections": [
+        {
+            "section_type": "definition",
+            "title": "Setting up the Difference Quotient",
+            "content_markdown": "To find the derivative of $f(x) = 1/x$ at a general point $x_0$, we begin by constructing the difference quotient, which represents the slope of the secant line. The formula for the difference quotient is $\\frac{\\Delta f}{\\Delta x} = \\frac{f(x_0 + \\Delta x) - f(x_0)}{\\Delta x}$. Substituting the function $f(x) = 1/x$, we obtain the expression $\\frac{\\frac{1}{x_0 + \\Delta x} - \\frac{1}{x_0}}{\\Delta x}$. This expression is inherently complex because it involves a difference in the numerator and a difference in the denominator (the change in $x$). At this stage, directly evaluating the limit as $\\Delta x \\to 0$ results in an indeterminate $0/0$ form, necessitating algebraic simplification before we can proceed to the limit.",
+            "start_sec": 1087.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Algebraic Simplification",
+            "content_markdown": "To simplify the difference quotient, we first factor out $1/\\Delta x$. We then combine the terms in the numerator over a common denominator, which is $(x_0 + \\Delta x)x_0$. This yields the expression $\\frac{1}{\\Delta x} \\left( \\frac{x_0 - (x_0 + \\Delta x)}{(x_0 + \\Delta x)x_0} \\right)$. Simplifying the numerator, $x_0 - (x_0 + \\Delta x)$ becomes $-\\Delta x$. The expression now reads $\\frac{1}{\\Delta x} \\left( \\frac{-\\Delta x}{(x_0 + \\Delta x)x_0} \\right)$. We can now perform two crucial cancellations: the $\\Delta x$ in the denominator and the $\\Delta x$ in the numerator cancel out. This leaves us with the simplified expression $-\\frac{1}{(x_0 + \\Delta x)x_0}$. This form is now amenable to taking the limit, as the problematic division by zero has been removed.",
+            "start_sec": 1166.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Taking the Limit and Plausibility Check",
+            "content_markdown": "With the expression simplified to $-\\frac{1}{(x_0 + \\Delta x)x_0}$, we can now take the limit as $\\Delta x \\to 0$. By setting $\\Delta x = 0$, we obtain the derivative $f'(x_0) = -\\frac{1}{x_0^2}$. To verify this result, we perform a plausibility check. First, the derivative is negative, which is consistent with the graph of $1/x$ having a negative slope. Second, as $x_0$ increases toward infinity, the magnitude of the slope $-1/x_0^2$ decreases, which matches the visual observation that the curve becomes less steep as we move further to the right. We can further confirm this by substituting a specific value, such as $x_0 = 3$, into the simplified expression, which yields $-1/9$ as $\\Delta x$ approaches zero, confirming the general formula.",
+            "start_sec": 1257.0
+        }
+    ]
+}

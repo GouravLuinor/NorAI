@@ -1,0 +1,78 @@
+{
+    "chapter_id": 4,
+    "chapter_title": "Finance as Technology and Moral Considerations",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 4,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Financial Technology"
+            ],
+            "question": "To what does the lecturer compare financial structures?",
+            "options": [
+                "Political systems",
+                "Engines and nuclear reactors",
+                "Biological organisms",
+                "Historical artifacts"
+            ],
+            "answer": "Engines and nuclear reactors",
+            "explanation": "The lecturer explicitly compares financial structures to complicated devices like engines or nuclear reactors that require careful design.",
+            "flashcard_front": "What does the lecturer compare financial structures to?",
+            "flashcard_back": "Engines and nuclear reactors.",
+            "flashcard_explanation": "Financial structures are complex devices with many components that must be designed correctly, similar to mechanical or nuclear engineering."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 4,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Public Perception"
+            ],
+            "question": "The lecturer argues that hostility toward the financial industry is a new phenomenon that only emerged after the recent subprime crisis.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer notes that hostility toward finance has deep historical roots, citing the example of William Duer in the 1700s.",
+            "flashcard_front": "Is hostility toward the financial industry a new phenomenon?",
+            "flashcard_back": "False.",
+            "flashcard_explanation": "Hostility toward finance has existed for centuries, as evidenced by historical examples like William Duer in the 1700s."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 4,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Moral Dilemmas"
+            ],
+            "question": "What is the primary moral dilemma presented by the lecturer using the UNICEF example?",
+            "options": [],
+            "answer": "The conflict between pursuing personal wealth and the moral responsibility to use resources to save lives in poverty.",
+            "explanation": "The lecturer uses the UNICEF example to highlight the tension between personal spending and the ability to save lives through donation.",
+            "flashcard_front": "What moral dilemma does the UNICEF example illustrate?",
+            "flashcard_back": "The conflict between personal wealth accumulation and the moral responsibility to help those in extreme poverty.",
+            "flashcard_explanation": "The example forces reflection on why individuals prioritize personal consumption over saving lives when the cost is relatively low."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 4,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Philanthropy"
+            ],
+            "question": "How does the lecturer reconcile the pursuit of wealth in finance with moral concerns?",
+            "options": [],
+            "answer": "By emphasizing that philanthropy is an integral part of finance, where the most successful people eventually give their money away.",
+            "explanation": "The lecturer suggests that the wealth generated in finance can be directed toward charitable ends, serving as a moral justification.",
+            "flashcard_front": "How does the lecturer reconcile finance with morality?",
+            "flashcard_back": "By highlighting philanthropy as an integral part of finance.",
+            "flashcard_explanation": "The lecturer argues that successful individuals in finance often use their wealth for philanthropic purposes, addressing moral concerns."
+        }
+    ]
+}

@@ -1,0 +1,61 @@
+{
+  "chapter_id": 1,
+  "frames": {
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_0.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "other",
+      "include_in_notes": false,
+      "description": "A black screen at the start of the lecture."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_6.jpg": {
+      "ocr_text": "Yale University 2024 DeVane Lectures: Can It Happen Here Again? Yale, Slavery, the Civil War and Their Legacies. Class 1 Introductions: Why Does the Civil War and Reconstruction Have a Hold on American Historical Imagination/and, How Does the Era Inform Our Current Divisions? David Blight Sterling Professor of History and Director of the Gilder Lehrman Center for the Study of Slavery, Resistance, and Abolition at Yale August 29, 2024",
+      "importance_score": 10,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The title slide for the lecture series."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_71.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer speaking at the podium."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_133.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer gesturing while speaking."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_194.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer speaking about the research project."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_259.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discussing the book's deadline."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_321.jpg": {
+      "ocr_text": "11:43 AM 8/29/2024",
+      "importance_score": 3,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "A view of the lecture hall screen showing the time and date."
+    },
+    "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_373.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concluding the introduction."
+    }
+  }
+}

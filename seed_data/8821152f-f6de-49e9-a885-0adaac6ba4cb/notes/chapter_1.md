@@ -1,0 +1,16 @@
+# Course Introduction and Goals
+
+
+## Course Overview and Instructors
+
+This course, Introduction to Algorithms, is taught by Jason Ku, Eric Demaine, and Justin Solomon. The instructors will rotate teaching duties, with Jason Ku leading the first lecture. The primary objective of the course is to teach students how to solve computational problems. While coding is a component, the course emphasizes that the core skill set involves more than just writing code. Students will engage in significant amounts of writing to articulate their ideas, making this course distinct from others in the department. The focus is on theoretical understanding and the ability to convey that understanding to others, rather than solely focusing on implementation.
+
+
+## Core Objectives
+
+The course is built around three fundamental pillars of algorithm design and analysis: 1. Solving computational problems. 2. Proving the correctness of solutions. 3. Arguing the efficiency of solutions. Beyond these technical pillars, a major overarching theme is the communication of these ideas. Students are expected to move beyond simply instructing a computer and must learn to convince other people that their proposed solutions are both correct and efficient. This emphasis on communication and rigorous proof distinguishes this course from other departmental offerings.
+
+
+## The Importance of Communication
+
+A significant portion of the course involves writing to explain and justify algorithmic approaches. The instructor notes that students will perform more writing in this class than in many others, suggesting it functions similarly to a Communication Intensive (CI) course. The goal is to develop the ability to argue that a specific algorithm is better than alternatives. By the end of the course, students should be able to demonstrate that their solutions are correct and efficient, effectively communicating these concepts to peers and instructors rather than just producing functional code.

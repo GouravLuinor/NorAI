@@ -1,0 +1,26 @@
+{
+    "chapter_id": 1,
+    "chapter_title": "Course Introduction and Logistics",
+    "flashcards": [
+        {
+            "front": "Are Economics 251 and 252 self-contained?",
+            "back": "Yes, they are self-contained, though there may be some repetition between them.",
+            "explanation": "Professor Shiller notes that students can take either or both, as they are designed to be self-contained."
+        },
+        {
+            "front": "Is this course primarily vocational?",
+            "back": "No, it is an intellectual course about how things work.",
+            "explanation": "The professor emphasizes the course is not just for those pursuing careers in finance."
+        },
+        {
+            "front": "What is the primary difference in focus between Economics 251 and Economics 252 as described...",
+            "back": "Economics 251 is more tuned into theoretical detail and mathematical rigor, while Economics 252 is designed to be accessible to...",
+            "explanation": "The professor notes that John Geanakoplos is a mathematical economist and his course (251) is more tuned into theoretical detail."
+        },
+        {
+            "front": "Why does Professor Shiller believe finance is important for students who do not plan to...",
+            "back": "He believes finance is a fundamental technology that underpins almost all human endeavors, and understanding it is necessary to understand...",
+            "explanation": "The professor uses the example of a poet needing to understand the financial situation of publishers to illustrate that finance affects everyone."
+        }
+    ]
+}

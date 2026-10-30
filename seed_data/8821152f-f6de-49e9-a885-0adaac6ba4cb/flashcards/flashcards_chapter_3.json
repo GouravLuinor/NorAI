@@ -1,0 +1,26 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "Generalizing Problems and Algorithms",
+    "flashcards": [
+        {
+            "front": "What is an algorithm?",
+            "back": "A fixed-size procedure or function mapping inputs to correct outputs.",
+            "explanation": "The lecturer defines it as a machine that takes inputs and generates correct outputs."
+        },
+        {
+            "front": "Should algorithms be limited to the current input size?",
+            "back": "No, they should handle arbitrarily sized inputs.",
+            "explanation": "The lecturer wants algorithms to scale to any input size, like a billion students."
+        },
+        {
+            "front": "When is an algorithm correct?",
+            "back": "When it returns a correct output for every input in the domain.",
+            "explanation": "Correctness is defined by mapping every valid input to a correct output."
+        },
+        {
+            "front": "Difference between a problem and an algorithm?",
+            "back": "A problem specifies the goal; an algorithm is the procedure to achieve it.",
+            "explanation": "The problem defines the required output, while the algorithm is the functional procedure."
+        }
+    ]
+}

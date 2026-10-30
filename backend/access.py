@@ -28,6 +28,41 @@ from backend.lecture_registry import get_lecture
 _GUEST_LECTURES_DAILY = DailyCounter(int(os.environ.get("NORAI_GUEST_LECTURES_PER_DAY", "3")))
 _DEMO_TURNS_DAILY = DailyCounter(int(os.environ.get("NORAI_DEMO_TURNS_PER_DAY", "1000")))
 
+# Phase D: guest tutor limits on demo lectures (5 questions/day per visitor, global daily guest cap)
+_GUEST_DEMO_QUESTIONS_PER_DAY = DailyCounter(int(os.environ.get("NORAI_GUEST_DEMO_QUESTIONS_PER_DAY", "5")))
+_GLOBAL_GUEST_DEMO_QUESTIONS_DAILY = DailyCounter(int(os.environ.get("NORAI_GLOBAL_GUEST_DAILY_CAP", "100")))
+
+
+def get_guest_remaining_questions(guest_id: Optional[str]) -> int:
+    """Return how many guest questions remain today for a given visitor on demo lectures."""
+    if not guest_id:
+        return 0
+    import time
+    today = time.strftime("%Y-%m-%d", time.gmtime())
+    if _GUEST_DEMO_QUESTIONS_PER_DAY._day != today:
+        return _GUEST_DEMO_QUESTIONS_PER_DAY.limit
+    used = _GUEST_DEMO_QUESTIONS_PER_DAY._counts.get(guest_id, 0)
+    return max(0, _GUEST_DEMO_QUESTIONS_PER_DAY.limit - used)
+
+
+def check_guest_tutor_cap(lecture_id: str, guest_id: Optional[str]) -> None:
+    """Enforce the 5 questions/day limit and global guest cap on demo lectures."""
+    if not guest_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication or guest session required to use AI Tutor",
+        )
+    if not _GLOBAL_GUEST_DEMO_QUESTIONS_DAILY.check_and_increment("global"):
+        raise HTTPException(
+            status_code=429,
+            detail="The global daily guest quota for demo lectures has been reached today. Sign up for a free account with 60 free minutes to continue studying!",
+        )
+    if not _GUEST_DEMO_QUESTIONS_PER_DAY.check_and_increment(guest_id):
+        raise HTTPException(
+            status_code=429,
+            detail="You've reached your 5 free guest questions for today on demo lectures. Sign up for a free account to continue asking Nora!",
+        )
+
 
 def _is_guest(user: Optional[User]) -> bool:
     return bool(user) and str(user.id).startswith("guest-")
@@ -131,6 +166,7 @@ async def ensure_lecture_access(
     user: Optional[User],
     db: AsyncSession,
     require_tutor: bool = False,
+    guest_id: Optional[str] = None,
 ) -> None:
     """Scope a lecture-scoped read/write to its owner or a valid share link.
 
@@ -144,12 +180,6 @@ async def ensure_lecture_access(
     accessible without requiring authentication or share links.
     """
     if lecture_id in (None, "", "default") or lecture_id in DEMO_LECTURE_IDS:
-        if require_tutor and (user is None or _is_guest(user)):
-            if not (
-                os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
-                or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
-            ):
-                raise HTTPException(status_code=401, detail="Authentication required to use AI Tutor")
         return
     if (
         os.environ.get("NORAI_DEV_ACCESS", "0") == "1"

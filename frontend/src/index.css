@@ -178,6 +178,14 @@ html {
   background: var(--color-ns4);
 }
 
+/* Horizontal toolbars scroll on very narrow panes without a visible bar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }

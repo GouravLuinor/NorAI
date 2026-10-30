@@ -1,0 +1,33 @@
+{
+  "chapter_id": 9,
+  "frames": {
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_3864.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer stands at a podium speaking to the class."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_3924.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer gestures while explaining central bank functions."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_3984.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer looks down at his notes while discussing investment banking."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_4045.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer continues his lecture on financial institutions."
+    }
+  }
+}

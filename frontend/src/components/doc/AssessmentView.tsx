@@ -300,19 +300,19 @@ export function AssessmentView() {
             {choice.length > 0 && (
               <section className="space-y-4">
                 <h3 className="spec-label tracking-wider">Multiple Choice</h3>
-                <div className="space-y-4">{choice.map((q, i) => renderCard(q, i + 1))}</div>
+                <div className="space-y-4">{choice.map((q, i) => renderCard(q, i))}</div>
               </section>
             )}
             {tf.length > 0 && (
               <section className="space-y-4">
                 <h3 className="spec-label tracking-wider">True / False</h3>
-                <div className="space-y-4">{tf.map((q, i) => renderCard(q, choice.length + i + 1))}</div>
+                <div className="space-y-4">{tf.map((q, i) => renderCard(q, choice.length + i))}</div>
               </section>
             )}
             {free.length > 0 && (
               <section className="space-y-4">
                 <h3 className="spec-label tracking-wider">Short Answer & Conceptual</h3>
-                <div className="space-y-4">{free.map((q, i) => renderCard(q, choice.length + tf.length + i + 1))}</div>
+                <div className="space-y-4">{free.map((q, i) => renderCard(q, choice.length + tf.length + i))}</div>
               </section>
             )}
             {showAnswers && <AnswerKey questions={questions} isOpen={showAnswers} onToggle={() => setShowAnswers(!showAnswers)} />}

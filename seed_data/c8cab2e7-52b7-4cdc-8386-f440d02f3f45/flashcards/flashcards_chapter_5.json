@@ -1,0 +1,26 @@
+{
+    "chapter_id": 5,
+    "chapter_title": "Kinematics and One-Dimensional Motion",
+    "flashcards": [
+        {
+            "front": "What is kinematics?",
+            "back": "A complete description of a system's current state of motion.",
+            "explanation": "Kinematics describes the 'what' of motion, such as position and speed, without addressing the 'why'."
+        },
+        {
+            "front": "Does a mathematical point particle have spatial extent?",
+            "back": "No, it has no size or spatial extent.",
+            "explanation": "It is an idealized point used to simplify mechanics by ignoring rotation and internal structure."
+        },
+        {
+            "front": "How is one-dimensional motion visualized?",
+            "back": "A bead sliding back and forth on a wire.",
+            "explanation": "This analogy represents the simplest possible constraint for motion along a single line."
+        },
+        {
+            "front": "What is the difference between kinematics and dynamics?",
+            "back": "Kinematics describes motion; dynamics explains why motion changes.",
+            "explanation": "Kinematics is descriptive (the 'what'), while dynamics is explanatory (the 'why')."
+        }
+    ]
+}

@@ -1,0 +1,78 @@
+{
+    "chapter_id": 3,
+    "chapter_title": "Generalizing Problems and Algorithms",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 3,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Algorithm definition"
+            ],
+            "question": "According to the lecture, what is an algorithm?",
+            "options": [
+                "A problem specification",
+                "A fixed-size procedure that maps inputs to correct outputs",
+                "A probability calculation for small datasets",
+                "A list of all possible outputs for a given input"
+            ],
+            "answer": "A fixed-size procedure that maps inputs to correct outputs",
+            "explanation": "The lecturer defines an algorithm as a fixed-size machine or procedure that maps inputs to correct outputs.",
+            "flashcard_front": "What is an algorithm?",
+            "flashcard_back": "A fixed-size procedure or function mapping inputs to correct outputs.",
+            "flashcard_explanation": "The lecturer defines it as a machine that takes inputs and generates correct outputs."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 3,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Arbitrarily sized inputs"
+            ],
+            "question": "Algorithms in this class should be designed to work only for the specific number of students in the current classroom.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer explicitly states the goal is to make algorithms that are general and work for arbitrarily sized inputs, not just the current classroom.",
+            "flashcard_front": "Should algorithms be limited to the current input size?",
+            "flashcard_back": "No, they should handle arbitrarily sized inputs.",
+            "flashcard_explanation": "The lecturer wants algorithms to scale to any input size, like a billion students."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 3,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Correctness"
+            ],
+            "question": "When is an algorithm considered 'correct'?",
+            "options": [],
+            "answer": "An algorithm is correct if it returns a correct output for every problem input that is in our domain.",
+            "explanation": "The lecturer states that an algorithm solves a problem if it returns a correct output for every problem input in the domain.",
+            "flashcard_front": "When is an algorithm correct?",
+            "flashcard_back": "When it returns a correct output for every input in the domain.",
+            "flashcard_explanation": "Correctness is defined by mapping every valid input to a correct output."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 3,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Algorithm as a function"
+            ],
+            "question": "How does the lecturer distinguish between a problem and an algorithm?",
+            "options": [],
+            "answer": "A problem is a specification of what the output should be for given inputs, while an algorithm is the procedure or machine that actually generates those outputs.",
+            "explanation": "The lecturer explains that a problem specification describes the graph or desired output, while an algorithm is the mechanism that maps inputs to those outputs.",
+            "flashcard_front": "Difference between a problem and an algorithm?",
+            "flashcard_back": "A problem specifies the goal; an algorithm is the procedure to achieve it.",
+            "flashcard_explanation": "The problem defines the required output, while the algorithm is the functional procedure."
+        }
+    ]
+}

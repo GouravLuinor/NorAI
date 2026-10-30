@@ -1,0 +1,89 @@
+{
+  "chapter_id": 4,
+  "frames": {
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1642.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer stands in front of the classroom."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1702.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer gestures while explaining the dangers of technology."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1762.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the subprime crisis."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1882.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer refers to notes while speaking."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1942.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains the career prospects in finance."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2003.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the wealth of people in finance."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2063.jpg": {
+      "ocr_text": "Moral Finance\nSubprime Crisis\nTechnology William Duer",
+      "importance_score": 8,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer writes key terms on the blackboard."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2123.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses William Graham Sumner."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2183.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer continues the discussion on social classes."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2303.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer smiles while discussing Peter Unger."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2363.jpg": {
+      "ocr_text": "",
+      "importance_score": 2,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer asks for a show of hands."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_2423.jpg": {
+      "ocr_text": "Subprime Crisis\nTechnology William Duer",
+      "importance_score": 7,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The blackboard shows the lecture topics."
+    }
+  }
+}

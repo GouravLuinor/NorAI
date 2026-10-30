@@ -1,0 +1,26 @@
+{
+    "chapter_id": 5,
+    "chapter_title": "Calculus in Context: A Word Problem",
+    "flashcards": [
+        {
+            "front": "Is the calculus part of a word problem usually the most difficult?",
+            "back": "No, it is usually a routine, isolated step.",
+            "explanation": "The lecturer argues that the difficulty lies in the surrounding context, not the calculus itself."
+        },
+        {
+            "front": "What curve is used for the geometry problem?",
+            "back": "The hyperbola y = 1/x.",
+            "explanation": "The lecturer explicitly defines the curve as y = 1/x."
+        },
+        {
+            "front": "What is the only calculus step in the triangle area problem?",
+            "back": "Finding the equation of the tangent line.",
+            "explanation": "The lecturer states that once the tangent line is found, the rest is geometry."
+        },
+        {
+            "front": "Why use (x0, y0) notation?",
+            "back": "To represent a specific point on the curve.",
+            "explanation": "It distinguishes the fixed point of tangency from the general variables x and y."
+        }
+    ]
+}

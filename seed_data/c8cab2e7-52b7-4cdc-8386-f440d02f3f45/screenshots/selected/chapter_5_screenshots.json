@@ -1,0 +1,33 @@
+{
+  "chapter_id": 5,
+  "screenshots": [
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1827.jpg",
+      "reason": "The board shows the units for position (meters) and time (seconds).",
+      "section": "Measuring Position and Time",
+      "importance": 9,
+      "timestamp": 1827.83
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1786.jpg",
+      "reason": "A number line showing the origin and position markers.",
+      "section": "Measuring Position and Time",
+      "importance": 8,
+      "timestamp": 1786.79
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1861.jpg",
+      "reason": "The lecturer begins drawing a graph of position versus time.",
+      "section": "Measuring Position and Time",
+      "importance": 7,
+      "timestamp": 1861.86
+    },
+    {
+      "path": "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_1755.jpg",
+      "reason": "A line representing the x-axis is drawn on the board.",
+      "section": "The Mathematical Point Particle",
+      "importance": 6,
+      "timestamp": 1755.35
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+    "chapter_id": 7,
+    "chapter_title": "Common Running Time Functions",
+    "flashcards": [
+        {
+            "front": "What is the general definition of an efficient algorithm in this course?",
+            "back": "An algorithm with polynomial running time, denoted as Theta(N^C) for some constant C.",
+            "explanation": "The lecturer identifies polynomial time as the standard threshold for efficiency in this class."
+        },
+        {
+            "front": "Are exponential time algorithms considered efficient?",
+            "back": "False. They are considered inefficient and grow too rapidly.",
+            "explanation": "Exponential growth is significantly faster than polynomial growth, making it inefficient."
+        },
+        {
+            "front": "How does logarithmic time behave at very large input sizes?",
+            "back": "It appears nearly constant and is much closer to constant than linear time.",
+            "explanation": "Logarithmic growth is very slow, making it perform similarly to constant time at scale."
+        },
+        {
+            "front": "Why is the Word RAM model used?",
+            "back": "For its theoretical brevity in defining constant-time operations.",
+            "explanation": "It provides a standard framework for measuring algorithmic efficiency."
+        }
+    ]
+}

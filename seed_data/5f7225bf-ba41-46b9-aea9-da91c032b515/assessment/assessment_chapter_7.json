@@ -1,0 +1,78 @@
+{
+    "chapter_id": 7,
+    "chapter_title": "The Founders, Virtue, and Constitutional Design",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 7,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Federalist Papers"
+            ],
+            "question": "According to the lecturer, what was the primary obsession of Hamilton and Madison when crafting the Constitution?",
+            "options": [
+                "Expanding the power of the states",
+                "Managing factions and human passions",
+                "Establishing a monarchy",
+                "Eliminating the judiciary"
+            ],
+            "answer": "Managing factions and human passions",
+            "explanation": "The lecturer explicitly states that Hamilton and Madison were obsessed with the problem of factions and passions and how to construct a constitutional entity to hold them together.",
+            "flashcard_front": "What were Hamilton and Madison obsessed with in the Federalist Papers?",
+            "flashcard_back": "They were obsessed with managing human passions and factions through constitutional design.",
+            "flashcard_explanation": "They sought to create a structure that could contain the inherent volatility of human nature."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 7,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Political virtue"
+            ],
+            "question": "Madison believed that finding virtuous leaders was sufficient to ensure good government.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "Madison argued that one must find virtuous leaders AND implement precautions to keep them virtuous while they hold public trust.",
+            "flashcard_front": "Did Madison believe finding virtuous leaders was enough for good government?",
+            "flashcard_back": "No, he believed structural precautions were also necessary to keep leaders virtuous.",
+            "flashcard_explanation": "Madison emphasized both obtaining wise rulers and maintaining their virtue through constitutional precautions."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 7,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Federalist Papers"
+            ],
+            "question": "What fundamental question did Alexander Hamilton pose in the first sentence of Federalist number one?",
+            "options": [],
+            "answer": "Whether societies are capable of establishing good government from reflection and choice, or whether they are destined to depend on accident and force.",
+            "explanation": "Hamilton questioned the capacity of human beings to create and sustain a democracy through deliberate choice.",
+            "flashcard_front": "What question did Hamilton ask in Federalist number one?",
+            "flashcard_back": "Can societies establish good government through reflection and choice, or must they rely on accident and force?",
+            "flashcard_explanation": "This reflects the founders' uncertainty regarding the long-term viability of democratic self-governance."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 7,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Founding Fathers"
+            ],
+            "question": "What did Jeffrey Rosen do during the COVID-19 pandemic to better understand the founders?",
+            "options": [],
+            "answer": "He spent four or five hours every morning reading the moral philosophers that the founders read, such as Cicero and Aristotle.",
+            "explanation": "The lecturer notes that Rosen read the ancient and enlightenment writers on virtue and civic good to gain insight into the founders' intellectual world.",
+            "flashcard_front": "How did Jeffrey Rosen study the founders during COVID-19?",
+            "flashcard_back": "He spent mornings reading the moral philosophers the founders read, like Cicero and Aristotle.",
+            "flashcard_explanation": "Rosen sought to understand the intellectual influences that shaped the founders' moral and political framework."
+        }
+    ]
+}

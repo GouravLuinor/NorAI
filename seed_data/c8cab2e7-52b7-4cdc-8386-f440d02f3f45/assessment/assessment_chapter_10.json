@@ -1,0 +1,78 @@
+{
+    "chapter_id": 10,
+    "chapter_title": "Advanced Mathematical Interpretations",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 10,
+            "type": "MCQ",
+            "difficulty": "Medium",
+            "concepts": [
+                "Interpreting extra solutions"
+            ],
+            "question": "How should a physicist treat an 'extra' solution obtained from a mathematical equation?",
+            "options": [
+                "Discard it immediately as it is likely a calculation error.",
+                "Ignore it unless it matches the initial physical intuition.",
+                "Respect the mathematics and investigate the physical meaning of the solution.",
+                "Only use it if the primary solution is impossible to calculate."
+            ],
+            "answer": "Respect the mathematics and investigate the physical meaning of the solution.",
+            "explanation": "The lecturer emphasizes that extra solutions are often meaningful and should not be ignored, as they can lead to discoveries like antiparticles.",
+            "flashcard_front": "How should you treat unexpected mathematical solutions in physics?",
+            "flashcard_back": "Respect the mathematics and investigate the physical meaning of the solution.",
+            "flashcard_explanation": "Extra solutions often contain deep physical insights, such as the prediction of antiparticles in Dirac's work."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 10,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Antiparticles"
+            ],
+            "question": "Dirac discovered antiparticles by intentionally searching for them in his equations.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "Dirac was trying to describe electrons, but the negative energy solution in his equations forced him to account for antiparticles.",
+            "flashcard_front": "Did Dirac intentionally search for antiparticles?",
+            "flashcard_back": "False. He was describing electrons, but the math revealed antiparticles.",
+            "flashcard_explanation": "The negative energy solution was an unexpected result that led to the discovery of antiparticles."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 10,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Differential manipulation"
+            ],
+            "question": "Under what condition is it legitimate to 'cancel' the $dt$ in a derivative expression like $dy/dt$?",
+            "options": [],
+            "answer": "It is legitimate when understood as the limit of infinitesimal changes over the same time interval.",
+            "explanation": "The lecturer explains that while it looks like simple cancellation, it is valid because it represents the relationship between changes in two quantities over the same vanishingly small time.",
+            "flashcard_front": "Is canceling $dt$ in derivatives legitimate in physics?",
+            "flashcard_back": "Yes, if understood as the limit of infinitesimal changes over the same time.",
+            "flashcard_explanation": "This manipulation is valid when interpreted as equating changes in quantities over a vanishingly small time interval."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 10,
+            "type": "Application",
+            "difficulty": "Medium",
+            "concepts": [
+                "Calculus in physics"
+            ],
+            "question": "If you need to find the maximum height of a projectile but do not know the time it reaches that height, what approach should you take?",
+            "options": [],
+            "answer": "Use the time-independent kinematic formula V^2 = V_0^2 + 2a(Y - Y_0).",
+            "explanation": "The lecturer notes that if time is not explicitly required, one can use the time-independent formula to solve for displacement directly.",
+            "flashcard_front": "How to find height without knowing time?",
+            "flashcard_back": "Use the time-independent formula: V^2 = V_0^2 + 2a(Y - Y_0).",
+            "flashcard_explanation": "This formula allows solving for displacement (height) without needing to calculate the time variable first."
+        }
+    ]
+}

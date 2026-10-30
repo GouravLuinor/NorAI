@@ -38,8 +38,6 @@ export function VideoPlayer() {
   const activeLectureId = useLectureStore((s) => s.activeLectureId)
   const lectureId = activeLectureId && activeLectureId !== 'default' ? activeLectureId : null
 
-  const videoLoad = useVideoStore((s) => s.load)
-  const reset = useVideoStore((s) => s.reset)
   const embeddable = useVideoStore((s) => s.embeddable)
   const open = useVideoStore((s) => s.open)
   const togglePlayer = useVideoStore((s) => s.togglePlayer)
@@ -52,16 +50,21 @@ export function VideoPlayer() {
   const playerRef = useRef<VideoPlayerHandle | null>(null)
   const hostRef = useRef<HTMLDivElement>(null)
 
-  // Load source info + seek map whenever the lecture changes.
+  const videoLoad = useVideoStore((s) => s.load)
+  const videoLectureId = useVideoStore((s) => s.lectureId)
+  const reset = useVideoStore((s) => s.reset)
+
+  // Source info + seek map are pre-loaded by Workspace, but if mounted in
+  // isolation or tests, load on demand so the player is self-contained.
   useEffect(() => {
     setError(false)
     setApiReady(false)
-    if (lectureId) {
+    if (lectureId && videoLectureId !== lectureId) {
       void videoLoad(lectureId)
-    } else {
+    } else if (!lectureId) {
       reset()
     }
-  }, [lectureId, videoLoad, reset])
+  }, [lectureId, videoLectureId, videoLoad, reset])
 
   // Lazy-load the IFrame API only when the player is opened.
   useEffect(() => {
@@ -141,10 +144,20 @@ export function VideoPlayer() {
  *  player can show (completed, YouTube-sourced). */
 export function VideoToggle() {
   const activeLectureId = useLectureStore((s) => s.activeLectureId)
+  const lectureId = activeLectureId && activeLectureId !== 'default' ? activeLectureId : null
   const embeddable = useVideoStore((s) => s.embeddable)
   const open = useVideoStore((s) => s.open)
   const togglePlayer = useVideoStore((s) => s.togglePlayer)
-  if (!activeLectureId || activeLectureId === 'default' || !embeddable) return null
+  const videoLectureId = useVideoStore((s) => s.lectureId)
+  const videoLoad = useVideoStore((s) => s.load)
+
+  useEffect(() => {
+    if (lectureId && videoLectureId !== lectureId) {
+      void videoLoad(lectureId)
+    }
+  }, [lectureId, videoLectureId, videoLoad])
+
+  if (!lectureId || !embeddable) return null
   return (
     <button
       type="button"

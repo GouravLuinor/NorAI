@@ -1,0 +1,26 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Course Materials and Resources",
+    "flashcards": [
+        {
+            "front": "What percentage of the final grade is the final exam?",
+            "back": "40%.",
+            "explanation": "The course grade is weighted: 10% problem sets, 20% midterm 1, 30% midterm 2, and 40% final exam."
+        },
+        {
+            "front": "Are library reserve books mandatory?",
+            "back": "No, they are optional background reading.",
+            "explanation": "The lecturer stated that only clickable items on the reading list are required."
+        },
+        {
+            "front": "What should students focus on in the Fabozzi textbook?",
+            "back": "Key terms and key points.",
+            "explanation": "The lecturer reduced the requirement from the whole book to just the key terms and points."
+        },
+        {
+            "front": "When are the six problem sets generally due?",
+            "back": "Mondays.",
+            "explanation": "The lecturer specified that problem sets are usually due on Mondays."
+        }
+    ]
+}

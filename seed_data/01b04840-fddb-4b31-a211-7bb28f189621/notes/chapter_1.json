@@ -1,0 +1,24 @@
+{
+    "chapter_id": 1,
+    "title": "Introduction to Differentiation",
+    "sections": [
+        {
+            "section_type": "prose",
+            "title": "Overview of Differentiation",
+            "content_markdown": "The study of differentiation begins with understanding the derivative through several lenses. The primary focus is the geometric interpretation, which examines the behavior of functions on a graph. Additionally, the course explores the physical interpretation of the derivative. Beyond these theoretical foundations, the derivative is highlighted for its fundamental importance across various disciplines, including science, engineering, economics, and political science. It is a critical tool for analyzing measurements in these fields. The overarching goal of this unit is to master the ability to differentiate any function that can be written down. As an example of the complexity to be mastered, the course aims to eventually calculate the derivative of functions such as $e^x \\arctan(x)$. This sets the stage for a comprehensive approach to differentiation.",
+            "start_sec": 43.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Geometric Interpretation",
+            "content_markdown": "The geometric interpretation of the derivative centers on the problem of finding the tangent line to the graph of a function $y = f(x)$ at a specific point $P = (x_0, y_0)$. Here, $x_0$ represents a fixed location on the x-axis. The process involves visualizing the graph of the function and identifying the specific point $P$ above the coordinate $x_0$. The objective is to construct a line that is tangent to the curve at that precise point. This geometric construction serves as the primary motivation for the study of derivatives in this unit. While the lecturer demonstrates the result by drawing the tangent line on the graph, the specific method or formula used to calculate this line is not yet revealed, establishing the need for the upcoming lessons on differentiation.",
+            "start_sec": 230.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Goals and Scope",
+            "content_markdown": "The unit is designed to equip students with the skills to differentiate any function they encounter. This is described as a 'tall order' but a central objective of the curriculum. The lecturer emphasizes that by the end of the unit, students will be able to handle complex expressions, such as $e^x \\arctan(x)$, using standard notation for the derivative, denoted as $\\frac{d}{dx}$. The course moves from these conceptual foundations toward practical, universal application. The geometric problem of the tangent line is the starting point, but the scope extends to any function that can be written down. This progression from geometric visualization to algebraic manipulation of complex functions forms the core structure of the introduction to differentiation.",
+            "start_sec": 153.0
+        }
+    ]
+}

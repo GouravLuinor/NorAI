@@ -1,0 +1,33 @@
+{
+  "chapter_id": 1,
+  "screenshots": [
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_329.jpg",
+      "reason": "Blackboard showing the problem setup with a graph.",
+      "section": "Geometric Interpretation",
+      "importance": 10,
+      "timestamp": 329.9
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_350.jpg",
+      "reason": "Lecturer drawing the tangent line on the graph.",
+      "section": "Geometric Interpretation",
+      "importance": 10,
+      "timestamp": 350.72
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_207.jpg",
+      "reason": "Blackboard showing an example of a function to differentiate.",
+      "section": "Goals and Scope",
+      "importance": 9,
+      "timestamp": 207.11
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_265.jpg",
+      "reason": "Blackboard stating the geometric problem.",
+      "section": "Geometric Interpretation",
+      "importance": 9,
+      "timestamp": 265.83
+    }
+  ]
+}

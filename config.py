@@ -139,13 +139,15 @@ def model_price(
 POT_SERVER_URL = os.environ.get("NORAI_POT_SERVER_URL", "http://127.0.0.1:4416")
 
 # ── Seeded Public Demo Lectures (P5.4) ───────────────────────────────────────
-# Canonical IDs of the 3 permanently-public demo workspaces hydrated from
+# Canonical IDs of the permanent public demo workspaces hydrated from
 # seed_data/ at startup. Shared by backend/main.py (display + access bypass) and
 # backend/jobs.py (gc_sweep must NEVER delete demo dirs — they have no DB row).
 DEMO_LECTURE_IDS = frozenset({
-    "ab648382-638f-4dde-b7c1-4007a2e638bb",
-    "e54d7376-0e7b-472a-9ca6-9b21ad0b2710",
-    "506dd685-05f9-43df-8d09-5b944c7392f5",
+    "8821152f-f6de-49e9-a885-0adaac6ba4cb",
+    "01b04840-fddb-4b31-a211-7bb28f189621",
+    "c8cab2e7-52b7-4cdc-8386-f440d02f3f45",
+    "2e983ee0-ae41-4910-9239-099b34dee04c",
+    "5f7225bf-ba41-46b9-aea9-da91c032b515",
 })
 
 # ── Directory & Database Paths ────────────────────────────────────────────────

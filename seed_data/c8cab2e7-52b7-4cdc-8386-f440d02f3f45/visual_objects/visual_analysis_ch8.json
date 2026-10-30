@@ -1,0 +1,89 @@
+{
+  "chapter_id": 8,
+  "frames": {
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2851.jpg": {
+      "ocr_text": "x(t) = x0 + v0t + 1/2at^2",
+      "importance_score": 10,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer points to the kinematic position equation on the board."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2857.jpg": {
+      "ocr_text": "x(t) = x0 + v0t + 1/2at^2",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer highlights the completed position equation."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2869.jpg": {
+      "ocr_text": "x(t) = x0 + v0t + 1/2at^2",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The lecturer continues discussing the position equation."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2872.jpg": {
+      "ocr_text": "x(t) = x0 + v0t + 1/2at^2",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The lecturer gestures toward the position equation."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2891.jpg": {
+      "ocr_text": "Newtonian Mech, Kinematics, Dynamics",
+      "importance_score": 3,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The lecturer writes the chapter topics on the board."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2902.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains the importance of understanding the derivation."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2909.jpg": {
+      "ocr_text": "x(t) = x0 + v0t + 1/2at^2",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The lecturer refers back to the position equation."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2923.jpg": {
+      "ocr_text": "",
+      "importance_score": 6,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the goal of eliminating time."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2926.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "slide",
+      "include_in_notes": false,
+      "description": "The lecturer prepares to write the velocity equation."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_2932.jpg": {
+      "ocr_text": "Y(t) = Y0 + V0t + 1/2at^2",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer writes the position equation using Y as the variable."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3053.jpg": {
+      "ocr_text": "Y(t) = Y0 + V0t + 1/2at^2, V(t) = V0 + at, t = (V - V0)/a, V^2 = V0^2 + 2a(x - x0)",
+      "importance_score": 10,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The board shows the full derivation steps and the final time-independent velocity formula."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3103.jpg": {
+      "ocr_text": "Y(t) = Y0 + V0t + 1/2at^2, V(t) = V0 + at, t = (V - V0)/a, V^2 = V0^2 + 2a(x - x0)",
+      "importance_score": 10,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecturer boxes the final equations to emphasize their importance."
+    }
+  }
+}

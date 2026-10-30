@@ -1,0 +1,78 @@
+{
+    "chapter_id": 6,
+    "chapter_title": "Risk Management, Insurance, and Portfolio Theory",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 6,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Insurance"
+            ],
+            "question": "When did the institution of insurance emerge as a division of finance?",
+            "options": [
+                "1800s",
+                "1600s",
+                "1900s",
+                "1700s"
+            ],
+            "answer": "1600s",
+            "explanation": "The lecturer states that insurance emerged in the 1600s when probability theory was invented.",
+            "flashcard_front": "When did insurance emerge as a division of finance?",
+            "flashcard_back": "In the 1600s, coinciding with the invention of probability theory.",
+            "flashcard_explanation": "The lecturer links the rise of insurance directly to the mathematical invention of probability theory in the 1600s."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 6,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Financial Technology"
+            ],
+            "question": "Financial inventions are currently ineligible for patent protection in the United States.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer notes that it has become possible to patent financial inventions in the United States and other countries.",
+            "flashcard_front": "Are financial inventions patentable in the United States?",
+            "flashcard_back": "Yes, it has become possible to patent financial inventions.",
+            "flashcard_explanation": "The lecturer confirms that patent rights for financial inventions are now available in the US."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 6,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Portfolio Diversification"
+            ],
+            "question": "How does portfolio management differ from insurance in terms of risk pooling?",
+            "options": [],
+            "answer": "Insurance pools risks by writing policies for individual policyholders, whereas portfolio management pools risks by assembling a diversified portfolio or one negatively correlated with a specific risk.",
+            "explanation": "The lecturer explicitly contrasts the two, noting insurance writes policies for individuals while portfolio management uses asset assembly and correlation strategies.",
+            "flashcard_front": "How does portfolio management differ from insurance?",
+            "flashcard_back": "Insurance pools individual policies; portfolio management pools assets via diversification or negative correlation.",
+            "flashcard_explanation": "The lecturer distinguishes between the policy-based pooling of insurance and the asset-based pooling of portfolio theory."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 6,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Efficient Markets Hypothesis"
+            ],
+            "question": "What evidence does the lecturer provide to support the Efficient Markets Hypothesis?",
+            "options": [],
+            "answer": "The lecturer points to the observation that financial markets respond with great speed to new information and that prediction markets are often highly accurate at forecasting outcomes.",
+            "explanation": "The lecturer cites market speed and the accuracy of prediction markets as evidence for the efficient markets theory.",
+            "flashcard_front": "What evidence supports the Efficient Markets Hypothesis?",
+            "flashcard_back": "Rapid market response to new information and the accuracy of prediction markets.",
+            "flashcard_explanation": "The lecturer highlights market speed and the success of prediction markets as indicators of market efficiency."
+        }
+    ]
+}

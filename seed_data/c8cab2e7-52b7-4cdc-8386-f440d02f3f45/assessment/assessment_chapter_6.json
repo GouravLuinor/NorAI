@@ -1,0 +1,79 @@
+{
+    "chapter_id": 6,
+    "chapter_title": "Velocity, Acceleration, and Calculus",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 6,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Position-time graphs"
+            ],
+            "question": "What does a position-time graph represent?",
+            "options": [
+                "The physical path of the object in space",
+                "The object's position as a function of time",
+                "The object's velocity over time",
+                "The object's acceleration over time"
+            ],
+            "answer": "The object's position as a function of time",
+            "explanation": "The lecturer explicitly states that x is a function of time and the graph shows x versus t.",
+            "flashcard_front": "What does a position-time graph show?",
+            "flashcard_back": "It shows position as a function of time, not the physical path of the object.",
+            "flashcard_explanation": "The graph depicts x(t), meaning it tracks position over time, not the spatial trajectory."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 6,
+            "type": "True/False",
+            "difficulty": "Medium",
+            "concepts": [
+                "Average velocity"
+            ],
+            "question": "If an object's average velocity is zero, it must have remained stationary for the entire duration.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer explains that an object could move and return to its starting position, resulting in an average velocity of zero.",
+            "flashcard_front": "Can average velocity be zero if an object moved?",
+            "flashcard_back": "Yes, if the object returns to its starting position, the displacement is zero.",
+            "flashcard_explanation": "Average velocity is displacement over time; zero displacement results in zero average velocity."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 6,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Instantaneous velocity",
+                "Derivatives"
+            ],
+            "question": "How is instantaneous velocity represented on a position-time graph?",
+            "options": [],
+            "answer": "It is represented by the slope of the tangent line to the curve at that specific point.",
+            "explanation": "The lecturer defines instantaneous velocity as the derivative dx/dt, which corresponds to the tangent of the curve at a point.",
+            "flashcard_front": "What is instantaneous velocity on a position-time graph?",
+            "flashcard_back": "The slope of the tangent line to the curve at that point.",
+            "flashcard_explanation": "The derivative dx/dt represents the slope of the tangent at any given time t."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 6,
+            "type": "Conceptual",
+            "difficulty": "Easy",
+            "concepts": [
+                "Acceleration"
+            ],
+            "question": "Why is there no common name for the third derivative of position?",
+            "options": [],
+            "answer": "There are no physical equations that involve the third derivative explicitly.",
+            "explanation": "The lecturer notes that while you can take any number of derivatives, only the first two have names because they appear in fundamental laws like F=ma.",
+            "flashcard_front": "Why does the third derivative of position lack a name?",
+            "flashcard_back": "No physical equations explicitly involve the third derivative.",
+            "flashcard_explanation": "Only the first two derivatives (velocity and acceleration) are used in fundamental equations like F=ma."
+        }
+    ]
+}

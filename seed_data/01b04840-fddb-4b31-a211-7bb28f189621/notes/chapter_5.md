@@ -1,0 +1,16 @@
+# Calculus in Context: A Word Problem
+
+
+## The Nature of Calculus Word Problems
+
+The lecturer notes that calculus often has a reputation for being difficult, but argues this is largely due to the context in which problems are presented. In real-world applications, a calculus problem is typically embedded within a larger structure that requires applying mathematical knowledge from grade school through high school. The actual calculus component is often a routine, isolated step, while the rest of the work involves managing these surrounding complexities. To illustrate this, the lecturer introduces a geometry problem: finding the area of a triangle enclosed by the coordinate axes and a tangent line to the curve $y = 1/x$. This problem is chosen because it directly utilizes the geometric interpretation of the derivative, which is the only type of word problem currently accessible given the course's progress.
+
+
+## Setting Up the Geometry Problem
+
+To solve the problem, we focus on the first quadrant and the hyperbola $y = 1/x$. We select a specific point on this curve, denoted as $(x_0, y_0)$, which serves as the point of tangency for our line. The goal is to calculate the area of the triangle formed by the axes and the tangent line at this point. To do this, we must identify the base and the height of the triangle. The base corresponds to the x-intercept of the tangent line, and the height corresponds to the y-intercept. Establishing clear notation—using $x$ and $y$ for variables and $x_0$ and $y_0$ for the specific point—is described as nearly half the battle in solving such problems.
+
+
+## The Role of Calculus
+
+The lecturer emphasizes that there is only one specific step in this entire process that requires calculus: determining the equation of the tangent line. Once the tangent line equation is derived using the derivative (the 'magic number' or slope), the remaining work is purely geometric. We start the tangent line equation as $Y - y_0 = m(X - x_0)$, where $m$ is the slope at the point $(x_0, y_0)$. By isolating this calculus step, the problem transitions from a calculus exercise into a standard geometry problem of finding intercepts and calculating the area of a triangle. This approach demonstrates how calculus acts as a tool within a broader mathematical context.

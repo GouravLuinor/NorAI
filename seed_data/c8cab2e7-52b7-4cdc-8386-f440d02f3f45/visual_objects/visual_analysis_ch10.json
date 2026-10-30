@@ -1,0 +1,89 @@
+{
+  "chapter_id": 10,
+  "frames": {
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3808.jpg": {
+      "ocr_text": "Y(t) = 15 + 10t - 5t^2 V(t) = dy/dt = 10 - 10t 10t* - 10 = 0 t* = 1sec Y(1) = 15 + 10 - 5 = 20m Y=0 t^2 - 2t - 3 = 0 Hits gvd",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Equations showing the trajectory and time calculation for a projectile."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3892.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discussing the significance of extra solutions."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3915.jpg": {
+      "ocr_text": "",
+      "importance_score": 4,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explaining that physics equations must be accepted as they are."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3954.jpg": {
+      "ocr_text": "E^2 = P^2 + M^2 E = ± sqrt(P^2 + M^2)",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The relativistic energy equation showing the positive and negative roots."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_3973.jpg": {
+      "ocr_text": "t = 2 ± sqrt(4+12) / 2 = 2 ± 4 / 2 = -1, 3 E^2 = P^2 + M^2 E = ± sqrt(P^2 + M^2)",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Mathematical roots and the energy equation."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_4007.jpg": {
+      "ocr_text": "Y(t) = Y_0 + V_0t + 1/2at^2 V(t) = V_0 + at V^2 = V_0^2 + 2a(x - x_0) Y_0 = 15m V_0 = 10m/s",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Kinematic equations for motion."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_4129.jpg": {
+      "ocr_text": "V^2 = V_0^2 + 2(-g)(Y - 15) V_0 = 10m/s",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Time-independent equation applied to a specific problem."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_4188.jpg": {
+      "ocr_text": "V dV/dt = a V",
+      "importance_score": 7,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Starting step for the calculus derivation."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_4224.jpg": {
+      "ocr_text": "V dV/dt = a V = a dx/dt",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Showing the relationship between velocity and position derivatives."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_4314.jpg": {
+      "ocr_text": "V dV/dt = a V d(V^2/2) = aV = a dx/dt d(V^2/2) = a dx V^2 - V_0^2 = a(x - x_0) V^2 = V_0^2 + 2a(x - x_0)",
+      "importance_score": 10,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Full derivation of the time-independent kinematic formula using calculus."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_4339.jpg": {
+      "ocr_text": "V dV/dt = a V d(V^2/2) = aV = a dx/dt d(V^2/2) = a dx V^2/2 = a delta x",
+      "importance_score": 8,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "Step showing the integration of changes."
+    },
+    "outputs/c8cab2e7-52b7-4cdc-8386-f440d02f3f45/screenshots/keyframes/frame_4394.jpg": {
+      "ocr_text": "V^2 - V_0^2 = a(x - x_0) V^2 = V_0^2 + 2a(x - x_0)",
+      "importance_score": 9,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The final derived kinematic formula."
+    }
+  }
+}

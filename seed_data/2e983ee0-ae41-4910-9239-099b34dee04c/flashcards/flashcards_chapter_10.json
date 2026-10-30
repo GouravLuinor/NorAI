@@ -1,0 +1,26 @@
+{
+    "chapter_id": 10,
+    "chapter_title": "Brokerages, Futures, Options, and Democratization",
+    "flashcards": [
+        {
+            "front": "Where were futures contracts originally invented?",
+            "back": "They were invented in Osaka, Japan, in the 1600s for the rice market.",
+            "explanation": "The lecturer identified Osaka, Japan, as the origin of futures contracts in the 17th century."
+        },
+        {
+            "front": "Are forward contracts traded on exchanges?",
+            "back": "No, they are generally over-the-counter contracts.",
+            "explanation": "Forward contracts are not arranged through exchanges, unlike standardized futures contracts."
+        },
+        {
+            "front": "What is a danger of democratizing finance?",
+            "back": "It involves less knowledgeable participants who are more vulnerable to exploitation.",
+            "explanation": "Expanding financial access to the general population can expose those without financial expertise to significant risks."
+        },
+        {
+            "front": "What does backwardation in a futures market suggest?",
+            "back": "It suggests that the market is predicting major drops in future prices.",
+            "explanation": "Backwardation is used by the lecturer to describe market expectations of declining future prices."
+        }
+    ]
+}

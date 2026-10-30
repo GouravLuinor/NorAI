@@ -1,0 +1,24 @@
+{
+    "chapter_id": 8,
+    "title": "Debt Markets, Stocks, and Real Estate",
+    "sections": [
+        {
+            "section_type": "prose",
+            "title": "Debt Markets and Interest Rates",
+            "content_markdown": "Interest rates represent the price of time and fluctuate in patterns that serve as vital drivers of the economy. The theory of the term structure explains how interest rates differ based on maturity. While many debt instruments are payable in currency, others are indexed to the price level, providing real interest rates. Historically, real interest rates have experienced significant movements that impact daily life. For instance, the economy recently operated under a regime of negative real interest rates due to aggressive monetary policy by the Federal Reserve. Given the subprime crisis, it is expected that the Fed will likely push real interest rates down again, potentially leading to another period of negative real interest rates.",
+            "start_sec": 3558.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Stock Market Mechanics",
+            "content_markdown": "Stocks represent shares in companies traded on exchanges, but their valuation involves complexities often overlooked. A key ambiguity arises because share repurchases can alter the units of measurement in a security. Management must make critical decisions regarding how much debt to take on—which defines the stock's leverage—and how much in dividends to pay out. These decisions directly influence the stock price. While the concept of dividing a company into shares and selling them is simple, the practical application involves intricate factors. Future discussions will cover the Modigliani-Miller theorem to better understand these financial structures, alongside analyzing the tendency of the stock market to undergo dramatic movements, as observed earlier this year.",
+            "start_sec": 3638.0
+        },
+        {
+            "section_type": "prose",
+            "title": "Real Estate and the Housing Market",
+            "content_markdown": "The housing market is a massive sector, with the total value of single-family homes in the United States estimated at $2 trillion. Recently, this market has become increasingly speculative, leading to unstable home prices. Nationally, real home prices in the U.S. rose by 85% between 1997 and 2006, effectively doubling in value. However, this trend has reversed, with real home prices falling nearly 10% since their 2006 peak. This is not an isolated U.S. phenomenon; many countries worldwide have experienced similar housing booms followed by the beginning of potential busts. Understanding these dynamics requires looking closely at the market for homes and the market for mortgages, which are the primary financial instruments used to fund home ownership.",
+            "start_sec": 3731.0
+        }
+    ]
+}

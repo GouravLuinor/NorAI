@@ -65,9 +65,7 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
       .then((resData) => {
         if (cancelled) return
         setData(resData)
-        if (resData.nodes && resData.nodes.length > 0) {
-          setSelectedNode(resData.nodes[0])
-        }
+        setSelectedNode(null)
         setLoading(false)
       })
       .catch(() => {
@@ -94,31 +92,49 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
     [hasNodes, data, layoutMode],
   )
 
-  // Auto-fit: on load / layout switch, zoom + pan so the full node cloud fits
-  // the viewport (dense maps grow beyond 600px and would otherwise open
-  // clipped).
-  const fitOnceRef = useRef<{ key: string } | null>(null)
-  const fitKey = `${layoutMode}:${hasNodes ? data.nodes.length : 0}:${chapterId}`
-  useEffect(() => {
-    if (fitOnceRef.current?.key === fitKey) return
-    fitOnceRef.current = { key: fitKey }
+  // Auto-fit: on load, layout switch, and pane resize, zoom + pan so the full
+  // node cloud fits the viewport. Node cards are centred on their layout
+  // points, so the bounds include half a card on every side (root cards are
+  // the widest at ~300px + padding).
+  const fitMap = useCallback(() => {
     const container = containerRef.current
     if (!container || !hasNodes) return
     const pos = Object.values(nodePositions)
-    const minX = Math.min(...pos.map((p) => p.x))
-    const maxX = Math.max(...pos.map((p) => p.x))
-    const minY = Math.min(...pos.map((p) => p.y))
-    const maxY = Math.max(...pos.map((p) => p.y))
-    const bboxW = Math.max(320, maxX - minX + 320)
-    const bboxH = Math.max(200, maxY - minY + 160)
+    if (pos.length === 0) return
+    const cardPadX = 170
+    const cardPadY = 44
+    const minX = Math.min(...pos.map((p) => p.x)) - cardPadX
+    const maxX = Math.max(...pos.map((p) => p.x)) + cardPadX
+    const minY = Math.min(...pos.map((p) => p.y)) - cardPadY
+    const maxY = Math.max(...pos.map((p) => p.y)) + cardPadY
+    const bboxW = Math.max(320, maxX - minX)
+    const bboxH = Math.max(200, maxY - minY)
     const fitZoom = Math.min(1, (container.clientWidth - 48) / bboxW, (container.clientHeight - 48) / bboxH)
-    setZoom(Math.max(0.4, fitZoom))
+    const nextZoom = Math.max(0.4, fitZoom)
+    setZoom(nextZoom)
     setPan({
-      x: (container.clientWidth - bboxW * fitZoom) / 2 - minX * fitZoom,
-      y: (container.clientHeight - bboxH * fitZoom) / 2 - minY * fitZoom,
+      x: (container.clientWidth - bboxW * nextZoom) / 2 - minX * nextZoom,
+      y: (container.clientHeight - bboxH * nextZoom) / 2 - minY * nextZoom,
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitKey])
+  }, [hasNodes, nodePositions])
+
+  useEffect(() => {
+    if (!hasNodes) return
+    const container = containerRef.current
+    if (!container) return
+    let raf = 0
+    const scheduleFit = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(fitMap)
+    }
+    scheduleFit()
+    const observer = new ResizeObserver(scheduleFit)
+    observer.observe(container)
+    return () => {
+      cancelAnimationFrame(raf)
+      observer.disconnect()
+    }
+  }, [fitMap, hasNodes])
 
   if (loading) {
     return <ConceptSkeleton />
@@ -164,17 +180,17 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
   return (
     <div className="flex flex-col h-full bg-nb relative overflow-hidden select-none">
       {/* Top Header Controls */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-bdr bg-ns shrink-0">
-        <div>
+      <div className="@container flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 border-b border-bdr bg-ns shrink-0">
+        <div className="min-w-0 flex-1 basis-[180px]">
           <h2 className="text-sm font-semibold text-nt tracking-tight flex items-center gap-2">
-            <Sparkles size={14} className="text-np" /> Ch {String(chapterId).padStart(2, '0')} Concept Map
+            <Sparkles size={14} className="text-np shrink-0" /> Ch {String(chapterId).padStart(2, '0')} Concept Map
           </h2>
-          <p className="text-2xs text-nt3">
-            Derived from lecture outline & section notes · {data.nodes.length} concepts & connections
+          <p className="text-2xs text-nt3 truncate">
+            {data.nodes.length} concepts & connections
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 @max-[520px]:w-full @max-[520px]:justify-between">
           <div className="flex items-center gap-1 p-0.5 rounded-md bg-ns2 border border-bdr2">
             <button
               type="button"
@@ -183,7 +199,7 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
                 layoutMode === 'tree' ? 'bg-np text-npfg shadow-sm' : 'text-nt3 hover:text-nt2'
               }`}
             >
-              Tree Layout
+              Tree
             </button>
             <button
               type="button"
@@ -216,10 +232,9 @@ export function ConceptMapView({ chapterId }: ConceptMapViewProps) {
             <Button
               variant="outline"
               onClick={() => {
-                setZoom(1)
-                setPan({ x: 0, y: 0 })
+                fitMap()
               }}
-              aria-label="Reset zoom and pan"
+              aria-label="Fit the map to the view"
               className="p-1 rounded-sm text-2xs h-7 w-7"
             >
               <Maximize2 size={13} />

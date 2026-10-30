@@ -1,0 +1,26 @@
+{
+    "chapter_id": 8,
+    "chapter_title": "The Word RAM Model",
+    "flashcards": [
+        {
+            "front": "What is the memory addressing limit of a 32-bit word size?",
+            "back": "Approximately 4 gigabytes.",
+            "explanation": "A 32-bit word allows for 2^32 unique addresses, resulting in a 4GB limit."
+        },
+        {
+            "front": "True or False: Word RAM assumes constant time memory access.",
+            "back": "True.",
+            "explanation": "Random access memory implies that any location can be accessed in constant time."
+        },
+        {
+            "front": "What does 'byte addressable' mean?",
+            "back": "Each unique address refers to a consecutive eight-bit chunk of memory.",
+            "explanation": "Computers address memory in bytes (8 bits) rather than individual bits."
+        },
+        {
+            "front": "Why is operating on linear memory linear time?",
+            "back": "The CPU processes a constant amount of memory in constant time per operation.",
+            "explanation": "Because each operation is constant-time and constant-size, processing n items requires n operations."
+        }
+    ]
+}

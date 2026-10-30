@@ -8,10 +8,18 @@ import { renderToString } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom'
 import { LandingPage } from './pages/LandingPage'
 import { PricingPage } from './pages/PricingPage'
+import { DemoLecturePage } from './pages/DemoLecturePage'
+import { DEMO_PAGES } from './content/demoPages'
 
 const PAGES: Record<string, () => React.ReactElement> = {
   '/': () => <LandingPage onStartWorkspace={() => {}} />,
   '/pricing': () => <PricingPage />,
+  ...Object.fromEntries(
+    Object.values(DEMO_PAGES).map((p) => [
+      p.path,
+      () => <DemoLecturePage initialSlug={p.slug} />,
+    ])
+  ),
 }
 
 export const PRERENDER_PATHS = Object.keys(PAGES)

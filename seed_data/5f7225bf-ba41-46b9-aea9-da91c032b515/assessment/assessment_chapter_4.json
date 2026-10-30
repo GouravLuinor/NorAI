@@ -1,0 +1,78 @@
+{
+    "chapter_id": 4,
+    "chapter_title": "Can It Happen Here? Authoritarianism and Modern Challenges",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 4,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Sinclair Lewis"
+            ],
+            "question": "In Sinclair Lewis's novel 'It Can't Happen Here', what specific threat does he depict taking over America?",
+            "options": [
+                "Communism",
+                "Fascism",
+                "Monarchy",
+                "Anarchy"
+            ],
+            "answer": "Fascism",
+            "explanation": "The lecturer explicitly states that to Sinclair Lewis in 1935, the threat in his novel was fascism.",
+            "flashcard_front": "What political threat does Sinclair Lewis's 'It Can't Happen Here' depict?",
+            "flashcard_back": "Fascism.",
+            "flashcard_explanation": "Lewis's 1935 novel portrays a fascist movement seizing control of the United States."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 4,
+            "type": "True/False",
+            "difficulty": "Medium",
+            "concepts": [
+                "Modern slavery"
+            ],
+            "question": "The lecturer suggests that there are likely fewer people in bondage today than during the American Civil War era.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer states there are probably more people enslaved today than at the time of the American Civil War.",
+            "flashcard_front": "Are there more or fewer people enslaved today than during the Civil War era?",
+            "flashcard_back": "There are likely more people enslaved today.",
+            "flashcard_explanation": "The lecturer notes that modern forms of bondage, including trafficking, likely exceed historical numbers."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 4,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Shock of events"
+            ],
+            "question": "Define the 'shock of events' as described by the lecturer.",
+            "options": [],
+            "answer": "Events that are not foreseen and cause people to change their positions after they occur.",
+            "explanation": "The lecturer defines these as events you don't see coming, after which everyone changes their position.",
+            "flashcard_front": "What is the 'shock of events'?",
+            "flashcard_back": "Unforeseen events that force people to change their positions after they occur.",
+            "flashcard_explanation": "These events punctuate history and disrupt the expected trajectory of social and political life."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 4,
+            "type": "Short Answer",
+            "difficulty": "Easy",
+            "concepts": [
+                "Modern slavery"
+            ],
+            "question": "Name two industries mentioned by the lecturer where modern slavery occurs.",
+            "options": [],
+            "answer": "Tea fields and shrimp fishing.",
+            "explanation": "The lecturer specifically mentions tea fields in India and the shrimp fishing business in the South China Sea.",
+            "flashcard_front": "Name two industries where modern slavery occurs according to the lecturer.",
+            "flashcard_back": "Tea fields and the shrimp fishing industry.",
+            "flashcard_explanation": "These examples illustrate modern forms of chattel bondage in global production."
+        }
+    ]
+}

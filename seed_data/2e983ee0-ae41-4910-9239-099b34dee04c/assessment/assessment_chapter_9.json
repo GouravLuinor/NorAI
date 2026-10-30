@@ -1,0 +1,78 @@
+{
+    "chapter_id": 9,
+    "chapter_title": "Banking, Monetary Policy, and Investment Banking",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 9,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Investment Banking"
+            ],
+            "question": "Which of the following is a key characteristic of an investment bank?",
+            "options": [
+                "It accepts deposits from the general public.",
+                "It focuses on underwriting securities for financial institutions.",
+                "It is primarily regulated by the Basel Accord.",
+                "It manages the national money supply."
+            ],
+            "answer": "It focuses on underwriting securities for financial institutions.",
+            "explanation": "The transcript explicitly states that investment banks do not accept deposits and deal with financial institutions to underwrite securities.",
+            "flashcard_front": "What is the primary function of an investment bank?",
+            "flashcard_back": "They underwrite securities for financial institutions and do not accept public deposits.",
+            "flashcard_explanation": "Investment banks focus on institutional financial services rather than retail banking activities like deposit-taking."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 9,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Monetary Policy"
+            ],
+            "question": "Central banks primarily manage the economy by controlling short-term interest rates.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The lecturer states that central banks are in control of short-term interest rates to manage and stabilize the economy.",
+            "flashcard_front": "How do central banks manage the economy?",
+            "flashcard_back": "They control short-term interest rates to manage and stabilize the economy.",
+            "flashcard_explanation": "Interest rate manipulation is the primary tool mentioned for central bank monetary policy."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 9,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Central Banks"
+            ],
+            "question": "Name two central banks mentioned by the lecturer.",
+            "options": [],
+            "answer": "Federal Reserve and Bank of England",
+            "explanation": "The lecturer lists the Federal Reserve (US), Bank of England (UK), Bank of Japan (Japan), and European Central Bank (Europe).",
+            "flashcard_front": "Name two examples of central banks.",
+            "flashcard_back": "The Federal Reserve and the Bank of England.",
+            "flashcard_explanation": "These are two of the central banks identified by the lecturer as managing national economies."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 9,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Money Managers"
+            ],
+            "question": "Besides technical expertise, what other factor does the lecturer suggest influences the success of professional money managers?",
+            "options": [],
+            "answer": "Behavioral factors and interpersonal psychology.",
+            "explanation": "The lecturer notes that money managers are human beings whose success may be influenced by their own psychology and interpersonal connections.",
+            "flashcard_front": "What influences money manager success besides technology?",
+            "flashcard_back": "Behavioral factors, interpersonal psychology, and human connections.",
+            "flashcard_explanation": "The lecturer emphasizes that money managers are human and subject to behavioral finance influences."
+        }
+    ]
+}

@@ -1,0 +1,78 @@
+{
+    "chapter_id": 8,
+    "chapter_title": "The Word RAM Model",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 8,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Word size"
+            ],
+            "question": "What is the primary limitation of a 32-bit word size regarding memory addressing?",
+            "options": [
+                "It can only address 4 gigabytes of memory.",
+                "It can only address 20 exabytes of memory.",
+                "It cannot perform bitwise operations.",
+                "It requires linear time to access any memory location."
+            ],
+            "answer": "It can only address 4 gigabytes of memory.",
+            "explanation": "With 32 bits, you can address 2^32 distinct locations, which equals approximately 4 gigabytes.",
+            "flashcard_front": "What is the memory addressing limit of a 32-bit word size?",
+            "flashcard_back": "Approximately 4 gigabytes.",
+            "flashcard_explanation": "A 32-bit word allows for 2^32 unique addresses, resulting in a 4GB limit."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 8,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Word RAM"
+            ],
+            "question": "In the Word RAM model, memory is accessed in constant time.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "True",
+            "explanation": "The fundamental assumption of the Word RAM model is that random access to any memory location occurs in constant time.",
+            "flashcard_front": "True or False: Word RAM assumes constant time memory access.",
+            "flashcard_back": "True.",
+            "flashcard_explanation": "Random access memory implies that any location can be accessed in constant time."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 8,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Byte addressable"
+            ],
+            "question": "What does it mean for a computer to be 'byte addressable'?",
+            "options": [],
+            "answer": "It means there is a unique address for every consecutive eight-bit chunk in memory.",
+            "explanation": "Modern computers do not address individual bits; they address collections of eight bits, known as bytes.",
+            "flashcard_front": "What does 'byte addressable' mean?",
+            "flashcard_back": "Each unique address refers to a consecutive eight-bit chunk of memory.",
+            "flashcard_explanation": "Computers address memory in bytes (8 bits) rather than individual bits."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 8,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Word RAM"
+            ],
+            "question": "Why does operating on a linear amount of memory take linear time in the Word RAM model?",
+            "options": [],
+            "answer": "Because the CPU can only operate on a constant amount of memory in constant time, so processing linear data requires a linear number of constant-time operations.",
+            "explanation": "Since each operation is limited to a constant amount of data, scaling the data to size n requires n operations.",
+            "flashcard_front": "Why is operating on linear memory linear time?",
+            "flashcard_back": "The CPU processes a constant amount of memory in constant time per operation.",
+            "flashcard_explanation": "Because each operation is constant-time and constant-size, processing n items requires n operations."
+        }
+    ]
+}

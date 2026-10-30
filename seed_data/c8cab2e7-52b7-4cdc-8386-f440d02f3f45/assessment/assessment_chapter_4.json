@@ -1,0 +1,78 @@
+{
+    "chapter_id": 4,
+    "chapter_title": "Introduction to Newtonian Mechanics",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 4,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Newtonian mechanics"
+            ],
+            "question": "According to the lecturer, what is the primary purpose of studying Newtonian mechanics in this course?",
+            "options": [
+                "To memorize as many formulas as possible.",
+                "To predict the future state of a system given its present state.",
+                "To study the history of electromagnetism.",
+                "To analyze the psychological motivations of objects in motion."
+            ],
+            "answer": "To predict the future state of a system given its present state.",
+            "explanation": "The lecturer explicitly states that the plan every time is to predict the future given the present.",
+            "flashcard_front": "What is the primary goal of Newtonian mechanics?",
+            "flashcard_back": "To predict the future state of a system given its present state.",
+            "flashcard_explanation": "The lecturer defines the entire program of physics as predicting the future from the present."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 4,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Initial conditions"
+            ],
+            "question": "To predict the trajectory of a thrown object, the color of the object is a necessary initial condition.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer notes that the color of the object is irrelevant to the physics of its motion.",
+            "flashcard_front": "Is the color of an object relevant to its motion?",
+            "flashcard_back": "No, it is irrelevant.",
+            "flashcard_explanation": "The lecturer specifies that only initial location and velocity are needed, not properties like color."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 4,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Physical modeling"
+            ],
+            "question": "Why does the lecturer recommend following the logic of physics rather than memorizing formulas?",
+            "options": [],
+            "answer": "Because the number of formulas grows too large to memorize, and understanding the logic is the easiest and most reliable way to solve problems.",
+            "explanation": "The lecturer explains that after a few weeks, there will be 100 formulas, making memorization and trial-and-error impossible.",
+            "flashcard_front": "Why avoid memorizing formulas?",
+            "flashcard_back": "The number of formulas becomes too large to memorize; logic is more reliable.",
+            "flashcard_explanation": "Memorization fails as the course progresses; understanding the derivation is the most efficient approach."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 4,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Physical modeling"
+            ],
+            "question": "What does the lecturer mean when he says physics asks 'limited' questions?",
+            "options": [],
+            "answer": "Physics focuses on specific, quantifiable aspects of inanimate objects, such as speed or time of impact, while ignoring subjective or irrelevant details.",
+            "explanation": "The lecturer uses the example of a falling person to show that physics ignores the 'why' and focuses only on measurable physical outcomes.",
+            "flashcard_front": "Why are physics questions considered 'limited'?",
+            "flashcard_back": "They focus only on specific, quantifiable physical outcomes, ignoring subjective or irrelevant details.",
+            "flashcard_explanation": "By ignoring non-physical factors, physics achieves high accuracy in predicting measurable outcomes."
+        }
+    ]
+}

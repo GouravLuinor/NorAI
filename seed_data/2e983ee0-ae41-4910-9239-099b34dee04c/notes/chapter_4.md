@@ -1,0 +1,31 @@
+# Finance as Technology and Moral Considerations
+
+
+## Finance as an Evolving Technology
+
+Finance is framed as a powerful, evolving technology, comparable to engines or nuclear reactors. Like these physical machines, financial structures are complex devices consisting of many components that must function correctly. When new financial instruments are first devised, they often encounter difficulties, similar to the early iterations of engines or nuclear reactors. Through the collective experience of many people working over time, a body of knowledge emerges, which constitutes the technology itself. This technology is a potent force in our society, and while it is inherently powerful, it is also dangerous. The subprime crisis serves as an example of the risks associated with the advancement of new financial technology. Despite the problems it may bring, the lecturer argues that we should not allow anger toward the financial community to deflect from the recognition that finance is a vital technology. The goal is to refine and get the technology right, rather than abandoning it.
+
+
+## Global Adoption and Best Practices
+
+The lecturer notes that while they are not a development economist, they have observed a strong interest in finance when speaking in less developed countries. There is a growing recognition that successful emerging countries are those that have adopted well-developed financial institutions and technologies. These nations must adapt the technology to their specific situations, but they are essentially copying best practices. The lecturer emphasizes that there is nothing inherently negative about copying technology; it is a standard process observed in other fields. For example, when the automobile or the airplane was invented, they eventually became standard across the globe because they represented the best available technology. This universality reinforces the view that this course is fundamentally about understanding finance as a technology that is not unique to any one country, but rather a set of tools that can be implemented globally to foster growth and development.
+
+
+## Public Perception and Hostility Toward Finance
+
+There is a long-standing conflict and a sense of contempt regarding finance in our society. Some students and members of the public feel that pursuing a career in finance is akin to 'selling out' or valuing money too much. This hostility is partly driven by the fact that many people in the financial community become extremely wealthy. When individuals see that the richest people are often connected to finance, it can trigger jealousy and questions about whether such wealth is deserved. Furthermore, some individuals who achieve significant financial success may act in ways that are perceived as self-important, which does not help their public image. This hostility is not a new phenomenon; historical examples, such as the 18th-century financier William Duer, show that public anger toward wealthy financiers has deep roots. Duer, despite helping finance the Revolutionary War, was chased by an angry mob, partly because his display of wealth, such as liveried servants, was seen as a return to aristocracy.
+
+
+## The Moral Philosophy of Wealth
+
+The lecturer discusses the moral implications of pursuing financial interests, referencing the 19th-century Yale professor William Graham Sumner. Sumner was a prominent exponent of the idea that individuals should pursue their own interests and that one social class does not owe anything to another. This perspective suggests that there is no need to feel guilty about seeking financial gain, as making money is often a byproduct of doing productive things for the economy, ultimately benefiting society. However, this creates a persistent discomfort. The lecturer introduces the work of philosopher Peter Unger, specifically his book 'Living High and Letting Die', to explore the broader moral dilemma of our economic lives. Most people focus on making money for themselves, but this raises the question of whether such behavior is truly moral when others are suffering from extreme poverty and preventable diseases. This internal conflict is, in the lecturer's view, the same moral dilemma that underlies the financial industry.
+
+
+## The Moral Dilemma of Personal Choice
+
+Peter Unger's book begins with an address for UNICEF, challenging the reader to consider the impact of their spending. He estimates that for every $3 donated to UNICEF, a life can be saved, as many people die from diseases for which cures exist but are inaccessible due to poverty. Unger asks why the reader does not immediately donate $100 to save lives. The lecturer notes that it is unlikely many readers would actually write that check on the spot. If they do not, they are in some sense responsible for the loss of 30 lives. The lecturer emphasizes that failing to do so does not necessarily make someone a 'bad person', but it does highlight a profound moral dilemma underlying all of our economic lives. This exercise is meant to help students reflect on their own behavior and the choices they make regarding their resources, mirroring the moral complexities faced by those in the financial sector.
+
+
+## Philanthropy as a Component of Finance
+
+The final point of the discussion is that philanthropy is an integral part of finance. The lecturer expresses a belief that the most successful and important people in the financial industry eventually end up giving their money away. This serves as a concluding thought on how the moral dilemmas of finance can be addressed. By recognizing that financial success can provide the means for significant charitable contributions, the industry can be viewed through a different moral lens. The lecturer encourages students to consider these broader implications as they navigate their own careers and the role of finance in society. The overarching theme remains that while finance is a powerful and sometimes dangerous technology, it is also a tool that, when understood and managed correctly, can be used to achieve productive outcomes and support philanthropic efforts that address global challenges like those highlighted by organizations such as UNICEF.

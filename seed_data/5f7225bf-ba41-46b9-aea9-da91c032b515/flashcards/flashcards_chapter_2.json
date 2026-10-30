@@ -1,0 +1,26 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Why Universities Study Their Past",
+    "flashcards": [
+        {
+            "front": "Where is the 'Legacies of Slavery' project's final conference?",
+            "back": "In Memphis, Tennessee.",
+            "explanation": "The lecturer mentions the project culminates with a final conference in Memphis, Tennessee."
+        },
+        {
+            "front": "Is this course the full version of the lecturer's Civil War course?",
+            "back": "No, it is a truncated version.",
+            "explanation": "The lecturer explains he boiled the course down to focus on the middle section."
+        },
+        {
+            "front": "Why focus on the middle of the Civil War course?",
+            "back": "To help understand today's dilemmas like polarization and institutional dysfunction.",
+            "explanation": "The lecturer believes this historical period is key to understanding current political challenges."
+        },
+        {
+            "front": "What does the lecturer say is at the core of history?",
+            "back": "A certain kind of human tragedy.",
+            "explanation": "The lecturer argues that history involves human tragedy that we are all part of."
+        }
+    ]
+}

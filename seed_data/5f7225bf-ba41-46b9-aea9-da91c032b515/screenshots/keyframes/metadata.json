@@ -1,0 +1,292 @@
+[
+    {
+        "timestamp": 0.0,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_0.jpg",
+        "difference": 0.0
+    },
+    {
+        "timestamp": 6.41,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_6.jpg",
+        "difference": 40.2857
+    },
+    {
+        "timestamp": 71.74,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_71.jpg",
+        "difference": 27.8837
+    },
+    {
+        "timestamp": 133.87,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_133.jpg",
+        "difference": 12.5964
+    },
+    {
+        "timestamp": 194.9,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_194.jpg",
+        "difference": 6.9125
+    },
+    {
+        "timestamp": 259.86,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_259.jpg",
+        "difference": 5.3955
+    },
+    {
+        "timestamp": 321.86,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_321.jpg",
+        "difference": 28.8633
+    },
+    {
+        "timestamp": 373.84,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_373.jpg",
+        "difference": 30.6543
+    },
+    {
+        "timestamp": 434.87,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_434.jpg",
+        "difference": 9.3457
+    },
+    {
+        "timestamp": 495.89,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_495.jpg",
+        "difference": 7.7588
+    },
+    {
+        "timestamp": 544.44,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_544.jpg",
+        "difference": 33.4884
+    },
+    {
+        "timestamp": 553.25,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_553.jpg",
+        "difference": 32.6296
+    },
+    {
+        "timestamp": 616.25,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_616.jpg",
+        "difference": 9.0996
+    },
+    {
+        "timestamp": 677.28,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_677.jpg",
+        "difference": 12.5967
+    },
+    {
+        "timestamp": 740.27,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_740.jpg",
+        "difference": 6.8237
+    },
+    {
+        "timestamp": 803.27,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_803.jpg",
+        "difference": 11.1975
+    },
+    {
+        "timestamp": 866.26,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_866.jpg",
+        "difference": 6.3664
+    },
+    {
+        "timestamp": 929.26,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_929.jpg",
+        "difference": 9.3973
+    },
+    {
+        "timestamp": 992.26,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_992.jpg",
+        "difference": 6.9373
+    },
+    {
+        "timestamp": 1055.25,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1055.jpg",
+        "difference": 4.9325
+    },
+    {
+        "timestamp": 1118.25,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1118.jpg",
+        "difference": 9.5011
+    },
+    {
+        "timestamp": 1179.28,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1179.jpg",
+        "difference": 9.0384
+    },
+    {
+        "timestamp": 1242.27,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1242.jpg",
+        "difference": 5.1811
+    },
+    {
+        "timestamp": 1303.3,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1303.jpg",
+        "difference": 5.2868
+    },
+    {
+        "timestamp": 1315.91,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1315.jpg",
+        "difference": 33.2229
+    },
+    {
+        "timestamp": 1324.22,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1324.jpg",
+        "difference": 33.8169
+    },
+    {
+        "timestamp": 1385.25,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1385.jpg",
+        "difference": 11.5281
+    },
+    {
+        "timestamp": 1448.25,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1448.jpg",
+        "difference": 9.9892
+    },
+    {
+        "timestamp": 1511.24,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1511.jpg",
+        "difference": 8.8516
+    },
+    {
+        "timestamp": 1574.24,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1574.jpg",
+        "difference": 7.9627
+    },
+    {
+        "timestamp": 1637.24,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1637.jpg",
+        "difference": 5.3413
+    },
+    {
+        "timestamp": 1700.23,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1700.jpg",
+        "difference": 7.1273
+    },
+    {
+        "timestamp": 1763.23,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1763.jpg",
+        "difference": 7.5457
+    },
+    {
+        "timestamp": 1826.22,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1826.jpg",
+        "difference": 8.4823
+    },
+    {
+        "timestamp": 1889.22,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1889.jpg",
+        "difference": 9.2505
+    },
+    {
+        "timestamp": 1952.22,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_1952.jpg",
+        "difference": 5.2236
+    },
+    {
+        "timestamp": 2015.21,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2015.jpg",
+        "difference": 7.7457
+    },
+    {
+        "timestamp": 2078.21,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2078.jpg",
+        "difference": 6.7377
+    },
+    {
+        "timestamp": 2141.21,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2141.jpg",
+        "difference": 10.304
+    },
+    {
+        "timestamp": 2204.2,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2204.jpg",
+        "difference": 7.1611
+    },
+    {
+        "timestamp": 2267.2,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2267.jpg",
+        "difference": 8.7739
+    },
+    {
+        "timestamp": 2330.19,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2330.jpg",
+        "difference": 7.4224
+    },
+    {
+        "timestamp": 2393.19,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2393.jpg",
+        "difference": 9.2352
+    },
+    {
+        "timestamp": 2458.16,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2458.jpg",
+        "difference": 7.4714
+    },
+    {
+        "timestamp": 2519.18,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2519.jpg",
+        "difference": 8.1325
+    },
+    {
+        "timestamp": 2582.18,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2582.jpg",
+        "difference": 9.9999
+    },
+    {
+        "timestamp": 2645.18,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2645.jpg",
+        "difference": 7.547
+    },
+    {
+        "timestamp": 2708.17,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2708.jpg",
+        "difference": 6.6165
+    },
+    {
+        "timestamp": 2773.14,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2773.jpg",
+        "difference": 7.8583
+    },
+    {
+        "timestamp": 2778.54,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2778.jpg",
+        "difference": 87.3408
+    },
+    {
+        "timestamp": 2785.55,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2785.jpg",
+        "difference": 69.4704
+    },
+    {
+        "timestamp": 2792.82,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2792.jpg",
+        "difference": 34.5505
+    },
+    {
+        "timestamp": 2855.82,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2855.jpg",
+        "difference": 13.5104
+    },
+    {
+        "timestamp": 2918.82,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2918.jpg",
+        "difference": 8.0222
+    },
+    {
+        "timestamp": 2981.81,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_2981.jpg",
+        "difference": 5.6246
+    },
+    {
+        "timestamp": 3042.84,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_3042.jpg",
+        "difference": 5.9052
+    },
+    {
+        "timestamp": 3105.84,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_3105.jpg",
+        "difference": 5.4191
+    },
+    {
+        "timestamp": 3168.6,
+        "image_path": "outputs/5f7225bf-ba41-46b9-aea9-da91c032b515/screenshots/keyframes/frame_3168.jpg",
+        "difference": 30.6753
+    }
+]

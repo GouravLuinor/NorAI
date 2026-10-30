@@ -1,0 +1,26 @@
+{
+    "chapter_id": 4,
+    "chapter_title": "Introduction to Newtonian Mechanics",
+    "flashcards": [
+        {
+            "front": "What is the primary goal of Newtonian mechanics?",
+            "back": "To predict the future state of a system given its present state.",
+            "explanation": "The lecturer defines the entire program of physics as predicting the future from the present."
+        },
+        {
+            "front": "Is the color of an object relevant to its motion?",
+            "back": "No, it is irrelevant.",
+            "explanation": "The lecturer specifies that only initial location and velocity are needed, not properties like color."
+        },
+        {
+            "front": "Why avoid memorizing formulas?",
+            "back": "The number of formulas becomes too large to memorize; logic is more reliable.",
+            "explanation": "Memorization fails as the course progresses; understanding the derivation is the most efficient approach."
+        },
+        {
+            "front": "Why are physics questions considered 'limited'?",
+            "back": "They focus only on specific, quantifiable physical outcomes, ignoring subjective or irrelevant details.",
+            "explanation": "By ignoring non-physical factors, physics achieves high accuracy in predicting measurable outcomes."
+        }
+    ]
+}

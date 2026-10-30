@@ -6,6 +6,8 @@ import { useVideoStore } from '../../stores/useVideoStore'
 import { useAskNora } from '../../hooks/useAskNora'
 import type { Reference } from '../../types'
 import { useTutorSettingsStore } from '../../stores/useTutorSettingsStore'
+import { useLectureStore } from '../../stores/useLectureStore'
+import { apiGet } from '../../lib/http'
 import { MessageBubble } from './MessageBubble'
 import { ReferencesPanel } from './ReferencesPanel'
 import { InputZone } from './InputZone'
@@ -13,6 +15,7 @@ import { ShimmerLoader } from './ShimmerLoader'
 import { Lightbox } from '../ui/Lightbox'
 
 export function ChatArea() {
+  const activeLectureId = useLectureStore(s => s.activeLectureId)
   const messages        = useThreadStore(s => s.messages)
   const threadId        = useThreadStore(s => s.threadId)
   const isLoadingHistory = useThreadStore(s => s.isLoading)
@@ -28,9 +31,34 @@ export function ChatArea() {
   const persona   = useTutorSettingsStore(s => s.persona)
 
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([])
+  const [guestRemaining, setGuestRemaining] = useState<number | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   const { send, isInFlight } = useAskNora()
+
+  useEffect(() => {
+    if (!activeLectureId) {
+      setSuggestedQuestions([])
+      setGuestRemaining(null)
+      return
+    }
+    let active = true
+    apiGet<{
+      suggested_questions: string[]
+      is_guest: boolean
+      guest_questions_remaining: number | null
+    }>(`/lectures/${activeLectureId}/suggested-questions`)
+      .then((data) => {
+        if (!active || !data) return
+        setSuggestedQuestions(data.suggested_questions || [])
+        setGuestRemaining(data.guest_questions_remaining)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [activeLectureId, messages.length])
 
   const handleSend = useCallback(async (text: string) => {
     await send(text, { studyMode, persona })
@@ -85,9 +113,35 @@ export function ChatArea() {
               N
             </div>
             <h2 className="text-16 font-bold text-nt mb-1.5">Ask Nora about this lecture</h2>
-            <p className="text-14 text-nt3 max-w-[260px] leading-relaxed">
+            <p className="text-14 text-nt3 max-w-[280px] leading-relaxed">
               Answers come from what the lecturer said, with the moment they said it.
             </p>
+
+            {guestRemaining != null && (
+              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-12 font-medium bg-np/10 text-np border border-np/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-np" />
+                <span>{guestRemaining} free guest question{guestRemaining === 1 ? '' : 's'} today</span>
+              </div>
+            )}
+
+            {suggestedQuestions.length > 0 && (
+              <div className="mt-5 w-full max-w-sm flex flex-col gap-2">
+                <div className="text-11 uppercase tracking-wider font-mono text-nt3 text-left px-1">
+                  Suggested questions
+                </div>
+                {suggestedQuestions.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => void handleSend(q)}
+                    disabled={isInFlight}
+                    className="text-left text-13 px-3 py-2 rounded-md bg-ns2 hover:bg-ns3 text-nt hover:text-np border border-bdr transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <>

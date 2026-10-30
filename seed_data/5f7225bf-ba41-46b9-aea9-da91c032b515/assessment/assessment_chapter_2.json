@@ -1,0 +1,78 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Why Universities Study Their Past",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 2,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Legacies of Slavery"
+            ],
+            "question": "Where is the final conference for the 'Legacies of Slavery' project being held?",
+            "options": [
+                "Yale University",
+                "Memphis, Tennessee",
+                "Washington, D.C.",
+                "A small college in the North"
+            ],
+            "answer": "Memphis, Tennessee",
+            "explanation": "The lecturer explicitly states that the project will culminate with a final conference in Memphis, Tennessee.",
+            "flashcard_front": "Where is the 'Legacies of Slavery' project's final conference?",
+            "flashcard_back": "In Memphis, Tennessee.",
+            "flashcard_explanation": "The lecturer mentions the project culminates with a final conference in Memphis, Tennessee."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 2,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Curriculum Design"
+            ],
+            "question": "The course is a complete, unabridged version of the lecturer's Civil War and Reconstruction course.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The lecturer describes the course as a 'somewhat truncated version' of his larger lecture course.",
+            "flashcard_front": "Is this course the full version of the lecturer's Civil War course?",
+            "flashcard_back": "No, it is a truncated version.",
+            "flashcard_explanation": "The lecturer explains he boiled the course down to focus on the middle section."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 2,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Historical Context"
+            ],
+            "question": "According to the lecturer, why is it important to study the middle portion of his Civil War and Reconstruction course?",
+            "options": [],
+            "answer": "He believes it is essential for understanding today's dilemmas, such as polarization, division, and institutional dysfunction.",
+            "explanation": "The lecturer states that he boiled the course down to the middle because it is important for understanding today's dilemmas.",
+            "flashcard_front": "Why focus on the middle of the Civil War course?",
+            "flashcard_back": "To help understand today's dilemmas like polarization and institutional dysfunction.",
+            "flashcard_explanation": "The lecturer believes this historical period is key to understanding current political challenges."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 2,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Historical Research"
+            ],
+            "question": "How does the lecturer characterize the core of history?",
+            "options": [],
+            "answer": "He believes history has at its core a certain kind of human tragedy that we are all part of.",
+            "explanation": "The lecturer explicitly defines the core of history as containing a certain kind of human tragedy.",
+            "flashcard_front": "What does the lecturer say is at the core of history?",
+            "flashcard_back": "A certain kind of human tragedy.",
+            "flashcard_explanation": "The lecturer argues that history involves human tragedy that we are all part of."
+        }
+    ]
+}

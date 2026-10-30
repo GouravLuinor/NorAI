@@ -1,0 +1,26 @@
+{
+    "chapter_id": 6,
+    "chapter_title": "Risk Management, Insurance, and Portfolio Theory",
+    "flashcards": [
+        {
+            "front": "When did insurance emerge as a division of finance?",
+            "back": "In the 1600s, coinciding with the invention of probability theory.",
+            "explanation": "The lecturer links the rise of insurance directly to the mathematical invention of probability theory in the 1600s."
+        },
+        {
+            "front": "Are financial inventions patentable in the United States?",
+            "back": "Yes, it has become possible to patent financial inventions.",
+            "explanation": "The lecturer confirms that patent rights for financial inventions are now available in the US."
+        },
+        {
+            "front": "How does portfolio management differ from insurance?",
+            "back": "Insurance pools individual policies; portfolio management pools assets via diversification or negative correlation.",
+            "explanation": "The lecturer distinguishes between the policy-based pooling of insurance and the asset-based pooling of portfolio theory."
+        },
+        {
+            "front": "What evidence supports the Efficient Markets Hypothesis?",
+            "back": "Rapid market response to new information and the accuracy of prediction markets.",
+            "explanation": "The lecturer highlights market speed and the success of prediction markets as indicators of market efficiency."
+        }
+    ]
+}

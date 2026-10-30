@@ -1,0 +1,75 @@
+{
+  "chapter_id": 2,
+  "frames": {
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_741.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer stands in front of a blackboard."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_801.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer gestures while discussing textbook requirements."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_861.jpg": {
+      "ocr_text": "et al.",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": true,
+      "description": "The lecturer points to the text 'et al.' written on the blackboard."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_921.jpg": {
+      "ocr_text": "et al.",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer continues his explanation of the Fabozzi textbook."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_981.jpg": {
+      "ocr_text": "et al. Siegel",
+      "importance_score": 5,
+      "visual_type": "talking_head",
+      "include_in_notes": true,
+      "description": "The lecturer writes 'Siegel' on the blackboard below 'et al.'."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1042.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses Jeremy Siegel's book."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1102.jpg": {
+      "ocr_text": "bozzi et al. Jeremy Siegel Irrational Exuberance",
+      "importance_score": 8,
+      "visual_type": "talking_head",
+      "include_in_notes": true,
+      "description": "The blackboard shows the list of three required books."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1162.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer discusses the bookstore Labyrinth Books."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1222.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer explains the schedule for TA sections."
+    },
+    "outputs/2e983ee0-ae41-4910-9239-099b34dee04c/screenshots/keyframes/frame_1282.jpg": {
+      "ocr_text": "",
+      "importance_score": 1,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer concludes the discussion on course logistics."
+    }
+  }
+}

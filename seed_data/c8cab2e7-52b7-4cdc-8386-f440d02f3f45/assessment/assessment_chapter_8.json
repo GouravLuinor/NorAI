@@ -1,0 +1,78 @@
+{
+    "chapter_id": 8,
+    "chapter_title": "Kinematic Equations and Applications",
+    "questions": [
+        {
+            "question_id": 1,
+            "chapter_id": 8,
+            "type": "MCQ",
+            "difficulty": "Easy",
+            "concepts": [
+                "Kinematic equations"
+            ],
+            "question": "In the equation $x(t) = x_0 + v_0t + \\frac{1}{2}at^2$, what does the term $v_0t$ represent?",
+            "options": [
+                "The displacement due to constant acceleration",
+                "The initial position of the object",
+                "The displacement due to initial velocity",
+                "The final velocity of the object"
+            ],
+            "answer": "The displacement due to initial velocity",
+            "explanation": "The term $v_0t$ accounts for the motion that would occur due to the initial velocity even if the acceleration were zero.",
+            "flashcard_front": "What does the $v_0t$ term represent in the kinematic position equation?",
+            "flashcard_back": "Displacement due to initial velocity.",
+            "flashcard_explanation": "It accounts for the distance traveled at a constant speed if acceleration were zero."
+        },
+        {
+            "question_id": 2,
+            "chapter_id": 8,
+            "type": "True/False",
+            "difficulty": "Easy",
+            "concepts": [
+                "Time-independent velocity formula"
+            ],
+            "question": "The time-independent velocity formula $v^2 = v_0^2 + 2a(x - x_0)$ requires knowing the exact time $t$ to calculate the final velocity.",
+            "options": [
+                "True",
+                "False"
+            ],
+            "answer": "False",
+            "explanation": "The formula is specifically designed to relate velocity and displacement without needing to know the time $t$.",
+            "flashcard_front": "Does the time-independent velocity formula require time $t$?",
+            "flashcard_back": "No.",
+            "flashcard_explanation": "The formula relates velocity and displacement without needing to know the time interval."
+        },
+        {
+            "question_id": 3,
+            "chapter_id": 8,
+            "type": "Short Answer",
+            "difficulty": "Medium",
+            "concepts": [
+                "Eliminating time"
+            ],
+            "question": "How is the time-independent velocity formula derived from the velocity equation $v = v_0 + at$?",
+            "options": [],
+            "answer": "By solving the velocity equation for $t$ ($t = (v - v_0)/a$) and substituting this expression into the position equation.",
+            "explanation": "Substituting $t = (v - v_0)/a$ into the position equation eliminates $t$ and results in the velocity-displacement relationship.",
+            "flashcard_front": "How do you derive the time-independent velocity formula?",
+            "flashcard_back": "Solve $v = v_0 + at$ for $t$ and substitute into the position equation.",
+            "flashcard_explanation": "Substituting $t = (v - v_0)/a$ into the position equation eliminates $t$."
+        },
+        {
+            "question_id": 4,
+            "chapter_id": 8,
+            "type": "Conceptual",
+            "difficulty": "Medium",
+            "concepts": [
+                "Kinematic equations"
+            ],
+            "question": "Why does the acceleration term in the position equation include a factor of 1/2?",
+            "options": [],
+            "answer": "It arises from the calculus of taking two derivatives to arrive at the acceleration.",
+            "explanation": "The lecturer explains that since acceleration is the second derivative of position, integrating twice results in the 1/2 factor in the $1/2at^2$ term.",
+            "flashcard_front": "Why is there a 1/2 in the $1/2at^2$ term?",
+            "flashcard_back": "It comes from integrating acceleration twice to get position.",
+            "flashcard_explanation": "The factor of 1/2 is a result of the calculus involved in relating position to constant acceleration."
+        }
+    ]
+}

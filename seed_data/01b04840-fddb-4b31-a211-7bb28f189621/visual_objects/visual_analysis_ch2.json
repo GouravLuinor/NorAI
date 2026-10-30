@@ -1,0 +1,89 @@
+{
+  "chapter_id": 2,
+  "frames": {
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_377.jpg": {
+      "ocr_text": "",
+      "importance_score": 3,
+      "visual_type": "talking_head",
+      "include_in_notes": false,
+      "description": "The lecturer gestures while explaining the transition from geometric to analytical thinking."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_393.jpg": {
+      "ocr_text": "1 INTERP: THE TANGENT TO y=f(x) P (x0, y0)",
+      "importance_score": 8,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "A diagram showing a curve, a point P, and a tangent line."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_425.jpg": {
+      "ocr_text": "GEOM INTERP: FIND THE TANGENT LINE TO y=f(x) P=(x0,y0) y-y0=m(x-x0)",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The equation for a line is written on the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_452.jpg": {
+      "ocr_text": "y-y0=m(x-x0) point y0=f(x0)",
+      "importance_score": 9,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The point-slope form and the definition of y0 are shown."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_468.jpg": {
+      "ocr_text": "point y0=f(x0) slope m",
+      "importance_score": 8,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The components of the tangent line equation are listed."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_526.jpg": {
+      "ocr_text": "DEF'N f'(x0), the derivative of f at x0 is the slope of the tangent line to y=f(x) at P.",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The formal definition of the derivative as the slope of the tangent line."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_542.jpg": {
+      "ocr_text": "DEF'N f'(x0), the derivative of f at x0, is the slope of the tangent line to y=f(x) at P.",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The definition of the derivative is written clearly on the board."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_574.jpg": {
+      "ocr_text": "y-y0=m(x-x0) point y0=f(x0) slope m=f'(x0)",
+      "importance_score": 9,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The lecturer draws a secant line to compare with the tangent line."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_671.jpg": {
+      "ocr_text": "TANGENT",
+      "importance_score": 7,
+      "visual_type": "diagram",
+      "include_in_notes": true,
+      "description": "The board shows the setup for the limit definition."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_697.jpg": {
+      "ocr_text": "TANGENT LINE = LIMIT OF SECANT LINES PQ AS Q->P (P fixed)",
+      "importance_score": 10,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The limit definition of the tangent line is written."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_708.jpg": {
+      "ocr_text": "TANGENT LINE = LIMIT OF SECANT LINES PQ AS Q->P (P fixed)",
+      "importance_score": 8,
+      "visual_type": "equation",
+      "include_in_notes": true,
+      "description": "The lecturer emphasizes the limit definition."
+    },
+    "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_719.jpg": {
+      "ocr_text": "18.01 UNIT 1 DIFF. A. WHAT IS DERIV. geom. interp. physical interp.",
+      "importance_score": 5,
+      "visual_type": "slide",
+      "include_in_notes": true,
+      "description": "The lecture outline is shown on the board."
+    }
+  }
+}

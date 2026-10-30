@@ -1,0 +1,33 @@
+{
+  "chapter_id": 2,
+  "screenshots": [
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_526.jpg",
+      "reason": "The formal definition of the derivative as the slope of the tangent line.",
+      "section": "Analytical Representation of a Line",
+      "importance": 10,
+      "timestamp": 526.89
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_697.jpg",
+      "reason": "The limit definition of the tangent line is written.",
+      "section": "Defining the Tangent Line via Secants",
+      "importance": 10,
+      "timestamp": 697.73
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_425.jpg",
+      "reason": "The equation for a line is written on the board.",
+      "section": "Analytical Representation of a Line",
+      "importance": 9,
+      "timestamp": 425.46
+    },
+    {
+      "path": "outputs/01b04840-fddb-4b31-a211-7bb28f189621/screenshots/keyframes/frame_452.jpg",
+      "reason": "The point-slope form and the definition of y0 are shown.",
+      "section": "Analytical Representation of a Line",
+      "importance": 9,
+      "timestamp": 452.15
+    }
+  ]
+}

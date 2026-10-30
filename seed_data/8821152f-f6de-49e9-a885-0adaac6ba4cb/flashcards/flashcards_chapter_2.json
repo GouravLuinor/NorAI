@@ -1,0 +1,26 @@
+{
+    "chapter_id": 2,
+    "chapter_title": "Defining Computational Problems",
+    "flashcards": [
+        {
+            "front": "How is a computational problem formally defined?",
+            "back": "As a binary relation between a set of inputs and a set of outputs.",
+            "explanation": "It is a mapping where edges in a bipartite graph specify which outputs are correct for each input."
+        },
+        {
+            "front": "Must a computational problem map an input to exactly one output?",
+            "back": "No, an input can map to multiple valid outputs.",
+            "explanation": "The lecturer used the example of finding an index of a value in an array with multiple occurrences."
+        },
+        {
+            "front": "Why use predicates to define problems?",
+            "back": "To verify correctness without listing every possible input-output pair.",
+            "explanation": "Listing pairs is impractical for large or infinite input spaces."
+        },
+        {
+            "front": "What principle guarantees a birthday collision with >365 people?",
+            "back": "The pigeonhole principle.",
+            "explanation": "The lecturer used this to illustrate the power of generalizing problems."
+        }
+    ]
+}

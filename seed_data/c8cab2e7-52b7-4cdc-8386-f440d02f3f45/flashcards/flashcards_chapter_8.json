@@ -1,0 +1,26 @@
+{
+    "chapter_id": 8,
+    "chapter_title": "Kinematic Equations and Applications",
+    "flashcards": [
+        {
+            "front": "What does the $v_0t$ term represent in the kinematic position equation?",
+            "back": "Displacement due to initial velocity.",
+            "explanation": "It accounts for the distance traveled at a constant speed if acceleration were zero."
+        },
+        {
+            "front": "Does the time-independent velocity formula require time $t$?",
+            "back": "No.",
+            "explanation": "The formula relates velocity and displacement without needing to know the time interval."
+        },
+        {
+            "front": "How do you derive the time-independent velocity formula?",
+            "back": "Solve $v = v_0 + at$ for $t$ and substitute into the position equation.",
+            "explanation": "Substituting $t = (v - v_0)/a$ into the position equation eliminates $t$."
+        },
+        {
+            "front": "Why is there a 1/2 in the $1/2at^2$ term?",
+            "back": "It comes from integrating acceleration twice to get position.",
+            "explanation": "The factor of 1/2 is a result of the calculus involved in relating position to constant acceleration."
+        }
+    ]
+}
