@@ -50,6 +50,8 @@ export default defineConfig(({ mode }) => ({
       '/outline': 'http://localhost:8000',
       '/video-map': 'http://localhost:8000',
       '/study-guide': 'http://localhost:8000',
+      // /study/overview: the library's study queue. Not an SPA route, so no bypass.
+      '/study': 'http://localhost:8000',
       '/concept-map': 'http://localhost:8000',
       '/quota': 'http://localhost:8000',
       // /system/config (run mode + intake sources) and /system/rate-limit.
