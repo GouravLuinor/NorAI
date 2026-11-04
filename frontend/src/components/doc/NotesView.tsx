@@ -6,12 +6,14 @@ import { useLectureStore } from '../../stores/useLectureStore'
 import { useVideoStore } from '../../stores/useVideoStore'
 import { formatTimestamp } from '../../lib/video'
 
-/** Fit a document location in the shelf mark: "p. 4" / "Slide 7" stay whole,
- *  a heading label is cut to a few characters (the full one is the h2). */
-function shortLoc(loc: string): string {
+/** Fit a document location in the shelf mark: "p. 4", "Part 2" stay whole,
+ *  "Slide 7" becomes "S. 7". A heading location (web pages, Word headings)
+ *  shows nothing: it would only repeat the section's own h2, cut short. */
+function shortLoc(loc: string): string | undefined {
   const slide = loc.match(/^Slide (\d+)$/)
   if (slide) return `S. ${slide[1]}`
-  return loc.length <= 7 ? loc : `${loc.slice(0, 6).trimEnd()}…`
+  if (/^(p\.|pp\.|Part)\s*\d/.test(loc) && loc.length <= 8) return loc
+  return undefined
 }
 import { apiFetchRaw } from '../../lib/http'
 import { headingToId } from '../../lib/markdown'
@@ -312,6 +314,7 @@ export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId
           <section
             key={idx}
             id={sectionId}
+            data-start-sec={startSec ?? undefined}
             className="grid grid-cols-[52px_1fr] sm:grid-cols-[72px_1fr] gap-x-3 sm:gap-x-5 mt-9 first-of-type:mt-0 scroll-mt-6"
           >
             <div className="pt-0.5">

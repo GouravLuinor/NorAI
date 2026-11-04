@@ -298,7 +298,9 @@ def extract_docx(path: Path) -> Extracted:
                     rows.append(" | ".join(cells) + ".")
             if rows:
                 blocks.append(Block(" ".join(rows), loc))
-    if all(b.loc == "Start" for b in blocks):  # no headings: label stretches "Part N"
+    # No headings, or just the title one: label stretches "Part N" instead of
+    # one location for the whole file.
+    if len({b.loc for b in blocks}) <= 1:
         blocks = _parts(blocks)
     return Extracted(blocks, title or _fallback_title(path), "docx")
 
@@ -368,10 +370,38 @@ def extract_html(html: str | bytes, url: str | None = None, fallback_title: str 
     if not text or len(text.split()) < 50:
         raise DocumentError("Couldn't find the main text on this page. Pages that need JavaScript "
                             "or a login can't be read; save it as PDF and upload that instead.")
+    text = _EDIT_LINK.sub("", text)
     meta = trafilatura.extract_metadata(html, default_url=url)
     blocks, md_title = markdown_blocks(text)
+    blocks = drop_back_matter(blocks)
     title = ((meta.title if meta else "") or md_title or fallback_title or "Web page").strip()
+    # "Bubble sort - Wikipedia" → "Bubble sort": the page's own heading wins
+    # when the <title> is that heading plus a site suffix.
+    if md_title and title != md_title and re.match(
+            rf"{re.escape(md_title)}\s*[-–—|·:]\s*\S", title):
+        title = md_title
     return Extracted(blocks, title, "html")
+
+
+# Wikipedia-style "[edit]" section links that survive as text.
+_EDIT_LINK = re.compile(r"\s*\\?\[\s*edit\s*\\?\]", re.IGNORECASE)
+_BACK_MATTER = re.compile(
+    r"^(notes|references|citations|sources|bibliography|footnotes|external links|"
+    r"see also|further reading|notes and references|works cited)$", re.IGNORECASE)
+
+
+def drop_back_matter(blocks: list[Block]) -> list[Block]:
+    """Cut a web page's trailing reference sections (Notes, References,
+    External links, See also...). They're link lists, not study material, and
+    would be charged as lecture-minutes. Only a heading in the back half of the
+    page counts, so an article *about* references keeps its text."""
+    if len(blocks) < 4:
+        return blocks
+    for i in range(len(blocks) // 2, len(blocks)):
+        b = blocks[i]
+        if b.text == b.loc and _BACK_MATTER.match(b.text.strip(" :")):
+            return blocks[:i]
+    return blocks
 
 
 def extract_text(path: Path, doc_type: str) -> Extracted:

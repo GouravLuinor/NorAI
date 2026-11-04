@@ -1,3 +1,4 @@
+import { useVideoStore } from '../../stores/useVideoStore'
 import { useState, useRef } from 'react'
 import { Button } from '../ui/Button'
 
@@ -36,15 +37,17 @@ export function InputZone({ onSend, disabled = false }: InputZoneProps) {
     }
   }
 
+  const noun = useVideoStore((s) => s.sourceKind === 'document') ? 'document' : 'lecture'
+
   return (
     <div className="px-4 pt-2.5 pb-3 border-t border-bdr shrink-0">
       <div className="flex items-end gap-2 bg-ns border-[1.5px] border-nt rounded-md pl-3 pr-1.5 py-1.5 focus-within:border-np transition-colors">
         <textarea
           ref={textareaRef}
           name="chat-message"
-          aria-label="Ask Nora about this lecture"
+          aria-label={`Ask Nora about this ${noun}`}
           className="flex-1 bg-transparent border-none outline-none text-15 text-nt font-sans resize-none leading-snug py-1.5 min-h-[22px] max-h-[120px] placeholder:text-nt4 disabled:opacity-60"
-          placeholder={disabled ? 'Nora is answering…' : 'Ask about this lecture…'}
+          placeholder={disabled ? 'Nora is answering…' : `Ask about this ${noun}…`}
           rows={1}
           value={value}
           disabled={disabled}

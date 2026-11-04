@@ -116,12 +116,25 @@ export function disabledReason(d: Detected, enabled: readonly SourceType[]): str
   }
 }
 
+const LINK_LABELS: Record<string, string> = {
+  pdf: 'PDF link',
+  docx: 'Word file link',
+  pptx: 'PowerPoint link',
+  html: 'Web page',
+  txt: 'Text file link',
+  md: 'Text file link',
+}
+
 /** The chip text: "PDF · 23 pages · uses 12 min". */
 export function chipText(
   d: Detected,
   est?: { pages?: number | null; words?: number | null; minutes_needed?: number | null; doc_type?: string | null },
 ): string {
-  const parts = [d.label]
+  // A generic link: once the server has looked, name what it actually is.
+  const fetched = d.kind === 'web' && d.sourceType === 'link' && est?.doc_type
+    ? LINK_LABELS[est.doc_type]
+    : undefined
+  const parts = [fetched ?? d.label]
   if (est?.pages) parts.push(`${est.pages} ${est.doc_type === 'pptx' ? 'slides' : 'pages'}`)
   else if (est?.words) parts.push(`${est.words.toLocaleString()} words`)
   if (est?.minutes_needed) parts.push(`uses ${est.minutes_needed} min`)

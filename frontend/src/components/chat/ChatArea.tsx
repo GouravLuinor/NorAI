@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useThreadStore } from '../../stores/useThreadStore'
 import { useQuizStore } from '../../stores/useQuizStore'
-import { scrollToHeading } from '../../lib/cite'
+import { scrollToHeading, scrollToSectionAt } from '../../lib/cite'
 import { useVideoStore } from '../../stores/useVideoStore'
 import { useAskNora } from '../../hooks/useAskNora'
 import type { Reference } from '../../types'
@@ -80,7 +80,9 @@ export function ChatArea() {
   const handleReferenceClick = useCallback((ref: Reference) => {
     // Transcript citations point at a moment in the lecture, not a note heading.
     if (ref.transcript && ref.startSec != null) {
-      useVideoStore.getState().requestSeek(ref.startSec)
+      // Documents have no player: show the notes section covering the passage.
+      if (useVideoStore.getState().sourceKind === 'document') scrollToSectionAt(ref.chapterId, ref.startSec)
+      else useVideoStore.getState().requestSeek(ref.startSec)
       return
     }
     scrollToHeading(ref.title || ref.sectionId, ref.chapterId, ref.sectionId)
@@ -116,7 +118,7 @@ export function ChatArea() {
             <h2 className="text-16 font-bold text-nt mb-1.5">Ask Nora about this {isDocument ? 'document' : 'lecture'}</h2>
             <p className="text-14 text-nt3 max-w-[280px] leading-relaxed">
               {isDocument
-                ? 'Answers come from what the document says, with the page or slide it says it on.'
+                ? 'Answers come from what the document says, and show where it says it.'
                 : 'Answers come from what the lecturer said, with the moment they said it.'}
             </p>
 

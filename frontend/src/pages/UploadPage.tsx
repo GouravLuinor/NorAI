@@ -222,6 +222,9 @@ export function UploadPage() {
     }
 
     setSubmitError(null)
+    // Drop the previous source's estimate at once: its numbers (and any
+    // "not enough minutes" block) must not show against the new file.
+    setEstimate(null)
     const run = async () => {
       setEstLoading(true)
       const formData = new FormData()
@@ -728,7 +731,7 @@ export function UploadPage() {
                       {estimate.plan_max_min !== undefined && (estimate.duration_min ?? 0) > estimate.plan_max_min
                         ? `Longer than the ${estimate.plan_max_min}-minute limit per lecture.`
                         : `Needs ${estimate.minutes_needed} lecture-minutes; you have ${estimate.remaining_minutes} left.`}
-                      {quota?.resets_at && ` Your minutes ${quotaResetLabel(quota.resets_at)}.`}
+                      {quota?.resets_at && ` Your minutes ${quotaResetLabel(quota.resets_at).replace(/^resets/, 'reset')}.`}
                     </span>
                   </div>
                 )}
@@ -769,7 +772,7 @@ export function UploadPage() {
                 <AlertTriangle size={15} strokeWidth={1.5} className="mt-0.5 shrink-0" />
                 <span>
                   {submitError}
-                  {submitErrorIsQuota && quota?.resets_at && ` Your minutes ${quotaResetLabel(quota.resets_at)}.`}
+                  {submitErrorIsQuota && quota?.resets_at && ` Your minutes ${quotaResetLabel(quota.resets_at).replace(/^resets/, 'reset')}.`}
                 </span>
               </div>
             )}

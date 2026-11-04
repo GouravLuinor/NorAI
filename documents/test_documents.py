@@ -154,6 +154,24 @@ def test_markdown_blocks_without_headings():
     assert title == "" and [b.loc for b in blocks] == ["Start", "Start"]
 
 
+def test_web_page_back_matter_and_title():
+    from documents.extract import extract_html
+    body = "\n".join(f"<p>{_text(80, i)}</p>" for i in range(4))
+    html = (
+        "<html><head><title>Bubble sort - Wikipedia</title></head><body><article>"
+        "<h1>Bubble sort</h1>" + body +
+        "<h2>History [edit]</h2>" + body +
+        "<h2>References</h2><ul><li>Knuth, D. (1998). The Art of Computer Programming.</li></ul>"
+        "<h2>External links</h2><p>Animated sorting algorithms, an archived page.</p>"
+        "</article></body></html>")
+    ex = extract_html(html)
+    locs = {b.loc for b in ex.blocks}
+    assert ex.title == "Bubble sort", ex.title
+    assert "References" not in locs and "External links" not in locs, locs
+    assert "History" in locs, locs
+    assert not any("[edit]" in b.text for b in ex.blocks)
+
+
 def test_ssrf_guard():
     for ip in ("127.0.0.1", "10.0.0.5", "192.168.1.1", "169.254.169.254", "100.64.1.1",
                "::1", "fe80::1", "::ffff:127.0.0.1", "0.0.0.0", "224.0.0.1"):

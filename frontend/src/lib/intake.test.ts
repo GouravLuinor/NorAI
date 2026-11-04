@@ -50,5 +50,7 @@ describe('chipText', () => {
     expect(chipText(deck, { pages: 9, doc_type: 'pptx' })).toBe('PowerPoint · 9 slides')
     const web = detectLink('https://example.com/a')!
     expect(chipText(web, { words: 3757, minutes_needed: 26 })).toBe('Web page or file link · 3,757 words · uses 26 min')
+    expect(chipText(web, { words: 3757, minutes_needed: 26, doc_type: 'html' })).toBe('Web page · 3,757 words · uses 26 min')
+    expect(chipText(web, { pages: 18, minutes_needed: 49, doc_type: 'pdf' })).toBe('PDF link · 18 pages · uses 49 min')
   })
 })

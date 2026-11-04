@@ -69,9 +69,7 @@ export function scrollToHeading(headingPath: string, chapterId?: number | null, 
   const leafHeading = headingPath ? headingPath.split('>').pop()?.trim() || '' : ''
   const targetId = explicitSectionId || (leafHeading ? headingToId(leafHeading) : '')
 
-  const store = useChapterStore.getState()
-  const currentChapterId = store.activeChapterId
-  const validChapters = store.chapters
+  const validChapters = useChapterStore.getState().chapters
 
   // Validate target chapter ID exists in this lecture
   let validTargetChapterId = chapterId
@@ -81,24 +79,35 @@ export function scrollToHeading(headingPath: string, chapterId?: number | null, 
     validTargetChapterId = found ? found.id : null
   }
 
-  if (validTargetChapterId != null && validTargetChapterId > 0 && validTargetChapterId !== currentChapterId) {
-    store.setChapter(validTargetChapterId)
+  openChapterNotes(validTargetChapterId)
+  pollAndHighlight(() => findSectionCard(targetId, leafHeading || headingPath), () => {
+    console.warn('Reference click — section card not found in DOM:', { targetId, leafHeading, headingPath })
+  })
+}
+
+/** Switch to a chapter's notes tab (and the doc pane on mobile). */
+function openChapterNotes(chapterId: number | null | undefined) {
+  const store = useChapterStore.getState()
+  if (chapterId != null && chapterId > 0 && chapterId !== store.activeChapterId) {
+    store.setChapter(chapterId)
   }
   store.setDocTab('notes')
-
   // On mobile only one panel is mounted; if the chat pane is active the doc
   // pane isn't in the DOM yet. Ask the Workspace to switch to the doc tab so
   // the section cards can mount (Workspace.tsx listens for this event).
   window.dispatchEvent(new CustomEvent('norai:show-doc'))
+}
 
+/** Poll (up to 10 s, while notes fetch and render) for a section card, then
+ *  scroll it into view with the pulse highlight. */
+function pollAndHighlight(find: () => HTMLElement | null, onMiss: () => void) {
   // Clear any previous poll (e.g. a prior citation click still running) so we
   // never accumulate intervals or scroll to a stale target after navigation.
   if (activeInterval) clearInterval(activeInterval)
-
   let attempts = 0
-  const maxAttempts = 100 // Poll up to 10s to allow notes to fetch and render
+  const maxAttempts = 100
   const interval = setInterval(() => {
-    const el = findSectionCard(targetId, leafHeading || headingPath)
+    const el = find()
     if (el) {
       clearInterval(interval)
       if (activeInterval === interval) activeInterval = null
@@ -113,9 +122,27 @@ export function scrollToHeading(headingPath: string, chapterId?: number | null, 
     } else if (attempts >= maxAttempts) {
       clearInterval(interval)
       if (activeInterval === interval) activeInterval = null
-      console.warn('Reference click — section card not found in DOM:', { targetId, leafHeading, headingPath })
+      onMiss()
     }
     attempts++
   }, 100)
   activeInterval = interval
+}
+
+/**
+ * Documents: a passage citation carries the passage's (synthetic) start time,
+ * not a note heading. Open its chapter and scroll to the section that covers
+ * it: the last section starting at or before `sec`.
+ */
+export function scrollToSectionAt(chapterId: number | null | undefined, sec: number) {
+  openChapterNotes(chapterId)
+  pollAndHighlight(() => {
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('.doc-content section[data-start-sec]'))
+    if (cards.length === 0) return null
+    let best: HTMLElement | null = null
+    for (const card of cards) {
+      if (Number(card.dataset.startSec) <= sec + 0.5) best = card
+    }
+    return best ?? cards[0]
+  }, () => console.warn('Reference click — no section covers', { chapterId, sec }))
 }
