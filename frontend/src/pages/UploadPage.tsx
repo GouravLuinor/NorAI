@@ -2,9 +2,10 @@ import { useCallback, useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Film,
-  Upload,
   Link2,
   FileVideo,
+  FileText,
+  X,
   ArrowRight,
   Info,
   Activity,
@@ -19,14 +20,14 @@ import {
   Play,
 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
-import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { Select } from '../components/ui/Select'
 import { ShelfMark } from '../components/ui/ShelfMark'
 import { Wordmark } from '../components/brand/Wordmark'
 import { FOCUS_RING } from '../components/ui/shared'
 import { apiFetchRaw } from '../lib/http'
 import { useAuthStore } from '../stores/useAuthStore'
-import { useAppConfigStore, type SourceType } from '../stores/useAppConfigStore'
+import { useAppConfigStore } from '../stores/useAppConfigStore'
+import { ACCEPT_ATTR, chipText, detectFile, detectLink, disabledReason, type Detected } from '../lib/intake'
 import { useCourseStore } from '../stores/useCourseStore'
 import { useRateLimitStore } from '../stores/useRateLimitStore'
 import { useStudyStore } from '../stores/useStudyStore'
@@ -34,8 +35,6 @@ import { useQuizStore } from '../stores/useQuizStore'
 import { useChapterStore } from '../stores/useChapterStore'
 import { DEFAULT_TRIAL_QUOTA_MINUTES } from '../config/features'
 import { formatMinutes, quotaResetLabel } from '../lib/plans'
-
-type InputType = 'youtube' | 'upload' | 'drive'
 
 interface LectureInfo {
   lecture_id: string
@@ -59,6 +58,13 @@ interface EstimateResult {
   calibrated?: boolean
   n_calibration_runs?: number
   title?: string
+  // Documents (backend/main.py:_estimate_document)
+  kind?: 'video' | 'document'
+  doc_type?: string
+  pages?: number | null
+  words?: number
+  scanned?: boolean
+  error?: string
   // Plan fit for the signed-in caller (backend/main.py:_with_plan_fit)
   plan_name?: string
   plan_max_min?: number
@@ -66,18 +72,6 @@ interface EstimateResult {
   remaining_minutes?: number
   fits_plan?: boolean
 }
-
-// The tab says "Drive"; the API's source_type is "gdrive".
-const apiSourceType = (t: InputType) => (t === 'drive' ? 'gdrive' : t)
-const inputTypeFor = (s: SourceType): InputType => (s === 'gdrive' ? 'drive' : s)
-
-const SOURCE_TABS: { value: InputType; label: string; icon: typeof Film }[] = [
-  { value: 'youtube', label: 'YouTube', icon: Film },
-  { value: 'upload', label: 'Upload', icon: Upload },
-  { value: 'drive', label: 'Drive', icon: Link2 },
-]
-// Static class names so Tailwind keeps them.
-const TAB_GRID_COLS = ['grid-cols-1', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3'] as const
 
 /** Pull a readable message out of a FastAPI error body (string or {message}). */
 function errorDetail(body: unknown): string | null {
@@ -133,9 +127,17 @@ function readVideoDuration(file: File): Promise<number | null> {
 export function UploadPage() {
   const [searchParams] = useSearchParams()
   const initialUrl = searchParams.get('url') || ''
-  const [inputType, setInputType] = useState<InputType>('youtube')
-  const [url, setUrl] = useState(initialUrl)
-  const [file, setFile] = useState<File | null>(null)
+  const [url, setUrlRaw] = useState(initialUrl)
+  const [file, setFileRaw] = useState<File | null>(null)
+  // One box: a chosen file and a pasted link replace each other.
+  const setUrl = (v: string) => {
+    setUrlRaw(v)
+    if (v) setFileRaw(null)
+  }
+  const setFile = (f: File | null) => {
+    setFileRaw(f)
+    if (f) setUrlRaw('')
+  }
   const [dragActive, setDragActive] = useState(false)
   const [lectures, setLectures] = useState<LectureInfo[]>([])
   const [loadingLectures, setLoadingLectures] = useState(true)
@@ -154,9 +156,22 @@ export function UploadPage() {
   const localMode = useAppConfigStore((s) => s.mode === 'local')
   const enabledSources = useAppConfigStore((s) => s.sources)
   const loadAppConfig = useAppConfigStore((s) => s.load)
-  const enabledTypes = enabledSources.map(inputTypeFor)
-  const tabs = SOURCE_TABS.filter((t) => enabledTypes.includes(t.value))
-  const youtubeOn = enabledTypes.includes('youtube')
+  const youtubeOn = enabledSources.includes('youtube')
+  const uploadOn = enabledSources.includes('upload')
+  const linksOn = enabledSources.some((s) => s !== 'upload')
+  // What the box holds: a file (by extension) or a link (by host).
+  const fileCheck = file ? detectFile(file.name, file.type) : null
+  const fileError = fileCheck && 'error' in fileCheck ? fileCheck.error : null
+  const detected: Detected | null = file
+    ? (fileCheck && !('error' in fileCheck) ? fileCheck : null)
+    : detectLink(url)
+  const blockedReason = detected ? disabledReason(detected, enabledSources) : null
+  const usable = detected != null && blockedReason == null
+  const linkTyped = !file && url.trim().length > 0
+  // Primitives for the estimate effect (`detected` is a new object each render).
+  const detKind = detected?.kind
+  const detSource = detected?.sourceType
+  const detIsDoc = detected?.isDocument ?? false
   const quota = useAuthStore((s) => s.quota)
   const refreshQuota = useAuthStore((s) => s.refreshQuota)
   const { courses, loadCourses } = useCourseStore()
@@ -170,15 +185,6 @@ export function UploadPage() {
   useEffect(() => {
     void loadAppConfig()
   }, [loadAppConfig])
-
-  // Keep the selected tab on a source this install accepts (YouTube is the
-  // initial pick, and hosted servers turn it off).
-  useEffect(() => {
-    const types = enabledSources.map(inputTypeFor)
-    if (types.length && !types.includes(inputType)) {
-      setInputType(SOURCE_TABS.find((t) => types.includes(t.value))?.value ?? types[0])
-    }
-  }, [enabledSources, inputType])
 
   const resumeStudy = useCallback(
     (lectureId: string, chapterId?: number | null, mode?: 'tutor' | 'quiz' | 'cards') => {
@@ -206,12 +212,10 @@ export function UploadPage() {
     let cancelled = false
     let timeout: ReturnType<typeof setTimeout> | undefined
 
-    const sourceReady =
-      inputType === 'upload'
-        ? !!file
-        : inputType !== 'drive' && !!url.trim()
+    // Plain Drive files can't be measured before download; skip the call.
+    const sourceReady = usable && detSource != null && detKind !== 'gdrive'
 
-    if (!sourceReady) {
+    if (!sourceReady || !detSource) {
       setEstimate(null)
       setEstLoading(false)
       return
@@ -221,10 +225,13 @@ export function UploadPage() {
     const run = async () => {
       setEstLoading(true)
       const formData = new FormData()
-      formData.append('source_type', apiSourceType(inputType))
-      if (inputType === 'youtube') {
+      formData.append('source_type', detSource)
+      if (detSource !== 'upload') {
         formData.append('url', url.trim())
-      } else if (inputType === 'upload' && file) {
+      } else if (file && detIsDoc) {
+        // Documents are measured server-side: words ÷ 150 = quota minutes.
+        formData.append('file', file)
+      } else if (file) {
         const duration = await readVideoDuration(file)
         // Backend contract: `duration` is MINUTES on both /estimate and
         // /process (readVideoDuration returns SECONDS).
@@ -247,7 +254,7 @@ export function UploadPage() {
       cancelled = true
       if (timeout) clearTimeout(timeout)
     }
-  }, [inputType, url, file])
+  }, [url, file, usable, detKind, detSource, detIsDoc])
 
   const loadLectures = useCallback(() => {
     setLoadingLectures(true)
@@ -282,13 +289,16 @@ export function UploadPage() {
     if (submitting) return
     setSubmitError(null)
     setSubmitErrorIsQuota(false)
-    setSubmitting(inputType === 'upload' ? 'uploading' : 'starting')
+    if (!detected || !usable) return
+    setSubmitting(file ? 'uploading' : 'starting')
     const formData = new FormData()
-    formData.append('source_type', apiSourceType(inputType))
-    if (inputType === 'upload' && file) {
+    formData.append('source_type', detected.sourceType)
+    if (file) {
       formData.append('file', file)
-      const duration = await readVideoDuration(file)
-      if (duration) formData.append('duration', String(duration / 60))
+      if (!detected.isDocument) {
+        const duration = await readVideoDuration(file)
+        if (duration) formData.append('duration', String(duration / 60))
+      }
     } else {
       formData.append('url', url.trim())
     }
@@ -328,8 +338,9 @@ export function UploadPage() {
     !isDailyLimited &&
     !submitting &&
     !overPlan &&
-    ((inputType === 'upload' && file) ||
-      ((inputType === 'youtube' || inputType === 'drive') && url.trim()))
+    // A definite read/fetch failure from /estimate (bad link, unreadable file).
+    !estimate?.error &&
+    usable
 
 
   const logout = useAuthStore((s) => s.logout)
@@ -572,32 +583,45 @@ export function UploadPage() {
           <div className="mb-6">
             <h1 id="add-heading" className="font-serif font-semibold text-32 leading-tight text-nt">Add a lecture</h1>
             <p className="mt-2 text-16 text-nt2 max-w-[56ch] leading-relaxed">
-              {youtubeOn ? 'Paste a YouTube link or upload the recording.' : 'Upload the recording or paste a Google Drive link.'} You get notes, a revision sheet, a quiz, flashcards and a
+              {youtubeOn
+                ? 'Paste a YouTube or web link, or upload a recording, PDF, Word file or slide deck.'
+                : 'Upload a recording, PDF, Word file or slide deck, or paste a Google Drive or web link.'} You get notes, a revision sheet, a quiz, flashcards and a
               tutor for it, usually within a few minutes.
             </p>
           </div>
 
           {/* Input Card */}
           <div className="bg-ns border border-bdr rounded-lg p-5 sm:p-6 shadow-ev1">
-            {/* Segmented Control */}
-            {tabs.length > 1 && (
-              <SegmentedControl<InputType>
-                containerClass={`grid ${TAB_GRID_COLS[tabs.length]} gap-1 bg-ns2 rounded-md p-1 mb-4`}
-                itemClass="flex items-center justify-center gap-2 h-9 rounded-[4px] text-14 font-bold transition-colors cursor-pointer"
-                activeClass="bg-ns text-np shadow-ev1"
-                inactiveClass="text-nt3 hover:text-nt"
-                options={tabs.map(({ value, label, icon: Icon }) => ({
-                  value,
-                  label,
-                  prefix: <Icon size={15} strokeWidth={1.75} />,
-                }))}
-                value={inputType}
-                onChange={setInputType}
-              />
+            {/* One box: paste any link, or drop/choose any file. The type is
+                detected (lib/intake.ts) and shown as a chip below. */}
+            {linksOn && (
+              <div className="relative">
+                <input
+                  type="url"
+                  id="lecture-url"
+                  name="lecture-url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  aria-label="Link to a video, document or web page"
+                  aria-describedby="intake-chip"
+                  placeholder={youtubeOn ? 'Paste a YouTube, Google Drive or web link' : 'Paste a Google Drive, Docs, Slides or web link'}
+                  className={`w-full bg-ns border-[1.5px] border-nt rounded-md px-4 h-12 pr-12 text-16 text-nt placeholder:text-nt4 focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-nt3">
+                  {detected?.kind === 'youtube' ? <Film size={15} strokeWidth={1.5} /> : <Link2 size={15} strokeWidth={1.5} />}
+                </div>
+              </div>
             )}
 
-            {/* Input Area */}
-            {inputType === 'upload' ? (
+            {linksOn && uploadOn && (
+              <div className="my-3 flex items-center gap-3 text-13 text-nt3" aria-hidden="true">
+                <span className="h-px flex-1 bg-bdr" />
+                or
+                <span className="h-px flex-1 bg-bdr" />
+              </div>
+            )}
+
+            {uploadOn && (
               <div
                 onDragOver={(e) => {
                   e.preventDefault()
@@ -614,51 +638,65 @@ export function UploadPage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  aria-label={file ? `Selected file: ${file.name}` : 'Choose a video file to upload'}
-                  className={`w-full flex flex-col items-center justify-center gap-3 p-8 border-[1.5px] border-dashed rounded-md transition cursor-pointer hover:border-np ${FOCUS_RING} ${dragActive ? 'border-np bg-npb/50' : 'border-bdr2'}`}
+                  aria-label={file ? `Selected file: ${file.name}. Choose a different file` : 'Choose a video or document to upload'}
+                  className={`w-full flex flex-col items-center justify-center gap-2 p-6 border-[1.5px] border-dashed rounded-md transition cursor-pointer hover:border-np ${FOCUS_RING} ${dragActive ? 'border-np bg-npb/50' : 'border-bdr2'}`}
                 >
-                  <FileVideo size={28} strokeWidth={1.5} className="text-nt3" />
-                  <span className="text-15 text-nt2">
-                    {file ? file.name : dragActive ? 'Drop the video to upload' : 'Click to choose or drag a video file here'}
+                  {detected?.isDocument && file
+                    ? <FileText size={26} strokeWidth={1.5} className="text-nt3" />
+                    : <FileVideo size={26} strokeWidth={1.5} className="text-nt3" />}
+                  <span className="text-15 text-nt2 break-all">
+                    {file ? file.name : dragActive ? 'Drop the file to upload' : 'Click to choose or drag a file here'}
                   </span>
-                  <span className="text-13 text-nt3">MP4, MOV, MKV, AVI or WebM, up to 2 GB</span>
+                  <span className="text-13 text-nt3">
+                    Video (MP4, MOV, MKV, AVI, WebM, up to 2 GB) or document (PDF, DOCX, PPTX, TXT, MD, up to 50 MB)
+                  </span>
                 </button>
                 <input
                   ref={fileInputRef}
                   name="lecture-file"
                   type="file"
-                  accept="video/*"
+                  accept={ACCEPT_ATTR}
                   className="hidden"
-                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                  onChange={(e) => {
+                    setFile(e.target.files?.[0] ?? null)
+                    e.target.value = ''
+                  }}
                 />
-              </div>
-            ) : (
-              <div className="relative">
-                <input
-                  type="text"
-                  id="lecture-url"
-                  name="lecture-url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  aria-label={inputType === 'youtube' ? 'YouTube URL' : 'Google Drive link'}
-                  placeholder={
-                    inputType === 'youtube'
-                      ? 'Paste a YouTube link'
-                      : 'Paste a Google Drive share link'
-                  }
-                  className={`w-full bg-ns border-[1.5px] border-nt rounded-md px-4 h-12 pr-12 text-16 text-nt placeholder:text-nt4 focus:border-np focus:outline-hidden transition-colors ${FOCUS_RING}`}
-                />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-nt3">
-                  {inputType === 'youtube' ? <Film size={15} strokeWidth={1.5} /> : <Link2 size={15} strokeWidth={1.5} />}
-                </div>
               </div>
             )}
+
+            {/* Detected type chip */}
+            <div id="intake-chip" aria-live="polite">
+              {detected && (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-bdr bg-ns2 text-13 font-mono text-nt2">
+                    {detected.isDocument ? <FileText size={13} strokeWidth={1.75} /> : <Film size={13} strokeWidth={1.75} />}
+                    {chipText(detected, estimate?.available ? estimate : estimate?.scanned ? { pages: estimate.pages, doc_type: estimate.doc_type } : undefined)}
+                  </span>
+                  {file && (
+                    <button
+                      type="button"
+                      onClick={() => setFile(null)}
+                      className={`inline-flex items-center gap-1 text-13 text-nt3 hover:text-nt rounded-sm cursor-pointer ${FOCUS_RING}`}
+                    >
+                      <X size={13} strokeWidth={1.75} /> Remove
+                    </button>
+                  )}
+                </div>
+              )}
+              {(blockedReason || fileError || (linkTyped && !detected)) && (
+                <div className="mt-3 flex items-start gap-1.5 text-14 text-nrt" role="alert">
+                  <AlertTriangle size={14} strokeWidth={1.5} className="mt-0.5 shrink-0" />
+                  <span>{blockedReason ?? fileError ?? 'Paste the full link, starting with https://'}</span>
+                </div>
+              )}
+            </div>
 
             {/* Estimate Panel (P1.8): length, wait time and plan fit */}
             {estLoading && (
               <div className="mt-3 flex items-center gap-2 text-14 text-nt3" role="status">
                 <Activity size={14} strokeWidth={1.75} />
-                <span>Checking the lecture length…</span>
+                <span>{detected?.isDocument ? 'Reading the document…' : 'Checking the lecture length…'}</span>
               </div>
             )}
 
@@ -668,7 +706,9 @@ export function UploadPage() {
                   <Info size={15} strokeWidth={1.75} className="text-nt3 mt-0.5 shrink-0" />
                   <div className="text-14 text-nt2 leading-relaxed tabular-nums">
                     {estimate.title && <span className="block text-nt font-medium truncate">{estimate.title}</span>}
-                    {estimate.duration_min !== undefined && (
+                    {estimate.kind === 'document' && estimate.words !== undefined ? (
+                      <span>{estimate.words.toLocaleString()} words, counted as {estimate.minutes_needed ?? Math.max(1, Math.round(estimate.duration_min ?? 0))} lecture-minutes</span>
+                    ) : estimate.duration_min !== undefined && (
                       <span>About {Math.max(1, Math.round(estimate.duration_min))} min of lecture</span>
                     )}
                     {estimate.est_time_min !== undefined && (
@@ -699,9 +739,13 @@ export function UploadPage() {
               <div className="mt-3 flex items-center gap-1.5 text-14 text-nt3">
                 <Info size={14} strokeWidth={1.75} />
                 <span>
-                  {inputType === 'drive'
-                    ? "We'll check the length once the video downloads."
-                    : "Couldn't read the length yet. You can still start; we'll check it during processing."}
+                  {estimate.error
+                    ? estimate.error
+                    : estimate.scanned
+                      ? "This PDF is scanned (no text layer). We'll read its pages during processing, then count its length."
+                      : estimate.kind === 'video' || detected?.kind === 'gdrive'
+                        ? "We'll check the length once the file downloads."
+                        : "Couldn't read the length yet. You can still start; we'll check it during processing."}
                 </span>
               </div>
             )}
@@ -758,7 +802,7 @@ export function UploadPage() {
                             {isDailyLimited
                 ? 'Paused for today'
                 : submitting === 'uploading'
-                  ? 'Uploading video…'
+                  ? 'Uploading…'
                   : submitting === 'starting'
                     ? 'Starting…'
                     : 'Make my notes'}

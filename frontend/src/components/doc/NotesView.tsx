@@ -5,6 +5,14 @@ import React from 'react'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { useVideoStore } from '../../stores/useVideoStore'
 import { formatTimestamp } from '../../lib/video'
+
+/** Fit a document location in the shelf mark: "p. 4" / "Slide 7" stay whole,
+ *  a heading label is cut to a few characters (the full one is the h2). */
+function shortLoc(loc: string): string {
+  const slide = loc.match(/^Slide (\d+)$/)
+  if (slide) return `S. ${slide[1]}`
+  return loc.length <= 7 ? loc : `${loc.slice(0, 6).trimEnd()}…`
+}
 import { apiFetchRaw } from '../../lib/http'
 import { headingToId } from '../../lib/markdown'
 import { Markdown } from '../ui/Markdown'
@@ -136,6 +144,8 @@ interface SectionItem {
   cardType?: CardType
   /** Where the section's material starts in the video (lean pipeline notes). */
   startSec?: number | null
+  /** Documents: "p. 4", "Slide 7" or a heading (notes/chapter_N.json `loc`). */
+  loc?: string | null
 }
 
 export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId: number | null; screenshotsExpanded?: boolean }) {
@@ -149,6 +159,8 @@ export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId
 
   // P6.3: chapter-level and chunk-level video seek targets.
   const videoEmbeddable = useVideoStore(s => s.embeddable)
+  // Documents: sections carry a page/slide/heading label instead of a time.
+  const isDocument = useVideoStore(s => s.sourceKind === 'document')
   const videoMap = useVideoStore(s => s.map)
   const seekToChapter = useVideoStore(s => s.seekToChapter)
   const sectionStart = useVideoStore(s => s.sectionStart)
@@ -194,6 +206,7 @@ export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId
             body: ((sec.content_markdown as string) || '').replace(/!\[.*?\]\(.*?\)/g, '').trim(),
             cardType: sec.section_type as CardType,
             startSec: typeof sec.start_sec === 'number' ? sec.start_sec : null,
+            loc: typeof sec.loc === 'string' ? sec.loc : null,
           }))
           setSections(parsedSecs)
         } else {
@@ -243,7 +256,7 @@ export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-13 text-nt3">
             <span className="font-mono">
               {chapterId != null && <>Chapter {chapterId}</>}
-              {chapterTime?.start_sec != null && <> · {formatTimestamp(chapterTime.start_sec)}</>}
+              {!isDocument && chapterTime?.start_sec != null && <> · {formatTimestamp(chapterTime.start_sec)}</>}
               {sectionCount > 0 && <> · {sectionCount} {sectionCount === 1 ? 'section' : 'sections'}</>}
             </span>
             {showSeekChip && chapterTime?.start_sec != null && (
@@ -263,7 +276,7 @@ export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId
       {partiallyGenerated && <PartialContentBadge className="mb-6" />}
 
       {sections.map((section, idx) => {
-        const { heading, body, cardType: explicitType, startSec } = section
+        const { heading, body, cardType: explicitType, startSec, loc } = section
         if (!body) return null
 
         const innerContent = (
@@ -304,7 +317,7 @@ export function NotesView({ chapterId, screenshotsExpanded = true }: { chapterId
             <div className="pt-0.5">
               <ShelfMark
                 top={mark}
-                time={sectionSec != null ? formatTimestamp(sectionSec) : undefined}
+                time={sectionSec != null ? formatTimestamp(sectionSec) : isDocument && loc ? shortLoc(loc) : undefined}
                 className="w-full py-2"
                 label={sectionSec != null ? `Play ${heading} from ${formatTimestamp(sectionSec)}` : undefined}
                 title={sectionSec != null ? `Play the video from ${formatTimestamp(sectionSec)}` : undefined}

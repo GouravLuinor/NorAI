@@ -18,7 +18,7 @@ interface StageInfo {
 // Stages the pipeline reports. Frames and scenes are captured alongside
 // transcription, so they have no row of their own.
 const STAGES: StageInfo[] = [
-  { label: 'Downloading video', key: 'ingestion' },
+  { label: 'Getting your file', key: 'ingestion' },
   { label: 'Transcribing lecture & capturing slides', key: 'transcription' },
   { label: 'Chunking transcript', key: 'chunking' },
   { label: 'Mapping the chapters', key: 'outline' },
@@ -26,6 +26,15 @@ const STAGES: StageInfo[] = [
   { label: 'Indexing for tutor', key: 'tutor_index' },
   { label: 'Cleaning up', key: 'cleanup' },
 ]
+
+// Documents skip transcription; their text is read during intake.
+const DOC_LABELS: Record<string, string> = {
+  ingestion: 'Reading your document',
+  chunking: 'Splitting the text',
+}
+const DOC_STAGES: StageInfo[] = STAGES
+  .filter((s) => s.key !== 'transcription')
+  .map((s) => ({ ...s, label: DOC_LABELS[s.key] ?? s.label }))
 
 function formatCountdown(totalSeconds: number): string {
   if (totalSeconds <= 0) return '00h 00m 00s'
@@ -53,6 +62,7 @@ export function ProcessingPage() {
   const { taskId } = useParams<{ taskId: string }>()
   const navigate = useNavigate()
   const [activeStage, setActiveStage] = useState<string | null>(null)
+  const [isDocument, setIsDocument] = useState(false)
   const [completedStages, setCompletedStages] = useState<Set<string>>(new Set())
   const [progress, setProgress] = useState(0)
   const [message, setMessage] = useState('Preparing…')
@@ -130,6 +140,7 @@ export function ProcessingPage() {
       },
     ) => {
       const stage = data.stage
+      if ((data as { source_kind?: string }).source_kind === 'document') setIsDocument(true)
       if (stage === 'complete' || (data.progress != null && data.progress >= 100)) {
         setCompletedStages(prev => {
           const next = new Set(prev)
@@ -283,7 +294,7 @@ export function ProcessingPage() {
 
         {/* Stages */}
         <ol className="border-y border-bdr divide-y divide-bdr">
-          {STAGES.map((stage, idx) => {
+          {(isDocument ? DOC_STAGES : STAGES).map((stage, idx) => {
             const isActive = activeStage === stage.key && !finished
             const isComplete = finished || (completedStages.has(stage.key) && !isActive)
             return (

@@ -203,7 +203,9 @@ async def generate_answer_node(state: dict, config: RunnableConfig, output_dir: 
     # ── Build prompt ───────────────────────────────────────────────────────────
     study_mode = state.get("study_mode", "default")
     persona_instructions = state.get("persona_instructions", "")
-    system_prompt = build_system_prompt(lecture_title, mode=study_mode)
+    from documents.kind import lecture_source_kind
+    source_kind = lecture_source_kind(output_dir)
+    system_prompt = build_system_prompt(lecture_title, mode=study_mode, source_kind=source_kind)
     
     # Phase 5: check if all retrieved chunks are weak matches
     # `relevant` = distance within the index model's confidence threshold.
@@ -213,7 +215,8 @@ async def generate_answer_node(state: dict, config: RunnableConfig, output_dir: 
     # "ok" keep the existing no-context / low-confidence notes.
     retrieval_status = state.get("retrieval_status", "ok")
     context_block = build_context_block(
-        retrieved_chunks, low_confidence=low_confidence, status=retrieval_status
+        retrieved_chunks, low_confidence=low_confidence, status=retrieval_status,
+        source_kind=source_kind,
     )
     
     image_context_block = build_image_context_block(retrieved_images)   # ← Phase 4

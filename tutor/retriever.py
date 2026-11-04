@@ -164,6 +164,7 @@ def _chunk_from_doc(doc_id: str, text: str, meta: dict, distance: Optional[float
         "source": meta.get("source", ""),
         "start": meta.get("start"),
         "end": meta.get("end"),
+        **({"loc": meta["loc"], "locs": meta.get("locs") or [meta["loc"]]} if meta.get("loc") else {}),
         "distance": distance,
         "chunk_id": doc_id,
         "relevant": distance is not None and distance <= threshold,

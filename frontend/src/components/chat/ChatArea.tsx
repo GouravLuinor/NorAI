@@ -16,6 +16,7 @@ import { Lightbox } from '../ui/Lightbox'
 
 export function ChatArea() {
   const activeLectureId = useLectureStore(s => s.activeLectureId)
+  const isDocument      = useVideoStore(s => s.sourceKind === 'document')
   const messages        = useThreadStore(s => s.messages)
   const threadId        = useThreadStore(s => s.threadId)
   const isLoadingHistory = useThreadStore(s => s.isLoading)
@@ -112,9 +113,11 @@ export function ChatArea() {
             <div aria-hidden="true" className="w-10 h-10 rounded-[4px] bg-brass text-[#16181A] flex items-center justify-center mb-4 text-18 font-bold">
               N
             </div>
-            <h2 className="text-16 font-bold text-nt mb-1.5">Ask Nora about this lecture</h2>
+            <h2 className="text-16 font-bold text-nt mb-1.5">Ask Nora about this {isDocument ? 'document' : 'lecture'}</h2>
             <p className="text-14 text-nt3 max-w-[280px] leading-relaxed">
-              Answers come from what the lecturer said, with the moment they said it.
+              {isDocument
+                ? 'Answers come from what the document says, with the page or slide it says it on.'
+                : 'Answers come from what the lecturer said, with the moment they said it.'}
             </p>
 
             {guestRemaining != null && (

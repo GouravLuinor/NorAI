@@ -133,6 +133,47 @@ def _transcript_chunk_at(t: float, chunks: list[dict]) -> dict | None:
     return min(hits, key=lambda c: abs(c["start"] - t)) if hits else None
 
 
+# A document citation starts with its location tag: "p. 4 — what the author
+# wrote", "Slide 7: ...", or a section heading.
+_LOC_SPLIT_RE = re.compile(r"\s+[—–-]\s+|:\s+")
+
+
+def _norm_loc(text: str) -> str:
+    t = re.sub(r"[*_`\[\]]", "", text or "").replace("…", "").strip().lower()
+    t = re.sub(r"^(?:pages?|pp?\.?)\s*(\d+)", r"p. \1", t)
+    t = re.sub(r"^slide\s*(\d+)", r"slide \1", t)
+    return " ".join(t.split()).rstrip(".:")
+
+
+def _loc_variants(chunk: dict) -> list[str]:
+    out = [chunk.get("loc") or ""] + list(chunk.get("locs") or [])
+    return [n for n in (_norm_loc(x) for x in out) if n]
+
+
+def _document_chunk_for(citation: str, chunks: list[dict]) -> dict | None:
+    """The retrieved document window whose location tag the citation names
+    (exact match first, then a heading the model shortened or extended)."""
+    windows = [c for c in chunks if c.get("kind") == "transcript" and c.get("loc")]
+    if not windows:
+        return None
+    head = _norm_loc(_LOC_SPLIT_RE.split(re.sub(r"[*_`]", "", citation).strip(), maxsplit=1)[0])
+    if not head:
+        return None
+    for c in windows:
+        if head in _loc_variants(c):
+            return c
+    # "p. 4–5" cited as a range: match its first page.
+    first = re.split(r"[–-]", head, maxsplit=1)[0].strip()
+    for c in windows:
+        if first in _loc_variants(c):
+            return c
+    for c in windows:
+        for v in _loc_variants(c):
+            if len(v) >= 8 and len(head) >= 8 and (head.startswith(v) or v.startswith(head)):
+                return c
+    return None
+
+
 def verify_citations(answer: str, chunks: list[dict]) -> list[dict]:
     """
     Verify every cited section or transcript timestamp against `chunks`. Returns:
@@ -146,6 +187,23 @@ def verify_citations(answer: str, chunks: list[dict]) -> list[dict]:
     """
     result: list[dict] = []
     for citation in parse_citations(answer):
+        doc_match = _document_chunk_for(citation, chunks)
+        if doc_match is not None:
+            result.append(
+                {
+                    "section": citation,
+                    "verified": True,
+                    "chunk_id": doc_match.get("chunk_id"),
+                    "heading_path": doc_match.get("heading_path"),
+                    "heading": doc_match.get("heading"),
+                    "chapter_id": doc_match.get("chapter_id"),
+                    "kind": "transcript",
+                    "start": doc_match.get("start"),
+                    "end": doc_match.get("end"),
+                    "loc": doc_match.get("loc"),
+                }
+            )
+            continue
         t = _cited_seconds(citation)
         if t is not None:
             match = _transcript_chunk_at(t, chunks)

@@ -26,6 +26,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from chunking.chunk import chunk_transcript
+from documents.kind import DOCUMENT, VIDEO, terms
 from lean.chapters import generate_chapters
 from lean.structure import generate_outline
 from notes.artifacts import write_combined_notes
@@ -54,21 +55,24 @@ def extract_keyframes(video_path: str, out: str) -> str:
 
 def run_content_stages(out: str, transcript_path: str, keyframes_meta: str | None, *,
                        source_title: str = "", duration_sec: float | None = None,
+                       source_kind: str = VIDEO,
                        report=_noop, check_cancel=_noop, metrics: dict | None = None) -> dict:
-    """Chunk → structure → chapters → notes.md, from an existing transcript."""
+    """Chunk → structure → chapters → notes.md, from an existing transcript
+    (a video's, or a document's from documents/adapter.py)."""
     metrics = metrics if metrics is not None else {}
     stage_seconds = metrics.setdefault("stage_seconds", {})
 
-    report("chunking", "Chunking transcript…", 30)
+    report("chunking", f"Chunking {terms(source_kind)['text']}…", 30)
     check_cancel()
     ch = chunk_transcript(transcript_path, output_dir=out)
     metrics["num_chunks"] = ch.get("num_chunks")
     metrics["segments_per_chunk"] = ch.get("segments_per_chunk")
 
-    report("outline", "Mapping the lecture's chapters…", 36)
+    report("outline", f"Mapping the {terms(source_kind)['source']}'s chapters…", 36)
     check_cancel()
     t0 = time.perf_counter()
-    outline = generate_outline(ch["chunks_path"], out, source_title=source_title, duration_sec=duration_sec)
+    outline = generate_outline(ch["chunks_path"], out, source_title=source_title, duration_sec=duration_sec,
+                               source_kind=source_kind)
     stage_seconds["outline"] = round(time.perf_counter() - t0, 2)
     metrics["num_chapters"] = len(outline["chapters"])
     metrics["title"] = outline["lecture_title"]
@@ -76,7 +80,8 @@ def run_content_stages(out: str, transcript_path: str, keyframes_meta: str | Non
     report("chapter_artifacts", "Writing notes, revision & assessment…", 45)
     check_cancel()
     t0 = time.perf_counter()
-    result = generate_chapters(outline, ch["chunks_path"], transcript_path, keyframes_meta, out)
+    result = generate_chapters(outline, ch["chunks_path"], transcript_path,
+                               None if source_kind == DOCUMENT else keyframes_meta, out, source_kind)
     stage_seconds["chapter_artifacts"] = round(time.perf_counter() - t0, 2)
     write_combined_notes(Path(out) / "notes")
     return {"outline": outline, **result}

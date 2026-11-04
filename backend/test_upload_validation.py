@@ -43,11 +43,13 @@ def test_gdrive_gate():
 
 
 def test_allowlists():
-    check("valid source types", ALLOWED_SOURCE_TYPES == {"youtube", "gdrive", "upload"})
+    check("valid source types", ALLOWED_SOURCE_TYPES == {"youtube", "gdrive", "upload", "link"})
     for ext in (".mp4", ".mkv", ".avi", ".mov", ".webm"):
         check(f"video ext {ext} allowed", ext in ALLOWED_UPLOAD_EXTENSIONS)
     check(".exe not allowed", ".exe" not in ALLOWED_UPLOAD_EXTENSIONS)
-    check(".pdf not allowed", ".pdf" not in ALLOWED_UPLOAD_EXTENSIONS)
+    for ext in (".pdf", ".docx", ".pptx", ".txt", ".md"):
+        check(f"document ext {ext} allowed", ext in ALLOWED_UPLOAD_EXTENSIONS)
+    check(".doc (legacy Word) not allowed", ".doc" not in ALLOWED_UPLOAD_EXTENSIONS)
     check(".mp3 not allowed", ".mp3" not in ALLOWED_UPLOAD_EXTENSIONS)
 
 

@@ -10,20 +10,21 @@ import { apiFetch } from '../lib/http'
  *   marketing or pricing pages.
  *
  * `sources` is the intake allowlist (config.enabled_sources on the backend);
- * the upload page offers only these.
+ * the upload page accepts only these. `link` = any other http(s) URL (web
+ * page, Google Docs/Slides, Dropbox, direct file).
  */
 export type RunMode = 'hosted' | 'local'
-export type SourceType = 'youtube' | 'gdrive' | 'upload'
+export type SourceType = 'youtube' | 'gdrive' | 'upload' | 'link'
 
 export interface AppConfig {
   mode: RunMode
   sources: SourceType[]
 }
 
-const KNOWN_SOURCES: readonly SourceType[] = ['youtube', 'gdrive', 'upload']
+const KNOWN_SOURCES: readonly SourceType[] = ['youtube', 'gdrive', 'upload', 'link']
 
 /** Used until the backend answers, and if it never does: the hosted defaults. */
-export const FALLBACK_CONFIG: AppConfig = { mode: 'hosted', sources: ['gdrive', 'upload'] }
+export const FALLBACK_CONFIG: AppConfig = { mode: 'hosted', sources: ['gdrive', 'upload', 'link'] }
 
 interface AppConfigState extends AppConfig {
   loaded: boolean

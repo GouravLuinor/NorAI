@@ -15,7 +15,7 @@ cd "$ROOT"
 export GEMINI_API_KEY="${GEMINI_API_KEY:-test-offline-key-dummy}"
 export NORAI_DEV_ACCESS="${NORAI_DEV_ACCESS:-1}"
 # The suites exercise every intake source; hosted mode would leave YouTube off.
-export NORAI_SOURCES="${NORAI_SOURCES:-youtube,gdrive,upload}"
+export NORAI_SOURCES="${NORAI_SOURCES:-youtube,gdrive,upload,link}"
 export DATABASE_URL="${DATABASE_URL:-sqlite+aiosqlite:////tmp/norai_ci_test.db}"
 
 # P1 rate limiting is exercised in test_phase1_hardening.py; every other

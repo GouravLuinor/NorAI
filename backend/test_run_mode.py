@@ -48,12 +48,12 @@ def test_config():
     _env(NORAI_MODE=None, NORAI_SOURCES=None, NORAI_DEV_ACCESS=None)
     check("default mode is hosted", config.run_mode() == "hosted")
     check("hosted: no dev access", not config.dev_access())
-    check("hosted default leaves YouTube off", config.enabled_sources() == ("gdrive", "upload"))
+    check("hosted default leaves YouTube off", config.enabled_sources() == ("gdrive", "upload", "link"))
 
     _env(NORAI_MODE="local")
     check("local mode", config.run_mode() == "local" and config.is_local_mode())
     check("local mode implies dev access", config.dev_access())
-    check("local default: every source", config.enabled_sources() == ("youtube", "gdrive", "upload"))
+    check("local default: every source", config.enabled_sources() == ("youtube", "gdrive", "upload", "link"))
 
     _env(NORAI_MODE="LOCAL ")
     check("mode is case/space tolerant", config.is_local_mode())
@@ -80,7 +80,7 @@ def test_api():
 
     r = client.get("/system/config")
     check("GET /system/config 200", r.status_code == 200)
-    check("hosted config", r.json() == {"mode": "hosted", "sources": ["gdrive", "upload"]})
+    check("hosted config", r.json() == {"mode": "hosted", "sources": ["gdrive", "upload", "link"]})
 
     r = client.post("/estimate", data={"source_type": "youtube", "url": "https://youtu.be/dQw4w9WgXcQ"})
     check("hosted: YouTube estimate rejected 400", r.status_code == 400)
@@ -94,7 +94,7 @@ def test_api():
 
     _env(NORAI_MODE="local")
     r = client.get("/system/config")
-    check("local config lists YouTube", r.json() == {"mode": "local", "sources": ["youtube", "gdrive", "upload"]})
+    check("local config lists YouTube", r.json() == {"mode": "local", "sources": ["youtube", "gdrive", "upload", "link"]})
     # No plan applies locally, so a long lecture must not be flagged "over plan"
     # (the upload page disables Start on fits_plan=false).
     r = client.post("/estimate", data={"source_type": "upload", "duration": "300"})

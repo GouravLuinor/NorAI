@@ -40,11 +40,17 @@ interface LectureSourceInfo {
   source_type?: string | null
   source_url?: string | null
   status?: string | null
+  /** "document" for PDFs, DOCX, PPTX, web pages (backend /lectures/{id}). */
+  source_kind?: string | null
 }
+
+export type SourceKind = 'video' | 'document'
 
 interface VideoState {
   lectureId: string | null
   sourceType: string | null
+  /** Documents have no video and no timestamps: the UI shows page/slide labels. */
+  sourceKind: SourceKind
   status: string | null
   videoId: string | null
   map: VideoMap | null
@@ -99,6 +105,7 @@ let _loadVideoGeneration = 0
 export const useVideoStore = create<VideoState>((set, get) => ({
   lectureId: null,
   sourceType: null,
+  sourceKind: 'video',
   status: null,
   videoId: null,
   map: null,
@@ -112,6 +119,7 @@ export const useVideoStore = create<VideoState>((set, get) => ({
     set({
       lectureId,
       sourceType: null,
+      sourceKind: 'video',
       status: null,
       videoId: null,
       map: null,
@@ -130,6 +138,7 @@ export const useVideoStore = create<VideoState>((set, get) => ({
       const videoId = extractYoutubeVideoId(info?.source_url)
       set({
         sourceType,
+        sourceKind: info?.source_kind === 'document' ? 'document' : 'video',
         status: info?.status ?? null,
         videoId,
         map: map ?? null,
@@ -145,6 +154,7 @@ export const useVideoStore = create<VideoState>((set, get) => ({
     set({
       lectureId: null,
       sourceType: null,
+      sourceKind: 'video',
       status: null,
       videoId: null,
       map: null,

@@ -40,6 +40,7 @@ from sqlalchemy.pool import NullPool
 
 from config import (
     DEMO_LECTURE_IDS,
+    MAX_CONCURRENT_DOC_PIPELINES,
     MAX_CONCURRENT_PIPELINES,
     MAX_PER_USER_PIPELINES,
     ORPHAN_DIR_GC_AGE_DAYS,
@@ -326,8 +327,31 @@ async def _recover_stale_once(session_factory) -> int:
     return recovered
 
 
+_VIDEO_EXTS = (".mp4", ".mkv", ".avi", ".mov", ".webm")
+_DOC_EXTS = (".pdf", ".docx", ".pptx", ".txt", ".md")
+
+
+def job_lane(source_type: str | None, source_url: str | None) -> str:
+    """"video" or "document", from what /process stored. Unknown cases go to
+    the video lane, the conservative (one-slot) choice."""
+    from urllib.parse import urlparse
+
+    url = source_url or ""
+    path = (urlparse(url).path if "://" in url else url).lower()
+    if source_type == "upload":
+        return "document" if path.endswith(_DOC_EXTS) else "video"
+    if source_type == "gdrive":
+        return "document" if "/document/d/" in path or "/presentation/d/" in path else "video"
+    if source_type == "link":
+        return "video" if path.endswith(_VIDEO_EXTS) else "document"
+    return "video"
+
+
+_LANE_CAPS = {"video": MAX_CONCURRENT_PIPELINES, "document": MAX_CONCURRENT_DOC_PIPELINES}
+
+
 async def _claim_queued_once(session_factory) -> list[str]:
-    """Claim queued jobs that fit the global + per-user concurrency caps."""
+    """Claim queued jobs that fit each lane's global + per-user concurrency caps."""
     async with session_factory() as session:
         result = await session.execute(
             select(Lecture).where(Lecture.status == "queued").order_by(Lecture.queued_at)
@@ -338,24 +362,27 @@ async def _claim_queued_once(session_factory) -> list[str]:
 
         run_result = await session.execute(select(Lecture).where(Lecture.status == "processing"))
         running = list(run_result.scalars())
-        global_running = len(running)
-        per_user: dict[str, int] = {}
+        lane_running = {lane: 0 for lane in _LANE_CAPS}
+        per_user: dict[tuple[str, str], int] = {}
         for lecture in running:
-            per_user[lecture.user_id] = per_user.get(lecture.user_id, 0) + 1
+            lane = job_lane(lecture.source_type, lecture.source_url)
+            lane_running[lane] += 1
+            per_user[(lane, lecture.user_id)] = per_user.get((lane, lecture.user_id), 0) + 1
 
         claimed = []
         now = _utcnow()
         for lecture in queued:
-            if global_running >= MAX_CONCURRENT_PIPELINES:
-                break
-            if per_user.get(lecture.user_id, 0) >= MAX_PER_USER_PIPELINES:
+            lane = job_lane(lecture.source_type, lecture.source_url)
+            if lane_running[lane] >= _LANE_CAPS[lane]:
+                continue
+            if per_user.get((lane, lecture.user_id), 0) >= MAX_PER_USER_PIPELINES:
                 continue
             lecture.status = "processing"
             lecture.started_at = now
             lecture.heartbeat_at = now
             lecture.cancel_requested = False
-            global_running += 1
-            per_user[lecture.user_id] = per_user.get(lecture.user_id, 0) + 1
+            lane_running[lane] += 1
+            per_user[(lane, lecture.user_id)] = per_user.get((lane, lecture.user_id), 0) + 1
             claimed.append(lecture.id)
         await session.commit()
     return claimed
@@ -607,14 +634,18 @@ def start_supervisor():
     with _supervisor_lock:
         if _supervisor_thread is not None and _supervisor_thread.is_alive():
             return
-        _executor = ThreadPoolExecutor(max_workers=max(1, MAX_CONCURRENT_PIPELINES))
+        _executor = ThreadPoolExecutor(
+            max_workers=max(1, MAX_CONCURRENT_PIPELINES) + max(0, MAX_CONCURRENT_DOC_PIPELINES)
+        )
         _supervisor_thread = threading.Thread(
             target=_supervisor_loop, daemon=True, name="pipeline-supervisor"
         )
         _supervisor_thread.start()
         logger.info(
-            "Pipeline supervisor started (max concurrent=%d, max per user=%d, attempts=%d)",
-            MAX_CONCURRENT_PIPELINES, MAX_PER_USER_PIPELINES, PIPELINE_MAX_ATTEMPTS,
+            "Pipeline supervisor started (video lane=%d, document lane=%d, max per user per lane=%d, "
+            "attempts=%d)",
+            MAX_CONCURRENT_PIPELINES, MAX_CONCURRENT_DOC_PIPELINES, MAX_PER_USER_PIPELINES,
+            PIPELINE_MAX_ATTEMPTS,
         )
 
 

@@ -1,9 +1,9 @@
 """
 backend/orchestrator.py
 
-Complete NorAI pipeline for a single video source: ingestion + duration
-limits, the lean content stages (lean/pipeline.py), the tutor index, metering
-and cleanup.
+Complete NorAI pipeline for one source: intake (video download, or document
+fetch + text extraction in documents/), plan limits, the lean content stages
+(lean/pipeline.py), the tutor index, metering and cleanup.
 Runs synchronously inside a worker thread owned by the P4.1 job queue
 (backend/jobs.py). Progress is reported through the `on_progress` callback
 (which persists to the Lecture row in the DB); cancellation is signalled by
@@ -33,8 +33,11 @@ from backend.usage import record_pipeline_outcome
 # P6.5: per-stage ledger deltas feed one UsageLog row per stage.
 from backend.usage_ledger import snapshot_usage, diff_usage
 
-from ingest.ingest import process_source
-from lean.pipeline import run_lean_stages
+from documents.extract import DocumentError
+from documents.fetch import FetchError
+from documents.intake import prepare_source
+from documents.kind import DOCUMENT
+from lean.pipeline import run_content_stages, run_lean_stages
 from config import dev_access
 from backend.db.database import mark_lecture_dir
 
@@ -58,7 +61,7 @@ class TerminalPipelineError(ValueError):
 # ── Cleanup (P4.2) ───────────────────────────────────────────────────────────
 
 # Transient dirs always removed after a run, on success OR failure.
-_TEMP_DIRS = ("videos", "audio", "screenshots/raw", "chunks", "metadata")
+_TEMP_DIRS = ("videos", "audio", "screenshots/raw", "chunks", "metadata", "downloads")
 
 
 def cleanup_lecture_dir(lecture_dir: Path) -> None:
@@ -77,6 +80,43 @@ def cleanup_lecture_dir(lecture_dir: Path) -> None:
         logger.info("Cleaned transient dirs under %s", lecture_dir)
     except Exception as e:
         logger.warning(f"Failed to clean intermediate dirs under {lecture_dir}: {e}")
+
+
+# ── Plan limits ──────────────────────────────────────────────────────────────
+
+def _enforce_plan_limits(duration_sec: float, user_id: str | None, prep) -> None:
+    """Plan-aware caps (backend/plans.py), checked on the real length before
+    any Gemini content call: /process can only check a probed length, and the
+    probe fails on some videos (and never runs for documents)."""
+    from backend.usage import meter_minutes, plan_limits
+
+    enforce = (
+        os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true"
+        and not dev_access()
+    )
+    if not enforce:
+        return
+    max_lecture_min, remaining_min = plan_limits(user_id)
+    max_duration_sec = max_lecture_min * 60
+    needed = meter_minutes(duration_sec)
+    if prep.kind == DOCUMENT:
+        what = f"This document ({prep.words:,} words) counts as {needed} lecture minutes"
+    else:
+        what = f"This lecture is {duration_sec / 60:.1f} minutes long"
+    fix = "split the document" if prep.kind == DOCUMENT else "trim the video"
+    if needed > remaining_min:
+        raise TerminalPipelineError(
+            f"Lecture needs {needed} quota minutes; {remaining_min} left.",
+            friendly=(f"{what}, but you have {remaining_min} lecture minutes left this "
+                      f"period. Get more time or {fix}."),
+        )
+    if duration_sec > max_duration_sec:
+        raise TerminalPipelineError(
+            f"Lecture duration ({duration_sec / 60:.1f} mins) exceeds the plan limit "
+            f"of {max_duration_sec / 60:.0f} minutes.",
+            friendly=(f"{what}, over your plan's {max_duration_sec / 60:.0f}-minute limit "
+                      f"per lecture. Upgrade your plan or {fix}."),
+        )
 
 
 # ── Pipeline runner (SYNCHRONOUS — runs in a worker thread) ─────────────────
@@ -159,60 +199,36 @@ def run_pipeline(
         out = str(lecture_dir)
         _check_cancel()
 
-        # ── Stage 1: Ingestion ─────────────────────────────────────────────
-        _report("ingestion", "Downloading video…", 2)
-        source = file_path if (source_type == "upload" and file_path) else (url or "")
-        ing = process_source(source, output_dir=out)
-        video_path  = ing["video_path"]
-        audio_path  = ing["audio_path"]
-        meta_path   = ing["metadata_path"]
-
-        # ── Duration check (Free Trial Limit: 15 mins) ────────────────────
+        # ── Stage 1: Intake (video download / document fetch + text extraction) ──
+        _report("ingestion", "Downloading video…" if source_type == "youtube" else "Reading your file…", 2)
         try:
-            with open(meta_path, "r", encoding="utf-8") as f:
-                meta_data = json_lib.load(f)
-                duration_sec = float(meta_data.get("duration", 0))
-            _metrics["duration_sec"] = duration_sec
-
-            # Plan-aware caps (backend/plans.py), checked on the real duration
-            # before any Gemini call: /process can only check a probed length,
-            # and the probe fails on some videos.
-            from backend.usage import meter_minutes, plan_limits
-            max_lecture_min, remaining_min = plan_limits(user_id)
-            max_duration_sec = max_lecture_min * 60
-            enforce = (
-                os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true"
-                and not dev_access()
+            prep = prepare_source(
+                source_type, out, url=url,
+                file_path=file_path if source_type == "upload" else None,
             )
-            if enforce and meter_minutes(duration_sec) > remaining_min:
-                raise TerminalPipelineError(
-                    f"Lecture needs {meter_minutes(duration_sec)} quota minutes; "
-                    f"{remaining_min} left.",
-                    friendly=(
-                        f"This lecture is {duration_sec / 60:.1f} minutes long, but you have "
-                        f"{remaining_min} lecture minutes left this period. Get more time "
-                        f"or trim the video."
-                    ),
-                )
-            if enforce and duration_sec > max_duration_sec:
-                raise TerminalPipelineError(
-                    f"Lecture duration ({duration_sec / 60:.1f} mins) exceeds the plan limit "
-                    f"of {max_duration_sec / 60:.0f} minutes.",
-                    friendly=(
-                        f"This lecture is {duration_sec / 60:.1f} minutes long — over your plan's "
-                        f"{max_duration_sec / 60:.0f}-minute limit per lecture. Upgrade your plan "
-                        f"or trim the video."
-                    ),
-                )
-        except json_lib.JSONDecodeError as e:
-            # P2.5: JSONDecodeError subclasses ValueError — it must NOT hit the
-            # terminal re-raise below. Corrupt metadata is a warn-skip: the
-            # pipeline proceeds without duration enforcement.
-            logger.warning(f"Corrupt video metadata ({meta_path}): {e}")
-        except ValueError:
-            raise
-        except Exception as e:
-            logger.warning(f"Could not verify video duration: {e}")
+        except (DocumentError, FetchError) as e:
+            # Unreadable file / bad link: a retry can't fix it.
+            raise TerminalPipelineError(str(e), friendly=str(e)) from e
+        _check_cancel()
+        _metrics["source_kind"] = prep.kind
+        if prep.kind == DOCUMENT:
+            duration_sec = float(prep.duration_sec or 0)
+            _metrics.update(duration_sec=duration_sec, doc_type=prep.doc_type, words=prep.words)
+        else:
+            meta_path = prep.ingest["metadata_path"]
+            try:
+                with open(meta_path, "r", encoding="utf-8") as f:
+                    duration_sec = float(json_lib.load(f).get("duration", 0))
+                _metrics["duration_sec"] = duration_sec
+            except (OSError, ValueError, TypeError) as e:
+                # Corrupt metadata is a warn-skip: the pipeline proceeds
+                # without duration enforcement.
+                logger.warning(f"Could not read video metadata ({meta_path}): {e}")
+                duration_sec = None
+
+        # ── Plan limits, on the real length (a document's words ÷ 150) ─────
+        if duration_sec:
+            _enforce_plan_limits(duration_sec, user_id, prep)
 
         # P1.8: record the pre-flight estimate (what /estimate would have shown).
         if _metrics["duration_sec"]:
@@ -225,12 +241,25 @@ def run_pipeline(
             except Exception as e:
                 logger.warning(f"Failed to compute planned estimate: {e}")
 
-
-        # ── Content: transcription ∥ keyframes → structure → chapters ───────
-        lean = run_lean_stages(
-            out, video_path, audio_path, meta_path,
-            report=_report, check_cancel=_check_cancel, metrics=_metrics,
-        )
+        # ── Content: (transcription ∥ keyframes →) structure → chapters ─────
+        if prep.kind == DOCUMENT:
+            try:
+                _metrics["num_segments"] = len(
+                    json_lib.loads(Path(prep.transcript_path).read_text(encoding="utf-8"))["segments"]
+                )
+            except Exception:  # noqa: BLE001
+                pass
+            lean = run_content_stages(
+                out, prep.transcript_path, None,
+                source_title=prep.title, duration_sec=duration_sec, source_kind=DOCUMENT,
+                report=_report, check_cancel=_check_cancel, metrics=_metrics,
+            )
+        else:
+            ing = prep.ingest
+            lean = run_lean_stages(
+                out, ing["video_path"], ing["audio_path"], ing["metadata_path"],
+                report=_report, check_cancel=_check_cancel, metrics=_metrics,
+            )
         update_lecture_title(task_id, lean["outline"]["lecture_title"])
 
         # ── Tutor Index (notes + transcript + screenshots) ────

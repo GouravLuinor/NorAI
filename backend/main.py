@@ -508,6 +508,7 @@ _SOURCE_DISABLED_COPY = {
     "youtube": "YouTube links aren't available here. Download the video and upload the file instead.",
     "gdrive": "Google Drive links aren't available here. Upload the file instead.",
     "upload": "File uploads aren't available here.",
+    "link": "Web links aren't available here. Upload the file instead.",
 }
 
 
@@ -519,7 +520,19 @@ def _require_enabled_source(source_type: str) -> None:
     if source_type not in enabled_sources():
         raise HTTPException(status_code=400, detail=_SOURCE_DISABLED_COPY[source_type])
 
-ALLOWED_UPLOAD_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm"}
+VIDEO_UPLOAD_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm"}
+DOC_UPLOAD_EXTENSIONS = {".pdf", ".docx", ".pptx", ".txt", ".md"}
+ALLOWED_UPLOAD_EXTENSIONS = VIDEO_UPLOAD_EXTENSIONS | DOC_UPLOAD_EXTENSIONS
+
+
+def _is_text_head(h: bytes) -> bool:
+    if b"\x00" in h:
+        return False
+    try:
+        h.decode("utf-8")
+    except UnicodeDecodeError as e:
+        return e.start >= len(h) - 4  # a char cut at the sniff boundary
+    return True
 
 # P1.5: magic-byte signatures per allowed extension. mp4/mov share the ISO
 # BMFF 'ftyp' box; mkv/webm share the EBML header; avi is RIFF/AVI.
@@ -529,9 +542,15 @@ _MAGIC_CHECKS = {
     ".mkv": lambda h: h.startswith(b"\x1a\x45\xdf\xa3"),
     ".webm": lambda h: h.startswith(b"\x1a\x45\xdf\xa3"),
     ".avi": lambda h: h.startswith(b"RIFF"),
+    ".pdf": lambda h: h.startswith(b"%PDF"),
+    ".docx": lambda h: h.startswith(b"PK\x03\x04"),
+    ".pptx": lambda h: h.startswith(b"PK\x03\x04"),
+    ".txt": _is_text_head,
+    ".md": _is_text_head,
 }
 
 MAX_UPLOAD_BYTES = int(os.environ.get("NORAI_MAX_UPLOAD_BYTES", str(2 * 1024**3)))  # default 2 GB
+MAX_DOC_UPLOAD_BYTES = int(os.environ.get("NORAI_MAX_DOC_BYTES", str(50 * 1024**2)))  # default 50 MB
 UPLOAD_CHUNK_BYTES = 1024 * 1024  # 1 MB
 
 
@@ -585,6 +604,85 @@ async def _with_plan_fit(est: dict, duration_min: float, user: Optional[User], d
     return est
 
 
+def _is_http_url(url: str) -> bool:
+    from urllib.parse import urlparse
+    p = urlparse(url.strip())
+    return p.scheme in ("http", "https") and bool(p.hostname)
+
+
+def _estimate_document(path: Path | None, url: str | None) -> dict:
+    """Words → quota minutes for a document file or link, with no Gemini call
+    (a scanned PDF reports its pages but no estimate). Blocking: run in a thread."""
+    import shutil as _shutil
+    import tempfile
+    from documents.adapter import WORDS_PER_MINUTE, quota_minutes
+    from documents.extract import DocumentError, extract_file, extract_html, sniff
+    from documents.fetch import FetchError, IsVideoLink, google_export_url, rewrite_link, safe_download
+
+    tmpdir = None
+    try:
+        name, ctype = (path.name if path else ""), ""
+        if url:
+            if is_youtube_url(url):
+                return {"available": False, "kind": "video", "reason": "YouTube link"}
+            if is_gdrive_url(url) and not google_export_url(url):
+                return {"available": False, "reason": "Google Drive files can't be measured before download"}
+            tmpdir = Path(tempfile.mkdtemp(prefix="norai-est-"))
+            target = google_export_url(url) or rewrite_link(url)
+            try:
+                f = safe_download(target, tmpdir)
+            except IsVideoLink:
+                return {"available": False, "kind": "video", "reason": "Video length is measured after download"}
+            path, name, ctype = f.path, f.filename, f.content_type
+        kind = sniff(path, name_hint=name, content_type=ctype)
+        if kind == "video":
+            return {"available": False, "kind": "video", "reason": "Video length is measured after download"}
+        ex = extract_html(path.read_bytes(), url=url) if kind == "html" else extract_file(path, kind, ocr=False)
+        if ex.scanned:
+            return {"available": False, "kind": "document", "doc_type": ex.doc_type, "pages": ex.pages,
+                    "title": ex.title, "scanned": True,
+                    "reason": "Scanned PDF: its text is read during processing"}
+        words = sum(len(b.text.split()) for b in ex.blocks)
+        minutes = quota_minutes(words)
+        est = estimate_pipeline(words / WORDS_PER_MINUTE, source_type="upload")
+        est.update({
+            "available": True, "kind": "document", "doc_type": ex.doc_type, "title": ex.title,
+            "pages": ex.pages, "words": words, "minutes_needed": minutes, "duration_min": words / WORDS_PER_MINUTE,
+        })
+        return est
+    except (DocumentError, FetchError) as e:
+        return {"available": False, "error": str(e), "reason": str(e)}
+    finally:
+        if tmpdir is not None:
+            _shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+async def _save_upload(file: UploadFile, stem: str, cap: int) -> Path:
+    """Stream an upload into outputs/uploads/ under a byte cap (no full-file
+    RAM buffer, enforced even when Content-Length is absent)."""
+    raw_name = Path(file.filename or "upload.bin").name
+    upload_dir = Path("outputs/uploads")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    safe_filename = re.sub(r"[^a-zA-Z0-9_.-]", "_", raw_name)
+    file_path = upload_dir / f"{stem}_{safe_filename}"
+    written = 0
+    with open(file_path, "wb") as f:
+        while True:
+            chunk = await file.read(UPLOAD_CHUNK_BYTES)
+            if not chunk:
+                break
+            written += len(chunk)
+            if written > cap:
+                f.close()
+                file_path.unlink(missing_ok=True)
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"Upload exceeds the {cap // (1024 * 1024)} MB limit",
+                )
+            f.write(chunk)
+    return file_path
+
+
 @app.post("/estimate")
 async def estimate_cost(
     source_type: str = Form(...),
@@ -616,9 +714,31 @@ async def estimate_cost(
     if source_type == "gdrive":
         if not url or not is_gdrive_url(url):
             raise HTTPException(status_code=400, detail="Invalid Google Drive URL")
+        from documents.fetch import google_export_url
+        if google_export_url(url):  # Google Docs / Slides: count the exported words
+            est = await asyncio.to_thread(_estimate_document, None, url)
+            if est.get("available"):
+                est = await _with_plan_fit(est, est["duration_min"], user, db)
+            return est
         # Drive durations can't be probed without downloading — no estimate.
         return {"available": False, "reason": "Google Drive durations are not probeable"}
+    if source_type == "link":
+        if not url or not _is_http_url(url):
+            raise HTTPException(status_code=400, detail="Enter a full http:// or https:// link")
+        est = await asyncio.to_thread(_estimate_document, None, url)
+        if est.get("available"):
+            est = await _with_plan_fit(est, est["duration_min"], user, db)
+        return est
     if source_type == "upload":
+        if file is not None and Path(file.filename or "").suffix.lower() in DOC_UPLOAD_EXTENSIONS:
+            tmp = await _save_upload(file, f"est-{uuid.uuid4()}", MAX_DOC_UPLOAD_BYTES)
+            try:
+                est = await asyncio.to_thread(_estimate_document, tmp, None)
+            finally:
+                tmp.unlink(missing_ok=True)
+            if est.get("available"):
+                est = await _with_plan_fit(est, est["duration_min"], user, db)
+            return est
         if not file and duration is None:
             return {"available": False, "reason": "No file or duration provided"}
         if duration is None or duration <= 0:
@@ -665,6 +785,13 @@ async def start_processing(
             raise HTTPException(status_code=400, detail="Invalid YouTube URL")
         if source_type == "gdrive" and not is_gdrive_url(url):
             raise HTTPException(status_code=400, detail="Invalid Google Drive URL")
+        if source_type == "link":
+            url = url.strip()
+            if not _is_http_url(url):
+                raise HTTPException(status_code=400, detail="Enter a full http:// or https:// link")
+            if is_youtube_url(url):
+                raise HTTPException(status_code=400, detail=_SOURCE_DISABLED_COPY["youtube"]
+                                    if "youtube" not in enabled_sources() else "Use the YouTube option for YouTube links")
 
     # ── Pre-download quota + free-trial enforcement (P2.2) ─────────────────
     probed_sec = None
@@ -720,28 +847,8 @@ async def start_processing(
                 detail=f"Unsupported file type {ext!r}. Allowed: {', '.join(sorted(ALLOWED_UPLOAD_EXTENSIONS))}",
             )
 
-        upload_dir = Path("outputs/uploads")
-        upload_dir.mkdir(parents=True, exist_ok=True)
-        safe_filename = re.sub(r"[^a-zA-Z0-9_.-]", "_", raw_name)
-        file_path = upload_dir / f"{task_id}_{safe_filename}"
-
-        # Stream-write in chunks (no full-file RAM buffer), enforcing a hard cap
-        # even when Content-Length is absent.
-        written = 0
-        with open(file_path, "wb") as f:
-            while True:
-                chunk = await file.read(UPLOAD_CHUNK_BYTES)
-                if not chunk:
-                    break
-                written += len(chunk)
-                if written > MAX_UPLOAD_BYTES:
-                    f.close()
-                    file_path.unlink(missing_ok=True)
-                    raise HTTPException(
-                        status_code=413,
-                        detail=f"Upload exceeds the {MAX_UPLOAD_BYTES // (1024 * 1024)} MB limit",
-                    )
-                f.write(chunk)
+        cap = MAX_DOC_UPLOAD_BYTES if ext in DOC_UPLOAD_EXTENSIONS else MAX_UPLOAD_BYTES
+        file_path = await _save_upload(file, task_id, cap)
 
         # P1.5: content sniffing — extension alone lets any payload through.
         with open(file_path, "rb") as f:
@@ -750,7 +857,8 @@ async def start_processing(
             file_path.unlink(missing_ok=True)
             raise HTTPException(
                 status_code=415,
-                detail="File content doesn't match its extension. Please upload a real video file.",
+                detail="File content doesn't match its extension. Please upload a real "
+                       + ("document." if ext in DOC_UPLOAD_EXTENSIONS else "video file."),
             )
 
     # Record lecture in database (auth is now required). Status 'queued': the
@@ -892,6 +1000,13 @@ async def get_lecture_info(
         info["source_url"] = row.source_url
         info["status"] = row.status
         info["duration_seconds"] = row.duration_seconds
+    # Documents: the workspace hides the video player and shows page/slide
+    # labels instead of timestamps.
+    from documents.kind import transcript_source
+    src = transcript_source(info.get("output_dir") or Path("outputs") / clean_id)
+    info["source_kind"] = "document" if src.get("source_kind") == "document" else "video"
+    if info["source_kind"] == "document":
+        info.update(doc_type=src.get("doc_type"), pages=src.get("pages"), words=src.get("words"))
     return info
 
 
@@ -979,7 +1094,26 @@ async def get_task_status(
         "stage": status.get("stage", "processing"),
         "message": status.get("message", "Processing…"),
         "progress": status.get("progress") or 0,
+        "source_kind": await _task_source_kind(task_id, db),
     }
+
+
+async def _task_source_kind(task_id: str, db: AsyncSession) -> str:
+    """"document" or "video" for a running task, so the progress page shows
+    the right stages: the transcript's kind once intake wrote it, else the
+    job lane guessed from the stored source."""
+    from documents.kind import DOCUMENT, transcript_source
+    try:
+        clean = sanitize_lecture_id(task_id)
+    except ValueError:
+        return "video"
+    src = transcript_source(Path("outputs") / clean)
+    if src:
+        return DOCUMENT if src.get("source_kind") == DOCUMENT else "video"
+    row = (await db.execute(
+        select(Lecture.source_type, Lecture.source_url).where(Lecture.id == clean)
+    )).first()
+    return jobs.job_lane(row[0], row[1]) if row else "video"
 
 
 @app.post("/process/{task_id}/cancel")

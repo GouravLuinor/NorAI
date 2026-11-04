@@ -35,6 +35,7 @@ from backend.rate_limit_handler import GeminiDailyQuotaExceededException
 from backend.usage_ledger import record_generate_usage
 from cache_util import outputs_current, write_marker
 from config import MODEL_NAME
+from documents.kind import DOCUMENT, VIDEO, terms
 from lean.structure import fmt_ts
 from notes.artifacts import CoreConceptItem, write_chapter_artifacts, write_degraded_chapter
 from transcription.gemini_transcriber import _parse_ts
@@ -70,7 +71,7 @@ class LeanSection(BaseModel):
     section_type: Literal["definition", "callout", "table", "list", "code", "prose"]
     title: str
     content_markdown: str = Field(description="Markdown body. Tables, bullets, code and $math$ where natural. No image tags.")
-    start: str = Field(description="The [m:ss] transcript timestamp where this section's material begins, e.g. '4:12'.")
+    start: str = Field(description="Where this section's material begins: the tag at the start of its first line, e.g. '4:12' or 'p. 4'.")
 
 
 class FrameNote(BaseModel):
@@ -96,6 +97,11 @@ class LeanChapterOut(_ChapterBody):
     whole chapter."""
     assessment_questions: list[Question]
     frames: list[FrameNote]
+
+
+class LeanDocChapterOut(_ChapterBody):
+    """Response schema for a document chapter: no frames."""
+    assessment_questions: list[Question]
 
 
 # ── Inputs ────────────────────────────────────────────────────────────────────
@@ -137,7 +143,10 @@ def sample_frames(keyframes: list[dict], start: float, end: float, cap: int = MA
 
 
 def transcript_lines(segments: list[dict]) -> str:
-    return "\n".join(f"[{fmt_ts(s['start'])}] {s['text'].strip()}" for s in segments if s["text"].strip())
+    """One line per segment, tagged with its time (video) or location (document)."""
+    return "\n".join(
+        f"[{s.get('loc') or fmt_ts(s['start'])}] {s['text'].strip()}" for s in segments if s["text"].strip()
+    )
 
 
 # ── Output cleanup ────────────────────────────────────────────────────────────
@@ -197,6 +206,29 @@ def parse_frames(raw: list) -> list[FrameNote]:
     return frames
 
 
+def _norm_loc(text: str) -> str:
+    t = " ".join(str(text).strip().strip("[]").lower().replace("…", "").split())
+    t = re.sub(r"^(?:page|pp?\.?)\s*(\d+)", r"p. \1", t)
+    return t.rstrip(".:")
+
+
+def section_loc(raw: str, segments: list[dict]) -> tuple[float, str] | None:
+    """Document sections: the cited location label → (start of its first
+    segment in this chapter, the label as written in the text)."""
+    want = _norm_loc(raw)
+    if not want:
+        return None
+    for s in segments:
+        if s.get("loc") and _norm_loc(s["loc"]) == want:
+            return float(s["start"]), s["loc"]
+    for s in segments:  # a heading label the model shortened or extended
+        if s.get("loc"):
+            have = _norm_loc(s["loc"])
+            if want.startswith(have) or have.startswith(want):
+                return float(s["start"]), s["loc"]
+    return None
+
+
 def section_start(raw: str, span: tuple[float, float]) -> float | None:
     try:
         sec = _parse_ts(raw.strip().strip("[]"))
@@ -248,46 +280,74 @@ def select_screenshots(frames: list[FrameNote], sent: list[dict]) -> list[dict]:
 # ── The call ──────────────────────────────────────────────────────────────────
 
 _PROMPT = """\
-You are writing study materials for chapter {n} of {total} of the lecture "{lecture_title}".
+You are writing study materials for chapter {n} of {total} of the {source} "{lecture_title}".
 Chapter: "{title}". {summary}
 Focus concepts: {concepts}.{neighbours}
 
-You get this chapter's timestamped transcript (what the lecturer said: the ONLY source
-of truth) and {k} frames captured from the video during the chapter.
+{inputs}
 
 GROUNDING (most important):
 - Every statement in the notes, revision points, concepts and quiz must be supported by
-  the transcript or be clearly visible in a frame.
+  {support}.
 - Do NOT add facts, definitions, formulas, complexities, examples, names, numbers or
-  history that the lecturer did not give, even if they are true and relevant. If the
-  lecturer is informal or vague about something, stay at that level.
-- Within that limit be THOROUGH: keep every step of the lecturer's reasoning, every
+  history that {author} did not give, even if they are true and relevant. If {author}
+  is informal or vague about something, stay at that level.
+- Within that limit be THOROUGH: keep every step of {authors} reasoning, every
   example, number, analogy and caveat they give. A student should be able to study
-  from the notes instead of rewatching. You may reorganise, clarify wording, and write
-  spoken math as LaTeX ($...$ inline, $$...$$ display).
+  from the notes instead of {reread}. You may reorganise, clarify wording, and write
+  {math} as LaTeX ($...$ inline, $$...$$ display).
 
 Produce:
 1. study_notes_title: the chapter title.
-2. study_notes_sections: {sections} cards (one per idea or step the lecturer moves
-   through), in lecture order, each 120-200 words: AT LEAST {words} words in total (the
-   transcript has {transcript_words}).
-   Spend that length on the lecturer's own specifics (the concrete values they plug in,
+2. study_notes_sections: {sections} cards (one per idea or step {author} moves
+   through), in {source} order, each 120-200 words: AT LEAST {words} words in total (the
+   {text} has {transcript_words}).
+   Spend that length on {authors} own specifics (the concrete values they plug in,
    intermediate steps, analogies, asides on why it matters), never on outside material.
-   section_type: definition | callout | table | list | code | prose. start: the [m:ss]
-   transcript timestamp where that section's material begins. No markdown image tags.
+   section_type: definition | callout | table | list | code | prose. start: {start_rule}
+   where that section's material begins. No markdown image tags.
 3. revision_summary: 3-5 key takeaways for exam revision.
 4. core_concepts_breakdown: the key concepts, each with a 1-2 sentence explanation.
-5. assessment_questions: 4-5 questions answerable from this chapter's transcript.
+5. assessment_questions: 4-5 questions answerable from this chapter's {text}.
    question_id from 1, chapter_id {n}. MCQ: 4 options and `answer` copied exactly from
    one of them. True/False: options ["True", "False"]. Every other type: options [].
    flashcard_front <= 15 words, flashcard_back <= 20 words, flashcard_explanation <= 30 words.
+{frames_item}
+{TEXT}:
+{transcript}
+"""
+
+_FRAMES_ITEM = """\
 6. frames: exactly {k} entries, one per frame (frame = 1..{k}), even for frames you would
    not show. include_in_notes = true only for frames showing teaching content (a slide,
    diagram, equation, code or worked example) worth placing in the notes.
-
-TRANSCRIPT:
-{transcript}
 """
+
+
+def prompt_fields(kind: str, k: int) -> dict:
+    """Wording that differs between a video lecture and a document."""
+    t = terms(kind)
+    if kind == DOCUMENT:
+        return {
+            **t,
+            "inputs": "You get this chapter's text, each line tagged with where it appears in the\n"
+                      "document ([p. 4], [Slide 7] or a heading). It is the ONLY source of truth.",
+            "support": "the document text",
+            "reread": "rereading the document",
+            "math": "math",
+            "start_rule": "the location tag of the line (exactly as written\n   inside [...], e.g. 'p. 4')",
+            "frames_item": "",
+        }
+    return {
+        **t,
+        "inputs": "You get this chapter's timestamped transcript (what the lecturer said: the ONLY source\n"
+                  f"of truth) and {k} frames captured from the video during the chapter.",
+        "support": "the transcript or be clearly visible in a frame",
+        "reread": "rewatching",
+        "math": "spoken math",
+        "start_rule": "the [m:ss]\n   transcript timestamp",
+        "frames_item": _FRAMES_ITEM.format(k=k),
+    }
 
 
 def _neighbours(outline: dict, idx: int) -> str:
@@ -323,7 +383,8 @@ def _outputs(out: Path, n: int) -> list[Path]:
 
 
 def process_chapter(outline: dict, idx: int, chunks: list[dict], segments: list[dict],
-                    keyframes: list[dict], output_dir: str, lecture_end: float) -> bool:
+                    keyframes: list[dict], output_dir: str, lecture_end: float,
+                    source_kind: str = VIDEO) -> bool:
     """Generate and write one chapter's artifacts. Returns False if degraded."""
     out = Path(output_dir)
     ch = outline["chapters"][idx]
@@ -345,10 +406,11 @@ def process_chapter(outline: dict, idx: int, chunks: list[dict], segments: list[
         return True
 
     prompt = _PROMPT.format(
+        **prompt_fields(source_kind, len(frames)),
         n=n, total=len(outline["chapters"]), lecture_title=outline.get("lecture_title", ""),
         title=title, summary=ch.get("summary", ""),
         concepts=", ".join(ch.get("focus_concepts") or []) or "—",
-        neighbours=_neighbours(outline, idx), k=len(frames), transcript=transcript,
+        neighbours=_neighbours(outline, idx), transcript=transcript,
         words=notes_word_target(transcript_words), transcript_words=transcript_words,
         sections=notes_section_count(notes_word_target(transcript_words)),
     )
@@ -361,7 +423,7 @@ def process_chapter(outline: dict, idx: int, chunks: list[dict], segments: list[
                 temperature=0.3,
                 max_output_tokens=16384,
                 response_mime_type="application/json",
-                response_schema=LeanChapterOut,
+                response_schema=LeanDocChapterOut if source_kind == DOCUMENT else LeanChapterOut,
                 media_resolution=types.MediaResolution.MEDIA_RESOLUTION_LOW,
             ),
         )
@@ -379,15 +441,16 @@ def process_chapter(outline: dict, idx: int, chunks: list[dict], segments: list[
         return False
 
     frame_notes = parse_frames(data.get("frames", []))
-    sections = [
-        {
-            "section_type": s.section_type,
-            "title": s.title,
-            "content_markdown": s.content_markdown,
-            "start_sec": section_start(s.start, span),
-        }
-        for s in body.study_notes_sections
-    ]
+    sections = []
+    for s in body.study_notes_sections:
+        sec = {"section_type": s.section_type, "title": s.title, "content_markdown": s.content_markdown}
+        if source_kind == DOCUMENT:
+            hit = section_loc(s.start, segs)
+            sec["start_sec"] = round(hit[0], 2) if hit else None
+            sec["loc"] = hit[1] if hit else None
+        else:
+            sec["start_sec"] = section_start(s.start, span)
+        sections.append(sec)
     write_chapter_artifacts(
         output_dir,
         chapter_id=n,
@@ -433,7 +496,7 @@ def process_chapter(outline: dict, idx: int, chunks: list[dict], segments: list[
 
 
 def generate_chapters(outline: dict, chunks_path: str, transcript_path: str,
-                      keyframes_meta: str | None, output_dir: str) -> dict:
+                      keyframes_meta: str | None, output_dir: str, source_kind: str = VIDEO) -> dict:
     """Run every chapter call (MAX_WORKERS in parallel)."""
     chunks = json.loads(Path(chunks_path).read_text(encoding="utf-8"))["chunks"]
     segments = json.loads(Path(transcript_path).read_text(encoding="utf-8"))["segments"]
@@ -445,7 +508,8 @@ def generate_chapters(outline: dict, chunks_path: str, transcript_path: str,
     degraded = 0
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
         futures = [
-            pool.submit(process_chapter, outline, i, chunks, segments, keyframes, output_dir, lecture_end)
+            pool.submit(process_chapter, outline, i, chunks, segments, keyframes, output_dir, lecture_end,
+                        source_kind)
             for i in range(len(outline["chapters"]))
         ]
         for fut in as_completed(futures):

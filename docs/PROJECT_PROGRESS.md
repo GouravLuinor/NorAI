@@ -21,6 +21,12 @@ Video (YouTube / upload / Drive)
   → Tutor Index (notes + transcript windows + screenshot captions; flat numpy store)
   → Cleanup
 
+Documents (PDF / DOCX / PPTX / TXT / MD / web page / Google Docs & Slides /
+Dropbox / direct link; documents/, since 2026-11-04)
+  → Intake: sniff + extract text (scanned PDF → Gemini), SSRF-guarded fetch for links
+  → Adapter: segments with a synthetic time (150 wpm = quota unit) + a loc label
+  → the same Chunking → Structure → Chapters (no frames, document wording) → Tutor Index
+
 The old 18-stage chain (per-chunk extraction → visual knowledge → merging →
 chapter building → screenshot selection → chapter artifacts) was deleted on
 2026-10-29. Lectures it produced (incl. the seed_data/ demos) are still read.

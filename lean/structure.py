@@ -29,6 +29,7 @@ from backend.gemini_client import generate_nonempty, get_client
 from backend.usage_ledger import record_generate_usage
 from cache_util import outputs_current, write_marker
 from config import MODEL_NAME
+from documents.kind import VIDEO, terms
 
 logger = logging.getLogger(__name__)
 
@@ -37,11 +38,11 @@ PROMPT_VERSION = "structure-v2"
 
 
 class ChapterPlan(BaseModel):
-    title: str = Field(description="Specific chapter title naming what this part of the lecture covers.")
+    title: str = Field(description="Specific chapter title naming what this part covers.")
     start_chunk: int
     end_chunk: int
-    focus_concepts: list[str] = Field(description="3-6 concepts the lecturer actually discusses in this chapter.")
-    summary: str = Field(description="1-2 sentences on what the lecturer covers in this chapter.")
+    focus_concepts: list[str] = Field(description="3-6 concepts actually discussed in this chapter.")
+    summary: str = Field(description="1-2 sentences on what this chapter covers.")
 
 
 class LecturePlan(BaseModel):
@@ -67,8 +68,10 @@ def chapter_count_range(duration_min: float, num_chunks: int) -> tuple[int, int,
 
 
 def tagged_transcript(chunks: list[dict]) -> str:
+    """Chunks tagged with their start: a time for videos, the location label
+    ("p. 4", "Slide 7") for documents."""
     return "\n\n".join(
-        f"[chunk {c['chunk_id']} | {fmt_ts(c['start'])}]\n" + " ".join(c["text"].split())
+        f"[chunk {c['chunk_id']} | {c.get('loc') or fmt_ts(c['start'])}]\n" + " ".join(c["text"].split())
         for c in chunks
     )
 
@@ -127,24 +130,24 @@ def build_outline(lecture_title: str, chapters: list[ChapterPlan], chunks: list[
 
 
 _PROMPT = """\
-Below is the full transcript of a lecture{title_hint}, split into numbered chunks
-(chunk {last} is the last). Divide the lecture into about {target} chapters (anything
-from {lo} to {hi} is fine) that follow how the lecturer actually moves between topics.
+Below is the full {text} of a {source}{title_hint}, split into numbered chunks
+(chunk {last} is the last). Divide the {source} into about {target} chapters (anything
+from {lo} to {hi} is fine) that follow how {author} actually moves between topics.
 
 Rules:
 - Each chapter is a contiguous range of chunks (start_chunk..end_chunk, inclusive).
   Chapters are in order, do not overlap, and together cover chunk 0 to chunk {last}.
-- Titles, focus_concepts and summaries describe ONLY what the lecturer says in that
-  range. Do not add topics the lecturer does not discuss.
-- lecture_title: a clear, specific title for the whole lecture.
+- Titles, focus_concepts and summaries describe ONLY what {author} {says} in that
+  range. Do not add topics {author} does not discuss.
+- lecture_title: a clear, specific title for the whole {source}.
 
-TRANSCRIPT:
+{TEXT}:
 {transcript}
 """
 
 
 def generate_outline(chunks_path: str, output_dir: str, *, source_title: str = "",
-                     duration_sec: float | None = None) -> dict:
+                     duration_sec: float | None = None, source_kind: str = VIDEO) -> dict:
     """Run the structure call (cached on inputs) and write the outline."""
     chunks = json.loads(Path(chunks_path).read_text(encoding="utf-8"))["chunks"]
     if not chunks:
@@ -154,6 +157,8 @@ def generate_outline(chunks_path: str, output_dir: str, *, source_title: str = "
     outline_path = notes_dir / "lecture_outline.json"
     marker = notes_dir / ".lean_outline.sha256"
 
+    # Document chunks are tagged with their location labels, so the cache key
+    # already differs from any video's.
     transcript = tagged_transcript(chunks)
     if outputs_current(marker, [outline_path], PROMPT_VERSION, transcript, source_title):
         logger.info("Lean outline: up to date, skipping")
@@ -161,7 +166,10 @@ def generate_outline(chunks_path: str, output_dir: str, *, source_title: str = "
 
     duration_min = (duration_sec or chunks[-1]["end"]) / 60.0
     lo, target, hi = chapter_count_range(duration_min, len(chunks))
+    t = terms(source_kind)
     prompt = _PROMPT.format(
+        text=t["text"] if source_kind == VIDEO else "text", source=t["source"], author=t["author"],
+        says=t["says"], TEXT=t["TEXT"],
         title_hint=f' (published as "{source_title}")' if source_title else "",
         last=len(chunks) - 1, lo=lo, target=target, hi=hi, transcript=transcript,
     )

@@ -69,6 +69,8 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
 
   // P6.3: video seek targets for chapter rows.
   const videoEmbeddable  = useVideoStore(s => s.embeddable)
+  // Documents: chapter times are synthetic (words ÷ 150), so don't show them.
+  const isDocument       = useVideoStore(s => s.sourceKind === 'document')
   const videoMap         = useVideoStore(s => s.map)
   const seekToChapter    = useVideoStore(s => s.seekToChapter)
 
@@ -198,7 +200,7 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
                 >
                   <ShelfMark
                     top={`CH ${num}`}
-                    time={chTime?.start_sec != null ? formatTimestamp(chTime.start_sec) : undefined}
+                    time={!isDocument && chTime?.start_sec != null ? formatTimestamp(chTime.start_sec) : undefined}
                     className="min-w-[52px]"
                     label={showSeek
                       ? `Chapter ${ch.id}: play the video from ${formatTimestamp(chTime.start_sec)}`

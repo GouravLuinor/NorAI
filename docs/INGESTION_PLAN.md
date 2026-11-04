@@ -117,16 +117,43 @@ magic bytes for files, host rules for links) and shown as a chip
 ("PDF · 23 pages · uses 12 min"). Simpler than more tabs, and the
 `sources` allowlist filters what it accepts.
 
+## How steps 2–4 are wired (done 2026-11-04)
+
+- `documents/` package: `kind.py` (source kind + prompt wording per kind,
+  `lecture_source_kind()` reads `transcripts/*.json` `source.source_kind`),
+  `adapter.py` (blocks → segments at 150 wpm with a `loc` label),
+  `extract.py` (sniff by magic bytes; PDF/DOCX/PPTX/HTML/TXT/MD; scanned PDF →
+  Gemini in 10-page batches, capped by `NORAI_MAX_SCANNED_PAGES`; `ocr=False`
+  for estimates), `fetch.py` (SSRF-guarded download: public IPs only, IP
+  pinned with Host + SNI, redirects re-checked, 80/443 only, size caps;
+  Dropbox and Google Docs/Slides rewriting), `intake.py` (`prepare_source`,
+  used by `backend/orchestrator.run_pipeline`).
+- New source type `link` (any other http(s) URL); hosted default sources are
+  now `gdrive,upload,link`. Uploads accept `.pdf .docx .pptx .txt .md` (50 MB,
+  `NORAI_MAX_DOC_BYTES`) with magic-byte checks. `DocumentError`/`FetchError`
+  fail the job terminally (no retries).
+- Video prompts render unchanged (only line wrapping), so video cache markers
+  stay valid. Document notes sections carry `loc`; tutor windows carry
+  `loc`/`locs`; citations like "p. 5 — …" are verified against them.
+- `/estimate` counts a document's words (file or link) with no Gemini call;
+  `/lectures/{id}` and `/process/{id}/status` return `source_kind`.
+- Job lanes: `jobs.job_lane()`; video lane = `NORAI_MAX_CONCURRENT_PIPELINES`
+  (1), document lane = `NORAI_MAX_CONCURRENT_DOC_PIPELINES` (2), per-user cap
+  per lane.
+- Frontend: one intake box (`lib/intake.ts` detects the type, chip shows
+  "PDF · 23 pages · uses 12 min"); documents hide timestamps and show
+  page/slide labels in notes; the processing page drops the transcription row.
+
 ## Steps
 
 | # | Step | Status |
 |---|---|---|
 | 0 | Merge `ux-launch` into `master` | done 2026-11-04 (fast-forward) |
-| 1 | Local mode + `NORAI_SOURCES` + `/system/config` + `setup-local.sh` + README quickstart | done 2026-11-04 (not pushed) |
-| 2 | Source-kind abstraction in the content pipeline (adapter, prompt variants, citations, hide video UI) | planned |
-| 3 | Extractors: PDF, DOCX, PPTX, web, then cloud links (+ SSRF guard) | planned |
-| 4 | Auto-detect intake box, two job lanes, word-based quota | planned |
-| 5 | Hosted deploy with YouTube off and the slimmer image (no yt-dlp / bgutil-pot) | planned |
+| 1 | Local mode + `NORAI_SOURCES` + `/system/config` + `setup-local.sh` + README quickstart | done 2026-11-04 (`617a6c0`, pushed) |
+| 2 | Source-kind abstraction in the content pipeline (adapter, prompt variants, citations, hide video UI) | done 2026-11-04 (not committed) |
+| 3 | Extractors: PDF, DOCX, PPTX, web, then cloud links (+ SSRF guard) | done 2026-11-04 (not committed) |
+| 4 | Auto-detect intake box, two job lanes, word-based quota | done 2026-11-04 (not committed; browser QA pending) |
+| 5 | Hosted deploy with YouTube off and the slimmer image (no yt-dlp / bgutil-pot) | on hold: only when the user explicitly asks (2026-11-04) |
 
 Open for the local demo: yt-dlp is pinned to 2026.6.9, which only gets 360p
 (Android client) without a PO-token server, so local screenshots are low-res.

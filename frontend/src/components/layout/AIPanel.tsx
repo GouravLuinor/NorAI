@@ -8,6 +8,7 @@ import { PersonaModal } from '../chat/PersonaModal'
 import { useToastStore } from '../../stores/useToastStore'
 import { useState } from 'react'
 import { useLectureStore } from '../../stores/useLectureStore'
+import { useVideoStore } from '../../stores/useVideoStore'
 import { friendlyError } from '../../lib/errorCopy'
 import { SegmentedControl } from '../ui/SegmentedControl'
 import { SlidersHorizontal } from 'lucide-react'
@@ -19,6 +20,7 @@ import { Button } from '../ui/Button'
 
 export function AIPanel() {
   const user = useAuthStore((s) => s.user)
+  const isDocument = useVideoStore((s) => s.sourceKind === 'document')
   const openAuthModal = useAuthStore((s) => s.openAuthModal)
   const activeChapterId = useChapterStore((s) => s.activeChapterId)
   const activeLectureId = useLectureStore(s => s.activeLectureId)
@@ -93,7 +95,7 @@ export function AIPanel() {
           <NoraAvatar />
           <div className="min-w-0">
             <div className="text-16 font-bold text-nt leading-tight">Nora</div>
-            <div className="text-12 text-nt3 leading-tight">Answers from this lecture</div>
+            <div className="text-12 text-nt3 leading-tight">Answers from this {isDocument ? 'document' : 'lecture'}</div>
           </div>
           <button
             type="button"

@@ -73,10 +73,12 @@ DEFAULT_TRIAL_QUOTA_MINUTES = FREE_MONTHLY_MINUTES
 #     key. No login (everything runs as the local user), no quotas, SQLite.
 #     Bind to 127.0.0.1 only; the backend refuses to start with NORAI_ENV=production.
 # Functions, not constants, so tests can flip the env at runtime.
-SOURCE_TYPES = ("youtube", "gdrive", "upload")
+# upload = a video or document file; link = any other http(s) URL (web page,
+# Google Docs/Slides, Dropbox, direct file), fetched through documents/fetch.py.
+SOURCE_TYPES = ("youtube", "gdrive", "upload", "link")
 # yt-dlp is blocked on datacenter IPs (2026-11-01 probe), so hosted installs
 # leave YouTube off unless NORAI_SOURCES names it.
-_HOSTED_DEFAULT_SOURCES = ("gdrive", "upload")
+_HOSTED_DEFAULT_SOURCES = ("gdrive", "upload", "link")
 
 
 def run_mode() -> str:
@@ -220,7 +222,12 @@ TUTOR_CONTEXT_CACHE = os.environ.get("NORAI_TUTOR_CONTEXT_CACHE", "0") == "1"
 
 # ── Pipeline Job Queue (P4.1) ─────────────────────────────────────────────────
 # DB-backed queue + in-process worker pool (backend/jobs.py). Env-overridable.
-MAX_CONCURRENT_PIPELINES = int(os.environ.get("NORAI_MAX_CONCURRENT_PIPELINES", "1"))
+# Two lanes, picked from the source (backend/jobs.job_lane): "video" runs ffmpeg
+# + transcription (CPU-heavy), "document" only parses text and calls Gemini, so
+# a PDF doesn't wait behind a 5-minute video. The Gemini RPM policy
+# (backend/gemini_client.py) is shared by both. Per-user caps apply per lane.
+MAX_CONCURRENT_PIPELINES = int(os.environ.get("NORAI_MAX_CONCURRENT_PIPELINES", "1"))  # video lane
+MAX_CONCURRENT_DOC_PIPELINES = int(os.environ.get("NORAI_MAX_CONCURRENT_DOC_PIPELINES", "2"))
 MAX_PER_USER_PIPELINES = int(os.environ.get("NORAI_MAX_PER_USER_PIPELINES", "1"))
 # How often the supervisor scans for work / stale jobs.
 PIPELINE_POLL_INTERVAL_SEC = 2.0

@@ -24,6 +24,12 @@ onnxruntime==1.26.0
 tokenizers==0.22.2
 huggingface-hub==1.19.0
 
+# Document intake (documents/extract.py): all permissive licences (no PyMuPDF/AGPL)
+pypdfium2==5.14.0
+python-docx==1.2.0
+python-pptx==1.0.2
+trafilatura==2.3.1
+
 # Anki .apkg export (flashcards/anki.py — P6.2)
 genanki==0.13.1
 

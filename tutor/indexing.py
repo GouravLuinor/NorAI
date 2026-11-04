@@ -46,6 +46,14 @@ def fmt_ts(sec: float) -> str:
 
 # ── transcript windows ────────────────────────────────────────────────────────
 
+def _loc_tail(last: str, first: str) -> str:
+    """'p. 5' after 'p. 4' → '5'; other labels stay whole."""
+    for prefix in ("p. ", "Slide "):
+        if first.startswith(prefix) and last.startswith(prefix):
+            return last[len(prefix):]
+    return last
+
+
 def load_segments(lecture_dir: Path) -> list[dict]:
     files = sorted((lecture_dir / "transcripts").glob("*.json"))
     if not files:
@@ -90,12 +98,17 @@ def transcript_windows(segments: list[dict], ranges: list[tuple[int, float, floa
                 break
         group = segments[i:j]
         start, end = float(group[0]["start"]), float(group[-1]["end"])
-        windows.append({
+        win = {
             "text": " ".join(str(s["text"]).strip() for s in group),
             "start": start,
             "end": end,
             "chapter_id": _chapter_at((start + end) / 2, ranges),
-        })
+        }
+        locs = list(dict.fromkeys(s["loc"] for s in group if s.get("loc")))
+        if locs:  # documents: "p. 4" or "p. 4–5"
+            win["locs"] = locs
+            win["loc"] = locs[0] if len(locs) == 1 else f"{locs[0]}–{_loc_tail(locs[-1], locs[0])}"
+        windows.append(win)
         if j >= len(segments):
             break
         i = j - 1 if j - 1 > i else j
@@ -146,13 +159,18 @@ def _transcript_docs(lecture_dir: Path):
     wins = transcript_windows(load_segments(lecture_dir), chapter_ranges(lecture_dir))
     ids = [f"tx_{int(w['start'])}_{_h(w['text'], 10)}" for w in wins]
     docs = [w["text"] for w in wins]
-    metas = [{
-        "heading": f"Transcript {fmt_ts(w['start'])}",
-        "heading_path": f"Transcript {fmt_ts(w['start'])}–{fmt_ts(w['end'])}",
-        "chapter_id": w["chapter_id"],
-        "start": round(w["start"], 2),
-        "end": round(w["end"], 2),
-    } for w in wins]
+    metas = []
+    for w in wins:
+        meta = {
+            "heading": f"Transcript {fmt_ts(w['start'])}",
+            "heading_path": f"Transcript {fmt_ts(w['start'])}–{fmt_ts(w['end'])}",
+            "chapter_id": w["chapter_id"],
+            "start": round(w["start"], 2),
+            "end": round(w["end"], 2),
+        }
+        if w.get("loc"):
+            meta.update(heading=w["loc"], heading_path=w["loc"], loc=w["loc"], locs=w["locs"])
+        metas.append(meta)
     return ids, docs, metas
 
 

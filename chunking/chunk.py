@@ -112,6 +112,9 @@ def create_chunks(
 
             "num_segments": len(group),
 
+            # Documents: where the chunk starts ("p. 4", "Slide 7").
+            **({"loc": group[0]["loc"]} if group[0].get("loc") else {}),
+
             "text": "\n\n".join(
                 seg["text"].strip()
                 for seg in group

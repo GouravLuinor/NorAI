@@ -419,6 +419,47 @@ def test_status_db_first_precedence():
             jobs.DATABASE_URL = original_url
 
 
+def test_job_lanes():
+    """A document isn't held back by a running video (separate lanes); each
+    lane keeps its own cap and per-user cap."""
+    check(jobs.job_lane("upload", "outputs/uploads/x_notes.pdf") == "document", "lane: PDF upload")
+    check(jobs.job_lane("upload", "outputs/uploads/x_talk.mp4") == "video", "lane: video upload")
+    check(jobs.job_lane("youtube", "https://youtu.be/x") == "video", "lane: YouTube")
+    check(jobs.job_lane("gdrive", "https://docs.google.com/document/d/abc/edit") == "document", "lane: Google Doc")
+    check(jobs.job_lane("gdrive", "https://drive.google.com/file/d/abc/view") == "video", "lane: Drive file")
+    check(jobs.job_lane("link", "https://example.com/article") == "document", "lane: web page")
+    check(jobs.job_lane("link", "https://cdn.example.com/a.MP4?x=1") == "video", "lane: direct video link")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        url = _mk_url(Path(tmp))
+        asyncio.run(_create_schema(url))
+        original_url, original_caps = jobs.DATABASE_URL, dict(jobs._LANE_CAPS)
+        jobs.DATABASE_URL = url
+        jobs._LANE_CAPS.update(video=1, document=2)
+        try:
+            factory = jobs._make_session_factory()
+            base = _utcnow() - timedelta(seconds=60)
+            rows = [
+                ("v-run", "u1", "youtube", "https://youtu.be/a", "processing"),
+                ("v-wait", "u2", "youtube", "https://youtu.be/b", "queued"),
+                ("d-1", "u2", "upload", "outputs/uploads/d1_a.pdf", "queued"),
+                ("d-2", "u2", "link", "https://example.com/page", "queued"),  # same user, same lane
+                ("d-3", "u3", "upload", "outputs/uploads/d3_b.docx", "queued"),
+                ("d-4", "u4", "upload", "outputs/uploads/d4_c.pptx", "queued"),
+            ]
+            for i, (lid, uid, st, su, status) in enumerate(rows):
+                asyncio.run(_insert_lecture(
+                    factory, id=lid, user_id=uid, title="T", source_type=st, source_url=su,
+                    status=status, queued_at=base + timedelta(seconds=i),
+                ))
+            claimed = asyncio.run(jobs._claim_queued_once(factory))
+            check(claimed == ["d-1", "d-3"], f"lanes: documents claimed past the busy video lane ({claimed})")
+        finally:
+            jobs.DATABASE_URL = original_url
+            jobs._LANE_CAPS.clear()
+            jobs._LANE_CAPS.update(original_caps)
+
+
 if __name__ == "__main__":
     import traceback
 

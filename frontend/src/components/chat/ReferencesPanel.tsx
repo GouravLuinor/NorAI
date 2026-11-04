@@ -24,6 +24,7 @@ export const ReferencesPanel = memo(function ReferencesPanel({ references, onRef
   const [collapsed, setCollapsed] = useState(false)
   // P6.3: exact-moment chunk seek with chapter fallback.
   const videoEmbeddable = useVideoStore((s) => s.embeddable)
+  const isDocument = useVideoStore((s) => s.sourceKind === 'document')
   const chunkStart = useVideoStore((s) => s.chunkStart)
   const chapterStart = useVideoStore((s) => s.chapterStart)
   const requestSeek = useVideoStore((s) => s.requestSeek)
@@ -40,7 +41,7 @@ export const ReferencesPanel = memo(function ReferencesPanel({ references, onRef
         aria-expanded={!collapsed}
       >
         <span className="text-13 font-bold text-nt2">
-          Sources from this lecture <span className="font-mono text-nt3">{references.length}</span>
+          Sources from this {isDocument ? 'document' : 'lecture'} <span className="font-mono text-nt3">{references.length}</span>
         </span>
         <ChevronUp
           size={15}

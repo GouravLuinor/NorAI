@@ -19,9 +19,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import backend.orchestrator as orch  # noqa: E402
 import backend.usage as usage  # noqa: E402
+from documents.intake import Prepared  # noqa: E402
 
 
-def _run(duration_sec: float, limits: tuple[int, int]):
+def _run(duration_sec: float, limits: tuple[int, int], document: bool = False):
     """Run the pipeline on a fake download; return (error, content_stage_ran)."""
     tmp = Path(tempfile.mkdtemp())
     meta = tmp / "metadata.json"
@@ -34,11 +35,17 @@ def _run(duration_sec: float, limits: tuple[int, int]):
 
     ing = {"video_path": str(tmp / "v.mp4"), "audio_path": str(tmp / "a.wav"),
            "metadata_path": str(meta)}
+    if document:
+        prep = Prepared("document", transcript_path=str(tmp / "t.json"), duration_sec=duration_sec,
+                        words=int(duration_sec * 150 / 60), title="Doc", doc_type="pdf")
+    else:
+        prep = Prepared("video", ingest=ing)
     env = {"NORAI_DEV_ACCESS": "0", "ENFORCE_FREE_TRIAL_DURATION": "true"}
     with patch.dict(os.environ, env), \
          patch.object(orch, "create_lecture", lambda *a, **k: tmp), \
-         patch.object(orch, "process_source", lambda *a, **k: ing), \
+         patch.object(orch, "prepare_source", lambda *a, **k: prep), \
          patch.object(orch, "run_lean_stages", _lean), \
+         patch.object(orch, "run_content_stages", _lean), \
          patch.object(orch, "record_pipeline_outcome", lambda *a, **k: None), \
          patch.object(orch, "record_metrics", lambda *a, **k: None), \
          patch.object(orch, "cleanup_lecture_dir", lambda *a, **k: None), \
@@ -69,8 +76,19 @@ def test_over_plan_length_still_fails():
     assert not ran
 
 
+def test_document_words_meter_like_minutes():
+    # 9,000 words = 60 quota minutes; 45 left.
+    err, ran = _run(60 * 60, (180, 45), document=True)
+    assert isinstance(err, orch.TerminalPipelineError), err
+    assert "9,000 words" in err.friendly and "split the document" in err.friendly, err.friendly
+    assert not ran
+    err, ran = _run(30 * 60, (180, 45), document=True)
+    assert ran and isinstance(err, RuntimeError), err
+
+
 if __name__ == "__main__":
     test_over_remaining_quota_fails_before_content()
     test_within_quota_reaches_content_stages()
     test_over_plan_length_still_fails()
-    print("test_quota_after_download: 3/3 passed")
+    test_document_words_meter_like_minutes()
+    print("test_quota_after_download: 4/4 passed")
