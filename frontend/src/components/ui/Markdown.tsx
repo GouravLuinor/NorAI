@@ -5,6 +5,7 @@ import remarkMath from 'remark-math'
 import rehypeHighlight from 'rehype-highlight'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
+import { escapeCurrency } from '../../lib/escapeCurrency'
 import {
   docMarkdownComponents,
   revisionMarkdownComponents,
@@ -48,7 +49,7 @@ export const Markdown = memo(function Markdown({
       rehypePlugins={REHYPE_PLUGINS}
       components={COMPONENTS[variant]}
     >
-      {children}
+      {escapeCurrency(children)}
     </ReactMarkdown>
   )
 })
