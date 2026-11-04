@@ -20,7 +20,7 @@ from sqlalchemy.exc import IntegrityError
 
 from backend.db.database import get_db
 from backend.db.models import User, Subscription
-from config import FREE_MONTHLY_MINUTES
+from config import FREE_MONTHLY_MINUTES, dev_access
 
 # HTTP Bearer authentication scheme (auto_error=False to allow anonymous optional routes)
 security = HTTPBearer(auto_error=False)
@@ -198,11 +198,8 @@ DEV_USER_ID = "dev-user-0000-0000-0000-000000000000"
 
 
 def is_dev_access() -> bool:
-    """Check if local development bypass is active via env flags."""
-    return (
-        os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
-        or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
-    )
+    """Local mode or the developer bypass flags (config.dev_access)."""
+    return dev_access()
 
 
 async def get_or_create_dev_user(db: AsyncSession) -> User:

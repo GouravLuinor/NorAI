@@ -35,6 +35,8 @@ from backend.usage_ledger import snapshot_usage, diff_usage
 
 from ingest.ingest import process_source
 from lean.pipeline import run_lean_stages
+from config import dev_access
+from backend.db.database import mark_lecture_dir
 
 import logging
 logger = logging.getLogger(__name__)
@@ -153,6 +155,7 @@ def run_pipeline(
     try:
         # ── Create lecture directory ────────────────────────────────────────
         lecture_dir = create_lecture(task_id, title="New Lecture")
+        mark_lecture_dir(lecture_dir)  # lets gc_sweep tell its own orphans apart
         out = str(lecture_dir)
         _check_cancel()
 
@@ -179,7 +182,7 @@ def run_pipeline(
             max_duration_sec = max_lecture_min * 60
             enforce = (
                 os.environ.get("ENFORCE_FREE_TRIAL_DURATION", "true").lower() == "true"
-                and os.environ.get("NORAI_DEV_ACCESS", "0") != "1"
+                and not dev_access()
             )
             if enforce and meter_minutes(duration_sec) > remaining_min:
                 raise TerminalPipelineError(

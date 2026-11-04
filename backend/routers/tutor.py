@@ -12,7 +12,6 @@ patch point for offline tests), NOT module-level `from ... import` copies.
 import asyncio
 import json as json_lib
 import logging
-import os
 import re
 import sqlite3
 import time
@@ -51,7 +50,7 @@ from backend.dependencies import (
     sanitize_lecture_id,
 )
 from backend.logging_config import bind
-from config import DEMO_LECTURE_IDS
+from config import DEMO_LECTURE_IDS, dev_access
 
 router = APIRouter()
 
@@ -154,10 +153,7 @@ async def chat(
         if clean_id in DEMO_LECTURE_IDS or clean_id == "default":
             cached_res = get_cached_demo_qa(clean_id, req.user_question)
             if cached_res is not None:
-                if user is None and not guest_id and not (
-                    os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
-                    or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
-                ):
+                if user is None and not guest_id and not dev_access():
                     raise HTTPException(status_code=401, detail="Authentication required to use AI Tutor")
 
                 scoped_thread_id = _get_scoped_thread_id(req.lecture_id, req.thread_id, user, guest_id)
@@ -186,10 +182,7 @@ async def chat(
         else:
             # Demo lecture live question: check visitor cap (5/day) & global cap (100/day)
             if user is None or _is_guest(user):
-                if not (
-                    os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
-                    or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
-                ):
+                if not dev_access():
                     check_guest_tutor_cap(clean_id, guest_id)
 
         # P6.4 / Phase D: chat is a tutor-gated write — owner, share link with tutor,
@@ -252,10 +245,7 @@ async def chat_stream(
     if clean_id in DEMO_LECTURE_IDS or clean_id == "default":
         cached_res = get_cached_demo_qa(clean_id, req.user_question)
         if cached_res is not None:
-            if user is None and not guest_id and not (
-                os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
-                or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
-            ):
+            if user is None and not guest_id and not dev_access():
                 raise HTTPException(status_code=401, detail="Authentication required to use AI Tutor")
 
             scoped_thread_id = _get_scoped_thread_id(req.lecture_id, req.thread_id, user, guest_id)
@@ -300,10 +290,7 @@ async def chat_stream(
     else:
         # Demo lecture live question: check visitor cap (5/day) & global cap (100/day)
         if user is None or _is_guest(user):
-            if not (
-                os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
-                or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
-            ):
+            if not dev_access():
                 check_guest_tutor_cap(clean_id, guest_id)
 
     await ensure_lecture_access(req.lecture_id or "default", user, db, require_tutor=True, guest_id=guest_id)

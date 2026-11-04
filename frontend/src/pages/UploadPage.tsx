@@ -26,6 +26,7 @@ import { Wordmark } from '../components/brand/Wordmark'
 import { FOCUS_RING } from '../components/ui/shared'
 import { apiFetchRaw } from '../lib/http'
 import { useAuthStore } from '../stores/useAuthStore'
+import { useAppConfigStore, type SourceType } from '../stores/useAppConfigStore'
 import { useCourseStore } from '../stores/useCourseStore'
 import { useRateLimitStore } from '../stores/useRateLimitStore'
 import { useStudyStore } from '../stores/useStudyStore'
@@ -68,6 +69,15 @@ interface EstimateResult {
 
 // The tab says "Drive"; the API's source_type is "gdrive".
 const apiSourceType = (t: InputType) => (t === 'drive' ? 'gdrive' : t)
+const inputTypeFor = (s: SourceType): InputType => (s === 'gdrive' ? 'drive' : s)
+
+const SOURCE_TABS: { value: InputType; label: string; icon: typeof Film }[] = [
+  { value: 'youtube', label: 'YouTube', icon: Film },
+  { value: 'upload', label: 'Upload', icon: Upload },
+  { value: 'drive', label: 'Drive', icon: Link2 },
+]
+// Static class names so Tailwind keeps them.
+const TAB_GRID_COLS = ['grid-cols-1', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3'] as const
 
 /** Pull a readable message out of a FastAPI error body (string or {message}). */
 function errorDetail(body: unknown): string | null {
@@ -139,6 +149,14 @@ export function UploadPage() {
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { user } = useAuthStore()
+  // Which intake sources this install accepts (GET /system/config): hosted
+  // servers leave YouTube off, local installs offer everything.
+  const localMode = useAppConfigStore((s) => s.mode === 'local')
+  const enabledSources = useAppConfigStore((s) => s.sources)
+  const loadAppConfig = useAppConfigStore((s) => s.load)
+  const enabledTypes = enabledSources.map(inputTypeFor)
+  const tabs = SOURCE_TABS.filter((t) => enabledTypes.includes(t.value))
+  const youtubeOn = enabledTypes.includes('youtube')
   const quota = useAuthStore((s) => s.quota)
   const refreshQuota = useAuthStore((s) => s.refreshQuota)
   const { courses, loadCourses } = useCourseStore()
@@ -148,6 +166,19 @@ export function UploadPage() {
   useEffect(() => {
     void loadOverview()
   }, [loadOverview])
+
+  useEffect(() => {
+    void loadAppConfig()
+  }, [loadAppConfig])
+
+  // Keep the selected tab on a source this install accepts (YouTube is the
+  // initial pick, and hosted servers turn it off).
+  useEffect(() => {
+    const types = enabledSources.map(inputTypeFor)
+    if (types.length && !types.includes(inputType)) {
+      setInputType(SOURCE_TABS.find((t) => types.includes(t.value))?.value ?? types[0])
+    }
+  }, [enabledSources, inputType])
 
   const resumeStudy = useCallback(
     (lectureId: string, chapterId?: number | null, mode?: 'tutor' | 'quiz' | 'cards') => {
@@ -315,6 +346,7 @@ export function UploadPage() {
             <Wordmark size="md" />
           </button>
 
+          {!localMode && (
           <div className="flex items-center gap-3 min-w-0">
             {user && (
               <span className="text-14 text-nt3 truncate hidden sm:inline-block">
@@ -333,6 +365,7 @@ export function UploadPage() {
               <span>Sign out</span>
             </button>
           </div>
+          )}
         </div>
       </header>
 
@@ -539,7 +572,7 @@ export function UploadPage() {
           <div className="mb-6">
             <h1 id="add-heading" className="font-serif font-semibold text-32 leading-tight text-nt">Add a lecture</h1>
             <p className="mt-2 text-16 text-nt2 max-w-[56ch] leading-relaxed">
-              Paste a YouTube link or upload the recording. You get notes, a revision sheet, a quiz, flashcards and a
+              {youtubeOn ? 'Paste a YouTube link or upload the recording.' : 'Upload the recording or paste a Google Drive link.'} You get notes, a revision sheet, a quiz, flashcards and a
               tutor for it, usually within a few minutes.
             </p>
           </div>
@@ -547,19 +580,21 @@ export function UploadPage() {
           {/* Input Card */}
           <div className="bg-ns border border-bdr rounded-lg p-5 sm:p-6 shadow-ev1">
             {/* Segmented Control */}
-            <SegmentedControl<InputType>
-              containerClass="grid grid-cols-3 gap-1 bg-ns2 rounded-md p-1 mb-4"
-              itemClass="flex items-center justify-center gap-2 h-9 rounded-[4px] text-14 font-bold transition-colors cursor-pointer"
-              activeClass="bg-ns text-np shadow-ev1"
-              inactiveClass="text-nt3 hover:text-nt"
-              options={[
-                { value: 'youtube', label: 'YouTube', prefix: <Film size={15} strokeWidth={1.75} /> },
-                { value: 'upload', label: 'Upload', prefix: <Upload size={15} strokeWidth={1.75} /> },
-                { value: 'drive', label: 'Drive', prefix: <Link2 size={15} strokeWidth={1.75} /> },
-              ]}
-              value={inputType}
-              onChange={setInputType}
-            />
+            {tabs.length > 1 && (
+              <SegmentedControl<InputType>
+                containerClass={`grid ${TAB_GRID_COLS[tabs.length]} gap-1 bg-ns2 rounded-md p-1 mb-4`}
+                itemClass="flex items-center justify-center gap-2 h-9 rounded-[4px] text-14 font-bold transition-colors cursor-pointer"
+                activeClass="bg-ns text-np shadow-ev1"
+                inactiveClass="text-nt3 hover:text-nt"
+                options={tabs.map(({ value, label, icon: Icon }) => ({
+                  value,
+                  label,
+                  prefix: <Icon size={15} strokeWidth={1.75} />,
+                }))}
+                value={inputType}
+                onChange={setInputType}
+              />
+            )}
 
             {/* Input Area */}
             {inputType === 'upload' ? (
@@ -730,6 +765,7 @@ export function UploadPage() {
             </Button>
           </div>
 
+          {!localMode && (
           <div className="text-14 text-nt3 mt-3">
             <span className="font-mono">
               {quota ? (
@@ -743,6 +779,7 @@ export function UploadPage() {
               )}
             </span>
           </div>
+          )}
         </section>
 
 

@@ -51,7 +51,7 @@ from config import (
     PIPELINE_STUCK_TIMEOUT_SEC,
     UPLOAD_GC_AGE_HOURS,
 )
-from backend.db.database import DATABASE_URL, get_engine_kwargs
+from backend.db.database import DATABASE_URL, database_identity, get_engine_kwargs, lecture_dir_database
 from backend.db.models import Lecture
 from backend.orchestrator import PipelineCancelled, TerminalPipelineError, run_pipeline
 from backend.timeutil import ensure_utc as _normalize
@@ -573,6 +573,7 @@ def gc_sweep():
     outputs = Path("outputs")
     if not outputs.exists():
         return
+    this_db = database_identity()
     for d in outputs.iterdir():
         if not d.is_dir() or not _UUID_RE.match(d.name):
             continue
@@ -580,6 +581,10 @@ def gc_sweep():
         if d.name in DEMO_LECTURE_IDS:
             continue
         if d.name in known:
+            continue
+        # Only dirs this DB created can be its orphans. Untagged or other-DB
+        # dirs belong to a DB we can't see (see backend/db/database.py).
+        if lecture_dir_database(d) != this_db:
             continue
         try:
             if now - datetime.fromtimestamp(d.stat().st_mtime, tz=timezone.utc) > timedelta(days=ORPHAN_DIR_GC_AGE_DAYS):

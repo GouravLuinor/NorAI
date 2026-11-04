@@ -3,6 +3,7 @@ import { useChapterStore } from '../../stores/useChapterStore'
 import { useThreadStore } from '../../stores/useThreadStore'
 import { useLectureStore } from '../../stores/useLectureStore'
 import { useAuthStore } from '../../stores/useAuthStore'
+import { useAppConfigStore } from '../../stores/useAppConfigStore'
 import { useToastStore } from '../../stores/useToastStore'
 import { PanelLeftClose, Trash2, Plus, LogOut } from 'lucide-react'
 import { ThemeToggle } from '../ui/ThemeToggle'
@@ -63,6 +64,8 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
   const setActiveLecture    = useLectureStore(s => s.setActiveLecture)
   const loadLectures        = useLectureStore(s => s.loadLectures)
   const navigate = useNavigate()
+  // Local installs: no plan, no quota, no account to sign out of.
+  const localMode = useAppConfigStore(s => s.mode === 'local')
 
   // P6.3: video seek targets for chapter rows.
   const videoEmbeddable  = useVideoStore(s => s.embeddable)
@@ -283,6 +286,25 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
                 Create free account
               </button>
             </div>
+          ) : localMode ? (
+            <div className="p-3 rounded-md bg-ns3">
+              <p className="text-13 font-bold text-nt">Local install</p>
+              <p className="text-12 text-nt3 mt-1 leading-snug">Runs on your own Gemini API key.</p>
+              <div className="mt-3 flex gap-4 text-13">
+                <button
+                  onClick={() => navigate('/courses')}
+                  className={`text-nt font-bold hover:underline rounded-sm cursor-pointer ${FOCUS_RING}`}
+                >
+                  Courses
+                </button>
+                <button
+                  onClick={() => navigate('/usage')}
+                  className={`text-nt font-bold hover:underline rounded-sm cursor-pointer ${FOCUS_RING}`}
+                >
+                  Usage
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="p-3 rounded-md bg-ns3">
               <div className="flex items-baseline justify-between mb-2">
@@ -359,7 +381,7 @@ export function Sidebar({ onToggleCollapse, forceExpanded = false }: SidebarProp
       </div>
 
       {/* Collapsed rail bottom actions (P4.3 accessibility) */}
-      {sidebarCollapsed && user && (
+      {sidebarCollapsed && user && !localMode && (
         <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-auto">
           <IconButton
             label={`Sign out (${user.email})`}

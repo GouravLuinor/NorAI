@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.db.models import Lecture, ShareLink, Subscription, UsageLog, User
 from backend.middleware import DailyCounter
-from config import DEMO_LECTURE_IDS
+from config import DEMO_LECTURE_IDS, dev_access
 from backend.lecture_registry import get_lecture
 
 
@@ -115,10 +115,7 @@ async def _effective_persona_instructions(
 
     # Dev escape hatch parity with ensure_lecture_access: local dev users are
     # usually unauthenticated, but they own everything on disk.
-    if not owner and (
-        os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
-        or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
-    ):
+    if not owner and dev_access():
         if get_lecture(lecture_id or "") is not None or (Path("outputs") / (lecture_id or "")).exists():
             owner = True
 
@@ -181,10 +178,7 @@ async def ensure_lecture_access(
     """
     if lecture_id in (None, "", "default") or lecture_id in DEMO_LECTURE_IDS:
         return
-    if (
-        os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
-        or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
-    ):
+    if dev_access():
         if get_lecture(lecture_id) is not None or (Path("outputs") / lecture_id).exists():
             return
     if user is None:

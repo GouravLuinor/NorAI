@@ -3,6 +3,18 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabaseClient'
 import { apiFetch } from '../lib/http'
 import { DEFAULT_TRIAL_QUOTA_MINUTES } from '../config/features'
+import { isLocalMode, useAppConfigStore } from './useAppConfigStore'
+
+// Local installs (NORAI_MODE=local) have no login: the backend accepts this
+// token and runs every request as its single local user (backend/auth.py
+// DEV_USER_ID).
+const LOCAL_TOKEN = 'dev'
+const LOCAL_USER: UserProfile = {
+  id: 'dev-user-0000-0000-0000-000000000000',
+  email: 'local@norai.local',
+  fullName: 'You',
+  isAnonymous: false,
+}
 
 export interface UserProfile {
   id: string
@@ -123,6 +135,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    // Nothing to sign out of on a local install; keep the local session.
+    if (isLocalMode()) return
     try {
       await Promise.race([
         supabase.auth.signOut(),
@@ -140,6 +154,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   clearPasswordRecovery: () => set({ isPasswordRecovery: false }),
 
   initAuth: async () => {
+    const cfg = await useAppConfigStore.getState().load()
+    if (cfg.mode === 'local') {
+      set({ token: LOCAL_TOKEN, user: LOCAL_USER, isLoadingSession: false, isAuthModalOpen: false })
+      await get().refreshQuota()
+      return
+    }
     if (!_authSubscription) {
       const { data } = supabase.auth.onAuthStateChange((event, session) => {
         const next = mapSession(session)

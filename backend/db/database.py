@@ -63,6 +63,52 @@ if DATABASE_URL == DEFAULT_SQLITE_URL:
         )
 
 
+
+# ── Which DB owns a lecture dir ──────────────────────────────────────────────
+# gc_sweep (backend/jobs.py) deletes lecture dirs the DB has no row for. Without
+# knowing which DB created a dir, booting against ANY other DB (the offline
+# tests' throwaway SQLite, a switch from Supabase to local mode) made every
+# older lecture look orphaned, and they were deleted (2026-10-30, 2026-11-04).
+# The pipeline now tags each dir it creates; the sweep only touches dirs tagged
+# with the current DB. Untagged (older) dirs are never swept.
+DB_MARKER_FILE = ".norai_db"
+
+
+def database_identity(url: str | None = None) -> str:
+    """Short stable id for a database URL, password excluded (so rotating
+    the password doesn't orphan every lecture)."""
+    import hashlib
+
+    target = url or DATABASE_URL
+    try:
+        from sqlalchemy.engine import make_url
+
+        target = make_url(target).render_as_string(hide_password=True)
+    except Exception:  # noqa: BLE001 — unparsable URL: hash it whole
+        pass
+    return hashlib.sha256(target.encode("utf-8")).hexdigest()[:16]
+
+
+def mark_lecture_dir(lecture_dir) -> None:
+    """Record that the current DB owns this lecture dir (see DB_MARKER_FILE)."""
+    from pathlib import Path
+
+    try:
+        (Path(lecture_dir) / DB_MARKER_FILE).write_text(database_identity() + "\n", encoding="utf-8")
+    except OSError as exc:
+        logger.warning("Could not tag lecture dir %s with its DB: %s", lecture_dir, exc)
+
+
+def lecture_dir_database(lecture_dir) -> str | None:
+    """The DB id a lecture dir was tagged with, or None for untagged dirs."""
+    from pathlib import Path
+
+    try:
+        return (Path(lecture_dir) / DB_MARKER_FILE).read_text(encoding="utf-8").strip() or None
+    except OSError:
+        return None
+
+
 def get_engine_kwargs(url: str | None = None) -> dict[str, Any]:
     target_url = url or DATABASE_URL
     kwargs: dict[str, Any] = {"echo": False}

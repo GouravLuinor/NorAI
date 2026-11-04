@@ -73,6 +73,11 @@ from config import (
     CHECKPOINT_DB_PATH,
     DEMO_LECTURE_IDS,
     FREE_MONTHLY_MINUTES,
+    SOURCE_TYPES,
+    dev_access,
+    enabled_sources,
+    is_local_mode,
+    run_mode,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func
@@ -280,6 +285,13 @@ async def gemini_daily_quota_handler(request: Request, exc: GeminiDailyQuotaExce
     return JSONResponse(status_code=exc.status_code, content=exc.detail)
 
 
+@app.get("/system/config")
+async def get_system_config():
+    """Public, static facts the UI needs before sign-in: the run mode (local
+    installs skip login) and which intake sources this install accepts."""
+    return {"mode": run_mode(), "sources": list(enabled_sources())}
+
+
 @app.get("/system/rate-limit")
 async def get_system_rate_limit():
     is_down, rem_sec, msg = GeminiCooldownTracker.is_downtime_active()
@@ -478,21 +490,34 @@ async def static_artifact(rest: str):
 
 # ── Upload & Processing ──────────────────────────────────────────────────────
 
-NORAI_DEV_ACCESS = (
-    os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
-    or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
-)
+NORAI_DEV_ACCESS = dev_access()
 
 # Fail closed: this flag silently bypasses lecture ownership checks. It must
 # never be active when the process claims to run in production.
 if is_prod and NORAI_DEV_ACCESS:
     raise RuntimeError(
-        "Refusing to start: NORAI_DEV_ACCESS=1 disables lecture ownership "
-        "checks and must never be set while NORAI_ENV=production."
+        "Refusing to start: NORAI_MODE=local / NORAI_DEV_ACCESS=1 disable lecture "
+        "ownership checks and must never be set while NORAI_ENV=production."
     )
 
 
-ALLOWED_SOURCE_TYPES = {"youtube", "gdrive", "upload"}
+# Every source type the code knows; enabled_sources() is what this install accepts.
+ALLOWED_SOURCE_TYPES = set(SOURCE_TYPES)
+
+_SOURCE_DISABLED_COPY = {
+    "youtube": "YouTube links aren't available here. Download the video and upload the file instead.",
+    "gdrive": "Google Drive links aren't available here. Upload the file instead.",
+    "upload": "File uploads aren't available here.",
+}
+
+
+def _require_enabled_source(source_type: str) -> None:
+    """400 for an unknown source type, or one this install switched off
+    (NORAI_SOURCES / run mode, see config.enabled_sources)."""
+    if source_type not in ALLOWED_SOURCE_TYPES:
+        raise HTTPException(status_code=400, detail=f"Unsupported source_type {source_type!r}")
+    if source_type not in enabled_sources():
+        raise HTTPException(status_code=400, detail=_SOURCE_DISABLED_COPY[source_type])
 
 ALLOWED_UPLOAD_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".webm"}
 
@@ -530,6 +555,11 @@ async def _probe_youtube(url: str) -> dict | None:
 
 async def _with_plan_fit(est: dict, duration_min: float, user: Optional[User], db: AsyncSession) -> dict:
     """Add the caller's plan limits so the UI can warn before /process rejects."""
+    if is_local_mode():
+        # Local installs: /process and the pipeline enforce no plan, so the
+        # estimate must not claim one (fits_plan=false disables Start).
+        est["fits_plan"] = True
+        return est
     sub = None
     if user is not None:
         try:
@@ -572,8 +602,7 @@ async def estimate_cost(
     soft: when the duration can't be probed, returns {"available": false}
     and the frontend simply hides the estimate.
     """
-    if source_type not in ALLOWED_SOURCE_TYPES:
-        raise HTTPException(status_code=400, detail=f"Unsupported source_type {source_type!r}")
+    _require_enabled_source(source_type)
     if source_type == "youtube":
         if not url or not is_youtube_url(url):
             raise HTTPException(status_code=400, detail="Invalid YouTube URL")
@@ -625,8 +654,7 @@ async def start_processing(
         )
 
     # ── Input validation (before any resource is consumed) ─────────────────
-    if source_type not in ALLOWED_SOURCE_TYPES:
-        raise HTTPException(status_code=400, detail=f"Unsupported source_type {source_type!r}")
+    _require_enabled_source(source_type)
     if source_type == "upload":
         if not file:
             raise HTTPException(status_code=400, detail="source_type 'upload' requires a file")

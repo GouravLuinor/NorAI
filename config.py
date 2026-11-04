@@ -66,6 +66,49 @@ MAX_FREE_DURATION_MIN = int(os.environ.get("MAX_FREE_DURATION_MIN", "60"))
 FREE_MONTHLY_MINUTES = int(os.environ.get("NORAI_FREE_MINUTES", "60"))
 DEFAULT_TRIAL_QUOTA_MINUTES = FREE_MONTHLY_MINUTES
 
+# ── Run mode & intake sources ────────────────────────────────────────────────
+# One codebase, two ways to run it (see docs/INGESTION_PLAN.md):
+#   NORAI_MODE=hosted (default): Supabase login, quotas, rate limits.
+#   NORAI_MODE=local: a single-user install on your own PC with your own Gemini
+#     key. No login (everything runs as the local user), no quotas, SQLite.
+#     Bind to 127.0.0.1 only; the backend refuses to start with NORAI_ENV=production.
+# Functions, not constants, so tests can flip the env at runtime.
+SOURCE_TYPES = ("youtube", "gdrive", "upload")
+# yt-dlp is blocked on datacenter IPs (2026-11-01 probe), so hosted installs
+# leave YouTube off unless NORAI_SOURCES names it.
+_HOSTED_DEFAULT_SOURCES = ("gdrive", "upload")
+
+
+def run_mode() -> str:
+    return "local" if os.environ.get("NORAI_MODE", "hosted").strip().lower() == "local" else "hosted"
+
+
+def is_local_mode() -> bool:
+    return run_mode() == "local"
+
+
+def dev_access() -> bool:
+    """True when the single local user owns everything on disk: local mode, or
+    the developer flags NORAI_DEV_ACCESS / NORAI_DEV_INSECURE_AUTH."""
+    return (
+        is_local_mode()
+        or os.environ.get("NORAI_DEV_ACCESS", "0") == "1"
+        or os.environ.get("NORAI_DEV_INSECURE_AUTH", "0") == "1"
+    )
+
+
+def enabled_sources() -> tuple[str, ...]:
+    """Intake source types this install accepts, in SOURCE_TYPES order.
+    NORAI_SOURCES (comma-separated) overrides the per-mode default; unknown
+    names are ignored."""
+    raw = os.environ.get("NORAI_SOURCES", "").strip()
+    if raw:
+        wanted = {s.strip().lower() for s in raw.split(",") if s.strip()}
+    else:
+        wanted = set(SOURCE_TYPES if is_local_mode() else _HOSTED_DEFAULT_SOURCES)
+    return tuple(s for s in SOURCE_TYPES if s in wanted)
+
+
 # ── Feature Flags ────────────────────────────────────────────────────────────
 ENABLE_PAYMENTS = os.environ.get("ENABLE_PAYMENTS", "0") == "1"
 

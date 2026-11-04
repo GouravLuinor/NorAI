@@ -339,7 +339,26 @@ NorAI/
 └── requirements.txt
 ```
 
-## 🚀 Getting Started
+## 🚀 Run it on your own PC
+
+You need Python 3.12+, Node.js 20.19+, FFmpeg and a free
+[Gemini API key](https://aistudio.google.com/apikey). Then:
+
+```bash
+git clone https://github.com/GouravLuinor/NorAI.git
+cd NorAI
+scripts/setup-local.sh        # installs everything, asks for your Gemini key
+scripts/start-dev.sh start    # open http://localhost:5173
+```
+
+The setup script writes `.env` with `NORAI_MODE=local`: no sign-up, no quotas,
+data in SQLite under `outputs/`, and YouTube links work alongside uploads and
+Google Drive. Processing spends your own Gemini quota (a 17-minute lecture is
+about 9 calls; the free tier allows a few long lectures a day). Google's free
+tier isn't offered in the EEA, UK or Switzerland, where the key needs billing.
+`scripts/start-dev.sh stop` shuts it down.
+
+## 🚀 Getting Started (development / hosted)
 
 ### Prerequisites
 - Python 3.12+

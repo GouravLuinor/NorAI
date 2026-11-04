@@ -5,6 +5,7 @@ import { AppErrorBoundary } from './components/AppErrorBoundary'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { DEMO_LECTURE_IDS } from './config/features'
 import { useAuthStore } from './stores/useAuthStore'
+import { useAppConfigStore } from './stores/useAppConfigStore'
 import { useRateLimitStore } from './stores/useRateLimitStore'
 
 // Route-level code-splitting (P5.6)
@@ -39,6 +40,13 @@ function RouteFallback() {
       </div>
     </div>
   )
+}
+
+// Marketing, sign-in and pricing pages make no sense on a local install
+// (NORAI_MODE=local): there's no account, so go straight to the app.
+function HostedOnly({ children }: { children: React.ReactNode }) {
+  const localMode = useAppConfigStore(s => s.mode === 'local')
+  return localMode ? <Navigate to="/app" replace /> : <>{children}</>
 }
 
 function LandingRouteWrapper() {
@@ -126,20 +134,22 @@ export default function App() {
             <PasswordRecoveryRedirect />
             <Suspense fallback={<RouteFallback />}>
               <Routes>
-                <Route path="/" element={<LandingRouteWrapper />} />
-                <Route path="/login" element={<AuthPage defaultMode="login" />} />
-                <Route path="/signup" element={<AuthPage defaultMode="signup" />} />
-                <Route path="/forgot-password" element={<AuthPage defaultMode="forgot" />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/" element={<HostedOnly><LandingRouteWrapper /></HostedOnly>} />
+                <Route path="/login" element={<HostedOnly><AuthPage defaultMode="login" /></HostedOnly>} />
+                <Route path="/signup" element={<HostedOnly><AuthPage defaultMode="signup" /></HostedOnly>} />
+                <Route path="/forgot-password" element={<HostedOnly><AuthPage defaultMode="forgot" /></HostedOnly>} />
+                <Route path="/reset-password" element={<HostedOnly><ResetPasswordPage /></HostedOnly>} />
 
                 {/* Pricing is public; buy buttons follow the backend's payments_enabled. */}
-                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/pricing" element={<HostedOnly><PricingPage /></HostedOnly>} />
                 <Route
                   path="/billing"
                   element={
-                    <ProtectedRoute>
-                      <BillingPage />
-                    </ProtectedRoute>
+                    <HostedOnly>
+                      <ProtectedRoute>
+                        <BillingPage />
+                      </ProtectedRoute>
+                    </HostedOnly>
                   }
                 />
 
