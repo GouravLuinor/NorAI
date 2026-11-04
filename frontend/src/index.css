@@ -569,3 +569,38 @@ button.shelf-mark:active { transform: translateY(1px); box-shadow: 0 0 0 current
 .animate-fade-in {
   animation: fade-in 0.15s ease-out;
 }
+
+/* ── Local install intro (components/brand/LocalHero.tsx) ───────── */
+
+/* Card-catalogue ruling behind the headline, fading out toward the shelf. */
+.local-hero {
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0 39px, rgba(234, 241, 236, 0.055) 39px 40px),
+    linear-gradient(to bottom, var(--color-rail) 0%, var(--color-rail) 62%, var(--color-rail-deep) 100%);
+}
+
+@keyframes local-hero-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes local-hero-shelve {
+  from { transform: translateY(105%); }
+  to { transform: none; }
+}
+.local-hero-rise {
+  animation: local-hero-rise 640ms var(--ease-out-expo) both;
+}
+.local-hero-shelf {
+  position: relative;
+}
+.local-hero-spine {
+  animation: local-hero-shelve 760ms var(--ease-out-expo) both;
+  box-shadow: inset -2px 0 0 rgba(0, 0, 0, 0.14), inset 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+/* The shelf board the spines stand on: a brass edge over a deep green plank. */
+.local-hero-board {
+  height: 14px;
+  background: var(--color-rail-deep);
+  border-top: 3px solid var(--color-brass);
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.35);
+}

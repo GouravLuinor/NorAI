@@ -23,6 +23,7 @@ import { Button } from '../components/ui/Button'
 import { Select } from '../components/ui/Select'
 import { ShelfMark } from '../components/ui/ShelfMark'
 import { Wordmark } from '../components/brand/Wordmark'
+import { LocalHero } from '../components/brand/LocalHero'
 import { FOCUS_RING } from '../components/ui/shared'
 import { apiFetchRaw } from '../lib/http'
 import { useAuthStore } from '../stores/useAuthStore'
@@ -350,6 +351,7 @@ export function UploadPage() {
 
   return (
     <div id="main" className="min-h-screen bg-nb flex flex-col items-center pb-16">
+      {localMode ? <LocalHero /> : (
       <header className="w-full border-b border-bdr bg-ns">
         <div className="mx-auto max-w-3xl flex items-center justify-between gap-4 px-4 sm:px-6 py-3">
           <button
@@ -382,6 +384,7 @@ export function UploadPage() {
           )}
         </div>
       </header>
+      )}
 
       <div className="w-full max-w-3xl px-4 sm:px-6 pt-10 flex flex-col gap-12">
         {/* Continue where you left off */}
@@ -584,7 +587,9 @@ export function UploadPage() {
         {/* Add a lecture */}
         <section aria-labelledby="add-heading">
           <div className="mb-6">
-            <h1 id="add-heading" className="font-serif font-semibold text-32 leading-tight text-nt">Add a lecture</h1>
+            {localMode
+              ? <h2 id="add-heading" className="font-serif font-semibold text-32 leading-tight text-nt scroll-mt-6">Add a lecture</h2>
+              : <h1 id="add-heading" className="font-serif font-semibold text-32 leading-tight text-nt">Add a lecture</h1>}
             <p className="mt-2 text-16 text-nt2 max-w-[56ch] leading-relaxed">
               {youtubeOn
                 ? 'Paste a YouTube or web link, or upload a recording, PDF, Word file or slide deck.'
