@@ -19,7 +19,7 @@ export const PAGE_META = {
     path: '/',
     title: 'NorAI: Turn lecture videos into notes, quizzes & an AI tutor',
     description:
-      'Paste a YouTube lecture or upload a recording. NorAI writes chapter notes, a quiz and flashcards, plus an AI tutor that answers from your lecture. Free.',
+      'Upload a lecture recording, PDF or slide deck. NorAI writes chapter notes, a quiz and flashcards, plus an AI tutor that answers from your material. Free.',
     priority: '1.0',
   },
   pricing: {

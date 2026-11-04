@@ -229,6 +229,26 @@ def section_loc(raw: str, segments: list[dict]) -> tuple[float, str] | None:
     return None
 
 
+def place_document_sections(sections: list[dict], segments: list[dict]) -> list[dict]:
+    """Document sections in reading order, every one with a position.
+
+    The model sometimes lists sections out of page order ("p. 2, p. 1, p. 2")
+    and sometimes cites a page outside the chapter, which `section_loc` can't
+    place. Sort by position (stable, so equal pages keep the model's order),
+    and let an unplaceable section sit right after the one before it (the
+    chapter's first segment if it leads) so it still has a start for citation
+    scrolling. Its page label stays empty: showing the wrong page is worse."""
+    if not sections:
+        return sections
+    prev = float(segments[0]["start"]) if segments else 0.0
+    for sec in sections:
+        if sec.get("start_sec") is None:
+            sec["start_sec"] = round(prev, 2)
+            sec["loc"] = None
+        prev = sec["start_sec"]
+    return sorted(sections, key=lambda sec: sec["start_sec"])
+
+
 def section_start(raw: str, span: tuple[float, float]) -> float | None:
     try:
         sec = _parse_ts(raw.strip().strip("[]"))
@@ -451,6 +471,8 @@ def process_chapter(outline: dict, idx: int, chunks: list[dict], segments: list[
         else:
             sec["start_sec"] = section_start(s.start, span)
         sections.append(sec)
+    if source_kind == DOCUMENT:
+        sections = place_document_sections(sections, segs)
     write_chapter_artifacts(
         output_dir,
         chapter_id=n,

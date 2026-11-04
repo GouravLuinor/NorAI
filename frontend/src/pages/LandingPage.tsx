@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight, LogOut, Menu, X } from 'lucide-react'
 import { useAuthStore } from '../stores/useAuthStore'
+import { useAppConfigStore } from '../stores/useAppConfigStore'
 import { FOCUS_RING, LINK_RING } from '../components/ui/shared'
 import { DEMO_LECTURES_CONFIG, PRIMARY_DEMO_LECTURE_ID } from '../config/features'
 import { FaqList } from '../components/marketing/FaqList'
@@ -52,8 +53,8 @@ const OUTPUTS = [
 
 const STEPS = [
   {
-    title: 'Paste a YouTube link or upload the recording',
-    body: 'MP4, MOV, MKV, AVI or WebM. A recorded class, a university lecture, an online course: anything with someone teaching.',
+    title: 'Upload the recording, PDF or slides',
+    body: 'A video (MP4, MOV, MKV, AVI, WebM), a PDF, Word file or slide deck, or a Google Drive or web link. A recorded class, a university lecture, an online course, a textbook chapter: anything you need to learn from.',
   },
   {
     title: 'Check the estimate, then let it run',
@@ -119,6 +120,9 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
     </>
   )
 
+  // Hosted installs have YouTube switched off (servers get blocked), so the
+  // hero pitches upload; the paste-a-link box only shows where it can work.
+  const youtubeOn = useAppConfigStore((s) => s.sources.includes('youtube'))
   const [pasteUrl, setPasteUrl] = useState('')
   const [isEstimating, setIsEstimating] = useState(false)
   const [estimateError, setEstimateError] = useState<string | null>(null)
@@ -235,15 +239,22 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
         <Container className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-16">
           <div>
             <h1 className="max-w-3xl font-serif font-semibold text-[clamp(2.5rem,5.6vw,4.25rem)] leading-[1.04] tracking-[-0.02em] text-balance">
-              Turn lecture videos into <span className="whitespace-nowrap">exam-ready</span> notes.
+              {youtubeOn ? (
+                <>Turn lecture videos into <span className="whitespace-nowrap">exam-ready</span> notes.</>
+              ) : (
+                <>Turn any lecture, PDF or slide deck into <span className="whitespace-nowrap">exam-ready</span> notes.</>
+              )}
             </h1>
             <p className="mt-6 max-w-[38rem] text-18 leading-relaxed text-nt2">
-              Paste a YouTube link or upload your class recording. NorAI writes chapter-wise study notes, a revision
-              sheet, a quiz and flashcards, and gives you a tutor that answers only from that lecture, down to the
-              minute it was said.
+              {youtubeOn
+                ? 'Paste a YouTube link or upload your class recording. '
+                : 'Upload a class recording, PDF, Word file or slide deck, or paste a Google Drive or web link. '}
+              NorAI writes chapter-wise study notes, a revision sheet, a quiz and flashcards, and gives you a tutor
+              that answers only from {youtubeOn ? 'that lecture, down to the minute it was said' : 'your material, down to the minute or page it came from'}.
             </p>
 
             {/* Paste-first YouTube Onboarding */}
+            {youtubeOn && (
             <form onSubmit={handleInspectUrl} className="mt-8 max-w-xl">
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
@@ -303,6 +314,7 @@ export function LandingPage({ onStartWorkspace }: LandingPageProps) {
                 </div>
               )}
             </form>
+            )}
 
             <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
               <button onClick={start} className={PRIMARY_BTN}>

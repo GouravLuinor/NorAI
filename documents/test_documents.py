@@ -264,6 +264,27 @@ def test_chapter_section_loc_and_tags():
     assert tagged_transcript([{"chunk_id": 0, "start": 65, "text": "x"}]).startswith("[chunk 0 | 1:05]")
 
 
+def test_document_sections_reading_order():
+    from lean.chapters import place_document_sections
+
+    segs = [{"start": 10.0, "loc": "p. 1"}, {"start": 20.0, "loc": "p. 2"}]
+    secs = [
+        {"title": "B", "start_sec": 20.0, "loc": "p. 2"},
+        {"title": "A", "start_sec": 10.0, "loc": "p. 1"},
+        {"title": "Out", "start_sec": None, "loc": None},      # cites p. 99: after A
+        {"title": "C", "start_sec": 20.0, "loc": "p. 2"},
+    ]
+    out = place_document_sections(secs, segs)
+    assert [s["title"] for s in out] == ["A", "Out", "B", "C"]
+    assert all(s["start_sec"] is not None for s in out)
+    out_sec = next(s for s in out if s["title"] == "Out")
+    assert out_sec["loc"] is None and out_sec["start_sec"] == 10.0
+    # a leading unplaceable section takes the chapter's first segment
+    lead = place_document_sections([{"title": "X", "start_sec": None, "loc": None}], segs)
+    assert lead[0]["start_sec"] == 10.0
+    assert place_document_sections([], segs) == []
+
+
 def test_document_citations():
     from tutor.citations import verified_citations
 

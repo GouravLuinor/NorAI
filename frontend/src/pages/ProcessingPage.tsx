@@ -63,6 +63,9 @@ export function ProcessingPage() {
   const navigate = useNavigate()
   const [activeStage, setActiveStage] = useState<string | null>(null)
   const [isDocument, setIsDocument] = useState(false)
+  // The stage list differs by source kind, which only the first status reply
+  // knows: show placeholders until then instead of flashing the video stages.
+  const [kindKnown, setKindKnown] = useState(false)
   const [completedStages, setCompletedStages] = useState<Set<string>>(new Set())
   const [progress, setProgress] = useState(0)
   const [message, setMessage] = useState('Preparing…')
@@ -140,7 +143,9 @@ export function ProcessingPage() {
       },
     ) => {
       const stage = data.stage
-      if ((data as { source_kind?: string }).source_kind === 'document') setIsDocument(true)
+      const sourceKind = (data as { source_kind?: string }).source_kind
+      if (sourceKind === 'document') setIsDocument(true)
+      if (sourceKind) setKindKnown(true)
       if (stage === 'complete' || (data.progress != null && data.progress >= 100)) {
         setCompletedStages(prev => {
           const next = new Set(prev)
@@ -294,7 +299,15 @@ export function ProcessingPage() {
 
         {/* Stages */}
         <ol className="border-y border-bdr divide-y divide-bdr">
-          {(isDocument ? DOC_STAGES : STAGES).map((stage, idx) => {
+          {!kindKnown && !finished ? (
+            Array.from({ length: DOC_STAGES.length }, (_, i) => (
+              <li key={i} aria-hidden="true" className="flex items-center gap-3 px-2 py-2.5 animate-pulse">
+                <span className="w-6 h-3 rounded bg-bdr shrink-0" />
+                <span className="w-4 h-4 rounded-full bg-bdr shrink-0" />
+                <span className="h-3 rounded bg-bdr" style={{ width: `${45 + ((i * 17) % 35)}%` }} />
+              </li>
+            ))
+          ) : (isDocument ? DOC_STAGES : STAGES).map((stage, idx) => {
             const isActive = activeStage === stage.key && !finished
             const isComplete = finished || (completedStages.has(stage.key) && !isActive)
             return (

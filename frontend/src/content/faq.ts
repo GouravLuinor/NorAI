@@ -70,8 +70,8 @@ export const PRODUCT_FAQ: FaqItem[] = [
     a: 'NorAI turns a lecture video into chapter-by-chapter study notes, a revision sheet, a quiz, flashcards and an AI tutor that answers only from that lecture, with timestamps back to the video.',
   },
   {
-    q: 'Which videos can I use?',
-    a: 'Paste a YouTube link or upload an MP4, MOV, MKV, AVI or WebM file. Recorded classes, university lectures, online courses and conference talks all work. NorAI works best on English-language lectures.',
+    q: 'What can I use?',
+    a: 'Upload an MP4, MOV, MKV, AVI or WebM recording, a PDF, Word file, slide deck or text file, or paste a Google Drive or web link. Recorded classes, university lectures, online courses, conference talks and course readings all work. NorAI works best on English-language material.',
   },
   {
     q: 'How long does processing take?',
