@@ -47,6 +47,7 @@ import threading
 import time
 from typing import Any, Callable, TypeVar
 
+import config
 from config import (
     DEFAULT_MAX_RETRIES,
     RETRY_BACKOFF_BASE,
@@ -81,18 +82,111 @@ def _load_genai() -> Any:
     return _genai
 
 
+# ── 503 circuit breaker + fallback model ──────────────────────────────────────
+
+def is_unavailable(err: BaseException) -> bool:
+    """True for Gemini's "model overloaded" reply (HTTP 503 / UNAVAILABLE)."""
+    return getattr(err, "code", None) == 503 or "UNAVAILABLE" in str(err)[:200]
+
+
+class _FallbackBreaker:
+    """Counts consecutive 503s from the primary model; once ``after`` of them
+    land it stays open for ``cooldown`` seconds, during which calls go to the
+    fallback model. Any primary success closes it."""
+
+    def __init__(self, after: int, cooldown: float, clock: Callable[[], float] = time.monotonic):
+        self.after, self.cooldown, self._clock = after, cooldown, clock
+        self._fails = 0
+        self._open_until = 0.0
+        self._lock = threading.Lock()
+
+    def is_open(self) -> bool:
+        with self._lock:
+            return self._clock() < self._open_until
+
+    def record_failure(self) -> bool:
+        """Note a primary 503; returns True if the breaker is open afterwards."""
+        with self._lock:
+            self._fails += 1
+            if self._fails >= self.after:
+                self._open_until = self._clock() + self.cooldown
+                self._fails = 0
+            return self._clock() < self._open_until
+
+    def record_success(self) -> None:
+        with self._lock:
+            self._fails = 0
+
+
+class _ModelsWithFallback:
+    """``client.models`` with one change: generate_content falls back to
+    ``fallback_model`` while the primary is returning 503s. Every other
+    attribute is the SDK's own. Calls bound to a context cache are left alone
+    (a cache belongs to one model)."""
+
+    def __init__(self, models: Any, primary: str, fallback: str, breaker: _FallbackBreaker):
+        self._models, self._primary, self._fallback, self._breaker = models, primary, fallback, breaker
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._models, name)
+
+    def generate_content(self, *, model: str, **kwargs: Any) -> Any:
+        cfg = kwargs.get("config")
+        cached = (cfg.get("cached_content") if isinstance(cfg, dict) else getattr(cfg, "cached_content", None))
+        if model != self._primary or cached:
+            return self._models.generate_content(model=model, **kwargs)
+        if self._breaker.is_open():
+            return self._models.generate_content(model=self._fallback, **kwargs)
+        try:
+            resp = self._models.generate_content(model=model, **kwargs)
+        except Exception as e:  # noqa: BLE001
+            if is_unavailable(e) and self._breaker.record_failure():
+                logger.warning("Gemini %s keeps returning 503; using %s for the next %.0fs",
+                               self._primary, self._fallback, self._breaker.cooldown)
+                return self._models.generate_content(model=self._fallback, **kwargs)
+            raise
+        self._breaker.record_success()
+        return resp
+
+
+class _ClientWithFallback:
+    """The SDK client, with ``models`` swapped for the fallback-aware wrapper."""
+
+    def __init__(self, client: Any, models: _ModelsWithFallback):
+        self._client, self.models = client, models
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._client, name)
+
+
 def get_client():
     """Return the process-wide ``google.genai.Client`` (thread-safe, lazy).
 
     Built from ``config.get_api_key()`` so .env loading and missing-key
     validation stay centralized. The first call constructs the client; every
-    later call returns the cached instance.
+    later call returns the cached instance. Requests time out after
+    ``config.GEMINI_REQUEST_TIMEOUT_SEC`` (the retry policy then tries again),
+    and generate_content falls back to ``config.FALLBACK_MODEL_NAME`` while the
+    primary model keeps answering 503 (see ``_ModelsWithFallback``).
     """
     global _client
     if _client is None:
         with _client_lock:
             if _client is None:
-                _client = _load_genai().Client(api_key=get_api_key())
+                genai = _load_genai()
+                from google.genai import types  # type: ignore
+
+                client = genai.Client(
+                    api_key=get_api_key(),
+                    http_options=types.HttpOptions(timeout=int(config.GEMINI_REQUEST_TIMEOUT_SEC * 1000)),
+                )
+                fallback = config.FALLBACK_MODEL_NAME
+                if fallback and fallback != config.MODEL_NAME:
+                    breaker = _FallbackBreaker(config.GEMINI_FALLBACK_AFTER_503S,
+                                               config.GEMINI_FALLBACK_COOLDOWN_SEC)
+                    client = _ClientWithFallback(
+                        client, _ModelsWithFallback(client.models, config.MODEL_NAME, fallback, breaker))
+                _client = client
     return _client
 
 

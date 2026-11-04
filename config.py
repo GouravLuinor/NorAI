@@ -21,7 +21,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ── Canonical Pipeline & LLM Defaults ─────────────────────────────────────────
-MODEL_NAME = "gemini-3.1-flash-lite"
+# NORAI_MODEL swaps the model for one run (e.g. while the default is returning
+# 503s) without touching this default.
+MODEL_NAME = os.environ.get("NORAI_MODEL", "").strip() or "gemini-3.1-flash-lite"
 DEFAULT_MODEL_NAME = MODEL_NAME
 
 DEFAULT_FRAME_INTERVAL_SECONDS = 8
@@ -42,6 +44,20 @@ TEMPERATURE = 0.4
 RETRY_BACKOFF_BASE = float(os.environ.get("NORAI_RETRY_BACKOFF_BASE", "5"))
 RETRY_JITTER_MIN = float(os.environ.get("NORAI_RETRY_JITTER_MIN", "0.5"))
 RETRY_JITTER_MAX = float(os.environ.get("NORAI_RETRY_JITTER_MAX", "3.0"))
+
+# A Gemini request that gets no answer within this long is abandoned and
+# retried by the policy above. Without it a request the API accepts but never
+# answers (seen 2026-11-04 during a 503 spike) blocks a pipeline until the
+# 15-minute stall watchdog. A 15-minute lecture transcribes in ~40 s, so the
+# default leaves wide headroom for the slowest legitimate call.
+GEMINI_REQUEST_TIMEOUT_SEC = float(os.environ.get("NORAI_GEMINI_TIMEOUT_SEC", "240"))
+
+# After this many 503s in a row from the primary model the shared client sends
+# generate_content to FALLBACK_MODEL_NAME for GEMINI_FALLBACK_COOLDOWN_SEC, then
+# tries the primary again. Set NORAI_FALLBACK_MODEL="" to turn it off.
+FALLBACK_MODEL_NAME = os.environ.get("NORAI_FALLBACK_MODEL", "gemini-3.5-flash-lite").strip()
+GEMINI_FALLBACK_AFTER_503S = int(os.environ.get("NORAI_FALLBACK_AFTER_503S", "2"))
+GEMINI_FALLBACK_COOLDOWN_SEC = float(os.environ.get("NORAI_FALLBACK_COOLDOWN_SEC", "300"))
 
 # ── Transcription Backend & Chunking ─────────────────────────────────────────
 NORAI_TRANSCRIPTION_BACKEND = os.environ.get("NORAI_TRANSCRIPTION_BACKEND", "gemini")
